@@ -50,8 +50,6 @@ powershell -ExecutionPolicy Bypass -File tools/Build.ps1
 
 Simulation tests cover deterministic generation and continuation after loading, growth constraints, actual-stock trade, embargoes, climate projects, discovery rewards, and peaceful progression. UI tests exercise screen picking, view navigation, colony founding, overlays, and time controls. `-- --capture` produces rendered preview PNGs under `artifacts/` and exits; it uses a disposable demo state and does not save the expedition.
 
-## Implementation status
-
 ## Free Windows narration
 
 Read the five provisional story treatments in `docs/STORY_EXPLORATIONS.md`. Render an offline voiceover using installed Windows voices, with no subscription or API key:
