@@ -9,4 +9,4 @@ These supersede this document's first city and currency proposal. The opening no
 
 The original outpost is the society's ancient origin, not the size or technological level of the present city. Spaceflight already exists. Taking national leadership does not unify the planet. The exact canonical ending and the player species' ancestry remain undecided.
 
-The small playable colony prototype is separate from the proposed campaign. See [Roadmap](ROADMAP.md) for the next bounded implementation gate and [City concept](CITY_CONCEPT.md) for the latest visual study.
+A separate urban tutorial now implements one editable district, two repair agreements and persistent civic powers within that city context. Four background borough populations are fixed aggregates. The national takeover and the full campaign remain proposed. See [Roadmap](ROADMAP.md) for the next gate and [City concept](CITY_CONCEPT.md) for the latest visual study. That image is still too Earth-like: alien circular spaces and possible benevolent megafauna transit belong in the continuing design direction.

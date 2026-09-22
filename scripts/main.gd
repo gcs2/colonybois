@@ -1,6 +1,7 @@
 extends Node3D
 ## Presentation and input only; all gameplay mutations go through Simulation.command.
 const Simulation = preload("res://scripts/simulation.gd")
+const UrbanView = preload("res://scripts/urban_view.gd")
 const INK := Color("0a1421")
 const PANEL := Color("101f30")
 const MUTED := Color("8ea6bb")
@@ -43,6 +44,10 @@ var tool_buttons: Dictionary = {}
 var overlay_buttons: Dictionary = {}
 var speed_buttons: Dictionary = {}
 var last_build_signature: String = ""
+var last_access_signature: String = ""
+var building_nodes: Dictionary = {}
+var building_states: Dictionary = {}
+var broken_link_marker: Node3D
 var terrain_recovery_stage: int = -1
 var toast_seconds: float = 0.0
 var frame_counter: int = 0
@@ -202,7 +207,7 @@ func _on_sim_changed() -> void:
 	if not is_instance_valid(stats_label): return
 	_refresh_ui()
 	if view == "colony":
-		if int(float(sim.state.planets[planet_id].terraform)*10) != terrain_recovery_stage:
+		if int(float(sim.state.planets[planet_id].terraform)*10) != terrain_recovery_stage or (overlay == "access" and str(sim.state.colonies[planet_id].connected.keys()) != last_access_signature):
 			_rebuild_world()
 		else: _refresh_buildings()
 	if view == "planet" and is_instance_valid(overview_globe):
@@ -239,6 +244,7 @@ func _switch_view(next: String) -> void:
 		return
 	view = next
 	zoom = 33.0 if view == "colony" else (57.0 if view == "galaxy" else 25.0)
+	if view == "colony" and sim.state.has("urban") and planet_id == "s0p0": zoom = 40.0
 	focus = Vector3.ZERO
 	orbit = -0.35 if view != "planet" else 0.0
 	selected_cell = Vector2i(-1,-1)
@@ -405,12 +411,16 @@ func _show_mode_menu() -> void:
 	shade.color = Color(0.025,0.045,0.075,0.95)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mode_menu.add_child(shade)
-	var panel: PanelContainer = _panel(mode_menu,460,130,1140,780)
+	var panel: PanelContainer = _panel(mode_menu,460,70,1140,825)
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation",14)
+	content.add_theme_constant_override("separation",9)
 	panel.add_child(content)
 	_text(content,"F R O N T I E R   W O R L D S",30,WHITE)
 	_text(content,"A settlement. A signal. A sky you haven't mapped.",19,MINT)
+	_text(content,"URBAN TUTORIAL · FIRST CAMPAIGN SLICE",12,MINT)
+	_text(content,"An existing city, a broken crossing, two repair agreements. Govern one district; keep the consequences as you explore.",16)
+	_button("New urban tutorial",_start_mode.bind("urban",false),content)
+	_button("Continue urban tutorial",_start_mode.bind("urban",true),content)
 	_text(content,"EXPEDITION",12,MINT)
 	_text(content,"Discover the galaxy through frontier fog. Grow colonies, trade surpluses and earn influence. All construction tools are available from the start.",17)
 	_button("New expedition",_start_mode.bind("expedition",false),content)
@@ -430,7 +440,7 @@ func _close_mode_menu() -> void:
 	_set_speed(menu_speed)
 
 func _start_mode(mode: String, restore: bool) -> void:
-	var path: String = "user://%s_save.fw" % ("sandbox" if mode == "sandbox" else "frontier")
+	var path: String = "user://%s_save.fw" % ("frontier" if mode == "expedition" else mode)
 	if restore and not FileAccess.file_exists(path):
 		_toast("No manual %s save yet. Start a new game or return to restore an autosave." % mode)
 		return
@@ -445,6 +455,9 @@ func _start_mode(mode: String, restore: bool) -> void:
 	_close_mode_menu()
 	_set_speed(1)
 	_switch_view("colony")
+	if mode == "urban":
+		_toast("South Loop needs a crossing repaired. Use the right panel to inspect the failure and choose an agreement.")
+		return
 	_toast("Sandbox ready. God tools are available in the left panel." if mode == "sandbox" else "Expedition ready. Survey nearby signals to expand your star chart.")
 
 func _clear_box(box: VBoxContainer) -> void:
@@ -509,6 +522,8 @@ func _refresh_ui() -> void:
 	tick_label.text = "%s  /  DAY %03d  /  %s" % ["SANDBOX" if sim.state.get("mode","expedition") == "sandbox" else "SOLACE EXPEDITION",sim.state.tick,["CAPTAIN","PATHFINDER","STEWARD"][int(sim.state.rank)]]
 	stats_label.text = "◉  %d Marks     %d / 3 colonies" % [sim.state.credits,sim.state.colonies.size()]
 	stats_label.tooltip_text = sim.catalog.currency.history + "\n\n" + sim.catalog.currency.scope
+	if sim.state.has("urban"):
+		tick_label.text = "SOUTH LOOP  /  DAY %03d  /  CIVIC AUTHORITY" % sim.state.tick
 	for id: String in view_buttons: view_buttons[id].button_pressed = id == view
 	for value: int in speed_buttons: speed_buttons[value].button_pressed = value == speed
 	var planet: Dictionary = sim.state.planets[planet_id]
@@ -526,8 +541,9 @@ func _refresh_right() -> void:
 	var planet: Dictionary = sim.state.planets[planet_id]
 	if view == "colony":
 		var colony: Dictionary = sim.state.colonies[planet_id]
-		_text(right_box,"COLONY TELEMETRY",12,MINT)
-		_text(right_box,"Population · %d" % colony.population,26,WHITE)
+		if sim.state.has("urban") and planet_id == "s0p0": _urban_panel()
+		_text(right_box,"DISTRICT TELEMETRY" if sim.state.has("urban") and planet_id == "s0p0" else "COLONY TELEMETRY",12,MINT)
+		_text(right_box,"Population · %s" % _number(colony.population),26,WHITE)
 		_text(right_box,"%d jobs  ·  %+.2f Marks/day" % [colony.jobs,colony.income])
 		_text(right_box,"Materials   %d   (%+.2f/day)\nSupplies     %d   (%+.2f/day)" % [colony.materials,colony.material_rate,colony.supplies,colony.supply_rate],16,WHITE)
 		_text(right_box,"Power  %.0f / %.0f used" % [colony.power_used,colony.power],16,GOLD if colony.power_used > colony.power else MINT)
@@ -633,6 +649,7 @@ func _update_hint() -> void:
 	if view == "colony":
 		var description: String = sim.catalog.buildings[tool].description if sim.catalog.buildings.has(tool) else "Click a tile to inspect." if tool == "inspect" else "Remove a tile for a 50% material refund."
 		hint_label.text = "%s  |  %s\n1–4 tools · Right-click/Esc inspect · Costs in materials · Cyan: water / Amber: minerals / Red: geothermal" % [tool.to_upper().replace("_"," "),description]
+		if sim.state.has("urban") and planet_id == "s0p0": hint_label.text = "%s  |  %s\nMint border: your authority · Right-click/Esc inspect · Q/E rotate · Wheel zoom · Space pauses" % [tool.to_upper().replace("_"," "),description]
 	elif view == "galaxy": hint_label.text = "Click a signal to inspect · Travel to survey it and reveal neighboring routes\nMint: surveyed · Gold: unexplored frontier · The deep galaxy remains hidden until you explore."
 	else: hint_label.text = "Q / E orbits the globe · Mouse wheel zooms · Enter a colony to build\nClimate projects preserve existing buildings and gradually improve conditions."
 
@@ -696,6 +713,9 @@ func _rebuild_world() -> void:
 		world.remove_child(child)
 		child.queue_free()
 	last_build_signature = ""
+	building_nodes.clear()
+	building_states.clear()
+	broken_link_marker = null
 	hover_mesh = null
 	ship_mesh = null
 	overview_globe = null
@@ -709,6 +729,7 @@ func _planet_color(planet: Dictionary) -> Color:
 
 func _draw_colony() -> void:
 	var planet: Dictionary = sim.state.planets[planet_id]
+	last_access_signature = str(sim.state.colonies[planet_id].connected.keys())
 	terrain_recovery_stage = int(float(planet.terraform)*10)
 	var base: Color = _planet_color(planet)
 	var surface := SurfaceTool.new()
@@ -742,6 +763,7 @@ func _draw_colony() -> void:
 		_line(world,Vector3(i-32,0.025,-20),Vector3(i-32,0.025,20),base.darkened(0.45),0.012)
 		_line(world,Vector3(-20,0.025,i-32),Vector3(20,0.025,i-32),base.darkened(0.45),0.012)
 	for feature: Dictionary in sim.features(planet_id):
+		if sim.state.has("urban") and planet_id == "s0p0": continue
 		var pos := Vector3(feature.x-31.5,0.3,feature.z-31.5)
 		var color: Color = GOLD if feature.type == "mineral" else (Color("78c7ed") if feature.type == "water" else Color("f4947e"))
 		var crystal := CylinderMesh.new()
@@ -752,6 +774,7 @@ func _draw_colony() -> void:
 		_mesh(world,crystal,pos,color,0.4)
 		_world_label(world,str(feature.type).to_upper(),pos+Vector3(0,1.25,0),color,16)
 	for i: int in range(75):
+		if sim.state.has("urban") and planet_id == "s0p0": continue
 		var x: int = rng.randi_range(10,53)
 		var z: int = rng.randi_range(5,58)
 		if Vector2(x-32,z-32).length() < 12: continue
@@ -762,53 +785,135 @@ func _draw_colony() -> void:
 		rock.radial_segments = 5
 		rock.rings = 3
 		_mesh(world,rock,Vector3(x-31.5,0.12,z-31.5),base.darkened(0.2))
+	if sim.state.has("urban") and planet_id == "s0p0": UrbanView.draw_context(self)
 	buildings = Node3D.new()
 	world.add_child(buildings)
 	_refresh_buildings()
 	hover_mesh = _box(world,Vector3.ZERO,Vector3(0.98,0.04,0.98),Color(0.55,1,0.85,0.4),0.4)
 	hover_mesh.visible = false
 
+func _number(value: int) -> String:
+	var digits: String = str(value)
+	var result: String = ""
+	for i: int in range(digits.length()):
+		if i > 0 and (digits.length()-i)%3 == 0: result += ","
+		result += digits[i]
+	return result
+
+func _urban_panel() -> void:
+	var city: Dictionary = sim.state.urban
+	_text(right_box,"LATCH · %s" % _number(Simulation.Urban.population(sim)),23,WHITE)
+	_text(right_box,"City population · five boroughs. Your authority covers South Loop inside the mint border.",13)
+	_text(right_box,"THE BROKEN CROSSING",12,GOLD)
+	var isolated: int = Simulation.Urban.isolated_population(sim)
+	_text(right_box,"%s residents lack road access to the hub." % _number(isolated),16,GOLD if isolated > 0 else MINT)
+	_button("Inspect crossing · access layer",_inspect_crossing,right_box)
+	if str(city.path).is_empty():
+		_text(right_box,"Public: 60 materials, 8 days. Unlock supply-for-material mutual aid; retain a 60-supply reserve.",14)
+		_button("Sign public repair agreement",_command.bind("civic",{"choice":"public"}),right_box)
+		_text(right_box,"Sponsor: 180 Marks, 2 days. Unlock instant zone upgrades; pay 1 Mark/day after reopening.",14)
+		_button("Sign sponsored repair agreement",_command.bind("civic",{"choice":"sponsor"}),right_box)
+	elif not city.repaired:
+		_text(right_box,"%s repair · %d days remaining. Time controls are below." % [str(city.path).capitalize(),city.remaining],16,GOLD)
+	else:
+		_text(right_box,"%s · %s agreement" % ["District reconnected" if isolated == 0 else "Access needs attention",city.path],16,MINT if isolated == 0 else GOLD)
+		_text(right_box,"Crews ready" if sim.state.tick >= city.ability_ready else "Crews return on day %d" % city.ability_ready,13)
+		if city.path == "public":
+			_button("Dispatch mutual-aid crews",_command.bind("civic",{"choice":"mutual_aid"}),right_box)
+			_text(right_box,"30 supplies → 20 materials. Retains 60 supplies. Crews available every 12 days.",13)
+		else:
+			_button("Find a growth-ready zone",_inspect_growth_zone,right_box)
+			_button("Priority works · selected zone",_command.bind("civic",{"choice":"priority","tile":Simulation.key(selected_cell.x,selected_cell.y)}),right_box)
+			_text(right_box,"Inspect a Ready to grow zone. 30 Marks + 15 materials; 4-day crew cooldown. Sponsor paid: %.0f Marks." % city.fees_paid,13)
+			if city.fee_due > 0: _text(right_box,"Arrears: %.0f Marks. Priority works suspended until treasury income clears them." % city.fee_due,14,GOLD)
+		_text(right_box,"Your coalition is taking shape. Use your civic power, expand the district, or take your flagship into the frontier.",14)
+		_button("Explore the frontier",_switch_view.bind("galaxy"),right_box)
+
+func _inspect_crossing() -> void:
+	selected_cell = Vector2i(32,32)
+	focus = Vector3(0.5,0,0.5)
+	zoom = 24
+	_set_overlay("access")
+	_refresh_right()
+
+func _inspect_growth_zone() -> void:
+	var colony: Dictionary = sim.state.colonies["s0p0"]
+	for key: String in colony.reasons:
+		if colony.reasons[key] != "Ready to grow": continue
+		selected_cell = Simulation.cell_position(key)
+		_select_tool("inspect")
+		focus = Vector3(selected_cell.x-31.5,0,selected_cell.y-31.5)
+		zoom = 24
+		_refresh_right()
+		_toast("Selected tile %s: ready for priority works." % key)
+		return
+	_toast("No eligible zones yet. Add a zone beside a road, or resolve its growth blocker.")
+
 func _refresh_buildings() -> void:
 	if not is_instance_valid(buildings) or view != "colony": return
 	var colony: Dictionary = sim.state.colonies[planet_id]
 	var signature: String = JSON.stringify(colony.cells)
+	if sim.state.has("urban") and planet_id == "s0p0": signature += str(colony.connected.keys())
 	if signature == last_build_signature: return
 	last_build_signature = signature
-	for child: Node in buildings.get_children():
-		buildings.remove_child(child)
-		child.queue_free()
+	for key: String in building_nodes.keys():
+		if colony.cells.has(key): continue
+		buildings.remove_child(building_nodes[key])
+		building_nodes[key].queue_free()
+		building_nodes.erase(key)
+		building_states.erase(key)
 	for k: String in colony.cells:
 		var cell: Dictionary = colony.cells[k]
+		var descriptor: String = JSON.stringify(cell)
+		if sim.state.has("urban") and planet_id == "s0p0" and cell.type in ["habitat","service"]: descriptor += str(colony.connected.has(k))
+		if building_states.get(k,"") == descriptor: continue
+		if building_nodes.has(k):
+			buildings.remove_child(building_nodes[k])
+			building_nodes[k].queue_free()
+		var cell_root := Node3D.new()
+		buildings.add_child(cell_root)
+		building_nodes[k] = cell_root
+		building_states[k] = descriptor
 		var p: Vector2i = Simulation.cell_position(k)
 		var pos := Vector3(p.x-31.5,0.0,p.y-31.5)
 		var color := Color(COLORS[cell.type])
 		if cell.type == "road":
-			_box(buildings,pos+Vector3(0,0.04,0),Vector3(0.99,0.06,0.99),color)
-			_box(buildings,pos+Vector3(0,0.08,0),Vector3(0.12,0.012,0.35),Color("a0b4bd"),0.2)
+			_box(cell_root,pos+Vector3(0,0.04,0),Vector3(0.99,0.06,0.99),color)
+			_box(cell_root,pos+Vector3(0,0.08,0),Vector3(0.12,0.012,0.35),Color("a0b4bd"),0.2)
 			continue
-		_box(buildings,pos+Vector3(0,0.045,0),Vector3(0.89,0.07,0.89),color.darkened(0.38))
+		_box(cell_root,pos+Vector3(0,0.045,0),Vector3(0.89,0.07,0.89),color.darkened(0.38))
 		if int(cell.level) == 0:
-			_box(buildings,pos+Vector3(0,0.09,0),Vector3(0.64,0.02,0.64),Color(color,0.45))
+			_box(cell_root,pos+Vector3(0,0.09,0),Vector3(0.64,0.02,0.64),Color(color,0.45))
 			continue
+		if sim.state.has("urban") and planet_id == "s0p0" and UrbanView.draw_building(self,cell_root,pos,cell,colony.connected.has(k)): continue
 		var height: float = 0.65 + int(cell.level)*0.32
 		if cell.type == "spaceport":
-			_box(buildings,pos+Vector3(0,0.25,0),Vector3(0.88,0.5,0.88),color)
-			_box(buildings,pos+Vector3(0.2,0.9,0.2),Vector3(0.24,1.3,0.24),color)
-			_sphere(buildings,pos+Vector3(0.2,1.6,0.2),0.15,MINT,0.9)
+			_box(cell_root,pos+Vector3(0,0.25,0),Vector3(0.88,0.5,0.88),color)
+			_box(cell_root,pos+Vector3(0.2,0.9,0.2),Vector3(0.24,1.3,0.24),color)
+			_sphere(cell_root,pos+Vector3(0.2,1.6,0.2),0.15,MINT,0.9)
 		elif cell.type in ["power","life_support","terraformer"]:
 			var cylinder := CylinderMesh.new()
 			cylinder.top_radius = 0.27
 			cylinder.bottom_radius = 0.37
 			cylinder.height = height
 			cylinder.radial_segments = 12
-			_mesh(buildings,cylinder,pos+Vector3(0,height/2,0),color)
-			_sphere(buildings,pos+Vector3(0,height,0),0.25,color.lightened(0.3),0.4)
+			_mesh(cell_root,cylinder,pos+Vector3(0,height/2,0),color)
+			_sphere(cell_root,pos+Vector3(0,height,0),0.25,color.lightened(0.3),0.4)
 		else:
-			_box(buildings,pos+Vector3(0,height/2,0),Vector3(0.67,height,0.73),color)
-			_box(buildings,pos+Vector3(0,height+0.035,0),Vector3(0.71,0.07,0.77),color.lightened(0.3))
+			_box(cell_root,pos+Vector3(0,height/2,0),Vector3(0.67,height,0.73),color)
+			_box(cell_root,pos+Vector3(0,height+0.035,0),Vector3(0.71,0.07,0.77),color.lightened(0.3))
 			for y: int in range(int(cell.level)+1):
-				_box(buildings,pos+Vector3(0,0.25+y*0.3,0.372),Vector3(0.48,0.095,0.015),Color("d6fff0"),0.6)
-			if cell.type == "industry": _box(buildings,pos+Vector3(0.2,height+0.3,-0.15),Vector3(0.17,0.6,0.17),color.darkened(0.3))
+				_box(cell_root,pos+Vector3(0,0.25+y*0.3,0.372),Vector3(0.48,0.095,0.015),Color("d6fff0"),0.6)
+			if cell.type == "industry": _box(cell_root,pos+Vector3(0.2,height+0.3,-0.15),Vector3(0.17,0.6,0.17),color.darkened(0.3))
+	if is_instance_valid(broken_link_marker) and colony.cells.has("32,32"):
+		buildings.remove_child(broken_link_marker)
+		broken_link_marker.queue_free()
+		broken_link_marker = null
+	if sim.state.has("urban") and planet_id == "s0p0" and not colony.cells.has("32,32") and not is_instance_valid(broken_link_marker):
+		broken_link_marker = Node3D.new()
+		buildings.add_child(broken_link_marker)
+		_box(broken_link_marker,Vector3(0.5,0.2,0.5),Vector3(0.9,0.3,0.9),Color("d98b83"))
+		_world_label(broken_link_marker,"BROKEN LINK",Vector3(0.5,1.1,0.5),GOLD,18)
 
 func _draw_galaxy() -> void:
 	var rng := RandomNumberGenerator.new()
@@ -882,7 +987,7 @@ func _draw_planet() -> void:
 	_world_label(world,"%s  /  ORBITAL TELEMETRY" % str(planet.environment).to_upper(),Vector3(0,-8,0),MUTED,18)
 
 func _capture_next() -> void:
-	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet","05-mode-menu","06-sandbox"]
+	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet","05-mode-menu","06-sandbox","07-urban","08-urban-repaired"]
 	var image: Image = get_viewport().get_texture().get_image()
 	image.save_png("res://artifacts/%s.png" % names[capture_stage])
 	capture_stage += 1
@@ -897,4 +1002,10 @@ func _capture_next() -> void:
 	elif capture_stage == 5:
 		_start_mode("sandbox",false)
 		_set_speed(0)
+	elif capture_stage == 6:
+		_start_mode("urban",false)
+		_set_speed(0)
+	elif capture_stage == 7:
+		sim.command("civic",{"choice":"public"})
+		for i: int in range(8): sim.tick()
 	else: get_tree().quit()

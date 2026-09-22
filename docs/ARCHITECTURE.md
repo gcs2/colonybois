@@ -23,6 +23,8 @@ Growth uses road-connected facilities, local life-support distance, utility bala
 
 Snapshots have an eight-byte magic header and schema version, followed by native variants with object decoding disabled. Writes go to a temporary sibling before rename. Manual and automatic slots are separate. Version mismatches are rejected rather than guessed.
 
+Schema 2 introduces the optional urban scenario and scaled district population. Version 1 expedition/sandbox snapshots migrate by retaining existing state and defaults, then setting version 2. Future/unknown versions remain rejected. Urban manual/autosave slots use an `urban` prefix and cannot overwrite the other modes through normal controls.
+
 All colonies simulate even when invisible. Population/jobs are aggregates and rendered meshes are disposable. Start profiling before raising limits: suitability currently scans placed cells, and growth refreshes connectivity. Cache dirty spatial influence maps and road components before attempting very large cities. Rendering currently uses modular MeshInstance3D nodes; batch repeated meshes with MultiMesh when content warrants it.
 
 ## Next architectural split
@@ -31,7 +33,13 @@ All colonies simulate even when invisible. Population/jobs are aggregates and re
 
 The new campaign targets a city of roughly 120,000 with SimCity 4-like urban fidelity. This is not a request for 120,000 agents. Building/district aggregates hold population, housing, jobs, demand, service coverage and political interests. Avoid per-person needs, inventories, commutes and world-wide pathfinding. Ambient vehicles and pedestrians are disposable, capped visual effects; offscreen economies must not depend on them. Later congestion can use aggregate road flows if playtesting justifies it.
 
-The initial urban slice should use one editable 64×64 district plus authored background district aggregates. City population totals and editable-district totals must remain distinct and derived from actual data. Cache road connectivity after edits, stagger slow economic/political updates, and use dirty flags for overlays. Batch repeated geometry and reduce distant detail. Profile simulation tick time, frame time and memory on the development PC before expanding; the existing 285-cell benchmark does not validate a developed city.
+The initial urban slice uses 160 occupied cells on the existing 64×64 patch, with construction authority bounded to tiles 22–42 / 24–40, plus four authored background district population/job aggregates. Their populations currently remain fixed; they are context, not four hidden detailed simulations. City totals sum background populations and the editable district's live population. Urban lots use a population/jobs multiplier of ten; economic consumption/output remains normalized to the prototype's lot units. Background geometry is a batched visual representation, not individual buildings tied to resident records.
+
+Connectivity still refreshes through the existing colony pipeline. Access overlays now invalidate when the connectivity signature changes. Before increasing caps, cache connectivity after edits and stagger slow systems. Profile frame time and memory as well as ticks; the existing 285-cell benchmark alone does not validate a developed city.
+
+Building presentation caches nodes per tile and replaces only changed lot geometry. Urban residential/service lighting also invalidates when that lot's road connection changes. This avoids rebuilding the whole district for an ordinary zone edit; full view and terrain-overlay changes still reconstruct the scene. Batched background buildings use MultiMesh. These are bounded optimizations, not evidence of unlimited city scale.
+
+`scripts/urban_scenario.gd` defines the authored district, validated civic commands, timed repair and ongoing fee/arrears. `scripts/urban_view.gd` draws batched context geometry and modular alien buildings. Public mutual aid exchanges actual supplies/materials with a reserve and cooldown. Sponsored priority works requires an eligible selected zone, stock, cash and no arrears. The ordinary simulation owns time and calls the civic update regardless of the active view. Neither module simulates citizens or fauna.
 
 ### Proposed campaign state extensions — not implemented
 

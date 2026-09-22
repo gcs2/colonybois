@@ -6,7 +6,8 @@ signal changed
 signal message(text: String)
 
 const SIZE: int = 64
-const SAVE_VERSION: int = 1
+const Urban = preload("res://scripts/urban_scenario.gd")
+const SAVE_VERSION: int = 2
 const SAVE_PATH: String = "user://frontier_save.fw"
 var catalog: Dictionary = {}
 var state: Dictionary = {}
@@ -19,7 +20,7 @@ func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
 		"systems":[], "planets":{}, "colonies":{}, "factions":catalog.factions.duplicate(true),
 		"agreements":[], "discoveries":{}, "milestones":[], "rank":0, "log":[],
 		"flagship":{"system":"s0", "destination":"", "route":[], "remaining":0}, "fleets":[],
-		"mode":"sandbox" if mode == "sandbox" else "expedition", "cheats":{"free_build":false,"instant_travel":false}}
+		"mode":mode if mode in ["sandbox","urban"] else "expedition", "cheats":{"free_build":false,"instant_travel":false}}
 	var positions: Array = [[-19,0],[-11,-8],[-7,5],[1,-10],[3,2],[-14,14],[12,-7],[12,8],[0,17],[21,0],[19,18],[9,23]]
 	var names: Array = ["Solace","Nacre","Kestrel","Ilyr","Meridian","Aster","Veyr","Orin","Lumen","Thalen","Cinder","Far Reach"]
 	var edges: Array = [[0,1],[0,2],[0,5],[1,3],[2,4],[2,5],[3,4],[3,6],[4,7],[4,8],[5,8],[6,9],[7,9],[7,10],[8,11],[10,11]]
@@ -42,7 +43,8 @@ func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
 		var index: int = rng.randi_range(0,candidates.size()-1)
 		state.discoveries["s%d" % candidates.pop_at(index)] = {"id":discovery.id,"resolved":false}
 	_create_colony("s0p0")
-	_log("Welcome to Solace. Connect zones, then explore the frontier.")
+	if mode == "urban": Urban.install(self)
+	else: _log("Welcome to Solace. Connect zones, then explore the frontier.")
 	changed.emit()
 
 func system_by_id(id: String) -> Dictionary:
@@ -67,7 +69,9 @@ func is_revealed(sid: String) -> bool:
 
 func save_path(autosave: bool = false) -> String:
 	var suffix: String = "_autosave" if autosave else "_save"
-	return "user://%s%s.fw" % ["sandbox" if state.get("mode","expedition") == "sandbox" else "frontier",suffix]
+	var prefix: String = str(state.get("mode","expedition"))
+	if prefix == "expedition": prefix = "frontier"
+	return "user://%s%s.fw" % [prefix,suffix]
 
 static func key(x: int, z: int) -> String:
 	return "%d,%d" % [x,z]
@@ -115,6 +119,7 @@ func _create_colony(pid: String) -> void:
 func command(action: String, args: Dictionary = {}) -> String:
 	var error: String = ""
 	match action:
+		"civic": error = Urban.command(self,args)
 		"build": error = _build(args)
 		"travel": error = _travel(str(args.get("system","")))
 		"colonize": error = _colonize(str(args.get("planet","")))
@@ -143,6 +148,9 @@ func _build(args: Dictionary) -> String:
 	var type: String = str(args.get("type",""))
 	var colony: Dictionary = state.colonies[pid]
 	var k: String = key(x,z)
+	if state.has("urban") and pid == Urban.HOME:
+		if x < 22 or x > 42 or z < 24 or z > 40: return "Your construction authority covers South Loop: tiles 22–42 / 24–40."
+		if k == Urban.LINK and not state.urban.repaired: return "Choose a repair agreement in the South Loop panel for this damaged crossing."
 	if type == "bulldoze":
 		if not colony.cells.has(k): return "Nothing to remove."
 		if colony.cells[k].type == "spaceport": return "The colony's spaceport must remain."
@@ -224,8 +232,9 @@ func refresh_colony(pid: String) -> void:
 		if cell.type == "service": jobs += int(cell.level) * 10
 	colony.power = power
 	colony.power_used = used
-	colony.population = population
-	colony.jobs = jobs
+	var population_scale: int = int(colony.get("population_scale",1))
+	colony.population = population * population_scale
+	colony.jobs = jobs * population_scale
 	colony.reasons = {}
 	for k: String in colony.cells:
 		var cell: Dictionary = colony.cells[k]
@@ -258,13 +267,15 @@ func tick() -> void:
 					colony.cells[k].level = mini(2,int(colony.cells[k].level)+1)
 					refresh_colony(pid)
 		var materials: float = 0.22
-		var supplies: float = 0.25 - float(colony.population) * 0.007
+		var economic_population: float = float(colony.population)/float(colony.get("population_scale",1))
+		var economic_jobs: float = float(colony.jobs)/float(colony.get("population_scale",1))
+		var supplies: float = 0.25 - economic_population * 0.007
 		var upkeep: float = 0.10
 		for k: String in colony.cells:
 			var cell: Dictionary = colony.cells[k]
 			if not colony.connected.has(k): continue
 			var performance: float = minf(1.0,float(colony.power)/maxf(1.0,float(colony.power_used)))
-			var workforce: float = minf(1.0,float(colony.population+18)/maxf(1.0,float(colony.jobs)))
+			var workforce: float = minf(1.0,(economic_population+18)/maxf(1.0,economic_jobs))
 			var level: float = float(cell.level) * performance * workforce
 			if cell.type == "industry": materials += level * 0.32
 			if cell.type == "service": supplies += level * 0.50
@@ -279,9 +290,10 @@ func tick() -> void:
 		colony.supply_rate = supplies
 		colony.materials = minf(9999.0,colony.materials + materials)
 		colony.supplies = clampf(colony.supplies + supplies,0.0,9999.0)
-		colony.income = float(colony.population) * 0.018 - upkeep
+		colony.income = economic_population * 0.018 - upkeep
 		state.credits = maxf(0.0,state.credits + colony.income)
 		_tick_project(pid)
+	if state.has("urban"): Urban.tick(self)
 	_tick_trade()
 	_tick_travel()
 	if int(state.tick) % 30 == 0: _tick_factions()
@@ -556,7 +568,7 @@ func _check_milestones() -> void:
 	if state.colonies.size() >= 2: _award("New beginning")
 	for pid: String in state.colonies:
 		var colony: Dictionary = state.colonies[pid]
-		if colony.population >= 72: _award("Growing community")
+		if float(colony.population)/float(colony.get("population_scale",1)) >= 72 and not (state.has("urban") and pid == Urban.HOME): _award("Growing community")
 		if state.planets[pid].environment != "temperate" and colony.population >= 60 and colony.power >= colony.power_used: _award("Harsh-world pioneer")
 	for agreement: String in state.agreements:
 		if agreement.ends_with(":alliance"): _award("First alliance")
@@ -593,11 +605,12 @@ func load_game(path: String = "") -> Error:
 	if file.get_buffer(8).get_string_from_utf8() != "FWORLD01": return ERR_FILE_UNRECOGNIZED
 	var parsed: Variant = file.get_var(false)
 	if not parsed is Dictionary: return ERR_PARSE_ERROR
-	if int(parsed.get("version",0)) != SAVE_VERSION: return ERR_FILE_UNRECOGNIZED
+	if int(parsed.get("version",0)) not in [1,SAVE_VERSION]: return ERR_FILE_UNRECOGNIZED
 	for field: String in ["planets","colonies","systems","factions","flagship","agreements","milestones","discoveries","log","credits","tick","seed","rank"]:
 		if not parsed.has(field): return ERR_FILE_CORRUPT
 	if not parsed.colonies is Dictionary or not parsed.systems is Array: return ERR_FILE_CORRUPT
 	state = parsed
+	state.version = SAVE_VERSION
 	if not state.has("mode"): state["mode"] = "expedition"
 	if not state.has("cheats"): state["cheats"] = {"free_build":false,"instant_travel":false}
 	for pid: String in state.colonies: refresh_colony(pid)

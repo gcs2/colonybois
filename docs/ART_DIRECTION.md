@@ -21,3 +21,11 @@ Ships and buildings should feel like characterful miniatures. Species anatomy ma
 The current Godot meshes remain placeholders. Replacement concepts and their originality need review before becoming production references. The forgotten-outpost/Vanguard campaign foundation is now recorded in `CAMPAIGN_FOUNDATION.md`; the five older plot explorations remain alternatives.
 
 The first developed-city study was rejected for its small scale and chaotic village layout. The [revised city study](CITY_CONCEPT.md) targets a modern city of 120,000, organized blocks, apartments, commercial streets, an industrial district and a spaceport. It is a scale/layout study, not approved final art or gameplay. Keep creepy-cute character design, but give buildings the functional readability of a city simulator. Ancient remains are occasional civic landmarks, not the structure of every neighborhood. Aim for SimCity 4-like richness with modular meshes, aggregate simulation and capped ambient traffic.
+
+## Alien divergence correction
+
+The second city study is closer in scale but still too conventional and Earth-like. Readable planning need not mean rectangular human architecture everywhere. Explore circular plazas and roundabouts, coiled residential forms, gentle luminous structures and routes shaped by very large friendly organisms. The current playable urban slice adds simple rounded modular buildings and background roundabouts as a graybox, not final production art.
+
+The user's proposed flying squid transport is a promising direction: huge benevolent creatures can carry passenger platforms between feeding gardens or elevated landing groves. Stations could provide shelter, grooming and food in a mutually beneficial relationship. Their size might create useful open corridors and public gathering places. This is still a design possibility, not settled biology or a built feature.
+
+If prototyped later, model a route's capacity, operating cost and habitat requirements. Use a small capped set of animated creatures to represent the service. Do not simulate each passenger or animal's detailed life. The interesting decision is how the city supports the transport ecology, with advantages and limits distinct from a mechanical transit line.
