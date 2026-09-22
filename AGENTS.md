@@ -14,5 +14,7 @@
 - Art direction: original creepy-cute, expressive creatures and playful miniature worlds; a love note to Spore's space stage. No creature creator yet. The initial realistic cast board was rejected.
 - The endorsed campaign foundation is a forgotten outpost, a corrupt local government and the Vanguard's rise, followed by living interstellar politics and discoveries about Earth. See docs/CAMPAIGN_FOUNDATION.md. The five earlier plots remain alternative explorations; the future-echo premise is not approved.
 - Nations, planets and species are distinct. Spaceflight does not require planetary unification. Choices must change available actions and create visible obligations, not merely adjust bonuses.
-- Player-facing money is Cinders, with history in data/catalog.json. The internal credits save key remains for compatibility; do not expose it as the currency's name.
+- Current story and gameplay sources are docs/STORY_CURRENT.md and docs/PROJECT_VISION.md. The opening targets a modern 120,000-person city with readable urban blocks, not a tiny settlement among ruins. The existing prototype has not implemented this opening.
+- SimCity 4-like urban fidelity is the target. Simulate population, jobs, services and political groups in aggregate; do not add individual citizen/household agents or world-wide per-person pathfinding. Ambient traffic and pedestrians must be capped visual effects. Profile before raising scope caps.
+- Player-facing money is Marks, with history in data/catalog.json. The internal credits save key remains for compatibility; do not expose it as the currency's name.
 - Read README.md for run/test/build instructions and docs/ROADMAP.md for milestone boundaries.

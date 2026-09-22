@@ -27,4 +27,20 @@ All colonies simulate even when invisible. Population/jobs are aggregates and re
 
 ## Next architectural split
 
+### Firm simulation budget principle
+
+The new campaign targets a city of roughly 120,000 with SimCity 4-like urban fidelity. This is not a request for 120,000 agents. Building/district aggregates hold population, housing, jobs, demand, service coverage and political interests. Avoid per-person needs, inventories, commutes and world-wide pathfinding. Ambient vehicles and pedestrians are disposable, capped visual effects; offscreen economies must not depend on them. Later congestion can use aggregate road flows if playtesting justifies it.
+
+The initial urban slice should use one editable 64×64 district plus authored background district aggregates. City population totals and editable-district totals must remain distinct and derived from actual data. Cache road connectivity after edits, stagger slow economic/political updates, and use dirty flags for overlays. Batch repeated geometry and reduce distant detail. Profile simulation tick time, frame time and memory on the development PC before expanding; the existing 285-cell benchmark does not validate a developed city.
+
+### Proposed campaign state extensions — not implemented
+
+Separate nation, region/site claim, city/district, colony administration and planet environment. A planet cannot have only one political owner once multiple jurisdictions exist. A nation can operate sites on several planets; species identity must not supply ownership. Commands must validate jurisdiction, treaty access and affected parties for global terraforming.
+
+Store a small authored cast, explicit commitments, event outcomes, campaign facts and seeded scenario identity in authoritative state. Select alternate histories once at scenario creation, then preserve their facts. Keep sandbox collection rewards in a separate profile and retain mode-specific saves. Introduce versioned migrations or explicit incompatibility messages when changing the current save schema; preserve the internal `credits` treasury key while displaying Marks.
+
+These extensions are proposed boundaries, not existing types or implemented commands. Add them in the bounded order in ROADMAP.md rather than building a general political simulator first.
+
+### Presentation components
+
 The presentation script intentionally keeps the initial prototype easy to run. Before more content, split colony rendering, galaxy rendering and each HUD panel into scenes/components. Preserve command boundaries. Future tactical battles should take fleet IDs and return validated damage/retreat outcomes; pause strategy time during that first battle slice. Do not put combat state into visual ship nodes.

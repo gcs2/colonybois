@@ -416,7 +416,7 @@ func _show_mode_menu() -> void:
 	_button("New expedition",_start_mode.bind("expedition",false),content)
 	_button("Continue expedition",_start_mode.bind("expedition",true),content)
 	_text(content,"SANDBOX",12,GOLD)
-	_text(content,"The same simulation with optional god tools: free construction, reveal the map, instant travel, Cinders and supply grants, diplomacy and climate recovery. Separate saves protect your expedition.",17)
+	_text(content,"The same simulation with optional god tools: free construction, reveal the map, instant travel, Marks and supply grants, diplomacy and climate recovery. Separate saves protect your expedition.",17)
 	_button("New sandbox",_start_mode.bind("sandbox",false),content)
 	_button("Continue sandbox",_start_mode.bind("sandbox",true),content)
 	_button("Return to current game",_close_mode_menu,content)
@@ -459,7 +459,7 @@ func _refresh_left() -> void:
 	_text(left_box,"EXPEDITION CONTROL",12,MINT)
 	if sim.state.get("mode","expedition") == "sandbox":
 		_text(left_box,"SANDBOX · GOD TOOLS",12,GOLD)
-		for pair: Array in [["credits","+1,000 Cinders"],["resources","+500 colony resources"],["reveal","Reveal & survey galaxy"],["free_build","Free construction"],["instant_travel","Instant travel"],["friendship","Diplomatic goodwill"],["climate","Restore selected climate"]]:
+		for pair: Array in [["credits","+1,000 Marks"],["resources","+500 colony resources"],["reveal","Reveal & survey galaxy"],["free_build","Free construction"],["instant_travel","Instant travel"],["friendship","Diplomatic goodwill"],["climate","Restore selected climate"]]:
 			var enabled: bool = sim.state.cheats.get(pair[0],false)
 			_button(pair[1]+(" · ON" if enabled else ""),_command.bind("cheat",{"ability":pair[0],"planet":planet_id}),left_box)
 	if view == "colony":
@@ -507,7 +507,7 @@ func _select_planet(pid: String) -> void:
 
 func _refresh_ui() -> void:
 	tick_label.text = "%s  /  DAY %03d  /  %s" % ["SANDBOX" if sim.state.get("mode","expedition") == "sandbox" else "SOLACE EXPEDITION",sim.state.tick,["CAPTAIN","PATHFINDER","STEWARD"][int(sim.state.rank)]]
-	stats_label.text = "◉  %d Cinders     %d / 3 colonies" % [sim.state.credits,sim.state.colonies.size()]
+	stats_label.text = "◉  %d Marks     %d / 3 colonies" % [sim.state.credits,sim.state.colonies.size()]
 	stats_label.tooltip_text = sim.catalog.currency.history + "\n\n" + sim.catalog.currency.scope
 	for id: String in view_buttons: view_buttons[id].button_pressed = id == view
 	for value: int in speed_buttons: speed_buttons[value].button_pressed = value == speed
@@ -528,7 +528,7 @@ func _refresh_right() -> void:
 		var colony: Dictionary = sim.state.colonies[planet_id]
 		_text(right_box,"COLONY TELEMETRY",12,MINT)
 		_text(right_box,"Population · %d" % colony.population,26,WHITE)
-		_text(right_box,"%d jobs  ·  %+.2f Cinders/day" % [colony.jobs,colony.income])
+		_text(right_box,"%d jobs  ·  %+.2f Marks/day" % [colony.jobs,colony.income])
 		_text(right_box,"Materials   %d   (%+.2f/day)\nSupplies     %d   (%+.2f/day)" % [colony.materials,colony.material_rate,colony.supplies,colony.supply_rate],16,WHITE)
 		_text(right_box,"Power  %.0f / %.0f used" % [colony.power_used,colony.power],16,GOLD if colony.power_used > colony.power else MINT)
 		_text(right_box,"GROWTH & DEMAND",12,MINT)
@@ -603,10 +603,10 @@ func _refresh_right() -> void:
 					_text(right_box,"CLIMATE RECOVERY",12,MINT)
 					_text(right_box,"%d%% complete" % int(float(planet.terraform)*100),23,WHITE)
 					_text(right_box,"Warming" if planet.environment == "frozen" else "Water recovery",16,MINT)
-					_text(right_box,"120 Cinders to start. A powered array uses 0.5 materials + 0.2 supplies/day for 180 days. The Commune objects to replacing native climates (-18).")
+					_text(right_box,"120 Marks to start. A powered array uses 0.5 materials + 0.2 supplies/day for 180 days. The Commune objects to replacing native climates (-18).")
 					if planet.project: _text(right_box,planet.get("project_status","Project beginning"),14,GOLD)
 					elif planet.terraform < 1: _button("Begin climate project",_command.bind("terraform",{"planet":planet_id}),right_box)
-			elif str(planet.owner).is_empty(): _button("Establish colony · 180 Cinders",_command.bind("colonize",{"planet":planet_id}),right_box)
+			elif str(planet.owner).is_empty(): _button("Establish colony · 180 Marks",_command.bind("colonize",{"planet":planet_id}),right_box)
 	_text(right_box,"EXPEDITION RECORD",12,MINT)
 	_text(right_box,"%d milestones · next rank at %s" % [sim.state.milestones.size(),"3" if sim.state.rank == 0 else ("6" if sim.state.rank == 1 else "maximum")])
 	for milestone: String in sim.state.milestones: _text(right_box,"✓ " + milestone,14,MINT)
@@ -626,7 +626,7 @@ func _faction_ui(faction: Dictionary) -> void:
 	for pact: String in ["trade","non_aggression","alliance"]:
 		if (str(faction.id)+":"+pact) in sim.state.agreements: _text(right_box,"✓ " + pact.replace("_"," ").capitalize(),14,MINT)
 		else: _button("Propose " + pact.replace("_"," "),_command.bind("diplomacy",{"faction":faction.id,"pact":pact}),right_box)
-	if faction.relation < 0: _button("Reconcile · 80 Cinders",_command.bind("diplomacy",{"faction":faction.id,"pact":"reconcile"}),right_box)
+	if faction.relation < 0: _button("Reconcile · 80 Marks",_command.bind("diplomacy",{"faction":faction.id,"pact":"reconcile"}),right_box)
 
 func _update_hint() -> void:
 	if not is_instance_valid(hint_label): return

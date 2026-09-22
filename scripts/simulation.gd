@@ -351,7 +351,7 @@ func _colonize(pid: String) -> String:
 	if state.flagship.system != planet.system or not str(state.flagship.destination).is_empty(): return "Bring your flagship to this system first."
 	if not str(planet.owner).is_empty(): return "This settlement site already has an administration."
 	if state.colonies.size() >= 3: return "Prototype limit: three colonies."
-	if state.credits < 180: return "A colony expedition costs 180 Cinders."
+	if state.credits < 180: return "A colony expedition costs 180 Marks."
 	state.credits -= 180
 	_create_colony(pid)
 	for faction: Dictionary in state.factions:
@@ -367,7 +367,7 @@ func _diplomacy(args: Dictionary) -> String:
 	var pact: String = str(args.get("pact",""))
 	if pact == "reconcile":
 		if int(faction.relation) >= 0: return "Relations are already open."
-		if state.credits < 80: return "Reconciliation costs 80 Cinders."
+		if state.credits < 80: return "Reconciliation costs 80 Marks."
 		state.credits -= 80
 		faction.relation = 0
 		faction.embargo = false
@@ -451,7 +451,7 @@ func _terraform(pid: String) -> String:
 	for k: String in colony.cells:
 		if colony.cells[k].type == "terraformer" and colony.connected.has(k): has_array = true
 	if not has_array: return "Build a road-connected climate array first."
-	if state.credits < 120: return "Starting the project costs 120 Cinders."
+	if state.credits < 120: return "Starting the project costs 120 Marks."
 	state.credits -= 120
 	planet.project = true
 	var faction: Dictionary = faction_by_id("commune")
@@ -527,7 +527,7 @@ func _cheat(args: Dictionary) -> String:
 			state.planets[pid].project = false
 			refresh_colony(pid)
 		_: return "Unknown sandbox ability."
-	_log("Sandbox · " + ("Cinders granted" if ability == "credits" else ability.replace("_"," ")))
+	_log("Sandbox · " + ("Marks granted" if ability == "credits" else ability.replace("_"," ")))
 	return ""
 
 func _tick_factions() -> void:
