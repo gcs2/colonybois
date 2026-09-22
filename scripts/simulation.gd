@@ -8,6 +8,7 @@ signal message(text: String)
 const SIZE: int = 64
 const Urban = preload("res://scripts/urban_scenario.gd")
 const Settlement = preload("res://scripts/settlement_projects.gd")
+const City = preload("res://scripts/city_rules.gd")
 const SAVE_VERSION: int = 3
 const SAVE_PATH: String = "user://frontier_save.fw"
 var catalog: Dictionary = {}
@@ -129,6 +130,8 @@ func _create_colony(pid: String, developed: bool = true) -> void:
 func command(action: String, args: Dictionary = {}) -> String:
 	var error: String = ""
 	match action:
+		"zone_rect": error = City.zone(self,args)
+		"city_policy": error = City.command(self,args)
 		"civic": error = Urban.command(self,args)
 		"build": error = _build(args)
 		"travel": error = _travel(str(args.get("system","")))
@@ -162,15 +165,17 @@ func _build(args: Dictionary) -> String:
 		if x < 22 or x > 42 or z < 24 or z > 40: return "Your construction authority covers South Loop: tiles 22–42 / 24–40."
 		if k == Urban.LINK and not state.urban.repaired: return "Choose a repair agreement in the South Loop panel for this damaged crossing."
 	if type == "bulldoze":
+		k = str(colony.get("occupied",{}).get(k,k))
 		if not colony.cells.has(k): return "Nothing to remove."
 		if colony.cells[k].type == "spaceport": return "The colony's spaceport must remain."
-		colony.materials += float(catalog.buildings[colony.cells[k].type].cost) * 0.5
+		if int(colony.cells[k].level) > 0: colony.materials += float(catalog.buildings[colony.cells[k].type].cost) * 0.25 * City.area(colony.cells[k])
 		colony.cells.erase(k)
 		refresh_colony(pid)
 		return ""
 	if not catalog.buildings.has(type) or type == "spaceport": return "Select a construction tool."
+	if type in City.ZONES: return City.zone(self,{"planet":pid,"type":type,"x0":x,"x1":x,"z0":z,"z1":z})
 	if terrain(pid,x,z) != "land": return "Build on stable land."
-	if colony.cells.has(k): return "This tile is occupied."
+	if colony.get("occupied",{}).has(k): return "This tile is occupied by a building or zone."
 	var cost: float = 0.0 if state.get("cheats",{}).get("free_build",false) else float(catalog.buildings[type].cost)
 	if colony.materials < cost: return "Not enough construction materials."
 	colony.materials -= cost
@@ -179,6 +184,7 @@ func _build(args: Dictionary) -> String:
 	return ""
 
 func connected_cells(colony: Dictionary) -> Dictionary:
+	City.occupancy(colony)
 	var distances: Dictionary = {}
 	var queue: Array[Vector2i] = []
 	for k: String in colony.cells:
@@ -192,6 +198,7 @@ func connected_cells(colony: Dictionary) -> Dictionary:
 		for delta: Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
 			var next: Vector2i = current + delta
 			var k: String = key(next.x,next.y)
+			k = str(colony.occupied.get(k,k))
 			if colony.cells.has(k) and not distances.has(k):
 				distances[k] = distances[key(current.x,current.y)] + 1
 				if colony.cells[k].type == "road": queue.append(next)
@@ -230,28 +237,31 @@ func refresh_colony(pid: String) -> void:
 	for k: String in colony.cells:
 		var cell: Dictionary = colony.cells[k]
 		var p: Vector2i = cell_position(k)
-		if cell.type == "habitat": population += int(cell.level) * 12
+		if cell.type == "habitat": population += int(cell.level) * 12 * City.area(cell)
 		if not colony.connected.has(k): continue
 		if cell.type == "power": power += 48.0 if env == "frozen" and near_feature(pid,p.x,p.y,"geothermal",6) else 32.0
-		var cost: float = float(catalog.buildings[cell.type].power) * maxf(1.0,float(cell.level)) * factor
+		var cost: float = float(catalog.buildings[cell.type].power) * float(cell.level) * factor * City.area(cell)
 		if cell.type == "life_support":
 			life_sites.append(p)
 			if env == "arid" and not near_feature(pid,p.x,p.y,"water",7): cost *= 2.0
 		used += cost
-		if cell.type == "industry": jobs += int(cell.level) * 18
-		if cell.type == "service": jobs += int(cell.level) * 10
+		if int(cell.get("damaged_until",0)) <= state.tick:
+			if cell.type == "industry": jobs += int(cell.level) * 18 * City.area(cell)
+			if cell.type == "service": jobs += int(cell.level) * 10 * City.area(cell)
 	colony.power = power
 	colony.power_used = used
 	var population_scale: int = int(colony.get("population_scale",1))
 	colony.population = population * population_scale
 	colony.jobs = jobs * population_scale
 	colony.reasons = {}
+	City.refresh(self,pid)
 	for k: String in colony.cells:
 		var cell: Dictionary = colony.cells[k]
 		if cell.type not in ["habitat","industry","service"]: continue
 		var p: Vector2i = cell_position(k)
 		var reason: String = ""
 		if not colony.connected.has(k): reason = "No road connection"
+		elif int(cell.get("damaged_until",0)) > state.tick: reason = "Fire damage: repair or wait until day %d" % cell.damaged_until
 		elif used > power: reason = "Growth limited by power"
 		elif colony.supplies < 5: reason = "Growth limited by supplies"
 		else:
@@ -262,20 +272,21 @@ func refresh_colony(pid: String) -> void:
 			elif cell.type == "habitat" and population >= jobs + 12: reason = "More jobs needed"
 			elif cell.type == "habitat" and suitability(pid,p.x,p.y) < (0.55 if int(cell.level) == 1 else 0.3): reason = "Low residential suitability"
 			elif cell.type in ["industry","service"] and jobs > population + 36: reason = "More residents needed"
-			elif int(colony.connected[k]) > 28: reason = "Long commute: extend a shorter road"
+			elif int(colony.connected[k]) > (45 if City.coverage(colony,"transit",Vector2(p)) > 0.15 else 28): reason = "Long commute: shorten roads or connect two shuttle stops"
+		if reason.is_empty() and int(cell.level) < 2 and colony.materials < float(catalog.buildings[cell.type].cost)*City.area(cell)*0.5: reason = "Development needs construction materials"
 		if reason.is_empty(): reason = "Ready to grow" if int(cell.level) < 2 else "Thriving · maximum density"
 		colony.reasons[k] = reason
+	colony.layer_signature = hash([colony.cells,colony.connected,colony.risks,colony.service_sites,colony.reasons])
 
 func tick() -> void:
+	var opening: float = state.credits
+	state["ledger"] = {"tax":0.0,"crime_loss":0.0,"upkeep":0.0,"exports":0.0,"sponsor":0.0,"opening":opening}
 	state.tick += 1
 	for pid: String in state.colonies:
 		refresh_colony(pid)
 		var colony: Dictionary = state.colonies[pid]
 		if int(state.tick) % 6 == 0:
-			for k: String in colony.reasons:
-				if colony.reasons[k] == "Ready to grow":
-					colony.cells[k].level = mini(2,int(colony.cells[k].level)+1)
-					refresh_colony(pid)
+			City.grow(self,pid)
 		var materials: float = 0.22
 		var economic_population: float = float(colony.population)/float(colony.get("population_scale",1))
 		var economic_jobs: float = float(colony.jobs)/float(colony.get("population_scale",1))
@@ -286,13 +297,16 @@ func tick() -> void:
 			if not colony.connected.has(k): continue
 			var performance: float = minf(1.0,float(colony.power)/maxf(1.0,float(colony.power_used)))
 			var workforce: float = minf(1.0,(economic_population+18)/maxf(1.0,economic_jobs))
-			var level: float = float(cell.level) * performance * workforce
+			var level: float = float(cell.level) * performance * workforce * City.area(cell)
+			if int(cell.get("damaged_until",0)) > state.tick: level = 0
+			level *= 0.85+0.15*City.coverage(colony,"clinic",Vector2(cell_position(k)))
 			if cell.type == "industry": materials += level * 0.32
 			if cell.type == "service": supplies += level * 0.50
 			if cell.type == "extractor":
 				var p: Vector2i = cell_position(k)
 				materials += (0.9 if near_feature(pid,p.x,p.y,"mineral",3) else 0.1) * performance
 			if cell.type not in ["road","habitat","spaceport"]: upkeep += 0.025
+			if City.SERVICES.has(cell.type): upkeep += float(catalog.buildings[cell.type].get("upkeep",0.5))
 		var policy: String = colony.get("policy","balanced")
 		if policy == "industry": materials *= 1.25; supplies -= 0.15
 		if policy == "ecology": supplies += 0.3; materials *= 0.85
@@ -300,12 +314,25 @@ func tick() -> void:
 		colony.supply_rate = supplies
 		colony.materials = minf(9999.0,colony.materials + materials)
 		colony.supplies = clampf(colony.supplies + supplies,0.0,9999.0)
-		colony.income = economic_population * 0.018 - upkeep
+		var tax: float = economic_population * 0.018 * float(colony.get("tax_rate",1.0))
+		var loss: float = tax * float(colony.crime)/200.0
+		colony["ledger"] = {"tax":tax,"crime_loss":loss,"upkeep":upkeep,"exports":0.0}
+		state.ledger.tax += tax
+		state.ledger.crime_loss += loss
+		state.ledger.upkeep += upkeep
+		colony.income = tax - loss - upkeep
 		state.credits = maxf(0.0,state.credits + colony.income)
+		City.tick_risks(self,pid)
 		_tick_project(pid)
-	if state.has("urban"): Urban.tick(self)
+	if state.has("urban"):
+		var before_fee: float = state.credits
+		Urban.tick(self)
+		state.ledger.sponsor = before_fee-float(state.credits)
 	Settlement.tick(self)
 	_tick_trade()
+	state.ledger["closing"] = state.credits
+	state.ledger["net"] = float(state.credits)-opening
+	state.ledger["adjustment"] = state.ledger.net-(state.ledger.tax+state.ledger.exports-state.ledger.crime_loss-state.ledger.upkeep-state.ledger.sponsor)
 	_tick_travel()
 	if int(state.tick) % 30 == 0: _tick_factions()
 	_check_milestones()
@@ -441,6 +468,8 @@ func _tick_trade() -> void:
 		colony[resource] -= amount
 		var price: float = 1.6 if faction.need == resource else 1.0
 		state.credits += amount * price
+		if state.has("ledger"): state.ledger.exports += amount * price
+		if colony.has("ledger"): colony.ledger.exports += amount * price
 		colony.trade_status = "Exporting %.1f %s/day" % [amount,resource] if amount > 0 else "Holding 60-unit local reserve"
 		if amount > 0:
 			_award("First export")

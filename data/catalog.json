@@ -6,6 +6,10 @@
     "scope": "Your administration's treasury and the local value of trade settlements. Other nations need not use the same currency."
   },
   "buildings": {
+    "police": {"name":"Civic watch","cost":40,"power":2,"upkeep":0.65,"description":"Road-connected, powered watch station reduces crime within 9 tiles. 0.65 Marks/day."},
+    "fire": {"name":"Fire & rescue","cost":45,"power":2,"upkeep":0.75,"description":"Reduces fire risk within 10 tiles when connected and powered. 0.75 Marks/day."},
+    "clinic": {"name":"Neighborhood clinic","cost":40,"power":3,"upkeep":0.65,"description":"Improves workforce productivity within 8 tiles. Requires road access and power. 0.65 Marks/day."},
+    "transit": {"name":"Shuttle stop","cost":15,"power":1,"upkeep":0.25,"description":"Two connected, powered stops form a shuttle network. Nearby lots tolerate longer commutes. 0.25 Marks/day each."},
     "road": {"name":"Transit road","cost":2,"power":0,"description":"Drag to connect districts to the spaceport."},
     "habitat": {"name":"Habitat zone","cost":12,"power":1,"description":"Homes grow with jobs, life support and local suitability."},
     "industry": {"name":"Industry zone","cost":18,"power":3,"description":"Creates jobs and construction materials. Keep pollution away from homes."},

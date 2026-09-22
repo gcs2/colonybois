@@ -3,6 +3,11 @@ extends Node3D
 const Simulation = preload("res://scripts/simulation.gd")
 const UrbanView = preload("res://scripts/urban_view.gd")
 const AudioFeedback = preload("res://scripts/audio_feedback.gd")
+const Architecture = preload("res://scripts/city_architecture.gd")
+const CityPanel = preload("res://scripts/city_panel.gd")
+var city_section: String = "overview"
+var zone_start := Vector2i(-1,-1)
+var zone_preview: MeshInstance3D
 const INK := Color("0a1421")
 const PANEL := Color("101f30")
 const MUTED := Color("8ea6bb")
@@ -144,6 +149,9 @@ func _update_camera(delta: float = 1.0) -> void:
 	camera.size = lerpf(camera.size,zoom,minf(1.0,delta*9.0))
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and zone_start.x >= 0:
+		_select_tool("inspect")
+		return
 	if is_instance_valid(mode_menu): return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.physical_keycode:
@@ -165,9 +173,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.pressed and event.button_index == MOUSE_BUTTON_RIGHT: _select_tool("inspect")
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				if view == "colony": _click_colony(event.position)
+				if view == "colony":
+					if tool in Simulation.City.ZONES:
+						var point: Variant = _ground_point(event.position)
+						if point != null: zone_start = Vector2i(floori(point.x+32),floori(point.z+32)); _preview_zone(event.position)
+					else: _click_colony(event.position)
 				elif view == "galaxy": _click_galaxy(event.position)
 			else: last_painted = Vector2i(-1,-1)
+			if not event.pressed and zone_start.x >= 0: _finish_zone(event.position)
 	if event is InputEventMouseMotion:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 			orbit -= event.relative.x*0.006
@@ -184,8 +197,26 @@ func _unhandled_input(event: InputEvent) -> void:
 				hover_mesh.visible = cursor_cell.x >= 0 and cursor_cell.y >= 0 and cursor_cell.x < 64 and cursor_cell.y < 64
 				hover_mesh.position = Vector3(cursor_cell.x-31.5,0.12,cursor_cell.y-31.5)
 			_update_hint()
-		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and tool in ["road","habitat","industry","service","bulldoze"]:
+		if zone_start.x >= 0: _preview_zone(event.position)
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and tool in ["road","bulldoze"]:
 			_click_colony(event.position)
+
+func _preview_zone(screen: Vector2) -> void:
+	var point: Variant = _ground_point(screen)
+	if point == null: return
+	var end := Vector2i(clampi(floori(point.x+32),0,63),clampi(floori(point.z+32),0,63))
+	if not is_instance_valid(zone_preview): zone_preview = _box(world,Vector3.ZERO,Vector3.ONE,Color(Color(COLORS[tool]),0.5),0.3)
+	zone_preview.position = Vector3((zone_start.x+end.x)*0.5-31.5,0.16,(zone_start.y+end.y)*0.5-31.5)
+	zone_preview.scale = Vector3(absi(end.x-zone_start.x)+1,0.035,absi(end.y-zone_start.y)+1)
+	_toast("%d × %d zoning rectangle · free designation · release to zone" % [absi(end.x-zone_start.x)+1,absi(end.y-zone_start.y)+1])
+
+func _finish_zone(screen: Vector2) -> void:
+	var start: Vector2i = zone_start
+	zone_start = Vector2i(-1,-1)
+	if is_instance_valid(zone_preview): zone_preview.queue_free(); zone_preview = null
+	var point: Variant = _ground_point(screen)
+	if point == null: return
+	_command("zone_rect",{"planet":planet_id,"type":tool,"x0":start.x,"z0":start.y,"x1":clampi(floori(point.x+32),0,63),"z1":clampi(floori(point.z+32),0,63)})
 
 func _ground_point(screen: Vector2) -> Variant:
 	return Plane(Vector3.UP,0).intersects_ray(camera.project_ray_origin(screen),camera.project_ray_normal(screen))
@@ -195,7 +226,7 @@ func _click_colony(screen: Vector2) -> void:
 	if point == null: return
 	var cell := Vector2i(int(floor(point.x+32)),int(floor(point.z+32)))
 	if tool == "inspect":
-		selected_cell = cell
+		selected_cell = Simulation.cell_position(str(sim.state.colonies[planet_id].occupied.get(Simulation.key(cell.x,cell.y),Simulation.key(cell.x,cell.y))))
 		_refresh_right()
 		return
 	if cell == last_painted: return
@@ -236,7 +267,7 @@ func _on_sim_changed() -> void:
 	if not is_instance_valid(stats_label): return
 	_refresh_ui()
 	if view == "colony":
-		if int(float(sim.state.planets[planet_id].terraform)*10) != terrain_recovery_stage or (overlay == "access" and str(sim.state.colonies[planet_id].connected.keys()) != last_access_signature):
+		if int(float(sim.state.planets[planet_id].terraform)*10) != terrain_recovery_stage or (overlay != "natural" and str(sim.state.colonies[planet_id].layer_signature) != last_access_signature):
 			_rebuild_world()
 		else: _refresh_buildings()
 	if view == "planet" and is_instance_valid(overview_globe):
@@ -271,6 +302,8 @@ func _load(autosave: bool = false) -> void:
 	_toast("Expedition restored.")
 
 func _switch_view(next: String) -> void:
+	zone_start = Vector2i(-1,-1)
+	city_section = "overview"
 	if next == "colony" and not sim.state.colonies.has(planet_id):
 		_toast("Select one of your colonies first, or found a new settlement.")
 		return
@@ -287,7 +320,11 @@ func _switch_view(next: String) -> void:
 	_refresh_ui()
 
 func _select_tool(next: String) -> void:
+	zone_start = Vector2i(-1,-1)
+	if is_instance_valid(zone_preview): zone_preview.queue_free(); zone_preview = null
+	var changed_grid: bool = (tool == "inspect") != (next == "inspect")
 	tool = next
+	if changed_grid and view == "colony": _rebuild_world()
 	for id: String in tool_buttons: tool_buttons[id].button_pressed = id == tool
 	_update_hint()
 
@@ -303,6 +340,7 @@ func _toggle_details() -> void:
 
 func _set_overlay(next: String) -> void:
 	overlay = next
+	if view == "colony" and next != "natural" and zoom > 65: zoom = 36; focus = Vector3.ZERO
 	_rebuild_world()
 	for id: String in overlay_buttons: overlay_buttons[id].button_pressed = id == overlay
 
@@ -402,6 +440,10 @@ func _make_ui() -> void:
 	_button("Load",_load,bar).custom_minimum_size.x = 65
 	_button("Menu",_show_mode_menu,bar).custom_minimum_size.x = 65
 	_button("Build",_toggle_build,bar).custom_minimum_size.x = 65
+	var layers := OptionButton.new()
+	for layer: String in ["natural","suitability","access","crime","fire","police","clinic","transit"]: layers.add_item(layer.capitalize())
+	layers.item_selected.connect(func(index: int) -> void: _set_overlay(["natural","suitability","access","crime","fire","police","clinic","transit"][index]))
+	bar.add_child(layers)
 	build_panel = _panel(root,20,158,264,790)
 	build_panel.visible = false
 	var left_scroll := ScrollContainer.new()
@@ -529,16 +571,17 @@ func _refresh_left() -> void:
 			_button(pair[1]+(" · ON" if enabled else ""),_command.bind("cheat",{"ability":pair[0],"planet":planet_id}),left_box)
 	if view == "colony":
 		_text(left_box,"Shape your settlement",20,WHITE)
-		for id: String in ["inspect","road","habitat","industry","service","power","life_support","extractor","terraformer","bulldoze"]:
+		for id: String in ["inspect","road","habitat","industry","service","power","life_support","police","fire","clinic","transit","extractor","terraformer","bulldoze"]:
 			var name_text: String = id.capitalize()
 			if sim.catalog.buildings.has(id): name_text = "%s  ·  %d" % [sim.catalog.buildings[id].name,sim.catalog.buildings[id].cost]
+			if id in Simulation.City.ZONES: name_text = sim.catalog.buildings[id].name+" · drag / free"
 			var button: Button = _button(name_text,_select_tool.bind(id),left_box,true)
 			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			button.button_pressed = tool == id
 			if sim.catalog.buildings.has(id): button.tooltip_text = sim.catalog.buildings[id].description
 			tool_buttons[id] = button
 		_text(left_box,"DATA LAYERS",12,MINT)
-		for id: String in ["natural","suitability","access"]:
+		for id: String in ["natural","suitability","access","crime","fire","police","clinic","transit"]:
 			overlay_buttons[id] = _button(id.capitalize(),_set_overlay.bind(id),left_box,true)
 			overlay_buttons[id].button_pressed = overlay == id
 	else:
@@ -593,6 +636,8 @@ func _refresh_right() -> void:
 	var planet: Dictionary = sim.state.planets[planet_id]
 	if view == "colony":
 		var colony: Dictionary = sim.state.colonies[planet_id]
+		CityPanel.tabs(self)
+		if city_section != "overview": CityPanel.draw(self,colony); return
 		if sim.state.has("urban") and planet_id == "s0p0": _urban_panel()
 		else:
 			_text(right_box,"SETTLEMENT",12,MINT)
@@ -814,7 +859,7 @@ func _planet_color(planet: Dictionary) -> Color:
 
 func _draw_colony() -> void:
 	var planet: Dictionary = sim.state.planets[planet_id]
-	last_access_signature = str(sim.state.colonies[planet_id].connected.keys())
+	last_access_signature = str(sim.state.colonies[planet_id].layer_signature)
 	terrain_recovery_stage = int(float(planet.terraform)*10)
 	var base: Color = _planet_color(planet)
 	var surface := SurfaceTool.new()
@@ -828,7 +873,7 @@ func _draw_colony() -> void:
 			if kind == "water": color = Color("284b66")
 			elif kind == "cliff": color = base.darkened(0.35)
 			elif overlay == "suitability": color = Color("b96b69").lerp(Color("6bdbad"),sim.suitability(planet_id,x,z))
-			elif overlay == "access": color = Color("263f50") if not sim.state.colonies[planet_id].connected.has(Simulation.key(x,z)) else MINT
+			elif overlay != "natural": color = CityPanel.layer_color(self,x,z)
 			var h: float = -0.16 if kind == "water" else (0.5 if kind == "cliff" else 0.0)
 			for point: Vector2 in [Vector2(0,0),Vector2(0,1),Vector2(1,1),Vector2(0,0),Vector2(1,1),Vector2(1,0)]:
 				surface.set_color(color)
@@ -871,7 +916,8 @@ func _draw_colony() -> void:
 		rock.radial_segments = 5
 		rock.rings = 3
 		_mesh(world,rock,Vector3(x-31.5,0.12,z-31.5),base.darkened(0.2))
-	if sim.state.has("urban") and planet_id == "s0p0": UrbanView.draw_context(self)
+	if sim.state.has("urban") and planet_id == "s0p0" and overlay == "natural": UrbanView.draw_context(self)
+	if overlay != "natural": _world_label(world,CityPanel.legend(overlay),Vector3(0,0.2,-12),WHITE,19)
 	buildings = Node3D.new()
 	world.add_child(buildings)
 	_refresh_buildings()
@@ -969,7 +1015,13 @@ func _refresh_buildings() -> void:
 		building_states[k] = descriptor
 		var p: Vector2i = Simulation.cell_position(k)
 		var pos := Vector3(p.x-31.5,0.0,p.y-31.5)
-		var color := Color(COLORS[cell.type])
+		cell_root.position = pos+Vector3((float(cell.get("width",1))-1)*0.5,0,(float(cell.get("depth",1))-1)*0.5)
+		cell_root.scale = Vector3(cell.get("width",1),1,cell.get("depth",1))
+		pos = Vector3.ZERO
+		var color := Color(COLORS.get(cell.type,"82bdd0"))
+		if overlay != "natural":
+			_box(cell_root,Vector3(0,0.15,0),Vector3(0.94,0.22,0.94),CityPanel.layer_color(self,p.x,p.y),0.3)
+			continue
 		if cell.type == "road":
 			_box(cell_root,pos+Vector3(0,0.04,0),Vector3(0.99,0.06,0.99),color)
 			_box(cell_root,pos+Vector3(0,0.08,0),Vector3(0.12,0.012,0.35),Color("a0b4bd"),0.2)
@@ -978,7 +1030,7 @@ func _refresh_buildings() -> void:
 		if int(cell.level) == 0:
 			_box(cell_root,pos+Vector3(0,0.09,0),Vector3(0.64,0.02,0.64),Color(color,0.45))
 			continue
-		if sim.state.has("urban") and planet_id == "s0p0" and UrbanView.draw_building(self,cell_root,pos,cell,colony.connected.has(k)): continue
+		if Architecture.draw(self,cell_root,cell,k): continue
 		var height: float = 0.65 + int(cell.level)*0.32
 		if cell.type == "spaceport":
 			_box(cell_root,pos+Vector3(0,0.25,0),Vector3(0.88,0.5,0.88),color)
@@ -1098,7 +1150,7 @@ func _draw_planet() -> void:
 	_world_label(world,"%s  /  ORBITAL TELEMETRY" % str(planet.environment).to_upper(),Vector3(0,-8,0),MUTED,18)
 
 func _capture_next() -> void:
-	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet","05-mode-menu","06-sandbox","07-urban","08-urban-repaired"]
+	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet","05-mode-menu","06-sandbox","07-urban","08-urban-repaired","09-city-ledger","10-fire-layer","11-city-architecture"]
 	var image: Image = get_viewport().get_texture().get_image()
 	image.save_png("res://artifacts/%s.png" % names[capture_stage])
 	capture_stage += 1
@@ -1120,4 +1172,17 @@ func _capture_next() -> void:
 	elif capture_stage == 7:
 		sim.command("civic",{"choice":"public"})
 		for i: int in range(8): sim.tick()
+	elif capture_stage == 8:
+		city_section = "ledger"
+		zoom = 33
+		_refresh_right()
+	elif capture_stage == 9:
+		city_section = "services"
+		_set_overlay("fire")
+		_refresh_right()
+	elif capture_stage == 10:
+		_set_overlay("natural")
+		zoom = 24
+		city_section = "services"
+		_refresh_right()
 	else: get_tree().quit()

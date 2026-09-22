@@ -56,7 +56,7 @@ func _initialize() -> void:
 	check(not build(c,"s0p0",30,30,"road").is_empty(),"Occupied tile rejected")
 	check(c.state.colonies.s0p0.materials == before,"Rejected command doesn't charge resources")
 	c.state.colonies.s0p0.materials = 0
-	check(not build(c,"s0p0",33,32,"industry").is_empty(),"Insufficient materials rejected")
+	check(not build(c,"s0p0",33,32,"power").is_empty(),"Insufficient materials reject infrastructure construction")
 	c.state.colonies.s0p0.materials = 300
 	for x: int in range(26,38):
 		if x != 31: build(c,"s0p0",x,32,"extractor")

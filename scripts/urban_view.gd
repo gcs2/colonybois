@@ -1,4 +1,5 @@
 extends RefCounted
+const Materials = preload("res://scripts/city_materials.gd")
 ## Batched background city and modular alien architecture; no simulation agents.
 
 static func draw_context(game: Node3D) -> void:
@@ -7,6 +8,7 @@ static func draw_context(game: Node3D) -> void:
 	var slabs: Array[Transform3D] = []
 	var roads: Array[Transform3D] = []
 	var gardens: Array[Transform3D] = []
+	var roofs: Array[Transform3D] = []
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 907
 	# City-wide scenery is batched. Unequal borough extents and a river break symmetry.
@@ -31,20 +33,19 @@ static func draw_context(game: Node3D) -> void:
 						gardens.append(Transform3D(Basis.from_scale(Vector3(0.7,0.85,0.7)),Vector3(x,0.5,z)))
 						continue
 					var downtown: float = maxf(0,1.0-Vector2(x-48,z+22).length()/28.0)
-					var height: float = rng.randf_range(1.4,3.8)+downtown*8
-					var width: float = rng.randf_range(1.1,1.8)
-					var transform := Transform3D(Basis.from_scale(Vector3(width,height,width)),Vector3(x,height/2,z))
+					var height: float = rng.randf_range(0.8,2.1)+downtown*6
+					var width: float = rng.randf_range(1.3,2.3)
+					var depth: float = rng.randf_range(0.85,1.8)
+					var transform := Transform3D(Basis.from_scale(Vector3(width,height,depth)),Vector3(x,height/2,z))
 					if (bx+bz)%3 == 0: slabs.append(transform)
 					else: bodies.append(transform)
-					for floor_index: int in range(1,int(height/0.55)):
-						bands.append(Transform3D(Basis.from_scale(Vector3(width*1.015,0.075,width*1.015)),Vector3(x,float(floor_index)*0.55,z)))
-	var shell := CylinderMesh.new()
-	shell.top_radius = 0.42
-	shell.bottom_radius = 0.5
-	shell.height = 1
-	shell.radial_segments = 8
+					roofs.append(Transform3D(Basis.from_scale(Vector3(width*1.1,0.32,depth*1.1)),Vector3(x,height+0.02,z)))
+					for floor_index: int in range(1,int(height/0.45)):
+						bands.append(Transform3D(Basis.from_scale(Vector3(width*1.012,0.08,depth*1.012)),Vector3(x,float(floor_index)*0.45,z)))
+	var shell := BoxMesh.new()
+	shell.size = Vector3.ONE
 	var slab := BoxMesh.new()
-	slab.size = Vector3(1,1,0.75)
+	slab.size = Vector3.ONE
 	var road := BoxMesh.new()
 	road.size = Vector3.ONE
 	var leaf := SphereMesh.new()
@@ -52,8 +53,14 @@ static func draw_context(game: Node3D) -> void:
 	leaf.height = 1
 	leaf.radial_segments = 8
 	leaf.rings = 4
-	_batch(game,shell,bodies,Color("9a9baf"))
-	_batch(game,slab,slabs,Color("baab97"))
+	_batch(game,shell,bodies,Color("aebdb0"),"wall")
+	_batch(game,slab,slabs,Color("c8b5a3"),"wall")
+	var roof := SphereMesh.new()
+	roof.radius = 0.5
+	roof.height = 1
+	roof.radial_segments = 12
+	roof.rings = 5
+	_batch(game,roof,roofs,Color.WHITE,"roof")
 	_batch(game,shell,bands,Color("405f64"))
 	_batch(game,road,roads,Color("34464a"))
 	_batch(game,leaf,gardens,Color("6e9585"))
@@ -69,7 +76,7 @@ static func draw_context(game: Node3D) -> void:
 		game._line(game.world,pair[0],pair[1],Color("79e5c0"),0.035)
 	game._world_label(game.world,"SOUTH LOOP",Vector3(0,1,12),Color("79e5c0"),22)
 
-static func _batch(game: Node3D, shape: Mesh, transforms: Array[Transform3D], color: Color) -> void:
+static func _batch(game: Node3D, shape: Mesh, transforms: Array[Transform3D], color: Color, texture: String = "") -> void:
 	var instances := MultiMesh.new()
 	instances.transform_format = MultiMesh.TRANSFORM_3D
 	instances.mesh = shape
@@ -78,6 +85,7 @@ static func _batch(game: Node3D, shape: Mesh, transforms: Array[Transform3D], co
 	var node := MultiMeshInstance3D.new()
 	node.multimesh = instances
 	node.material_override = game._material(color)
+	if not texture.is_empty(): node.material_override = Materials.get_material(texture,color)
 	game.world.add_child(node)
 
 static func draw_building(game: Node3D, parent: Node3D, pos: Vector3, cell: Dictionary, connected: bool) -> bool:

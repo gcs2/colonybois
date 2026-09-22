@@ -28,6 +28,22 @@ static func install(sim: RefCounted) -> void:
 		_cell(colony,start_x+2,25,"life_support")
 	_cell(colony,23,32,"spaceport")
 	for x: int in [31,33]: _cell(colony,x,32,"road")
+	# Apartment terraces occupy real frontage, with different lot rhythms across the crossing.
+	for start_x: int in [24,34]:
+		for z: int in [27,31,33,37]:
+			var first_width: int = 3 if (z+start_x)%4 == 1 else 2
+			for offset: int in [1,1+first_width]:
+				var width: int = first_width if offset == 1 else 5-first_width
+				var anchor: String = "%d,%d" % [start_x+offset,z]
+				colony.cells[anchor]["width"] = width
+				for dx: int in range(1,width): colony.cells.erase("%d,%d" % [start_x+offset+dx,z])
+	# Courtyard civic hall and workshop wings; leave the other interiors available for zoning.
+	colony.cells["25,28"]["width"] = 3
+	colony.cells["25,28"]["depth"] = 2
+	colony.cells.erase("25,29")
+	colony.cells["39,34"]["depth"] = 3
+	colony.cells.erase("39,35")
+	colony.cells.erase("39,36")
 	sim.refresh_colony(HOME)
 	sim.state["urban"] = {
 		"name":"Latch", "district":"South Loop", "path":"", "remaining":0, "tutorial_step":0,
@@ -54,7 +70,7 @@ static func isolated_population(sim: RefCounted) -> int:
 	var total: int = 0
 	for key: String in colony.cells:
 		var cell: Dictionary = colony.cells[key]
-		if cell.type == "habitat" and not colony.connected.has(key): total += int(cell.level)*120
+		if cell.type == "habitat" and not colony.connected.has(key): total += int(cell.level)*120*int(cell.get("width",1))*int(cell.get("depth",1))
 	return total
 
 static func command(sim: RefCounted, args: Dictionary) -> String:

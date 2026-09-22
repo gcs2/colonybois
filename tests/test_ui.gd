@@ -21,6 +21,24 @@ func run() -> void:
 	scene._click_colony(screen)
 	check(scene.sim.state.colonies.s0p0.cells.size() == count+1,"Screen picking places a road on the intended tile")
 	check(scene.sim.state.colonies.s0p0.cells.has("38,31"),"World-to-grid mapping is correct")
+	scene._select_tool("habitat")
+	var before_materials: float = scene.sim.state.colonies.s0p0.materials
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = scene.camera.unproject_position(Vector3(8.5,0,2.5))
+	scene._unhandled_input(press)
+	check(not scene.sim.state.colonies.s0p0.cells.has("40,34"),"Dragging a zone does not construct before release")
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = scene.camera.unproject_position(Vector3(10.5,0,3.5))
+	scene._unhandled_input(release)
+	check(scene.sim.state.colonies.s0p0.cells.has("42,35") and scene.sim.state.colonies.s0p0.cells.has("40,34"),"Drag release designates the whole rectangle")
+	check(scene.sim.state.colonies.s0p0.materials == before_materials,"UI zoning is free")
+	scene.city_section = "ledger"
+	scene._refresh_right()
+	scene.city_section = "services"
+	scene._refresh_right()
 	var initial_credits: float = scene.sim.state.credits
 	scene.view_buttons.galaxy.pressed.emit()
 	check(scene.view == "galaxy","Galaxy navigation button changes view")
