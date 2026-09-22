@@ -880,7 +880,7 @@ func _draw_planet() -> void:
 	_world_label(world,"%s  /  ORBITAL TELEMETRY" % str(planet.environment).to_upper(),Vector3(0,-8,0),MUTED,18)
 
 func _capture_next() -> void:
-	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet"]
+	var names: Array = ["01-colony","02-galaxy","03-frozen-colony","04-planet","05-mode-menu","06-sandbox"]
 	var image: Image = get_viewport().get_texture().get_image()
 	image.save_png("res://artifacts/%s.png" % names[capture_stage])
 	capture_stage += 1
@@ -891,4 +891,8 @@ func _capture_next() -> void:
 		sim.command("colonize",{"planet":"s1p0"})
 		_open_colony("s1p0")
 	elif capture_stage == 3: _switch_view("planet")
+	elif capture_stage == 4: _show_mode_menu()
+	elif capture_stage == 5:
+		_start_mode("sandbox",false)
+		_set_speed(0)
 	else: get_tree().quit()

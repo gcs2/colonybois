@@ -52,6 +52,20 @@ Simulation tests cover deterministic generation and continuation after loading, 
 
 ## Implementation status
 
+## Free Windows narration
+
+Read the five provisional story treatments in `docs/STORY_EXPLORATIONS.md`. Render an offline voiceover using installed Windows voices, with no subscription or API key:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Narrate.ps1
+```
+
+This creates `artifacts/narration/story-explorations.wav` and a companion HTML reading page. The default prefers Microsoft Zira Desktop and uses a measured speaking rate. `-ListVoices` lists installed voices; `-Voice 'Microsoft David Desktop' -Rate 0` selects a different delivery. Windows desktop voices are basic synthesized readings, not acted dialogue.
+
+For another free listening option, open the generated HTML page in Microsoft Edge and choose **Read aloud** from the context menu, then select a voice and speed. See [Microsoft's Read Aloud guide](https://support.microsoft.com/en-US/edge/use-immersive-reader-in-microsoft-edge). Narration files remain local and excluded from Git; the script and source text are backed up.
+
+## Implementation status
+
 - **Implemented:** colony toy; connected multi-world loop; a small playable pass over core MVP systems, with procedural meshes and a procedural planet shader.
 - **Still needs playtesting:** whether the colony economy and diplomacy stay interesting for 30–60 minutes. Automated verification does not prove fun or balance.
 - **Simplified:** roads have connectivity and commute-distance penalties, not traffic; planets have fixed sites; supply aggregates food/water/logistics; AI factions evaluate lightweight authored rules and do not build competing empires. Government bonuses currently affect trade terms. Trade is an aggregate flow, without visible freighter units.
