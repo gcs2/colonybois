@@ -1,5 +1,6 @@
 extends SceneTree
 const Sim = preload("res://scripts/simulation.gd")
+const Motion = preload("res://scripts/city_motion.gd")
 var failures: int = 0
 var assertions: int = 0
 func check(value: bool, label: String) -> void:
@@ -45,6 +46,8 @@ func _initialize() -> void:
 	colony.cells["29,30"] = {"type":"transit","level":1}
 	sim.refresh_colony("s0p0")
 	check(Sim.City.coverage(colony,"transit",Vector2(30,30)) > 0.5,"Two powered connected stops provide transit")
+	check(Motion.road_route(colony,Vector2i(29,30),Vector2i(30,29)).size() == 3,"Shuttle route follows connected hub and roads")
+	check(Motion.road_route(colony,Vector2i(29,30),Vector2i(45,45)).is_empty(),"Shuttle routing cannot cross empty land")
 	var protected_fire: float = colony.fire_risk
 	var protected_crime: float = colony.crime
 	colony.cells.erase("31,32")

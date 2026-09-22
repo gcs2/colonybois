@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "status": "production briefs; concepts and models not yet approved",
+  "authoring_meters_per_tile": 16,
+  "engine_units_per_tile": 1,
+  "engine_frontage_axis": "-Z",
+  "engine_pivot": "southwest footprint corner at ground level; validate axis conversion in pilot",
+  "default_states": ["foundation", "construction", "level_1", "level_2", "damaged"],
+  "shared_materials": ["shell_ceramic", "teal_scale_roof", "dark_glass", "civic_paving", "ochre_trim"],
+  "assets": [
+    {
+      "id": "HAB-01", "name": "Courtyard terrace", "priority": 1, "gameplay_type": "habitat",
+      "footprint_tiles": [2,2], "height_m": [12,18], "front_setback_m": 2,
+      "brief": "Two unequal inhabited wings embrace an open courtyard. Tall rear wing, lower street wing, one sheltered public passage; curved shell roof lips and recessed multi-height entrances. Urban frontage, not a detached pod.",
+      "massing_m": {"rear_wing": [26,12,8], "side_wing": [8,9,19], "minimum_courtyard": [12,12]},
+      "detail": ["Street door and broad sheltered threshold", "Grouped windows matching floors", "Low courtyard planting", "One purposeful roof service element"],
+      "growth": "Level two extends rear wing by two floors and adds a connected terrace; courtyard remains open.",
+      "damage": "Darkened workshop-sized roof patch, boarded entrance bay, restrained smoke socket; no full rubble replacement.",
+      "variants": ["Mirrored frontage authored explicitly", "Corner entrance", "Two restrained trim palettes"],
+      "triangles_max": {"near":6000,"far":800}, "material_slots_max":3,
+      "sockets": ["front_entry","courtyard_entry","construction_dust","damage_smoke"],
+      "approval": ["Fits 32m square at correct scale", "Recognizable courtyard at neighborhood zoom", "No mirrored district repetition", "Two growth states clearly related", "Door faces road", "Silhouette survives distant LOD"],
+      "source": null, "export": null, "engine_scene": null
+    },
+    {
+      "id":"HAB-02", "name":"Corner apartment", "priority":2, "gameplay_type":"habitat",
+      "footprint_tiles":[2,3], "height_m":[18,27], "front_setback_m":1.5,
+      "brief":"Stepped L-shaped street wall turning a corner, rounded communal stair volume at the inside elbow, broad recessed entrances on both streets. Taller than terraces; no freestanding skyscraper.",
+      "growth":"Add one set-back upper wing with a roof garden; retain recognizable corner base.",
+      "triangles_max":{"near":8500,"far":1100}, "material_slots_max":3,
+      "sockets":["front_entry","side_entry","damage_smoke"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"COM-01", "name":"Covered neighborhood market", "priority":3, "gameplay_type":"service",
+      "footprint_tiles":[3,2], "height_m":[7,11], "front_setback_m":3,
+      "brief":"Broad arcaded hall with three unequal scalloped roof spans, glazed clerestory and accessible shaded forecourt. Rear loading doors meet a service lane; two small permanent stall clusters imply daily use.",
+      "growth":"Extend a mezzanine and rear hall, preserving public forecourt.",
+      "triangles_max":{"near":7000,"far":900}, "material_slots_max":3,
+      "sockets":["public_entry","loading_entry","delivery_vehicle"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"IND-01", "name":"Ceramic fabrication works", "priority":4, "gameplay_type":"industry",
+      "footprint_tiles":[3,3], "height_m":[10,15], "front_setback_m":4,
+      "brief":"Two production sheds and one lower loading wing enclose a practical service yard. Repeated roof vents, insulated pipe loop and a storage rack explain function. One tall exhaust treatment column; no forest of chimneys.",
+      "growth":"Second production bay fills a reserved side strip, visibly increasing output capacity.",
+      "triangles_max":{"near":8500,"far":1000}, "material_slots_max":3,
+      "sockets":["freight_in","freight_out","vent","damage_smoke"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"CIV-01", "name":"Fire and rescue house", "priority":5, "gameplay_type":"fire",
+      "footprint_tiles":[2,2], "height_m":[9,13], "front_setback_m":6,
+      "brief":"Two broad rescue-vehicle bays face a clear dispatch apron. Compact operations tower with coral signal lens, protected public door and water tanks at rear. Reads as rescue infrastructure without relying on text or Earth fire-truck iconography.",
+      "growth":"Operating building plus optional future training wing; no population growth implied.",
+      "triangles_max":{"near":7000,"far":900}, "material_slots_max":3,
+      "sockets":["dispatch_1","dispatch_2","public_entry","signal"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"CIV-02", "name":"Neighborhood clinic", "priority":6, "gameplay_type":"clinic",
+      "footprint_tiles":[2,3], "height_m":[8,12], "front_setback_m":4,
+      "brief":"Low crescent treatment wing around a sheltered healing garden, straight service wing at rear, broad entrance canopy with mint ceramic emblem. Calm silhouette distinct from apartments and market.",
+      "growth":"Additional treatment wing follows existing garden edge; preserve access.",
+      "triangles_max":{"near":8000,"far":1000}, "material_slots_max":3,
+      "sockets":["patient_entry","service_entry","ambulance_stop"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"TRA-01", "name":"Shuttle exchange platform", "priority":7, "gameplay_type":"transit",
+      "footprint_tiles":[1,2], "height_m":[5,5], "front_setback_m":1,
+      "brief":"Long shaded waiting platform with a thin ribbed shell canopy on three asymmetric supports. Clear vehicle bay, low ticket bollard, seating suitable for varied anatomies, ochre route accents. Platform and arrival clearances remain unobstructed.",
+      "growth":"No density growth. Construction and operating states, optional service-outage indicator.",
+      "triangles_max":{"near":4000,"far":500}, "material_slots_max":2,
+      "sockets":["vehicle_arrival","vehicle_stop","vehicle_departure","pedestrian_entry"], "source":null, "export":null, "engine_scene":null
+    },
+    {
+      "id":"CIV-03", "name":"Civic watch office", "priority":8, "gameplay_type":"police",
+      "footprint_tiles":[2,2], "height_m":[10,14], "front_setback_m":3,
+      "brief":"Compact public office with a welcoming sheltered intake court, secure rear service entrance, restrained blue-teal signal mast and visible neighborhood notice wall. Civic institution, not a fortress or military compound.",
+      "growth":"Operational state with optional later dispatch annex.",
+      "triangles_max":{"near":6500,"far":800}, "material_slots_max":3,
+      "sockets":["public_entry","dispatch_exit","signal"], "source":null, "export":null, "engine_scene":null
+    }
+  ],
+  "integration_note":"These production footprints include larger civic facilities than current single-tile simulation buildings. Implement footprint-aware facility placement, cost preview and save migration before replacing those assets. Do not visually overhang unreserved tiles. Proposed 3x3 industrial lots also require extending the current growth candidate list after balance review."
+}

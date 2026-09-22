@@ -5,6 +5,11 @@ const UrbanView = preload("res://scripts/urban_view.gd")
 const AudioFeedback = preload("res://scripts/audio_feedback.gd")
 const Architecture = preload("res://scripts/city_architecture.gd")
 const CityPanel = preload("res://scripts/city_panel.gd")
+const CityMotion = preload("res://scripts/city_motion.gd")
+var city_motion: Node3D
+var motion_signature: int = -1
+var layer_menu: OptionButton
+var viewpoint_index: int = 0
 var city_section: String = "overview"
 var zone_start := Vector2i(-1,-1)
 var zone_preview: MeshInstance3D
@@ -148,6 +153,12 @@ func _update_camera(delta: float = 1.0) -> void:
 	camera.look_at(desired_focus)
 	camera.size = lerpf(camera.size,zoom,minf(1.0,delta*9.0))
 
+func _input(event: InputEvent) -> void:
+	# Release over a UI panel cancels the preview rather than leaving an armed drag.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and zone_start.x >= 0 and get_viewport().gui_get_hovered_control() != null:
+		zone_start = Vector2i(-1,-1)
+		if is_instance_valid(zone_preview): zone_preview.queue_free(); zone_preview = null
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and zone_start.x >= 0:
 		_select_tool("inspect")
@@ -163,6 +174,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_C: _switch_view("colony")
 			KEY_P: _switch_view("planet")
 			KEY_B: _toggle_build()
+			KEY_V: _city_viewpoint()
 			KEY_1: _select_tool("road")
 			KEY_2: _select_tool("habitat")
 			KEY_3: _select_tool("industry")
@@ -176,7 +188,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				if view == "colony":
 					if tool in Simulation.City.ZONES:
 						var point: Variant = _ground_point(event.position)
-						if point != null: zone_start = Vector2i(floori(point.x+32),floori(point.z+32)); _preview_zone(event.position)
+						if point != null and point.x >= -32 and point.x < 32 and point.z >= -32 and point.z < 32:
+							zone_start = Vector2i(floori(point.x+32),floori(point.z+32))
+							_preview_zone(event.position)
 					else: _click_colony(event.position)
 				elif view == "galaxy": _click_galaxy(event.position)
 			else: last_painted = Vector2i(-1,-1)
@@ -340,6 +354,7 @@ func _toggle_details() -> void:
 
 func _set_overlay(next: String) -> void:
 	overlay = next
+	if is_instance_valid(layer_menu): layer_menu.select(["natural","suitability","access","crime","fire","police","clinic","transit"].find(next))
 	if view == "colony" and next != "natural" and zoom > 65: zoom = 36; focus = Vector3.ZERO
 	_rebuild_world()
 	for id: String in overlay_buttons: overlay_buttons[id].button_pressed = id == overlay
@@ -440,10 +455,10 @@ func _make_ui() -> void:
 	_button("Load",_load,bar).custom_minimum_size.x = 65
 	_button("Menu",_show_mode_menu,bar).custom_minimum_size.x = 65
 	_button("Build",_toggle_build,bar).custom_minimum_size.x = 65
-	var layers := OptionButton.new()
-	for layer: String in ["natural","suitability","access","crime","fire","police","clinic","transit"]: layers.add_item(layer.capitalize())
-	layers.item_selected.connect(func(index: int) -> void: _set_overlay(["natural","suitability","access","crime","fire","police","clinic","transit"][index]))
-	bar.add_child(layers)
+	layer_menu = OptionButton.new()
+	for layer: String in ["natural","suitability","access","crime","fire","police","clinic","transit"]: layer_menu.add_item(layer.capitalize())
+	layer_menu.item_selected.connect(func(index: int) -> void: _set_overlay(["natural","suitability","access","crime","fire","police","clinic","transit"][index]))
+	bar.add_child(layer_menu)
 	build_panel = _panel(root,20,158,264,790)
 	build_panel.visible = false
 	var left_scroll := ScrollContainer.new()
@@ -532,6 +547,9 @@ func _close_mode_menu() -> void:
 	_set_speed(menu_speed)
 
 func _start_mode(mode: String, restore: bool) -> void:
+	overlay = "natural"
+	tool = "inspect"
+	zone_start = Vector2i(-1,-1)
 	var path: String = "user://%s_save.fw" % ("frontier" if mode == "expedition" else mode)
 	if sim.playtest: path = path.replace("user://","user://review_")
 	if restore and not FileAccess.file_exists(path):
@@ -614,6 +632,8 @@ func _select_planet(pid: String) -> void:
 	_switch_view("planet")
 
 func _refresh_ui() -> void:
+	layer_menu.disabled = view != "colony"
+	layer_menu.select(["natural","suitability","access","crime","fire","police","clinic","transit"].find(overlay))
 	tick_label.text = "%s  /  DAY %03d  /  %s" % ["SANDBOX" if sim.state.get("mode","expedition") == "sandbox" else "SOLACE EXPEDITION",sim.state.tick,["CAPTAIN","PATHFINDER","STEWARD"][int(sim.state.rank)]]
 	stats_label.text = "◉  %d Marks     %d / 3 colonies" % [sim.state.credits,sim.state.colonies.size()]
 	stats_label.tooltip_text = sim.catalog.currency.history + "\n\n" + sim.catalog.currency.scope
@@ -921,6 +941,7 @@ func _draw_colony() -> void:
 	buildings = Node3D.new()
 	world.add_child(buildings)
 	_refresh_buildings()
+	_refresh_motion()
 	hover_mesh = _box(world,Vector3.ZERO,Vector3(0.98,0.04,0.98),Color(0.55,1,0.85,0.4),0.4)
 	hover_mesh.visible = false
 
@@ -990,6 +1011,7 @@ func _inspect_growth_zone() -> void:
 
 func _refresh_buildings() -> void:
 	if not is_instance_valid(buildings) or view != "colony": return
+	_refresh_motion()
 	var colony: Dictionary = sim.state.colonies[planet_id]
 	var signature: String = JSON.stringify(colony.cells)
 	if sim.state.has("urban") and planet_id == "s0p0": signature += str(colony.connected.keys())
@@ -1059,6 +1081,31 @@ func _refresh_buildings() -> void:
 		buildings.add_child(broken_link_marker)
 		_box(broken_link_marker,Vector3(0.5,0.2,0.5),Vector3(0.9,0.3,0.9),Color("d98b83"))
 		_world_label(broken_link_marker,"BROKEN LINK",Vector3(0.5,1.1,0.5),GOLD,18)
+
+func _refresh_motion() -> void:
+	if view != "colony": return
+	var colony: Dictionary = sim.state.colonies[planet_id]
+	var signature: int = hash([colony.connected,colony.service_sites.transit,overlay])
+	if is_instance_valid(city_motion) and city_motion.get_parent() == world and signature == motion_signature: return
+	if is_instance_valid(city_motion): city_motion.queue_free()
+	city_motion = CityMotion.new()
+	world.add_child(city_motion)
+	city_motion.setup(self)
+	motion_signature = signature
+
+func _city_viewpoint() -> void:
+	if view != "colony": return
+	_set_overlay("natural")
+	viewpoint_index = (viewpoint_index+1)%3
+	if sim.state.has("urban") and planet_id == "s0p0":
+		focus = [Vector3.ZERO,Vector3(-104,0,30),Vector3(48,0,-22)][viewpoint_index]
+		zoom = [35.0,55.0,60.0][viewpoint_index]
+		_toast(["South Loop · V for another viewpoint","Spore Quays · harbor traffic · V for another viewpoint","Crown skyline · V for another viewpoint"][viewpoint_index])
+	else:
+		focus = Vector3.ZERO
+		zoom = 33
+	orbit = [-0.35,0.25,-0.85][viewpoint_index]
+	camera_pitch = [0.75,0.55,0.45][viewpoint_index]
 
 func _draw_galaxy() -> void:
 	var rng := RandomNumberGenerator.new()

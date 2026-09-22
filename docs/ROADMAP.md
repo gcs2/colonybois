@@ -70,3 +70,7 @@ Simulation suite: 91 baseline assertions plus 43 urban assertions, including dis
 The manual rendered profile is `tests/profile_urban.gd`; it reports frame intervals, tracked static memory and draw calls on the current GPU. Record current results in README.md and rerun when geometry or rendering changes. Tracked static memory is not total system RAM or VRAM usage. The profile is not a minimum-spec benchmark.
 
 Playtest the existing loop alongside the next bounded urban slice. There is no claimed 30–60-minute balance validation yet, and the full campaign has no calendar commitment. Tactical fleet work follows the city-to-space bridge and core-loop validation.
+
+## Latest production priority — September 22 checkpoint
+
+The user explicitly prioritized authored art and a repeatable specification-to-model pipeline. Follow ART_PRODUCTION_PLAN.md and art/specs/building_kit_v1.json before broadening politics or combat. SC4_SYSTEMS_AND_RENDERING.md defines finite demand, occupancy, education/wealth, service capacity, region specialization and a reversible rendering-format experiment. Next: HAB-01 in-engine art pilot, compare orthographic 3D/pre-rendered/pixel-style output, then develop one coherent playable block. NEXT_SESSION.md contains the continuation trigger and current limitations.

@@ -36,3 +36,9 @@ Rendered play is now capped at 60 FPS to avoid spending CPU/GPU capacity on unbo
 5. Prototype one meaningful flagship exploration decision. A moving map icon with a countdown remains insufficient.
 
 Do not add more factions, battles or procedural plots to compensate for failures in these fundamentals.
+
+## City-management and production checkpoint
+
+Free rectangular zoning, demand-gated material-funded development, multi-tile lots, a reconciled daily ledger, civic services, local crime/fire risk, damage/repair and advisor portraits now form a more useful systems baseline. Service/data layers color the actual lots and suppress distracting background scenery. Three generated base-color textures are integrated with mipmaps; the meshes remain interim architecture. Capped road-shuttle paths and ambient harbor boats add motion without citizen agents. V exposes district/harbor/skyline viewpoints.
+
+The suites now include 24 city assertions (178 simulation assertions total), plus UI tests. The ledger render exposed cramped numeric rows and tax buttons; those were corrected. The user has not approved the resulting visual quality. Full service capacity, finite regional demand, wealth tiers, education, parks, functional freight and appointed mayors remain design work. See SC4_SYSTEMS_AND_RENDERING.md and ART_PRODUCTION_PLAN.md. The next gate is an authored building and comparative rendering pilot, not more placeholder density.

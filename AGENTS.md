@@ -10,6 +10,8 @@
 
 ## Product constraints
 
+- Resume production from docs/NEXT_SESSION.md. The latest priority is a spec-to-authored-3D asset pipeline with a reversible orthographic/pre-rendered/pixel-style comparison, followed by finite demand and service capacity. Read docs/ART_PRODUCTION_PLAN.md and docs/SC4_SYSTEMS_AND_RENDERING.md. A rendering-format switch is not yet approved; keep the working game intact during the pilot.
+
 - Godot 4.7.2, desktop, single-player. Colony and galaxy simulation precede tactical fleet battles.
 - Art direction: original creepy-cute, expressive creatures and playful miniature worlds; a love note to Spore's space stage. No creature creator yet. The initial realistic cast board was rejected.
 - The endorsed campaign foundation is a forgotten outpost, a corrupt local government and the Vanguard's rise, followed by living interstellar politics and discoveries about Earth. See docs/CAMPAIGN_FOUNDATION.md. The five earlier plots remain alternative explorations; the future-echo premise is not approved.

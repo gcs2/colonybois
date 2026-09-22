@@ -12,13 +12,23 @@ On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.p
 
 For the new city opening, choose **New urban tutorial** instead:
 
-1. Latch begins with 120,000 people across five boroughs. South Loop is your editable district; the other four currently have fixed aggregate populations and batched scenery. Its mint border marks construction authority. The rounded buildings are a graybox, not final art.
-2. The overview starts paused with construction tucked away. Click **Inspect South Loop** to focus the broken crossing and reveal the repair choice. It isolates 3,840 residents from the hub, preventing their buildings from operating normally.
+1. Latch begins with 120,000 people across five boroughs. South Loop is your editable district; the other four currently have fixed aggregate populations and batched scenery. Its mint border marks construction authority. A textured courtyard building kit now replaces the district's repeated single-tile towers; this remains candidate art, not final visual quality.
+2. The overview starts paused with construction tucked away. Click **Inspect South Loop** to focus the broken crossing and reveal the repair choice. It isolates eastern neighborhoods from the hub, preventing their buildings from operating normally.
 3. Choose **public repair** (60 materials, eight days) or **sponsored repair** (180 Marks, two days). Time controls are below. Reopening changes the actual road network and restores connected employment.
 4. Public repair unlocks **mutual aid**: 30 supplies become 20 materials, keeping a 60-supply reserve, with a twelve-day cooldown. Sponsored repair unlocks **priority works**: inspect a zone marked Ready to grow, then upgrade one level for 30 Marks and 15 materials, with a four-day cooldown. The sponsor receives 1 Mark/day; unpaid fees accumulate and suspend priority works until treasury income clears them.
 5. Develop the district or explore the existing frontier. Civic projects and obligations persist across views and saves. The political takeover and creature transport are not implemented yet.
 
 Urban mode uses separate `urban_save.fw` / `urban_autosave.fw` slots. Its city total reflects live South Loop population plus the fixed background aggregates; there are no individual citizen agents. Your treasury is the district's discretionary budget, not the whole city's wealth.
+
+## City management pass
+
+- Select habitat, industry or service zoning and **drag a rectangle**. Designation is free; development spends materials when demand, roads and utilities permit it. Adjacent tiles can combine into 2×1, 2×2, 3×2 and other lots. Right-click or Escape cancels a drag. Roads remain a paid brush.
+- **Ledger** shows daily taxes, export receipts, crime losses, upkeep, sponsorship and net balance. Choose local tax policy; high taxes slow residential growth. Construction/project payments are one-off orders, outside that daily operating statement.
+- **Services** shows civic watch, fire/rescue, clinic and shuttle coverage, with advisor portraits. Services need connected roads and power. Clinics improve productivity; crime loses revenue and can steal supplies; fires halt a building's output for 12 days unless repaired.
+- The top-right layer selector exposes access, suitability, crime, fire and service catchments. Data mode focuses the live district and colors its buildings, hiding background scenery that previously covered the overlays.
+- Two functioning shuttle stops support longer commutes. Connected routes have capped visual shuttles. **V** cycles district, harbor and skyline viewpoints in Latch. Harbor boats are ambient scenery; railway construction, maritime freight simulation, creature transit and appointed mayors are future work.
+
+See [AI and transport design](docs/AI_AND_TRANSPORT.md) for how mayors, nations, routes and meaningful expansion should work. [Texture provenance and exact prompts](docs/CITY_TEXTURES.md) and [advisor prompts](docs/ADVISOR_ART.md) accompany the generated assets.
 
 For the original small-settlement loop, choose **New expedition**:
 

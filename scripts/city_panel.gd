@@ -45,7 +45,10 @@ static func draw(app: Node3D, colony: Dictionary) -> void:
 		app._text(box,"LOCAL TAX POLICY · %.0f%%" % (100*float(colony.get("tax_rate",1))),12,app.MINT)
 		var choices := HBoxContainer.new()
 		box.add_child(choices)
-		for rate: float in [0.75,1.0,1.25]: app._button("%d%%" % int(rate*100),app._command.bind("city_policy",{"planet":app.planet_id,"action":"tax","rate":rate}),choices)
+		for rate: float in [0.75,1.0,1.25]:
+			var button: Button = app._button("%d%%" % int(rate*100),app._command.bind("city_policy",{"planet":app.planet_id,"action":"tax","rate":rate}),choices)
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			button.custom_minimum_size.x = 80
 		app._text(box,"Materials  %.1f (%+.2f/day)\nSupplies  %.1f (%+.2f/day)" % [colony.materials,colony.material_rate,colony.supplies,colony.supply_rate],16,app.WHITE)
 		return
 	var unsafe: bool = float(colony.fire_risk) > 35 or float(colony.crime) > 30
