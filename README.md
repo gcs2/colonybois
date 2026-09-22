@@ -64,7 +64,7 @@ For another free listening option, open the generated HTML page in Microsoft Edg
 
 ## Implementation status
 
-The endorsed story foundation is now the forgotten outpost, the Vanguard's rise, and living politics within and between planets. See [Campaign foundation](docs/CAMPAIGN_FOUNDATION.md) for the developed-city tutorial, the history of Cinders, and proposed branching abilities. These campaign systems are design work; the current playable loop remains the small colony/galaxy prototype. The money display and its historical tooltip are implemented. Multiple independent nations on one planet and the political tutorial are not yet implemented.
+The endorsed story foundation is now the forgotten outpost, the Vanguard's rise, and living politics within and between planets. See [Campaign foundation](docs/CAMPAIGN_FOUNDATION.md) for the developed-city tutorial, the history of Cinders, and proposed branching abilities, and [City concept](docs/CITY_CONCEPT.md) for the first visual study. These campaign systems are design work; the current playable loop remains the small colony/galaxy prototype. The money display and its historical tooltip are implemented. Multiple independent nations on one planet and the political tutorial are not yet implemented.
 
 - **Implemented:** colony toy; connected multi-world loop; a small playable pass over core MVP systems, with procedural meshes and a procedural planet shader.
 - **Still needs playtesting:** whether the colony economy and diplomacy stay interesting for 30–60 minutes. Automated verification does not prove fun or balance.

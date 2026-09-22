@@ -19,3 +19,5 @@ Use a few large shapes, distinct body plans, expressive eyes and broad color pat
 Ships and buildings should feel like characterful miniatures. Species anatomy may influence architecture, but biology must not dictate politics or morality. Preserve wonder and humor even when the story becomes dark.
 
 The current Godot meshes remain placeholders. Replacement concepts and their originality need review before becoming production references. The forgotten-outpost/Vanguard campaign foundation is now recorded in `CAMPAIGN_FOUNDATION.md`; the five older plot explorations remain alternatives.
+
+The first developed-city study is available in [City concept](CITY_CONCEPT.md). It explores inhabited ancient infrastructure, a heating crisis and neighboring nations. It is clearly labeled concept art, not gameplay.
