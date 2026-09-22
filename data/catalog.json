@@ -1,4 +1,10 @@
 {
+  "currency": {
+    "name": "Cinders",
+    "singular": "Cinder",
+    "history": "The first Cinders were fired-clay ration rings redeemable for communal furnace heat after the supply ships stopped. The rings became money; the name remembers what a warm room once cost.",
+    "scope": "Your administration's treasury and the local value of trade settlements. Other nations need not use the same currency."
+  },
   "buildings": {
     "road": {"name":"Transit road","cost":2,"power":0,"description":"Drag to connect districts to the spaceport."},
     "habitat": {"name":"Habitat zone","cost":12,"power":1,"description":"Homes grow with jobs, life support and local suitability."},
@@ -21,11 +27,11 @@
     {"id":"commune","name":"Thalen Commune","government":"Commune","philosophy":"Ecological","color":"7ed6ab","relation":15,"need":"supplies","bonus":"Biosphere stewardship: rewards conservation.","reason":"Leave room for the living world."}
   ],
   "discoveries":[
-    {"id":"archive","title":"The silent archive","text":"A buried observatory holds a map of ancient migration routes.","choices":["Publish the charts (+relations)","Decode privately (+credits)"],"reward":"archive"},
+    {"id":"archive","title":"The silent archive","text":"A buried observatory holds a map of ancient migration routes.","choices":["Publish the charts (+relations)","Decode privately (+Cinders)"],"reward":"archive"},
     {"id":"garden","title":"A garden under glass","text":"A sealed ecosystem survived beneath an abandoned dome.","choices":["Preserve the garden (+ecologists)","Study its crops (+supplies)"],"reward":"garden"},
     {"id":"beacon","title":"A wandering beacon","text":"A signal buoy still charts safe approaches through the dust.","choices":["Share safe routes (+relations)","Salvage the buoy (+materials)"],"reward":"beacon"},
     {"id":"lattice","title":"The crystal lattice","text":"Mineral formations store a faint and intricate electrical charge.","choices":["Protect the formations (+ecologists)","Recover samples (+materials)"],"reward":"lattice"},
     {"id":"seed","title":"Seeds of another sun","text":"A drifting seed vault contains remarkably adaptable plants.","choices":["Donate the vault (+relations)","Cultivate the seeds (+supplies)"],"reward":"seed"},
-    {"id":"relay","title":"The last relay","text":"An intact relay once connected settlements beyond this sector.","choices":["Open the relay (+relations)","License the technology (+credits)"],"reward":"relay"}
+    {"id":"relay","title":"The last relay","text":"An intact relay once connected settlements beyond this sector.","choices":["Open the relay (+relations)","License the technology (+Cinders)"],"reward":"relay"}
   ]
 }

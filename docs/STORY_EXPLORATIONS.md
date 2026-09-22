@@ -1,6 +1,6 @@
 # Five competing story treatments
 
-**Exploration, not canon.** None of these stories is implemented or selected. The possible-future premise has not won the player's interest; it is presented here alongside four independent alternatives. The current discovery events remain a mechanical prototype.
+**Archived alternatives, not canon.** These five treatments predate the endorsed forgotten-outpost and Vanguard direction recorded in `CAMPAIGN_FOUNDATION.md`. None is implemented or selected. In particular, the possible-future premise is not approved. The current discovery events remain a mechanical prototype.
 
 The creative target is a memorable ensemble science-fiction drama that grows out of settlement, discovery and diplomacy. Characters need private desires, loyalties and relationships that persist outside the central mystery. Species, governments and philosophies are separate: each civilization contains disagreement. Sandbox mode should allow the mystery to be absent, optional or eventually configured by the player.
 

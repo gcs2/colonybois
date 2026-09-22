@@ -11,15 +11,15 @@ On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.p
 ## First expedition
 
 1. Solace starts with roads, three habitats, industry, services, power, and life support. Time runs immediately; Space pauses. Buildings grow every six simulation days if conditions permit.
-2. Select **Habitat zone**, then click an empty tile beside the road. Add industry when the colony needs jobs. Costs are construction materials, not credits. Inspect tiles or use data layers to understand blocked growth.
-3. Open **Galaxy**, select a nearby **Unknown** signal, and choose **Travel**. Surveying it reveals its name, planets and neighboring signals. The northern frontier leads to Nacre; open **Nacre I**, establish a colony for 180 credits, and enter it. Cold-world homes grow best near the red geothermal marker.
+2. Select **Habitat zone**, then click an empty tile beside the road. Add industry when the colony needs jobs. Costs are construction materials, not Cinders. Inspect tiles or use data layers to understand blocked growth.
+3. Open **Galaxy**, select a nearby **Unknown** signal, and choose **Travel**. Surveying it reveals its name, planets and neighboring signals. The northern frontier leads to Nacre; open **Nacre I**, establish a colony for 180 Cinders, and enter it. Cold-world homes grow best near the red geothermal marker.
 4. Explore outward to discover **Orin**, visit it, and sign a trade treaty. Return to any colony through the left settlement list and configure automatic exports. They retain a 60-unit reserve. Other colonies can import from a selected settlement's surplus above 80 units.
 5. Survey unexplored systems and resolve discoveries. Sharing discoveries builds relations; keeping them yields resources. Sign non-aggression agreements or an alliance when relations allow.
 6. On a harsh world, build a connected **Climate array** and enough power. Start the project in the orbital view. Recovery improves climate over 180 simulated days, spends actual materials and supplies, and affects ecological relations.
 
 The game is an open sandbox. There is no victory screen or mandatory mission chain. Three ranks recognize distinct accomplishments. At Pathfinder, specialize colonies in industry or ecology. Three colonies and twelve systems are the current scenario cap.
 
-**Sandbox mode** adds optional god tools to the left sidebar: credit and resource grants, free construction, instant travel, reveal/survey the entire map, diplomatic goodwill, and instant climate restoration. Toggle abilities are marked ON. Expedition mode rejects cheat commands. Sandbox has separate manual/autosave slots (`sandbox_save.fw` and `sandbox_autosave.fw`) so it cannot overwrite expedition progress. Both modes start with frontier fog unless you explicitly reveal the map. The Menu button lets you resume or begin a different mode; starting fresh replaces the current unsaved session.
+**Sandbox mode** adds optional god tools to the left sidebar: Cinder and resource grants, free construction, instant travel, reveal/survey the entire map, diplomatic goodwill, and instant climate restoration. Toggle abilities are marked ON. Expedition mode rejects cheat commands. Sandbox has separate manual/autosave slots (`sandbox_save.fw` and `sandbox_autosave.fw`) so it cannot overwrite expedition progress. Both modes start with frontier fog unless you explicitly reveal the map. The Menu button lets you resume or begin a different mode; starting fresh replaces the current unsaved session.
 
 ## Controls
 
@@ -64,6 +64,8 @@ For another free listening option, open the generated HTML page in Microsoft Edg
 
 ## Implementation status
 
+The endorsed story foundation is now the forgotten outpost, the Vanguard's rise, and living politics within and between planets. See [Campaign foundation](docs/CAMPAIGN_FOUNDATION.md) for the developed-city tutorial, the history of Cinders, and proposed branching abilities. These campaign systems are design work; the current playable loop remains the small colony/galaxy prototype. The money display and its historical tooltip are implemented. Multiple independent nations on one planet and the political tutorial are not yet implemented.
+
 - **Implemented:** colony toy; connected multi-world loop; a small playable pass over core MVP systems, with procedural meshes and a procedural planet shader.
 - **Still needs playtesting:** whether the colony economy and diplomacy stay interesting for 30–60 minutes. Automated verification does not prove fun or balance.
 - **Simplified:** roads have connectivity and commute-distance penalties, not traffic; planets have fixed sites; supply aggregates food/water/logistics; AI factions evaluate lightweight authored rules and do not build competing empires. Government bonuses currently affect trade terms. Trade is an aggregate flow, without visible freighter units.
@@ -74,4 +76,5 @@ The local build uses the complete portable Godot engine plus a resource pack. It
 ## Art and licenses
 
 All game geometry, icons, and shaders in this repository are original procedural/code assets. System fonts fall back to Segoe UI/Arial. The first generated cast board was rejected and excluded. The new creepy-cute direction and research are documented in `docs/ART_DIRECTION.md`. No creature creator is in scope, and no plot is selected. Preview captures show real running scenes. Godot is MIT-licensed; its notices can be found at https://godotengine.org/license/ and should accompany any public distribution.
+
 

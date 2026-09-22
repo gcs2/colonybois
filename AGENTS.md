@@ -12,5 +12,7 @@
 
 - Godot 4.7.2, desktop, single-player. Colony and galaxy simulation precede tactical fleet battles.
 - Art direction: original creepy-cute, expressive creatures and playful miniature worlds; a love note to Spore's space stage. No creature creator yet. The initial realistic cast board was rejected.
-- No plot is selected. Keep the five story explorations separate from implemented lore and do not present the future-echo premise as approved.
+- The endorsed campaign foundation is a forgotten outpost, a corrupt local government and the Vanguard's rise, followed by living interstellar politics and discoveries about Earth. See docs/CAMPAIGN_FOUNDATION.md. The five earlier plots remain alternative explorations; the future-echo premise is not approved.
+- Nations, planets and species are distinct. Spaceflight does not require planetary unification. Choices must change available actions and create visible obligations, not merely adjust bonuses.
+- Player-facing money is Cinders, with history in data/catalog.json. The internal credits save key remains for compatibility; do not expose it as the currency's name.
 - Read README.md for run/test/build instructions and docs/ROADMAP.md for milestone boundaries.
