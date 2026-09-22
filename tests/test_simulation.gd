@@ -66,6 +66,8 @@ func _initialize() -> void:
 	check(not d.command("colonize",{"planet":"s1p0"}).is_empty(),"Remote colonization rejected")
 	travel(d,"s1")
 	check(d.command("colonize",{"planet":"s1p0"}).is_empty(),"Visited harsh world can be colonized")
+	check(not d.state.colonies.has("s1p0") and d.state.settlements.has("s1p0"),"A paid landing expedition starts before the colony exists")
+	ticks(d,18)
 	check(d.state.colonies.size() == 2,"Second colony persists")
 	var feature: Dictionary = d.features("s1p0")[0]
 	check(d.suitability("s1p0",feature.x,feature.z) > d.suitability("s1p0",48,48),"Geothermal location improves frozen suitability")
@@ -103,6 +105,7 @@ func _initialize() -> void:
 	d.state.colonies.s1p0.materials = 400
 	d.state.colonies.s1p0.supplies = 150
 	d.state.credits = 500
+	for x: int in range(30,38): build(d,"s1p0",x,31,"road")
 	check(build(d,"s1p0",36,30,"terraformer").is_empty(),"Climate array constructed")
 	check(build(d,"s1p0",37,30,"power").is_empty(),"Climate array power supplied")
 	var relation: int = d.faction_by_id("commune").relation
@@ -156,10 +159,15 @@ func _initialize() -> void:
 	check(restored_sandbox.load_game("user://test_sandbox.fw") == OK,"Sandbox save restored")
 	check(restored_sandbox.state.mode == "sandbox" and restored_sandbox.state.cheats.free_build,"Sandbox mode and abilities persist")
 	var profile = fresh()
+	profile.state.credits = 2000
+	profile.state.colonies.s0p0.materials = 500
+	profile.state.colonies.s0p0.supplies = 400
 	profile.state.flagship.system = "s1"
 	profile.command("colonize",{"planet":"s1p0"})
+	ticks(profile,18)
 	profile.state.flagship.system = "s2"
 	profile.command("colonize",{"planet":"s2p0"})
+	ticks(profile,18)
 	for pid: String in profile.state.colonies:
 		profile.state.colonies[pid].materials = 9999
 		for x: int in range(15,49):

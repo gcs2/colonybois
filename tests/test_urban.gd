@@ -82,7 +82,7 @@ func _initialize() -> void:
 	legacy.new_game()
 	legacy.state.version = 1
 	check(legacy.save_game("user://test_legacy_urban.fw") == OK,"Legacy-format snapshot fixture saved")
-	check(restored.load_game("user://test_legacy_urban.fw") == OK and restored.state.version == 2,"Version-one expeditions migrate to the new schema")
+	check(restored.load_game("user://test_legacy_urban.fw") == OK and restored.state.version == Sim.SAVE_VERSION,"Version-one expeditions migrate to the new schema")
 	check(not restored.state.has("urban") and restored.state.colonies.s0p0.population == 36,"Legacy migration preserves ordinary colonies")
 	var c = fresh()
 	var d = fresh()

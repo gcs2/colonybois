@@ -25,6 +25,8 @@ Snapshots have an eight-byte magic header and schema version, followed by native
 
 Schema 2 introduces the optional urban scenario and scaled district population. Version 1 expedition/sandbox snapshots migrate by retaining existing state and defaults, then setting version 2. Future/unknown versions remain rejected. Urban manual/autosave slots use an `urban` prefix and cannot overwrite the other modes through normal controls.
 
+Schema 3 supersedes this with pending `settlements` projects and an urban tutorial step. It accepts both prior schemas, retaining colonies and adding missing defaults. `scripts/settlement_projects.gd` validates and debits cargo before storing an 18-day project, checks route access each tick, then creates a bare hub with remaining cargo. Completed buildings are not the save format for a pending landing. Review sessions prepend `review_` to normal save paths.
+
 All colonies simulate even when invisible. Population/jobs are aggregates and rendered meshes are disposable. Start profiling before raising limits: suitability currently scans placed cells, and growth refreshes connectivity. Cache dirty spatial influence maps and road components before attempting very large cities. Rendering currently uses modular MeshInstance3D nodes; batch repeated meshes with MultiMesh when content warrants it.
 
 ## Next architectural split

@@ -19,3 +19,4 @@
 - SimCity 4-like urban fidelity is the target. Simulate population, jobs, services and political groups in aggregate; do not add individual citizen/household agents or world-wide per-person pathfinding. Ambient traffic and pedestrians must be capped visual effects. Profile before raising scope caps.
 - Player-facing money is Marks, with history in data/catalog.json. The internal credits save key remains for compatibility; do not expose it as the currency's name.
 - Read README.md for run/test/build instructions and docs/ROADMAP.md for milestone boundaries.
+- The user rejected the current presentation as an early systems demo. docs/PLAYTEST_REVIEW.md records the critique, corrections and remaining gates. Do not call the city visually convincing or the tutorial successful based on tests, population counters or generated mockups. Native input playtesting and human readability/fun review remain necessary.

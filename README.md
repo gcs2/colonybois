@@ -1,10 +1,10 @@
 # Frontier Worlds
 
-A playable, original 3D colony-and-galaxy prototype. Windows desktop; **Godot 4.7.2 stable**, typed GDScript, OpenGL compatibility renderer. No paid assets, runtime AI service, or API keys required.
+An early 3D colony-and-galaxy systems demo. Windows desktop; **Godot 4.7.2 stable**, typed GDScript, OpenGL compatibility renderer. The presentation and core-loop enjoyment still need substantial work; see [Playtest review](docs/PLAYTEST_REVIEW.md). No paid assets, runtime AI service, or API keys required.
 
 ## Play
 
-Double-click **Play.cmd**, then choose **Urban tutorial**, **Expedition** or **Sandbox** in the opening menu. A portable engine is already installed in this workspace. If a build is present, this launcher uses `build/FrontierWorlds.exe`; otherwise it starts the source project. Keep the `.pck` beside the built executable.
+Double-click **Play.cmd**, then choose **Urban tutorial**, **Expedition** or **Sandbox** in the opening menu. The launcher prefers the latest completed build recorded in `build/current.txt`, then older local builds, then the source project. Builds now use timestamped directories under `build/versions/` so they do not replace an executable in use. Keep the `.pck` beside the executable. Close an older game window yourself when you are finished with that session; it does not update live.
 
 On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.ps1` to download the pinned engine from its official GitHub release. Alternatively, import `project.godot` in Godot 4.7.2 and press F6/F5. Use the editor or the engine with `--path .` when testing source changes; rebuild before using an existing executable.
 
@@ -13,7 +13,7 @@ On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.p
 For the new city opening, choose **New urban tutorial** instead:
 
 1. Latch begins with 120,000 people across five boroughs. South Loop is your editable district; the other four currently have fixed aggregate populations and batched scenery. Its mint border marks construction authority. The rounded buildings are a graybox, not final art.
-2. Click **Inspect crossing · access layer** in the right panel. The broken link isolates 3,840 residents from the hub, preventing their buildings from operating normally.
+2. The overview starts paused with construction tucked away. Click **Inspect South Loop** to focus the broken crossing and reveal the repair choice. It isolates 3,840 residents from the hub, preventing their buildings from operating normally.
 3. Choose **public repair** (60 materials, eight days) or **sponsored repair** (180 Marks, two days). Time controls are below. Reopening changes the actual road network and restores connected employment.
 4. Public repair unlocks **mutual aid**: 30 supplies become 20 materials, keeping a 60-supply reserve, with a twelve-day cooldown. Sponsored repair unlocks **priority works**: inspect a zone marked Ready to grow, then upgrade one level for 30 Marks and 15 materials, with a four-day cooldown. The sponsor receives 1 Mark/day; unpaid fees accumulate and suspend priority works until treasury income clears them.
 5. Develop the district or explore the existing frontier. Civic projects and obligations persist across views and saves. The political takeover and creature transport are not implemented yet.
@@ -24,7 +24,7 @@ For the original small-settlement loop, choose **New expedition**:
 
 1. Solace starts with roads, three habitats, industry, services, power, and life support. Time runs immediately; Space pauses. Buildings grow every six simulation days if conditions permit.
 2. Select **Habitat zone**, then click an empty tile beside the road. Add industry when the colony needs jobs. Costs are construction materials, not Marks. Inspect tiles or use data layers to understand blocked growth.
-3. Open **Galaxy**, select a nearby **Unknown** signal, and choose **Travel**. Surveying it reveals its name, planets and neighboring signals. The northern frontier leads to Nacre; open **Nacre I**, establish a colony for 180 Marks, and enter it. Cold-world homes grow best near the red geothermal marker.
+3. Open **Galaxy**, select a nearby **Unknown** signal, and choose **Travel**. Surveying it reveals its name, planets and neighboring signals. At a free planet, select a supply colony and dispatch a landing expedition for **300 Marks, 100 materials and 80 supplies**. It takes **18 days** and needs an accessible route. On completion, enter a bare hub with 70 materials and 60 supplies left. Lay a road beside it and zone homes/services yourself. Cold-world homes grow best near geothermal sites.
 4. Explore outward to discover **Orin**, visit it, and sign a trade treaty. Return to any colony through the left settlement list and configure automatic exports. They retain a 60-unit reserve. Other colonies can import from a selected settlement's surplus above 80 units.
 5. Survey unexplored systems and resolve discoveries. Sharing discoveries builds relations; keeping them yields resources. Sign non-aggression agreements or an alliance when relations allow.
 6. On a harsh world, build a connected **Climate array** and enough power. Start the project in the orbital view. Recovery improves climate over 180 simulated days, spends actual materials and supplies, and affects ecological relations.
@@ -43,12 +43,18 @@ The game is an open sandbox. There is no victory screen or mandatory mission cha
 | 1 / 2 / 3 / 4 | Road / habitat / industry / service |
 | WASD / arrow keys | Pan colony camera |
 | Q / E | Orbit camera |
+| Right drag | Free orbit and tilt |
+| Middle drag | Pan colony camera |
+| R / F | Raise / lower camera angle |
+| B / Build | Toggle construction drawer |
 | Wheel | Zoom |
 | G / P / C | Galaxy / planet / colony |
 | Space | Pause / resume |
 | F5 / F9 | Save / load |
 
 UI sidebars scroll. Hover over clipped buttons for the complete label. Habitat, industry, and service zones have two automatic development levels; utilities are directly placed. Existing housing remains during shortages, while growth and production slow or stop. There is no population abandonment model yet.
+
+Economy/logistics and expedition logs expand on request. Sound toggles the new synthesized action cues. Galaxy travel can optionally follow the flagship. Planet markers are surface-attached; automatic globe rotation has been removed. The free camera and new UI still need a complete native-input playtest.
 
 ## Saves and tests
 
@@ -83,9 +89,9 @@ Read the [current story treatment](docs/STORY_CURRENT.md) and [complete project 
 - **Simplified:** roads have connectivity and commute-distance penalties, not traffic; planets have fixed sites; supply aggregates food/water/logistics; AI factions evaluate lightweight authored rules and do not build competing empires. Government bonuses currently affect trade terms. Trade is an aggregate flow, without visible freighter units.
 - **Deferred:** tactical fleet battles, war/conquest, ship construction, full planetary terrain editing, deeper political simulation, large sectors, final art/audio, accessibility pass and public release packaging.
 
-The local build uses the complete portable Godot engine plus a resource pack. It is runnable but larger than a normal release export. See `docs/ROADMAP.md` for gates before adding systems and `docs/ARCHITECTURE.md` for extension points.
+The local build uses the complete portable Godot engine plus a resource pack. It is runnable but larger than a normal release export. Save schema 3 accepts version 1/2 snapshots and preserves their existing colonies. `-- --playtest` runs with isolated `review_` save slots. See `docs/ROADMAP.md` for gates before adding systems and `docs/ARCHITECTURE.md` for extension points.
 
-Urban verification adds 43 assertions to the 91 baseline simulation assertions, plus UI checks. A separate rendered profile can be run with `.tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . --script tests/profile_urban.gd`. This exercises the city at 3x time and reports frame intervals, draw calls and tracked static memory. These measurements are development-PC observations, not minimum hardware requirements or a guarantee for larger cities.
+Current verification includes 92 baseline, 43 urban and 19 landing assertions, plus UI checks. A separate rendered profile can be run with `.tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . --script tests/profile_urban.gd`. This exercises the city at 3x time and reports frame intervals, draw calls and tracked static memory. These measurements are development-PC observations, not minimum hardware requirements or a guarantee for larger cities. The historical measurements below predate the wider city scenery; they do not describe the latest renderer.
 
 22 September 2026 observation, **with EU4 running concurrently**: the urban simulation measured roughly 1.5–1.7 ms/tick. A six-second rendered sample on the RTX 5070 Ti Laptop GPU averaged 5.21 ms/frame, p95 6.30 ms, with a 40.98 ms maximum and 86.8 MiB peak Godot-tracked static memory. The sample included road repair at 3x speed. Background workload makes this unsuitable as a clean performance baseline; memory excludes total process/VRAM usage. Incremental per-lot mesh updates and batched background scenery are implemented, but occasional refresh hitches remain to investigate in a controlled profile before raising scope caps.
 

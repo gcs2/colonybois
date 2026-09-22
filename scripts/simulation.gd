@@ -7,17 +7,19 @@ signal message(text: String)
 
 const SIZE: int = 64
 const Urban = preload("res://scripts/urban_scenario.gd")
-const SAVE_VERSION: int = 2
+const Settlement = preload("res://scripts/settlement_projects.gd")
+const SAVE_VERSION: int = 3
 const SAVE_PATH: String = "user://frontier_save.fw"
 var catalog: Dictionary = {}
 var state: Dictionary = {}
+var playtest: bool = "--playtest" in OS.get_cmdline_user_args()
 
 func _init() -> void:
 	catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
 
 func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
 	state = {"version":SAVE_VERSION, "seed":seed_value, "tick":0, "credits":650.0,
-		"systems":[], "planets":{}, "colonies":{}, "factions":catalog.factions.duplicate(true),
+		"systems":[], "planets":{}, "colonies":{}, "settlements":{}, "factions":catalog.factions.duplicate(true),
 		"agreements":[], "discoveries":{}, "milestones":[], "rank":0, "log":[],
 		"flagship":{"system":"s0", "destination":"", "route":[], "remaining":0}, "fleets":[],
 		"mode":mode if mode in ["sandbox","urban"] else "expedition", "cheats":{"free_build":false,"instant_travel":false}}
@@ -71,6 +73,7 @@ func save_path(autosave: bool = false) -> String:
 	var suffix: String = "_autosave" if autosave else "_save"
 	var prefix: String = str(state.get("mode","expedition"))
 	if prefix == "expedition": prefix = "frontier"
+	if playtest: prefix = "review_"+prefix
 	return "user://%s%s.fw" % [prefix,suffix]
 
 static func key(x: int, z: int) -> String:
@@ -100,10 +103,17 @@ func terrain(pid: String, x: int, z: int) -> String:
 		return "cliff"
 	return "land"
 
-func _create_colony(pid: String) -> void:
+func _create_colony(pid: String, developed: bool = true) -> void:
 	var colony: Dictionary = {"planet":pid,"materials":150.0,"supplies":110.0,"cells":{},"population":0,"power":0.0,"power_used":0.0,"income":0.0,"material_rate":0.0,"supply_rate":0.0,"connected":{},"reasons":{},"trade_target":"","trade_resource":"materials","import_from":""}
 	var cells: Dictionary = colony.cells
 	cells[key(30,30)] = {"type":"spaceport","level":1}
+	if not developed:
+		colony.materials = 70.0
+		colony.supplies = 60.0
+		state.colonies[pid] = colony
+		state.planets[pid].owner = "player"
+		refresh_colony(pid)
+		return
 	for x: int in range(26,38):
 		cells[key(x,31)] = {"type":"road","level":1}
 	for x: int in [28,29,32]:
@@ -122,7 +132,7 @@ func command(action: String, args: Dictionary = {}) -> String:
 		"civic": error = Urban.command(self,args)
 		"build": error = _build(args)
 		"travel": error = _travel(str(args.get("system","")))
-		"colonize": error = _colonize(str(args.get("planet","")))
+		"colonize": error = Settlement.begin(self,str(args.get("planet","")),str(args.get("source","s0p0")))
 		"diplomacy": error = _diplomacy(args)
 		"trade": error = _trade(args)
 		"import": error = _import(args)
@@ -294,6 +304,7 @@ func tick() -> void:
 		state.credits = maxf(0.0,state.credits + colony.income)
 		_tick_project(pid)
 	if state.has("urban"): Urban.tick(self)
+	Settlement.tick(self)
 	_tick_trade()
 	_tick_travel()
 	if int(state.tick) % 30 == 0: _tick_factions()
@@ -356,22 +367,6 @@ func _tick_travel() -> void:
 	system.visited = true
 	if not str(system.owner).is_empty(): faction_by_id(system.owner)["contacted"] = true
 	_log("Arrived at %s. Planet surveys complete." % system.name)
-
-func _colonize(pid: String) -> String:
-	if not state.planets.has(pid): return "Unknown planet."
-	var planet: Dictionary = state.planets[pid]
-	if state.flagship.system != planet.system or not str(state.flagship.destination).is_empty(): return "Bring your flagship to this system first."
-	if not str(planet.owner).is_empty(): return "This settlement site already has an administration."
-	if state.colonies.size() >= 3: return "Prototype limit: three colonies."
-	if state.credits < 180: return "A colony expedition costs 180 Marks."
-	state.credits -= 180
-	_create_colony(pid)
-	for faction: Dictionary in state.factions:
-		if faction.id == "directorate":
-			faction.relation -= 8
-			faction.reason = "Your new colony challenges our expansion ambitions (-8)."
-	_log("Founded %s. Starter infrastructure and reserves delivered." % planet.name)
-	return ""
 
 func _diplomacy(args: Dictionary) -> String:
 	var faction: Dictionary = faction_by_id(str(args.get("faction","")))
@@ -605,12 +600,14 @@ func load_game(path: String = "") -> Error:
 	if file.get_buffer(8).get_string_from_utf8() != "FWORLD01": return ERR_FILE_UNRECOGNIZED
 	var parsed: Variant = file.get_var(false)
 	if not parsed is Dictionary: return ERR_PARSE_ERROR
-	if int(parsed.get("version",0)) not in [1,SAVE_VERSION]: return ERR_FILE_UNRECOGNIZED
+	if int(parsed.get("version",0)) not in [1,2,SAVE_VERSION]: return ERR_FILE_UNRECOGNIZED
 	for field: String in ["planets","colonies","systems","factions","flagship","agreements","milestones","discoveries","log","credits","tick","seed","rank"]:
 		if not parsed.has(field): return ERR_FILE_CORRUPT
 	if not parsed.colonies is Dictionary or not parsed.systems is Array: return ERR_FILE_CORRUPT
 	state = parsed
 	state.version = SAVE_VERSION
+	if not state.has("settlements"): state["settlements"] = {}
+	if state.has("urban") and not state.urban.has("tutorial_step"): state.urban["tutorial_step"] = 1 if not str(state.urban.path).is_empty() else 0
 	if not state.has("mode"): state["mode"] = "expedition"
 	if not state.has("cheats"): state["cheats"] = {"free_build":false,"instant_travel":false}
 	for pid: String in state.colonies: refresh_colony(pid)

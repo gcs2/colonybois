@@ -1,5 +1,7 @@
 # Roadmap and playtest gates
 
+**Current priority: repair the player experience.** The user rejected the visual fidelity, UI, onboarding and instant colony founding. See [Playtest review](PLAYTEST_REVIEW.md) for the correction pass and open gates. Do not advance to national politics or fleets just because the systems tests pass. The city presentation remains placeholder art; the flagship loop still needs a meaningful exploration decision.
+
 The campaign direction now includes a developed urban opening. A–C below describe the existing prototype, not a finished campaign. Preserve that loop while testing the new opening in bounded slices. Full vision: [PROJECT_VISION.md](PROJECT_VISION.md); narrative: [STORY_CURRENT.md](STORY_CURRENT.md).
 
 ## Urban tutorial slice: first playable implementation
@@ -60,6 +62,8 @@ Only after playtesting: colony templates, additional planet types, research choi
 Current live scenes serve as coordinated visual prototypes: galaxy network, frozen settlement, and that settlement's orbital survey. They share a navy/mint interface, warm mineral markers, blue water markers and coral geothermal markers. The actual meshes are deliberately simple. Next art pass: consistent modular building silhouettes, a richer flagship, faction portrait concepts, and modest sound cues. Generated raster art can supply portraits and concept boards; game meshes still need separate construction and review.
 
 ## Verification recorded
+
+The correction pass now passes 92 baseline, 43 urban and 19 landing assertions, plus UI checks. See PLAYTEST_REVIEW.md. The older performance record below predates the expanded scenery and must not be presented as a current render benchmark.
 
 Simulation suite: 91 baseline assertions plus 43 urban assertions, including distinct repair outcomes, real stock costs, cooldowns, reserve protection, sponsorship arrears, legacy save migration and deterministic continuation. UI checks cover starting the urban mode, inspection, live access-layer invalidation, priority-target selection, and repair continuing outside the city view, in addition to the previous navigation/building tests. The three-colony fixture contains about 285 cells; the urban slice contains 160. Observations were approximately 2.35–2.46 ms/tick for three colonies and 1.5–1.7 ms/tick for the urban slice. **EU4 was running concurrently**, so these are contended development-PC observations, not clean performance baselines or scalability guarantees.
 

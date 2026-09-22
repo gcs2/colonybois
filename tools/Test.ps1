@@ -5,7 +5,7 @@ if (-not (Test-Path -LiteralPath $enginePath)) { throw 'Run tools\Setup.ps1 firs
 Push-Location $projectRoot
 try {
     New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-    foreach ($testPath in @('tests/test_simulation.gd', 'tests/test_urban.gd', 'tests/test_ui.gd')) {
+    foreach ($testPath in @('tests/test_simulation.gd', 'tests/test_urban.gd', 'tests/test_landing.gd', 'tests/test_ui.gd')) {
         $testOutput = & $enginePath --headless --path $projectRoot --script $testPath 2>&1
         $testExit = $LASTEXITCODE
         $testOutput | ForEach-Object { Write-Host $_ }

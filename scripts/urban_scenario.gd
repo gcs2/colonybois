@@ -30,7 +30,7 @@ static func install(sim: RefCounted) -> void:
 	for x: int in [31,33]: _cell(colony,x,32,"road")
 	sim.refresh_colony(HOME)
 	sim.state["urban"] = {
-		"name":"Latch", "district":"South Loop", "path":"", "remaining":0,
+		"name":"Latch", "district":"South Loop", "path":"", "remaining":0, "tutorial_step":0,
 		"repaired":false, "ability_ready":0, "uses":0, "fees_paid":0.0, "fee_due":0.0,
 		"background":[
 			{"name":"Crown Gardens","population":32000,"jobs":15600},
@@ -62,6 +62,9 @@ static func command(sim: RefCounted, args: Dictionary) -> String:
 	var city: Dictionary = sim.state.urban
 	var colony: Dictionary = sim.state.colonies[HOME]
 	var action: String = str(args.get("choice",""))
+	if action == "inspect":
+		city.tutorial_step = 1
+		return ""
 	if action in ["public","sponsor"]:
 		if not str(city.path).is_empty(): return "Your repair agreement is already signed."
 		if action == "public":
@@ -73,6 +76,7 @@ static func command(sim: RefCounted, args: Dictionary) -> String:
 			sim.state.credits -= 180
 			city.remaining = 2
 		city.path = action
+		city.tutorial_step = 1
 		sim._log("Public crews begin an eight-day repair. Mutual aid will keep a 60-supply reserve." if action == "public" else "A two-day repair is commissioned. The sponsor receives 1 Mark/day after reopening.")
 		return ""
 	if not city.repaired: return "Reopen the crossing before using civic powers."
