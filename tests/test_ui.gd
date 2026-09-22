@@ -1,0 +1,49 @@
+extends SceneTree
+var failures: int = 0
+
+func _initialize() -> void:
+	call_deferred("run")
+
+func check(condition: bool, text: String) -> void:
+	if not condition:
+		failures += 1
+		printerr("FAIL: " + text)
+
+func run() -> void:
+	var scene = load("res://scenes/main.tscn").instantiate()
+	root.add_child(scene)
+	await process_frame
+	scene.speed = 0
+	scene._update_camera(1)
+	var count: int = scene.sim.state.colonies.s0p0.cells.size()
+	scene.tool_buttons.road.pressed.emit()
+	var screen: Vector2 = scene.camera.unproject_position(Vector3(6.5,0,-0.5))
+	scene._click_colony(screen)
+	check(scene.sim.state.colonies.s0p0.cells.size() == count+1,"Screen picking places a road on the intended tile")
+	check(scene.sim.state.colonies.s0p0.cells.has("38,31"),"World-to-grid mapping is correct")
+	var initial_credits: float = scene.sim.state.credits
+	scene.view_buttons.galaxy.pressed.emit()
+	check(scene.view == "galaxy","Galaxy navigation button changes view")
+	scene.sim.tick()
+	check(scene.sim.state.credits != initial_credits,"Economy continues outside colony view")
+	scene._select_system("s1")
+	scene._command("travel",{"system":"s1"})
+	for i: int in range(6): scene.sim.tick()
+	scene._select_planet("s1p0")
+	check(scene.view == "planet","Planet selection opens survey")
+	scene._command("colonize",{"planet":"s1p0"})
+	scene.view_buttons.colony.pressed.emit()
+	check(scene.view == "colony" and scene.planet_id == "s1p0","New colony accessible through UI")
+	scene._set_overlay("access")
+	check(scene.overlay == "access","Access overlay renders")
+	scene._set_overlay("suitability")
+	check(scene.overlay == "suitability","Suitability overlay renders")
+	scene.speed_buttons[3].pressed.emit()
+	check(scene.speed == 3,"Time controls work")
+	scene.speed_buttons[0].pressed.emit()
+	check(scene.speed == 0,"Pause works")
+	await process_frame
+	print("UI RESULT: %d failures" % failures)
+	scene.queue_free()
+	await process_frame
+	quit(1 if failures else 0)

@@ -1,0 +1,31 @@
+{
+  "buildings": {
+    "road": {"name":"Transit road","cost":2,"power":0,"description":"Drag to connect districts to the spaceport."},
+    "habitat": {"name":"Habitat zone","cost":12,"power":1,"description":"Homes grow with jobs, life support and local suitability."},
+    "industry": {"name":"Industry zone","cost":18,"power":3,"description":"Creates jobs and construction materials. Keep pollution away from homes."},
+    "service": {"name":"Service zone","cost":14,"power":2,"description":"Produces supplies and improves nearby residential desirability."},
+    "power": {"name":"Fusion generator","cost":35,"power":0,"description":"Provides 32 power. Frozen sites near geothermal vents produce 48."},
+    "life_support": {"name":"Life support","cost":28,"power":3,"description":"Supports growth within 9 tiles. Arid sites near water use less power."},
+    "extractor": {"name":"Mineral extractor","cost":30,"power":4,"description":"Build within 3 tiles of a mineral deposit for strong material output."},
+    "spaceport": {"name":"Spaceport","cost":0,"power":0,"description":"Colony hub, starter utilities and trade access."},
+    "terraformer": {"name":"Climate array","cost":70,"power":6,"description":"Enables a warming or water-recovery project on a harsh world."}
+  },
+  "environments": {
+    "temperate":{"name":"Temperate","power_factor":1.0,"color":"6c9b83","description":"Fertile land supports open development. Industry lowers nearby residential suitability."},
+    "frozen":{"name":"Frozen","power_factor":1.7,"color":"9bbbc6","description":"Heating is expensive. Geothermal vents favor compact, efficient settlements."},
+    "arid":{"name":"Arid","power_factor":1.25,"color":"c2a078","description":"Water is scarce. Place life support and homes near blue aquifers."}
+  },
+  "factions":[
+    {"id":"directorate","name":"Veyr Directorate","government":"Directorate","philosophy":"Expansionist","color":"ef9982","relation":5,"need":"materials","bonus":"Industrial discipline: pays more for materials.","reason":"Your frontier remains outside our claims."},
+    {"id":"consortium","name":"Orin Consortium","government":"Consortium","philosophy":"Mercantile","color":"e8ca83","relation":20,"need":"supplies","bonus":"Commercial networks: higher trade capacity.","reason":"A new partner is a new opportunity."},
+    {"id":"commune","name":"Thalen Commune","government":"Commune","philosophy":"Ecological","color":"7ed6ab","relation":15,"need":"supplies","bonus":"Biosphere stewardship: rewards conservation.","reason":"Leave room for the living world."}
+  ],
+  "discoveries":[
+    {"id":"archive","title":"The silent archive","text":"A buried observatory holds a map of ancient migration routes.","choices":["Publish the charts (+relations)","Decode privately (+credits)"],"reward":"archive"},
+    {"id":"garden","title":"A garden under glass","text":"A sealed ecosystem survived beneath an abandoned dome.","choices":["Preserve the garden (+ecologists)","Study its crops (+supplies)"],"reward":"garden"},
+    {"id":"beacon","title":"A wandering beacon","text":"A signal buoy still charts safe approaches through the dust.","choices":["Share safe routes (+relations)","Salvage the buoy (+materials)"],"reward":"beacon"},
+    {"id":"lattice","title":"The crystal lattice","text":"Mineral formations store a faint and intricate electrical charge.","choices":["Protect the formations (+ecologists)","Recover samples (+materials)"],"reward":"lattice"},
+    {"id":"seed","title":"Seeds of another sun","text":"A drifting seed vault contains remarkably adaptable plants.","choices":["Donate the vault (+relations)","Cultivate the seeds (+supplies)"],"reward":"seed"},
+    {"id":"relay","title":"The last relay","text":"An intact relay once connected settlements beyond this sector.","choices":["Open the relay (+relations)","License the technology (+credits)"],"reward":"relay"}
+  ]
+}
