@@ -1,46 +1,28 @@
 # Resume here
 
-## Latest direction: space exploration first
+## Active goal: spaceship adventure and Space Stage feature breadth
 
-The user shifted the main focus to discovering distinctive living worlds, their environments/flora/fauna/resources, and creating meaningful interstellar supply chains. Cities support population, administration, production and eventual military recruitment. The ancestors' mystery remains central. Spore-inspired expressive diplomacy/trade and a persistent civilization timeline are desired. First-person ship flight/combat is a long-term requirement.
+Read [SPACE_STAGE_TARGET.md](SPACE_STAGE_TARGET.md) first. The user playtested Morrow and rejected the farming-led introduction, F-centric interaction, constant-height flight, lack of danger, weak UI and insufficient audio. The goal is a polished Spore Space Stage spiritual successor, with all its feature families tracked, plus richer trade, flight and a potential human solar-system start. This goal is not complete.
 
-Read in order:
+Ecological expansion and city-first art work are deferred. Preserve the approved creepy-cute original assets and existing city/galaxy simulation. Do not add individual citizen/organism simulation. No engine migration is needed.
 
-1. `docs/SPACE_FIRST_DIRECTION.md` and `docs/SPORE_SPACE_STAGE_RESEARCH.md` — current priorities and the personal ship/tool interactions that must support the richer worlds and trade. The user endorsed those richer ideas; preserve them.
-2. `docs/FLIGHT_TECH_ASSESSMENT.md` — Godot recommendation, renderer comparison, local flight scenes and early test.
-3. `docs/DIPLOMACY_AND_CHRONICLE.md` — contact UI, real trade offers and structured persistent history.
-4. `docs/ART_PRODUCTION_PLAN.md` — retain spec/concept/model/review pipeline; city asset order is deferred.
+## Current flight checkpoint
 
-## Exact next task
+Choose **Morrow expedition — surface to orbit** from Play.cmd. Click a subject to approach and operate the selected tool; click terrain to move. Arrows / numpad 8,4,2,6 / WASD fly. Home, Page Up, numpad 9 or +, and E ascend; End, Page Down, numpad 3 or minus, and Q descend. Numpad 5 or 0, Escape, or Stop cancels. Wheel changes altitude; Ctrl-wheel zooms. Right-drag rotates the camera. On-screen flight controls support mouse-only play.
 
-**Implemented checkpoint, 2026-09-23:** Morrow Basin now provides an isolated playable ship/tool encounter from the opening menu. Read `docs/FIELD_ENCOUNTER.md` for controls, saves, actual scope, mesh sources and verification. The four GLB candidates are reproducibly authored from `tools/AuthorEncounter.gd` with the brief/palette in `data/encounter_art.json`. Human art approval remains open.
+The opening now points to scanning an old relay and leaving the atmosphere; planting is optional. Ascending past 58 local meters enters orbital flight. Click Morrow or Return to Morrow to approach and reenter the same surface. This is a local reference-frame transition, not seamless planetary scale. The orbital globe's surface marker is attached to its rotating transform.
 
-The user positively endorsed the initial assets. A subsequent animation pass adds independent eyes/fins, breathing, flexible tendrils and bounded foraging/curiosity/startle behavior, plus water/sky improvements. Final refinement and input/fun review remain open. The latest requested expansion is a broad flora/fauna collection with habitat suitability, feeding relationships and useful ecological synergies; build this in aggregate and prove a small food web before mass-producing species.
+One expedition model continues through both views. Version 1 field saves migrate additively to version 2. Survey, stock, trade and history survive a round trip. **The field is still isolated from the strategic campaign**; a unified ship/sector state is a required next integration, not solved by a Menu button. The full galaxy, other visitable surfaces and human scenario are not present in this flight slice.
 
-Read `docs/LIVING_ECOSYSTEMS.md` and `art/specs/species_catalog_v1.json`: fourteen original production briefs establish distinct roles and animation families. Only the pod and grazer are modeled; the richer food web remains proposed. Following the playtest, the next simulation slice is three habitat patches and six interacting species with bounded biomass, resource competition, recycling, visible limiting factors and deterministic saves. Do not mistake the catalog for implemented ecosystem bonuses or a finished asset library.
+## Next work
 
-**Next action:** play this encounter before expanding it. Check flight/camera feel, tool selection and cancellation, scan information, before/after ecology, finite nursery deliveries and save/return. Native computer-use access timed out before input, so that gate is not complete. Improve the observed experience and review the candidate silhouettes/materials before creating additional worlds. A first-person flight feasibility test and a full DCC asset refinement pass remain unstarted.
+1. Audit sound for every user/world event: distinct tool equip cues, target acquisition, movement confirmation, thrust, scans, cancellation, warnings, impacts and transitions. Add separate SFX/music/voice controls and a music/VO production path. The user explicitly wants satisfying hotbar sounds and is willing to pay for quality audio. Browser-assisted sourcing/auditions are authorized; present a concrete price/license before purchase.
+2. Give the ship health and weapons, readable instruments, a telegraphed threat, meaningful energy and fair recovery. Improve original icons, targeting feedback, animations and tutorial arrows. Native playtesting and listening remain essential.
+3. Connect personal flight to the sector, diplomacy and cargo. Do not build another isolated demo to avoid integration.
+4. Follow the complete requirement ledger rather than declaring success from this slice.
 
-The following describes the broader production phase; do not restart the already implemented encounter from scratch:
+## Verification and backup
 
-Run a bounded technical/art discovery phase without replacing the working game. Specify one scout ship and one distinctive planetary expedition scene, including movement, scanning, sample collection/deployment, one visible environmental response and audio. Prove that personally visiting and experimenting is enjoyable before widening the management layer. Keep the isolated first-person flight/renderer feasibility test from FLIGHT_TECH_ASSESSMENT.md bounded; cockpit combat is not a prerequisite for the planet interaction slice. Create the scout/environment concepts and authored model pipeline for in-engine review.
+Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence and legacy migration. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures (ignored runtime output); they demonstrate rendering, not fun or native input quality.
 
-Then prove home base plus two complementary worlds, about six provisional goods, two short production chains, finite demand and automatic delivery. One living ancestor encounter and one alien partner should make exploration matter. Timeline events must record actual validated outcomes.
-
-Do not resume HAB-01, municipal wealth-tier simulation or mayor development as the next priority. Preserve those specifications and the existing city prototype. No seamless planetary traversal, engine migration, full pixel-art rewrite or large fleet simulation has been approved.
-
-Suggested continuation prompt:
-
-> Resume from docs/NEXT_SESSION.md, SPACE_FIRST_DIRECTION.md and SPORE_SPACE_STAGE_RESEARCH.md. Start the bounded personal ship/tool encounter and authored expedition art pilot, preserving the working game. Keep first-person flight feasibility checks small. Preserve richer worlds, trade, diplomacy and history while making it fun to fly close, collect, experiment and revisit. Use the spec-to-model pipeline and checkpoint tested work to GitHub.
-
-## Playable stopping point
-
-`Play.cmd` opens the versioned executable in `build/current.txt`. Start a **new urban tutorial** to see the revised starting lots; old saves preserve their layouts. Rectangular zoning is free; development spends materials. Ledger/Services tabs expose daily economics and coverage. Top layer menu shows access, suitability, crime, fire and service reach. V cycles district/harbor/skyline views. Two road-connected powered shuttle stops produce a visible route; harbor boats are decorative. Full railways, maritime freight, wealth tiers, schools, parks, regional labor markets and mayors are not implemented.
-
-Three generated advisor portraits and three generated color textures are integrated. Their exact prompts/provenance are in ADVISOR_ART.md and CITY_TEXTURES.md. The current procedural building kit is still an interim model set, not the finished authored assets specified in the production plan.
-
-## Verification and caveats
-
-Tests: 92 baseline, 43 urban, 19 landing, 24 city assertions plus UI checks. Verified deterministic economy/risk behavior, multi-tile collision/frontage, free rectangle input, service effects, ledger reconciliation, persistence and route continuity. Captures inspect ledger, safety layer and textured architecture. User input previously interrupted native automation; no claim of a complete manual gameplay pass. EU4 was running during development, so timing samples are not a clean performance baseline.
-
-Before reporting the checkpoint complete: build, smoke the exported pack, commit and push, compare remote HEAD, leave a clean working tree. No overnight automation has been scheduled; this handoff is the explicit next-session trigger.
+Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.

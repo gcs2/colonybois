@@ -4,6 +4,8 @@ signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
 const Sound = preload("res://scripts/audio_feedback.gd")
+const FlightControls = preload("res://scripts/flight_controls.gd")
+const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
@@ -22,7 +24,7 @@ var relay_light: MeshInstance3D
 var ring: MeshInstance3D
 var beam: MeshInstance3D
 var beam_material: StandardMaterial3D
-var selected: String = "pod"
+var selected: String = "relay"
 var tool: String = "scan"
 var progress: float = 0.0
 var held: bool = false
@@ -53,6 +55,23 @@ var frame_samples: Array[float] = []
 var capture_step: int = 0
 var capture_clock: float = 0.0
 var use_button: Button
+var surface_root := Node3D.new()
+var orbit: Node3D
+var surface_environment: WorldEnvironment
+var surface_environment_resource: Environment
+var destination := Vector3.ZERO
+var navigating: bool = false
+var approach_subject: bool = false
+var landing: bool = false
+var vertical_button: float = 0.0
+var altitude_order: float = -1.0
+var location_label: Label
+var flight_readout: Label
+var energy_bar: ProgressBar
+var departure_button: Button
+var guide_arrow: Label
+var navigation_marker: MeshInstance3D
+var pause_button: Button
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -60,18 +79,35 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	if DisplayServer.get_name() != "headless": Engine.max_fps = 60
-	if "--playtest" in OS.get_cmdline_user_args() or "--field-capture" in OS.get_cmdline_user_args(): save_path = "user://review_field_encounter.json"
+	if "--playtest" in OS.get_cmdline_user_args() or "--field-capture" in OS.get_cmdline_user_args() or "--flight-capture" in OS.get_cmdline_user_args(): save_path = "user://review_field_encounter.json"
 	var testing: bool = "--script" in OS.get_cmdline_args()
 	if testing: save_path = "res://artifacts/field_test_session.json"
 	var resume_path: String = save_path.replace(".json","_auto.json")
 	if not FileAccess.file_exists(resume_path): resume_path = save_path
-	if not testing and "--field-capture" not in OS.get_cmdline_user_args() and FileAccess.file_exists(resume_path):
+	if not testing and "--field-capture" not in OS.get_cmdline_user_args() and "--flight-capture" not in OS.get_cmdline_user_args() and FileAccess.file_exists(resume_path):
 		var error: Error = model.load_from(resume_path)
 		if error != OK: push_warning("Field save rejected; starting an isolated new encounter.")
+	FlightControls.install()
 	add_child(audio)
 	_make_world()
+	# Keep the ship and camera while swapping surface/orbit presentation.
+	add_child(surface_root)
+	for child: Node in get_children():
+		if child is WorldEnvironment:
+			surface_environment = child
+			surface_environment_resource = child.environment
+		elif child is Node3D and child not in [surface_root,ship,camera] and not child is Light3D:
+			child.reparent(surface_root)
+	orbit = OrbitalScene.new()
+	add_child(orbit)
+	var nav_mesh := TorusMesh.new()
+	nav_mesh.inner_radius = 0.6
+	nav_mesh.outer_radius = 0.72
+	navigation_marker = _mesh(nav_mesh,Vector3.ZERO,_mat(Color("b0dee9"),true))
+	navigation_marker.visible = false
 	_make_ui()
 	_restore_ship()
+	_apply_flight_mode()
 	_update_visuals()
 	_update_camera(1.0)
 	_refresh_ui()
@@ -79,8 +115,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		held = false
-		progress = 0
+		_cancel_orders()
 		paused = true
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_save(false)
@@ -279,10 +314,10 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 func _style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_left = 14
-	style.corner_radius_bottom_right = 14
+	style.corner_radius_top_left = 5
+	style.corner_radius_top_right = 5
+	style.corner_radius_bottom_left = 5
+	style.corner_radius_bottom_right = 5
 	style.content_margin_left = 20
 	style.content_margin_right = 20
 	style.content_margin_top = 16
@@ -333,59 +368,80 @@ func _make_ui() -> void:
 	theme.default_font = font
 	theme.default_font_size = 16
 	root.theme = theme
-	var top: VBoxContainer = _panel(root,Rect2(28,24,390,114))
-	top.add_child(_label("M O R R O W   B A S I N",24))
-	top.add_child(_label("FIELD ENCOUNTER  /  living-world prototype",13,Color("9fcbbf")))
-	stats = _label("",14)
+	var top: VBoxContainer = _panel(root,Rect2(24,24,365,105))
+	location_label = _label("MORROW / SURFACE",22)
+	top.add_child(location_label)
+	stats = _label("",14,Color("a2bacb"))
 	top.add_child(stats)
 	var right := HBoxContainer.new()
-	right.position = Vector2(958,28)
-	right.add_theme_constant_override("separation",8)
+	right.position = Vector2(950,24)
+	right.add_theme_constant_override("separation",6)
 	root.add_child(right)
-	_button("Contact",_show_popup.bind("contact"),right)
-	_button("Journal",_show_popup.bind("journal"),right)
-	_button("Sound",func() -> void: audio.muted = not audio.muted; _toast("Sound off" if audio.muted else "Sound on"),right)
-	_button("Return",_exit_encounter,right)
-	var card: VBoxContainer = _panel(root,Rect2(28,161,315,155))
-	card.add_child(_label("EXPEDITION NOTES",12,Color("9fcbbf")))
-	objective = _label("",18)
+	_button("Comms",_show_popup.bind("contact"),right)
+	_button("Log",_show_popup.bind("journal"),right)
+	_button("Controls",_show_popup.bind("controls"),right)
+	pause_button = _button("Pause",_toggle_pause,right)
+	_button("Menu",_exit_encounter,right)
+	var card: VBoxContainer = _panel(root,Rect2(24,145,320,110))
+	card.add_child(_label("FLIGHT ASSIST",12,Color("82b7c9")))
+	objective = _label("",17)
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	objective.custom_minimum_size.x = 275
+	objective.custom_minimum_size.x = 280
 	card.add_child(objective)
-	var controls: Label = _label("WASD  fly     Q / E  altitude\nRight drag  orbit     Wheel  zoom\nClick a subject / Tab  select\n1–4  tools     Hold F  operate\nSpace  pause     F5 / F9  save / load",13,Color("bdc6c9"))
-	card.add_child(controls)
-	var footer: VBoxContainer = _panel(root,Rect2(414,713,772,160))
+	var instruments: VBoxContainer = _panel(root,Rect2(24,716,320,160))
+	flight_readout = _label("",18)
+	instruments.add_child(flight_readout)
+	energy_bar = ProgressBar.new()
+	energy_bar.custom_minimum_size.y = 8
+	energy_bar.show_percentage = false
+	energy_bar.tooltip_text = "Ship energy"
+	instruments.add_child(energy_bar)
+	var flight_row := HBoxContainer.new()
+	instruments.add_child(flight_row)
+	var rise: Button = _button("Ascend",func() -> void: pass,flight_row)
+	rise.button_down.connect(func() -> void: vertical_button = 1; altitude_order = -1)
+	rise.button_up.connect(func() -> void: vertical_button = 0)
+	var lower: Button = _button("Descend",func() -> void: pass,flight_row)
+	lower.button_down.connect(func() -> void: vertical_button = -1; altitude_order = -1)
+	lower.button_up.connect(func() -> void: vertical_button = 0)
+	_button("Stop",_cancel_orders,flight_row)
+	var footer: VBoxContainer = _panel(root,Rect2(370,732,840,144))
 	var tools_row := HBoxContainer.new()
-	tools_row.add_theme_constant_override("separation",9)
+	tools_row.add_theme_constant_override("separation",8)
 	footer.add_child(tools_row)
 	for i: int in range(TOOLS.size()):
-		var button: Button = _button(str(i+1)+"  "+TOOLS[i].capitalize(),_select_tool.bind(TOOLS[i]),tools_row)
+		var names: Array[String] = ["Scan","Tractor","Thermal","Deploy"]
+		var button: Button = _button(str(i+1)+"  "+names[i],_select_tool.bind(TOOLS[i]),tools_row)
+		button.tooltip_text = "Click a target to approach and use this tool."
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		toolbar.append(button)
-	use_button = _button("Operate",func() -> void: held = not held or latched; latched = false; progress = 0,tools_row)
-	subject = _label("",19)
+	use_button = _button("Use",_activate_selected,tools_row)
+	subject = _label("",17)
 	footer.add_child(subject)
-	explanation = _label("",14,Color("b5ccc7"))
-	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	explanation = _label("",13,Color("a2bacb"))
 	footer.add_child(explanation)
 	progress_bar = ProgressBar.new()
-	progress_bar.custom_minimum_size.y = 5
+	progress_bar.custom_minimum_size.y = 4
 	progress_bar.show_percentage = false
 	progress_bar.max_value = 1
 	footer.add_child(progress_bar)
+	var nav: VBoxContainer = _panel(root,Rect2(1235,765,340,110))
+	departure_button = _button("Leave atmosphere",_departure,nav)
 	status = _label("",18,Color("ffe0a8"))
-	status.position = Vector2(435,652)
-	status.size = Vector2(730,53)
+	status.position = Vector2(435,655)
+	status.size = Vector2(730,58)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(status)
+	guide_arrow = _label("▼",28,Color("ffe0a8"))
+	root.add_child(guide_arrow)
 	for id: String in targets:
 		var label: Label = _label(TITLES[id],13,Color("e3e9de"))
 		labels[id] = label
 		root.add_child(label)
 	popup = PanelContainer.new()
-	popup.position = Vector2(1075,106)
-	popup.size = Vector2(495,564)
+	popup.position = Vector2(1045,100)
+	popup.size = Vector2(530,560)
 	popup.add_theme_stylebox_override("panel",_style(Color("111f2b")))
 	root.add_child(popup)
 	popup_body = VBoxContainer.new()
@@ -395,30 +451,55 @@ func _make_ui() -> void:
 	_select_tool("scan")
 
 func _physics_process(delta: float) -> void:
-	if paused or popup.visible: velocity = velocity.move_toward(Vector3.ZERO,delta*20); return
-	var move := Vector3.ZERO
-	if Input.is_physical_key_pressed(KEY_W): move.z -= 1
-	if Input.is_physical_key_pressed(KEY_S): move.z += 1
-	if Input.is_physical_key_pressed(KEY_A): move.x -= 1
-	if Input.is_physical_key_pressed(KEY_D): move.x += 1
-	move = move.rotated(Vector3.UP,yaw).normalized()*9
-	if Input.is_physical_key_pressed(KEY_E): move.y += 4
-	if Input.is_physical_key_pressed(KEY_Q): move.y -= 4
-	velocity = velocity.move_toward(move,delta*18)
+	if paused or popup.visible: velocity = Vector3.ZERO; return
+	var input_direction: Vector3 = FlightControls.direction()
+	if Input.is_action_pressed("flight_brake"): _cancel_orders(); input_direction = Vector3.ZERO
+	var orbital: bool = model.state.flight_mode == "orbit"
+	var speed: float = 16.0 if orbital else 12.0
+	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
+	if not input_direction.is_zero_approx():
+		navigating = false
+		approach_subject = false
+		landing = false
+		held = false
+		progress = 0
+		if input_direction.y != 0: altitude_order = -1
+	if navigating:
+		if approach_subject: destination = _target_position()+Vector3(0,5,5)
+		var offset: Vector3 = destination-ship.position
+		move = FlightControls.arrival_velocity(offset,speed)
+		if offset.length() < 0.65:
+			navigating = false
+			move = Vector3.ZERO
+			if landing: _change_flight_mode("surface"); return
+			if approach_subject: approach_subject = false; held = true; latched = false
+	if input_direction.y != 0 or vertical_button != 0:
+		move.y = clampf(input_direction.y+vertical_button,-1,1)*12
+	elif altitude_order >= 0:
+		move.y = clampf((altitude_order-ship.position.y)*2,-14,14)
+		if absf(altitude_order-ship.position.y) < 0.2: altitude_order = -1
+	velocity = velocity.move_toward(move,delta*28)
 	ship.position += velocity*delta
-	var flat := Vector2(ship.position.x,ship.position.z).limit_length(39)
+	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else 39)
 	ship.position.x = flat.x
 	ship.position.z = flat.y
-	ship.position.y = clampf(ship.position.y,terrain_height(flat.x,flat.y)+2.7,14)
-	# Keep the scout out of the one solid landmark, without simulating a whole planet.
-	var away: Vector3 = ship.position-targets.relay.position
-	if Vector2(away.x,away.z).length() < 3 and away.y < 7:
-		var outward := Vector2(away.x,away.z).normalized()
-		if outward.is_zero_approx(): outward = Vector2.RIGHT
-		ship.position.x = targets.relay.position.x+outward.x*3
-		ship.position.z = targets.relay.position.z+outward.y*3
+	if orbital:
+		ship.position.y = clampf(ship.position.y,-55,75)
+		# The orbital globe is solid, including during point-and-click flight.
+		var away: Vector3 = ship.position-orbit.planet.position
+		if away.length() < 21: ship.position = orbit.planet.position+away.normalized()*21
+	else:
+		ship.position.y = maxf(ship.position.y,terrain_height(flat.x,flat.y)+2.7)
+		if ship.position.y >= 58: _change_flight_mode("orbit"); return
+		var away: Vector3 = ship.position-targets.relay.position
+		if Vector2(away.x,away.z).length() < 3 and away.y < 7:
+			var outward := Vector2(away.x,away.z).normalized()
+			if outward.is_zero_approx(): outward = Vector2.RIGHT
+			ship.position.x = targets.relay.position.x+outward.x*3
+			ship.position.z = targets.relay.position.z+outward.y*3
 	if Vector2(velocity.x,velocity.z).length() > 0.2: ship.rotation.y = lerp_angle(ship.rotation.y,atan2(-velocity.x,-velocity.z),delta*5)
 	ship.rotation.z = lerpf(ship.rotation.z,-move.rotated(Vector3.UP,-ship.rotation.y).x*0.025,delta*5)
+	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
 
 func _process(delta: float) -> void:
 	frame_samples.append(delta*1000)
@@ -436,7 +517,8 @@ func _process(delta: float) -> void:
 				if popup.visible: _show_popup(popup_kind)
 			if int(model.state.time)%30 == 0 and "--field-capture" not in OS.get_cmdline_user_args(): _save(false)
 	_update_camera(delta)
-	if not paused:
+	if not paused and model.state.flight_mode == "orbit": orbit.advance(delta)
+	if not paused and model.state.flight_mode == "surface":
 		for motion: RefCounted in grazer_motion:
 			motion.advance(delta,ship.position)
 			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
@@ -450,6 +532,7 @@ func _process(delta: float) -> void:
 	status.visible = toast_time > 0 or paused
 	if paused: status.text = "Paused — Space to resume"
 	if "--field-capture" in OS.get_cmdline_user_args(): _capture(delta)
+	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
 
 func _update_camera(delta: float) -> void:
 	camera_focus = camera_focus.lerp(ship.position+Vector3(0,-1,0),minf(1,delta*5))
@@ -458,6 +541,20 @@ func _update_camera(delta: float) -> void:
 	camera.look_at(camera_focus)
 
 func _update_visuals() -> void:
+	var orbital: bool = model.state.flight_mode == "orbit"
+	navigation_marker.visible = navigating
+	navigation_marker.position = destination-Vector3(0,0.8,0)
+	guide_arrow.visible = not paused and not popup.visible
+	if orbital:
+		guide_arrow.position = Vector2(1390,724)
+		ring.visible = false
+		for label: Label in labels.values(): label.visible = false
+		return
+	if "relay" not in model.state.scanned:
+		var projected: Vector2 = camera.unproject_position(_target_position("relay"))
+		guide_arrow.position = Vector2(clampf(projected.x-14,350,1180),clampf(projected.y-72,130,610))-Vector2(0,sin(elapsed*4)*5)
+		guide_arrow.visible = guide_arrow.visible and not camera.is_position_behind(_target_position("relay"))
+	else: guide_arrow.position = Vector2(1390,724+sin(elapsed*4)*4)
 	for i: int in range(wild_plants.size()):
 		wild_plants[i].scale = Vector3.ONE*(0.9 if i == 0 else (0.7 if i < int(model.state.native_stock) else 0.3))
 		wild_plants[i].rotation.z = sin(elapsed*1.1+i)*0.035
@@ -466,7 +563,7 @@ func _update_visuals() -> void:
 		grown_plants[i].visible = model.state.seeded
 		grown_plants[i].scale = Vector3.ONE*(0.08+float(model.state.growth)*(0.55+0.06*(i%3)))
 		grown_plants[i].rotation.z = sin(elapsed*1.2+i)*0.045
-	relay_light.visible = model.state.growth >= 1
+	relay_light.visible = "relay" in model.state.scanned or model.state.growth >= 1
 	ring.position = _target_position()+Vector3(0,-0.8,0)
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
 	ring.visible = not camera.is_position_behind(_target_position())
@@ -484,7 +581,7 @@ func _target_position(id: String = "") -> Vector3:
 
 func _operate(delta: float) -> void:
 	beam.visible = false
-	if paused or popup.visible or not held or latched:
+	if paused or popup.visible or model.state.flight_mode == "orbit" or not held or latched:
 		progress = 0
 		return
 	var error: String = model.reason(tool,selected,ship.position.distance_to(_target_position()))
@@ -508,7 +605,7 @@ func _operate(delta: float) -> void:
 	beam.basis = Basis(side,axis,side.cross(axis)).scaled(Vector3(1,ship.position.distance_to(end),1))
 	if progress >= 1:
 		error = model.act(tool,selected,ship.position.distance_to(end))
-		_toast(error if not error.is_empty() else model.state.history.back().text)
+		_toast(error if not error.is_empty() else ("Survey complete" if tool == "scan" else "Operation complete"))
 		audio.play("error" if not error.is_empty() else "build")
 		latched = true
 		progress = 0
@@ -525,34 +622,132 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_3: _select_tool("warm")
 			KEY_4: _select_tool("seed")
 			KEY_TAB:
+				_cancel_orders()
 				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
-				progress = 0
-			KEY_SPACE:
-				paused = not paused
-				held = false
-			KEY_ESCAPE:
-				popup.visible = false
-				held = false
+			KEY_SPACE: _toggle_pause()
+			KEY_ESCAPE: popup.visible = false; _cancel_orders()
 			KEY_F5: _save()
 			KEY_F9: _load()
-	if popup.visible: return
+	if popup.visible or paused: return
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: distance = maxf(12,distance*0.9)
-		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: distance = minf(52,distance/0.9)
+		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+			var sign_y: float = 1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1
+			if event.ctrl_pressed: distance = clampf(distance-sign_y*3,12,65)
+			else:
+				navigating = false
+				approach_subject = false
+				altitude_order = clampf((ship.position.y if altitude_order < 0 else altitude_order)+sign_y*6,3,65)
 		if event.button_index == MOUSE_BUTTON_LEFT: _pick(event.position)
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		yaw -= event.relative.x*0.006
 		pitch = clampf(pitch+event.relative.y*0.004,0.2,1.3)
 
 func _pick(screen: Vector2) -> void:
-	var closest: float = 90
+	if paused or popup.visible: return
+	if model.state.flight_mode == "orbit":
+		var ray: Vector3 = camera.project_ray_normal(screen)
+		var from: Vector3 = camera.project_ray_origin(screen)
+		var near: Vector3 = from+ray*maxf(0,(orbit.planet.position-from).dot(ray))
+		if near.distance_to(orbit.planet.position) <= 19: _begin_landing(); return
+		var plane := Plane(Vector3.UP,ship.position.y)
+		var at: Variant = plane.intersects_ray(from,ray)
+		if at is Vector3: _navigate(at)
+		return
+	var closest: float = 48
+	var picked: String = ""
 	for id: String in targets:
 		var at: Vector3 = _target_position(id)
 		if camera.is_position_behind(at): continue
 		var d: float = camera.unproject_position(at).distance_to(screen)
-		if d < closest: closest = d; selected = id; progress = 0
+		if d < closest: closest = d; picked = id
+	if not picked.is_empty():
+		selected = picked
+		_activate_selected()
+		return
+	# Ray march against the actual terrain height, never an arbitrary screen plane.
+	var from: Vector3 = camera.project_ray_origin(screen)
+	var ray: Vector3 = camera.project_ray_normal(screen)
+	for i: int in range(1,480):
+		var at: Vector3 = from+ray*float(i)*0.5
+		if at.y <= terrain_height(at.x,at.z):
+			var flat := Vector2(at.x,at.z).limit_length(38)
+			_navigate(Vector3(flat.x,maxf(ship.position.y,terrain_height(flat.x,flat.y)+4),flat.y))
+			return
+
+func _navigate(at: Vector3) -> void:
+	_cancel_orders()
+	destination = at
+	if model.state.flight_mode == "orbit":
+		var flat := Vector2(at.x,at.z).limit_length(75)
+		destination = Vector3(flat.x,clampf(at.y,-50,70),flat.y)
+	navigating = true
+	audio.play("tap")
+
+func _activate_selected() -> void:
+	if held or approach_subject: _cancel_orders(); return
+	if model.state.flight_mode == "orbit": return
+	var error: String = model.reason(tool,selected,0)
+	if not error.is_empty(): _toast(error); audio.play("error"); return
+	_cancel_orders()
+	if ship.position.distance_to(_target_position()) > 11:
+		destination = _target_position()+Vector3(0,5,5)
+		navigating = true
+		approach_subject = true
+	else: held = true
+
+func _cancel_orders() -> void:
+	navigating = false
+	approach_subject = false
+	landing = false
+	held = false
+	latched = false
+	progress = 0
+	vertical_button = 0
+	altitude_order = -1
+	velocity = Vector3.ZERO
+
+func _toggle_pause() -> void:
+	paused = not paused
+	_cancel_orders()
+
+func _departure() -> void:
+	if paused or popup.visible: return
+	if model.state.flight_mode == "orbit": _begin_landing(); return
+	_cancel_orders()
+	altitude_order = 63
+	audio.play("launch")
+
+func _begin_landing() -> void:
+	_navigate(OrbitalScene.APPROACH)
+	landing = true
+	audio.play("launch")
+
+func _change_flight_mode(mode: String) -> void:
+	if not model.change_flight_mode(mode): return
+	_cancel_orders()
+	_restore_ship()
+	_apply_flight_mode()
+	audio.play("arrival")
+	_toast("Morrow orbit reached" if mode == "orbit" else "Atmospheric entry complete")
+	_save(false)
+
+func _apply_flight_mode() -> void:
+	var orbital: bool = model.state.flight_mode == "orbit"
+	surface_root.visible = not orbital
+	orbit.visible = orbital
+	# Only one WorldEnvironment is active; hidden nodes still register environments.
+	surface_environment.environment = null if orbital else surface_environment_resource
+	orbit.environment.environment = orbit.get_meta("environment",orbit.environment.environment)
+	if not orbit.has_meta("environment"): orbit.set_meta("environment",orbit.environment.environment)
+	if not orbital: orbit.environment.environment = null
+	for button: Button in toolbar: button.disabled = orbital
+	use_button.disabled = orbital
+	distance = 43 if orbital else 29
+	camera_focus = ship.position
+	_update_camera(1)
 
 func _select_tool(value: String) -> void:
+	_cancel_orders()
 	tool = value
 	progress = 0
 	held = false
@@ -565,38 +760,51 @@ func _select_tool(value: String) -> void:
 
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
-	stats.text = "Energy %d   ·   Seeds %d/2   ·   Harvest %d   ·   %d Marks" % [s.energy,s.samples,s.produce,s.marks]
-	if "pod" not in s.scanned: objective.text = "Approach the glowing pods.\nSelect Scan, then hold F."
-	elif s.samples == 0 and not s.seeded: objective.text = "Collect a living seed.\nKeep a wild feeding reserve."
-	elif "bed" not in s.scanned: objective.text = "Fly to the pale mineral bed.\nScan it to learn what it needs."
-	elif not s.warm: objective.text = "Warm the mineral bed.\nThermal tool costs 25 energy."
-	elif not s.seeded: objective.text = "Deploy your seed in the bed.\nWatch what takes root."
-	elif s.growth < 1: objective.text = "A new canopy is growing.\nExplore nearby while it settles."
-	else: objective.text = "The relay has answered.\nContact Vell about your harvest."
-	var gap: float = ship.position.distance_to(_target_position())
-	subject.text = "%s   /   %.0f m   /   %s" % [TITLES[selected],gap,tool.capitalize()]
-	if selected == "grazer": subject.text += "   ·   "+grazer_motion[0].mode.capitalize()
-	var error: String = model.reason(tool,selected,gap)
-	explanation.text = "Hold F to "+tool+". Release to cancel." if error.is_empty() else error
+	var orbital: bool = s.flight_mode == "orbit"
+	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
+	stats.text = "%d Marks   /   Cargo %d   /   %d surveys" % [s.marks,s.samples+s.produce,s.scanned.size()]
+	energy_bar.value = s.energy
+	flight_readout.text = "%s  %.0f m   /   %.0f m/s\nENERGY  %d / 100" % ["Y" if orbital else "ALT",ship.position.y,velocity.length(),s.energy]
+	pause_button.text = "Resume" if paused else "Pause"
+	departure_button.text = "Return to Morrow" if orbital else "Leave atmosphere"
+	if orbital: objective.text = "You're in orbit. Click Morrow to approach and descend."
+	elif "relay" not in s.scanned: objective.text = "Click the old relay to approach and scan. Or leave whenever you're ready."
+	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "The signal points beyond the clouds. Ascend or choose Leave atmosphere."
+	else: objective.text = "Flight assist complete. Survey the basin or return to orbit."
+	if orbital:
+		subject.text = "MORROW  /  orbital flight"
+		explanation.text = "Click planet to descend · Click space to fly · Wheel changes altitude"
+	else:
+		var gap: float = ship.position.distance_to(_target_position())
+		subject.text = "%s   /   %.0f m   /   %s" % [TITLES[selected],gap,tool.capitalize()]
+		if approach_subject: explanation.text = "Approaching target · Stop or steer to cancel"
+		elif held and not latched: explanation.text = "Tool active · Click Use or press Escape to cancel"
+		else: explanation.text = "Click a target to use tool · Click terrain to fly · Wheel changes altitude"
 	progress_bar.value = progress
-	use_button.text = "Cancel" if held and not latched else "Operate"
+	use_button.text = "Cancel" if (held and not latched) or approach_subject else "Use"
 
 func _toast(text: String) -> void:
 	status.text = text
 	toast_time = 6
 
 func _show_popup(kind: String) -> void:
-	held = false
+	_cancel_orders()
 	popup_kind = kind
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
-	var title: Label = _label("FIELD JOURNAL" if kind == "journal" else "VELL  /  nursery liaison",22)
+	var title: Label = _label("FLIGHT CONTROLS" if kind == "controls" else ("EXPEDITION LOG" if kind == "journal" else "VELL / TRADE"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	_button("×",func() -> void: popup.visible = false,header)
-	if kind == "journal":
+	if kind == "controls":
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: altitude · Ctrl + wheel: camera zoom\nRight drag: rotate camera\n1–4: tools · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		copy.custom_minimum_size.x = 450
+		popup_body.add_child(copy)
+		_button("Sound: off" if audio.muted else "Sound: on",func() -> void: audio.muted = not audio.muted; _show_popup("controls"),popup_body)
+	elif kind == "journal":
 		var scroll := ScrollContainer.new()
 		scroll.custom_minimum_size = Vector2(450,400)
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -640,7 +848,9 @@ func _save(notify: bool = true) -> void:
 func _load() -> void:
 	var error: Error = model.load_from(save_path)
 	if error == OK:
+		_cancel_orders()
 		_restore_ship()
+		_apply_flight_mode()
 		progress = 0
 		held = false
 		tick_clock = 0
@@ -650,7 +860,7 @@ func _load() -> void:
 func _restore_ship() -> void:
 	var at: Array = model.state.position
 	ship.position = Vector3(at[0],at[1],at[2])
-	ship.position.y = clampf(ship.position.y,terrain_height(ship.position.x,ship.position.z)+2.7,14)
+	if model.state.flight_mode == "surface": ship.position.y = clampf(ship.position.y,terrain_height(ship.position.x,ship.position.z)+2.7,57)
 	yaw = model.state.yaw
 	camera_focus = ship.position
 	velocity = Vector3.ZERO
@@ -659,6 +869,18 @@ func _exit_encounter() -> void:
 	_save(false)
 	if leave.get_connections().is_empty(): get_tree().quit()
 	else: leave.emit()
+
+func _capture_flight(delta: float) -> void:
+	capture_clock += delta
+	if capture_clock < 2: return
+	capture_clock = 0
+	var path: String = ProjectSettings.globalize_path("user://flight_captures")
+	DirAccess.make_dir_recursive_absolute(path)
+	get_viewport().get_texture().get_image().save_png(path.path_join("flight_%d.png" % capture_step))
+	capture_step += 1
+	if capture_step == 1: _departure()
+	elif capture_step == 5: _begin_landing()
+	elif capture_step == 8: get_tree().quit()
 
 func _capture(delta: float) -> void:
 	capture_clock += delta

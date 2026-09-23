@@ -10,6 +10,8 @@
 
 ## Product constraints
 
+- Latest user playtest supersedes the ecology-led slice: read docs/SPACE_STAGE_TARGET.md. Spaceflight, mouse-first tools, arrows/numpad, altitude/orbit, real danger, professional HUD, sound/music/VO and full Space Stage feature breadth are the active goal. Existing small-MVP exclusions are staging decisions, not final success criteria. A human Sol scenario is desired alongside the alien campaign. Do not expand the food-web catalog before fixing spaceship play. User permits browser-assisted audio production and is willing to pay; get a concrete price/license approved before purchase.
+
 - Resume production from docs/NEXT_SESSION.md. Latest direction is SPACE_FIRST_DIRECTION.md: exploration, distinct living planets, supply chains and alien diplomacy take priority; cities support those systems. Preserve the authored-art pipeline but move its pilot to a planet expedition and scout ship. Read FLIGHT_TECH_ASSESSMENT.md for an early bounded first-person flight test, and DIPLOMACY_AND_CHRONICLE.md for expressive contact/trade and persistent history. No engine migration or rendering rewrite is approved. Older city-first milestones are deferred.
 
 - Godot 4.7.2, desktop, single-player. Exploration and trade precede full fleet battles. First-person ship flight/combat is a desired later capability; a small early flight/renderer feasibility test is appropriate without launching full combat production.

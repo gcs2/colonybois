@@ -529,7 +529,7 @@ func _show_mode_menu() -> void:
 	menu_scroll.add_child(content)
 	_text(content,"F R O N T I E R   W O R L D S",30,WHITE)
 	_text(content,"A settlement. A signal. A sky you haven't mapped.",19,MINT)
-	_button("NEW · Morrow Basin — fly, sample, grow",_open_field,content)
+	_button("Morrow expedition — surface to orbit",_open_field,content)
 	_text(content,"URBAN TUTORIAL · FIRST CAMPAIGN SLICE",12,MINT)
 	_text(content,"An existing city, a broken crossing, two repair agreements. Govern one district; keep the consequences as you explore.",16)
 	_button("New urban tutorial",_start_mode.bind("urban",false),content)
