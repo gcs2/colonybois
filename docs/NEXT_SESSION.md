@@ -17,6 +17,8 @@ Read in order:
 
 The user positively endorsed the initial assets. A subsequent animation pass adds independent eyes/fins, breathing, flexible tendrils and bounded foraging/curiosity/startle behavior, plus water/sky improvements. Final refinement and input/fun review remain open. The latest requested expansion is a broad flora/fauna collection with habitat suitability, feeding relationships and useful ecological synergies; build this in aggregate and prove a small food web before mass-producing species.
 
+Read `docs/LIVING_ECOSYSTEMS.md` and `art/specs/species_catalog_v1.json`: fourteen original production briefs establish distinct roles and animation families. Only the pod and grazer are modeled; the richer food web remains proposed. Following the playtest, the next simulation slice is three habitat patches and six interacting species with bounded biomass, resource competition, recycling, visible limiting factors and deterministic saves. Do not mistake the catalog for implemented ecosystem bonuses or a finished asset library.
+
 **Next action:** play this encounter before expanding it. Check flight/camera feel, tool selection and cancellation, scan information, before/after ecology, finite nursery deliveries and save/return. Native computer-use access timed out before input, so that gate is not complete. Improve the observed experience and review the candidate silhouettes/materials before creating additional worlds. A first-person flight feasibility test and a full DCC asset refinement pass remain unstarted.
 
 The following describes the broader production phase; do not restart the already implemented encounter from scratch:

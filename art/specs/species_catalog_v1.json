@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "status": "14 original species briefs; proposed ecology, not a runtime food-web implementation",
+  "range_units": "temperature: normalized -1 cold to +1 hot; moisture: 0 dry to 1 saturated; values are provisional game balancing",
+  "species": [
+    {
+      "id":"lantern_pod", "name":"Lantern pod", "group":"plantlike", "roles":["producer"],
+      "habitats":["mineral_scrub","canopy_edge"], "temperature":[0.05,0.65], "moisture":[0.25,0.7],
+      "energy_source":"sunlight", "food":[], "product":"cultivated_seed", "utility":"Nursery exports and starter biomass for compatible habitats.",
+      "tradeoff":"Heavy seed harvesting reduces propagation and grazer food.",
+      "interactions":[{"kind":"pollination","target":"pollen_imp","effect":"Successful visits improve seed set within nutrient and water limits."},{"kind":"dispersal","target":"bell_grazer","effect":"Moderate grazing spreads viable seeds; excessive grazing removes biomass."}],
+      "art":{"status":"candidate GLB exists","mesh":"assets/encounter/pod.glb","body_plan":"Three arching stems with ribbed mint bladders and folded plum leaves.","animation_family":"rooted_flexible","clips":["wind sway","bladder pulse","sample removal","wilting","seed release"]}
+    },
+    {
+      "id":"bell_grazer", "name":"Bell grazer", "group":"animal_like", "roles":["primary_consumer","seed_disperser"],
+      "habitats":["mineral_scrub","canopy_edge"], "temperature":[-0.05,0.7], "moisture":[0.15,0.75],
+      "energy_source":"food", "food":["lantern_pod"], "product":"shed_insulating_fiber", "utility":"Disperses compatible seeds; naturally shed fibers could support insulation production.",
+      "tradeoff":"An abundant herd consumes more crop than its dispersal benefit replaces.",
+      "interactions":[{"kind":"dispersal","target":"lantern_pod","effect":"Moves seed between connected suitable patches."},{"kind":"prey","target":"ribbon_kite","effect":"Predation limits herd growth and can reduce overgrazing."}],
+      "art":{"status":"candidate GLB and procedural animation exist","mesh":"assets/encounter/grazer.glb","body_plan":"Peach buoyant bell, three independent eyes, side fins and six trailing tendrils.","animation_family":"buoyant_bell","clips":["forage","curious approach","startle retreat","staggered blink","gaze","tendril curl"]}
+    },
+    {
+      "id":"veil_reed", "name":"Veil reed", "group":"plantlike", "roles":["producer","habitat_engineer"],
+      "habitats":["wetland","shore"], "temperature":[-0.2,0.55], "moisture":[0.65,1.0],
+      "energy_source":"sunlight", "food":[], "product":"filter_membrane", "utility":"Traps suspended sediment; membranes enable water-treatment components.",
+      "tradeoff":"Dense stands use shore habitat and slow water exchange; pollution is stored, not magically destroyed.",
+      "interactions":[{"kind":"shelter","target":"silt_whisk","effect":"Root curtains support detritivore habitat."},{"kind":"competition","target":"bloom_float","effect":"Shade reduces local light available to surface colonies."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Forked stalks carry translucent hanging combs; seed cups resemble listening ears.","animation_family":"rooted_flexible","clips":["current sway","filter loading","fold in drought","seed cup opening"]}
+    },
+    {
+      "id":"ember_lichen", "name":"Ember lichen", "group":"microbial_colony", "roles":["producer","mineral_processor"],
+      "habitats":["geothermal_rock","vent_margin"], "temperature":[0.4,1.0], "moisture":[0.15,0.65],
+      "energy_source":"finite vent chemical flux", "food":[], "product":"biocatalyst", "utility":"A producer for dim thermal habitats; catalysts can support ore processing.",
+      "tradeoff":"Harvest competes with ecological growth; exhausted vent chemistry cannot support unlimited output.",
+      "interactions":[{"kind":"food","target":"pebbleback","effect":"A compatible grazer converts some colony biomass into consumer biomass."},{"kind":"competition","target":"hush_fungus","effect":"Both occupy sheltered mineral pores when their climate tolerances overlap."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Low ceramic crusts with orange breathing seams and tiny hinged plates.","animation_family":"colony_surface","clips":["chemical pulse","vent response","dormant plates","harvested scar"]}
+    },
+    {
+      "id":"sail_frond", "name":"Sail frond", "group":"plantlike", "roles":["producer","habitat_engineer"],
+      "habitats":["arid_ridge","fog_slope"], "temperature":[0.05,0.9], "moisture":[0.05,0.45],
+      "energy_source":"sunlight", "food":[], "product":"water_wicking_fiber", "utility":"Collects available fog moisture into sheltered soil; fibers support condensers.",
+      "tradeoff":"No fog means no new water. Water exported from the patch is unavailable to dependent life.",
+      "interactions":[{"kind":"microhabitat","target":"lantern_pod","effect":"Retained moisture can permit pods where climate otherwise almost supports them."},{"kind":"shelter","target":"pollen_imp","effect":"Folded sails provide roosts if food and temperature also permit survival."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Three asymmetrical ribbed sails fold around a fat hooked stem, with hanging droplet sacs.","animation_family":"folding_canopy","clips":["night unfurl","wind flex","dew transfer","drought curl"]}
+    },
+    {
+      "id":"bloom_float", "name":"Bloom float", "group":"microbial_colony", "roles":["producer"],
+      "habitats":["wetland","shore","warm_updraft"], "temperature":[0.2,0.9], "moisture":[0.55,1.0],
+      "energy_source":"sunlight", "food":[], "product":"buoyant_lipid", "utility":"Supports filter feeders and produces compounds useful in lightweight biological materials.",
+      "tradeoff":"Dense blooms compete for light; dead blooms add a large decomposition load.",
+      "interactions":[{"kind":"food","target":"cloud_manta","effect":"Filter feeding removes bloom biomass."},{"kind":"competition","target":"veil_reed","effect":"Surface mats can suppress young reeds through shading."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Pea-sized luminous beads aggregate into ribbon clouds; render as capped instanced clusters.","animation_family":"aggregate_drift","clips":["eddy drift","bloom","filter-feeding wake","dieback"]}
+    },
+    {
+      "id":"frostlace", "name":"Frostlace", "group":"plantlike", "roles":["producer","shelter_provider"],
+      "habitats":["frozen_scrub","cold_sheltered_rock"], "temperature":[-0.95,-0.1], "moisture":[0.15,0.65],
+      "energy_source":"sunlight", "food":[], "product":"cryoprotectant", "utility":"Supports cold-world biological products and insulated pockets of habitat.",
+      "tradeoff":"Warming that helps other crops can remove its viable climate niche and a valuable export.",
+      "interactions":[{"kind":"food","target":"pebbleback","effect":"Cold-tolerant grazer populations can feed on it in overlapping conditions."},{"kind":"shelter","target":"hush_fungus","effect":"Lace mats trap organic litter in sheltered ground."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Low blue-white fans unfold from dark knots; translucent edges and rose-colored root mouths.","animation_family":"folding_canopy","clips":["slow unfurl","snow shake","heat stress collapse","recovery"]}
+    },
+    {
+      "id":"pollen_imp", "name":"Pollen imp", "group":"animal_like", "roles":["primary_consumer","pollinator"],
+      "habitats":["canopy_edge","mineral_scrub","fog_slope"], "temperature":[0.05,0.75], "moisture":[0.2,0.75],
+      "energy_source":"food", "food":["lantern_pod"], "product":"pollination_service", "utility":"Improves compatible plant reproduction rather than adding a planet-wide yield bonus.",
+      "tradeoff":"Needs flowers and roosts; predators or habitat loss can remove the service.",
+      "interactions":[{"kind":"pollination","target":"lantern_pod","effect":"Transfers compatible pollen between surviving flowers."},{"kind":"prey","target":"glass_mantis","effect":"Too many mantises can suppress the pollinator population."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Pear-shaped striped abdomen, four leaf wings, one oversized nose and two shy retractable eyes.","animation_family":"small_flier","clips":["hover","landing","flower probe","wing grooming","panic dart"]}
+    },
+    {
+      "id":"pebbleback", "name":"Pebbleback", "group":"animal_like", "roles":["primary_consumer","soil_disturber"],
+      "habitats":["geothermal_rock","cold_sheltered_rock","mineral_scrub"], "temperature":[-0.4,0.8], "moisture":[0.1,0.65],
+      "energy_source":"food", "food":["ember_lichen","frostlace"], "product":"shed_shell_mineral", "utility":"Disturbs compacted substrate and exposes new growth sites.",
+      "tradeoff":"Heavy grazing strips protective ground cover; shell collection depends on natural shedding.",
+      "interactions":[{"kind":"disturbance","target":"ember_lichen","effect":"Moderate scraping opens substrate; high pressure removes the colony."},{"kind":"prey","target":"glass_mantis","effect":"Egg and juvenile predation limits recruitment."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Six-footed low stone oval, telescoping snout, mismatched mineral shell plates, soft underside.","animation_family":"hexapod_ground","clips":["tripod gait","graze scrape","shell shiver","hide","right itself"]}
+    },
+    {
+      "id":"silt_whisk", "name":"Silt whisk", "group":"animal_like", "roles":["detritivore"],
+      "habitats":["wetland","shore"], "temperature":[-0.15,0.7], "moisture":[0.75,1.0],
+      "energy_source":"food", "food":["detritus_pool"], "product":"sediment_conditioning", "utility":"Processes settled organic material and creates habitat for further decomposition.",
+      "tradeoff":"Its activity has a local water-quality cost when organic loading exceeds available capacity.",
+      "interactions":[{"kind":"shelter","target":"veil_reed","effect":"Uses protected root curtains; reed removal lowers local carrying capacity."},{"kind":"facilitation","target":"hush_fungus","effect":"Processed detritus becomes accessible to sheltered decomposer colonies where conditions overlap."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Flat transparent tadpole with an enormous brush moustache and paired paddle feet.","animation_family":"aquatic_wriggler","clips":["bottom skim","whisk sediment","burrow","startle kick"]}
+    },
+    {
+      "id":"hush_fungus", "name":"Hush fungus", "group":"fungoid", "roles":["decomposer"],
+      "habitats":["canopy_edge","cold_sheltered_rock","wetland"], "temperature":[-0.4,0.65], "moisture":[0.4,0.95],
+      "energy_source":"organic matter", "food":["detritus_pool"], "product":"recovered_soil_nutrients", "utility":"Returns part of consumed dead biomass to available nutrients.",
+      "tradeoff":"No litter means no recovery; excessive decomposition can stress poorly ventilated wet habitat.",
+      "interactions":[{"kind":"nutrient_recycling","target":"lantern_pod","effect":"Recycled nutrients can relieve an actual soil shortage."},{"kind":"shelter","target":"frostlace","effect":"Uses litter trapped beneath cold-tolerant mats."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Velvet ear-shaped fruiting bodies above a thin branching mat; pores open in gentle waves.","animation_family":"colony_surface","clips":["pore wave","litter absorption","dormancy","spore puff"]}
+    },
+    {
+      "id":"ribbon_kite", "name":"Ribbon kite", "group":"animal_like", "roles":["secondary_consumer"],
+      "habitats":["canopy_edge","mineral_scrub"], "temperature":[0.0,0.8], "moisture":[0.15,0.7],
+      "energy_source":"food", "food":["bell_grazer"], "product":"grazing_control", "utility":"Can reduce a herd's pressure on seed-bearing vegetation.",
+      "tradeoff":"Requires prey; overstocking kills grazers and then starves the predator population.",
+      "interactions":[{"kind":"predation","target":"bell_grazer","effect":"Consumes prey biomass; indirectly changes pod grazing pressure."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Broad petal wings with two long steering ribbons; tiny round face conceals a folding feeding basket.","animation_family":"gliding_predator","clips":["circle","bank","fold and dive","miss and recover","perch"]}
+    },
+    {
+      "id":"glass_mantis", "name":"Glass mantis", "group":"animal_like", "roles":["secondary_consumer"],
+      "habitats":["canopy_edge","mineral_scrub","geothermal_rock"], "temperature":[0.1,0.9], "moisture":[0.15,0.75],
+      "energy_source":"food", "food":["pollen_imp","pebbleback"], "product":"mixed_pest_control", "utility":"Can suppress damaging grazer recruitment around cultivation.",
+      "tradeoff":"Also eats valuable pollinators; introducing it is not automatically beneficial.",
+      "interactions":[{"kind":"predation","target":"pollen_imp","effect":"Pollinator loss may reduce seed output."},{"kind":"predation","target":"pebbleback","effect":"Egg and juvenile consumption reduces future grazing pressure."}],
+      "art":{"status":"brief only","mesh":null,"body_plan":"Four arched legs, transparent spoon arms, leaf-shaped head and a startlingly small smiling mouth.","animation_family":"ground_ambusher","clips":["slow stalk","head track","strike","chew","freeze camouflage"]}
+    },
+    {
+      "id":"cloud_manta", "name":"Cloud manta", "group":"animal_like", "roles":["primary_consumer","potential_transport_partner"],
+      "habitats":["warm_updraft","shore"], "temperature":[0.3,0.9], "moisture":[0.55,1.0],
+      "energy_source":"food", "food":["bloom_float"], "product":"future_route_capacity", "utility":"A later domestication partnership could support a bounded biological transport route.",
+      "tradeoff":"Needs feeding grounds, rest and suitable air corridors; cargo service competes with recovery time.",
+      "interactions":[{"kind":"filter_feeding","target":"bloom_float","effect":"Harvests bloom biomass; excessive suppression harms its own food supply."}],
+      "art":{"status":"brief only; later megafauna","mesh":null,"body_plan":"Massive soft kite with a scalloped filter mouth, underslung eye cluster and load-bearing saddle ridges.","animation_family":"large_glider","clips":["slow propulsion","filter feed","bank","rest","boarding crouch"]}
+    }
+  ]
+}

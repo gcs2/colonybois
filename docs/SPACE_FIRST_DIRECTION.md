@@ -18,6 +18,8 @@ Give each authored world an environmental rule, a recognizable ecological relati
 
 Use a handful of ecological state variables and timed transitions, with visible fauna and plants representing them. Do not simulate every organism or promise unrestricted evolution. World discovery must include atmospheric behavior, sound, motion and an interesting decision, not only a resource tooltip.
 
+The user now explicitly wants a broad flora/fauna collection with ecological synergies. See [LIVING_ECOSYSTEMS.md](LIVING_ECOSYSTEMS.md) and the fourteen-species production catalog in `art/specs/species_catalog_v1.json`. Habitat patches and feeding roles are separate. Plan bounded aggregate populations and actual resource flows; art/animation reuse supports growth of the collection. Only the existing pod/grazer and simple field cultivation are implemented so far.
+
 ## Trade should change what the player can do
 
 Use a small number of resources with different functions and actual production relationships. Raw materials, processed components and specialist products should not all be differently colored sellables. Test perhaps six goods and two short production chains before widening the catalog.
