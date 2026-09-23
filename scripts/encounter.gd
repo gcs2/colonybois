@@ -10,6 +10,8 @@ var world_definition: Dictionary = Geography.definition()
 var changing_planet: bool = false
 const Campaign = preload("res://scripts/expedition_session.gd")
 var campaign: RefCounted = null
+var dock_page: String = "market"
+var trade_amount: int = 1
 var persistence_blocked: bool = false
 const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
@@ -1264,6 +1266,7 @@ func _refresh_ui() -> void:
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
+	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/2" % [model.marks,campaign.commerce.quantity(),campaign.commerce.capacity(),s.samples]
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
 	hud.hull_label.text = "HULL   %d / 100" % s.hull
@@ -1275,6 +1278,7 @@ func _refresh_ui() -> void:
 	hud.refresh_items(model,paused or _inspection_open())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
+	if campaign != null: hud.quick_cargo.tooltip_text = "Commodity hold: %d / %d · Specimens: %d / 2 · Energy packs: %d [I]" % [campaign.commerce.quantity(),campaign.commerce.capacity(),s.samples,s.energy_packs]
 	hud.paused_badge.text = ("GAME PAUSED" if popup.visible and popup_kind == "menu" else "INSPECTION PAUSED") if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
 	hud.navigation.orbital = orbital
 	var service_at: Vector3 = Model.service_position("orbit_tender" if orbital else "basin_port")
@@ -1454,11 +1458,13 @@ func _show_popup(kind: String) -> void:
 	if kind == "menu": menu_return = false
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
+	popup.size = Vector2(555,660 if kind == "service" and campaign != null else 595)
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
+	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -1469,6 +1475,7 @@ func _show_popup(kind: String) -> void:
 		_button("Save game",_save,popup_body)
 		_button("Load game",func() -> void: _load(); _close_popup(),popup_body)
 		_button("Chronicle",_menu_page.bind("journal"),popup_body)
+		if campaign != null: _button("Badges",_menu_page.bind("badges"),popup_body)
 		_button("Controls",_menu_page.bind("controls"),popup_body)
 		_button("Audio settings",_menu_page.bind("audio"),popup_body)
 		_button("Return to title",_exit_encounter,popup_body)
@@ -1478,6 +1485,8 @@ func _show_popup(kind: String) -> void:
 		_build_systems_panel()
 	elif kind == "service":
 		_build_service_panel()
+	elif kind == "badges" and campaign != null:
+		_build_badges_panel()
 	elif kind == "audio":
 		for channel: String in ["sfx","music","voice"]:
 			popup_body.add_child(_label({"sfx":"Effects and interface","music":"Music","voice":"Guide voice"}[channel],17))
@@ -1518,6 +1527,17 @@ func _show_popup(kind: String) -> void:
 			text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			entries.add_child(text)
 		if model.state.history.is_empty(): entries.add_child(_label("Your first discovery will appear here.",16))
+	elif kind == "contact" and campaign != null:
+		_panel_copy(Geography.definition(model.state.planet_id).name,Instruments.PAPER)
+		var owner: String = campaign.sector.system_by_id(campaign.sector.state.flagship.system).owner
+		if not owner.is_empty():
+			var faction: Dictionary = campaign.sector.faction_by_id(owner)
+			_panel_copy("%s · %s / %s" % [faction.name,faction.government,faction.philosophy])
+			_panel_copy("Trade suspended by embargo." if faction.get("embargo",false) else "Local markets are accepting visiting ships.")
+		_panel_copy("Dock to trade cargo, purchase upgrades or recharge.")
+		_button("Approach local dock",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
+		_button("Inventory",_show_popup.bind("cargo"),popup_body)
+		_button("Badges & unlocks",_show_popup.bind("badges"),popup_body)
 	else:
 		_button("Local ship services",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
 		var portrait := TextureRect.new()
@@ -1591,6 +1611,12 @@ func _build_cargo_panel() -> void:
 		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
 	var onboard: bool = cargo_location == "ship"
+	if onboard and campaign != null:
+		_panel_copy("CARGO HOLD   %d / %d" % [campaign.commerce.quantity(),campaign.commerce.capacity()],Instruments.CARGO)
+		for lot: Dictionary in campaign.commerce.state.cargo:
+			_panel_copy("%s × %d\nOrigin: %s" % [campaign.commerce.catalog.goods[lot.item].name,lot.quantity,Geography.definition(lot.origin).name],Instruments.PAPER)
+		if campaign.commerce.state.cargo.is_empty(): _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
+		_panel_copy("Specimens and reserve energy packs use separate compartments.")
 	var amount: int = model.state.samples if onboard else model.state.produce
 	var capacity: int = 2 if onboard else 8
 	cargo_quantity = _label("%d / %d  %s" % [amount,capacity,"SAMPLE CRADLES" if onboard else "SURFACE STORAGE UNITS"],17,Instruments.CARGO)
@@ -1634,13 +1660,16 @@ func _build_cargo_panel() -> void:
 	else:
 		_panel_copy("Location: this planet’s surface bed. This stock is not aboard your ship. Mature beds produce one unit every 12 seconds, up to eight stored units.")
 		_panel_copy("Nursery demand: %d remaining · 18 Marks per unit\nStanding deliveries: %s" % [model.state.buyer_remaining,"active; one unit reserved" if model.state.route else "off"])
-		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("contact"),popup_body,"ui_open"),"comms",Instruments.COMMS)
+		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("nursery"),popup_body,"ui_open"),"comms",Instruments.COMMS)
 
 func _inspect_system(id: String) -> void:
 	inspected_system = id
 	_show_popup("systems")
 
 func _build_systems_panel() -> void:
+	if campaign != null:
+		_panel_copy("CARGO  %d units · DRIVE  %d links" % [campaign.commerce.capacity(),campaign.commerce.drive_range()],Instruments.CARGO)
+		_button("Badges & upgrade eligibility",_show_popup.bind("badges"),popup_body)
 	popup_body.add_child(_label("REACTOR  ·  %d / 100 ENERGY" % model.state.energy,17,Instruments.GOLD))
 	system_energy = ProgressBar.new()
 	system_energy.custom_minimum_size.y = 10
@@ -1833,6 +1862,15 @@ func _approach_service(id: String) -> void:
 func _build_service_panel() -> void:
 	var port: Dictionary = model.local_services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
+	if campaign != null:
+		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.quantity(),campaign.commerce.capacity()],Instruments.GOLD)
+		var tabs := HBoxContainer.new()
+		popup_body.add_child(tabs)
+		for page: String in ["market","upgrades","energy"]:
+			var tab: Button = _button(page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
+			tab.disabled = dock_page == page
+		if dock_page == "market": _build_market_panel(); return
+		if dock_page == "upgrades": _build_upgrade_shop(); return
 	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
 BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.marks],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
@@ -1878,6 +1916,92 @@ func _launch_journey(id: String) -> void:
 	sector_map.refresh()
 	audio.play("departure")
 	_save(false)
+
+func _commerce_action(action: String, item: String = "") -> void:
+	if paused or campaign == null: return
+	var previous_badges: Dictionary = campaign.commerce.state.badges.duplicate()
+	var error: String = ""
+	match action:
+		"buy", "sell": error = campaign.commerce.transact(campaign,selected_service,ship.position,item,trade_amount,action == "buy")
+		"export": error = campaign.commerce.export_alloy(campaign,selected_service,ship.position,trade_amount)
+		"upgrade": error = campaign.commerce.buy_upgrade(campaign,selected_service,ship.position,item)
+	_toast(error if not error.is_empty() else "Cargo loaded" if action == "export" else "Upgrade installed" if action == "upgrade" else "Trade complete")
+	for id: String in previous_badges:
+		if campaign.commerce.state.badges[id] > previous_badges[id]:
+			_toast("%s %d earned · inspect Badges for shop unlocks" % [campaign.commerce.catalog.badges[id].name,campaign.commerce.state.badges[id]])
+	audio.play("error" if not error.is_empty() else "cargo")
+	if error.is_empty(): _save(false)
+	_show_popup("service")
+
+func _build_market_panel() -> void:
+	var commerce: RefCounted = campaign.commerce
+	var planet: String = model.state.planet_id
+	var amounts := HBoxContainer.new()
+	popup_body.add_child(amounts)
+	amounts.add_child(_label("Units per trade",15))
+	for amount: int in [1,4,8]:
+		var choice: Button = _button(str(amount),func() -> void: trade_amount = amount; _show_popup("service"),amounts)
+		choice.disabled = trade_amount == amount
+	if planet == "morrow":
+		var export_button: Button = _button("Load %d alloy · %d colony materials" % [trade_amount,trade_amount*4],_commerce_action.bind("export"),popup_body)
+		var blocked: String = commerce.export_reason(campaign,selected_service,ship.position,trade_amount)
+		export_button.disabled = paused or not blocked.is_empty()
+		export_button.tooltip_text = blocked if not blocked.is_empty() else "Draws from your real colony stock; preserves 80 materials for construction."
+		_panel_copy("Colony stock: %d materials · reserve 80" % campaign.sector.state.colonies.s0p0.materials)
+	for item: String in commerce.catalog.goods:
+		var good: Dictionary = commerce.catalog.goods[item]
+		var offer: Dictionary = commerce.market(planet)[item]
+		var heading: Label = _panel_copy("%s  ·  aboard %d / stock %d / demand %d" % [good.name,commerce.quantity(item),offer.stock,offer.demand],Instruments.PAPER)
+		heading.tooltip_text = good.description
+		var actions := HBoxContainer.new()
+		popup_body.add_child(actions)
+		for buying: bool in [true,false]:
+			var blocked: String = commerce.reason(campaign,selected_service,ship.position,item,trade_amount,buying)
+			var button: Button = _button("%s %d · %d Marks" % ["Buy" if buying else "Sell",trade_amount,commerce.price(planet,item,buying)*trade_amount],_commerce_action.bind("buy" if buying else "sell",item),actions)
+			button.disabled = paused or not blocked.is_empty()
+			button.tooltip_text = blocked if not blocked.is_empty() else "%d Marks per unit. %s" % [commerce.price(planet,item,buying),good.description]
+	_panel_copy("Both docks share this market. Stock and demand are finite; revisit other worlds for different prices.")
+	_button("Undock",_close_popup,popup_body)
+
+func _upgrade_requirements(id: String) -> String:
+	var alternatives: PackedStringArray = []
+	for badge: String in campaign.commerce.catalog.upgrades[id].requires:
+		alternatives.append("%s %d" % [campaign.commerce.catalog.badges[badge].name,campaign.commerce.catalog.upgrades[id].requires[badge]])
+	return " or ".join(alternatives)
+
+func _build_upgrade_shop() -> void:
+	for id: String in campaign.commerce.catalog.upgrades:
+		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
+		_panel_copy(upgrade.name,Instruments.PAPER)
+		_panel_copy(upgrade.description)
+		_panel_copy("Requires "+_upgrade_requirements(id),Instruments.GOLD)
+		var blocked: String = campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id)
+		var owned: bool = id in campaign.commerce.state.upgrades
+		var button: Button = _button("Installed" if owned else "Purchase · %d Marks" % upgrade.price,_commerce_action.bind("upgrade",id),popup_body)
+		button.disabled = paused or not blocked.is_empty()
+		button.tooltip_text = blocked
+		if not blocked.is_empty() and not owned: _panel_copy(blocked)
+	_button("Badges",_show_popup.bind("badges"),popup_body)
+	_button("Undock",_close_popup,popup_body)
+
+func _build_badges_panel() -> void:
+	for id: String in campaign.commerce.catalog.badges:
+		var badge: Dictionary = campaign.commerce.catalog.badges[id]
+		var tier: int = campaign.commerce.state.badges[id]
+		var progress_count: int = campaign.commerce.progress(campaign,id)
+		_panel_copy("%s  %d / 5" % [badge.name,tier],Instruments.GOLD)
+		_panel_copy(badge.description)
+		var bar := ProgressBar.new()
+		bar.max_value = badge.levels[mini(tier,4)]
+		bar.value = progress_count
+		bar.custom_minimum_size.y = 14
+		bar.show_percentage = false
+		Instruments.meter(bar,Instruments.GOLD)
+		popup_body.add_child(bar)
+		_panel_copy("All tiers earned" if tier == 5 else "%d / %d toward tier %d" % [progress_count,bar.max_value,tier+1])
+	for id: String in campaign.commerce.catalog.upgrades:
+		_panel_copy("%s · %s\n%s" % [campaign.commerce.catalog.upgrades[id].name,"INSTALLED" if id in campaign.commerce.state.upgrades else "ELIGIBLE TO BUY" if campaign.commerce.eligible(id) else "LOCKED",_upgrade_requirements(id)],Instruments.PAPER)
+	_panel_copy("Badges unlock shop access. Equipment still costs Marks.")
 
 func _reload_destination() -> void:
 	var parent: Node = get_parent()

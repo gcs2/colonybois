@@ -76,3 +76,6 @@ Current state: three strategic ranks and separate flight history entries. No uni
 - Drive range/cost figures differ across upgrade and summary pages.
 
 These require a retail/data audit before exact numeric parity. Do not conceal uncertainty behind a generated catalog. The next full inventory must cover every tool/upgrade edge, not merely these examples.
+# Implementation update · 23 September 2026
+
+[SHIP_COMMERCE.md](SHIP_COMMERCE.md) records the first integrated badge/shop pilot: Explorer and Merchant, each five scenario-scaled tiers, persisted progress, alternative eligibility and two paid upgrades that change hold capacity and drive range. These use explicit local adaptations, not retail threshold parity. Remaining badge families, master ranks, full seller inventories and reward presentation are still missing. Historical implementation notes above predate this checkpoint; the reference research remains applicable.

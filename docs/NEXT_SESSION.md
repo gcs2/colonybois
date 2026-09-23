@@ -1,5 +1,11 @@
 # Resume here
 
+## Cargo, finite trade and purchased upgrades — latest checkpoint
+
+Read [SHIP_COMMERCE.md](SHIP_COMMERCE.md). One persistent expedition now carries three ordinary commodities, draws alloy from real home-colony materials, trades at finite environment-priced markets, earns Explorer/Merchant tiers and purchases functioning cargo/drive upgrades. Y approaches a dock; I inspects provenance/capacity; Escape opens Badges. Purchases require actual proximity, stock, money, capacity and open trade access. Both planetary docks share market exhaustion. Snapshot v3 preserves commerce and migrates earlier campaigns without free goods/equipment. Full Spore progression is not claimed: only two families with five scenario-scaled tiers exist; master ranks and most families remain missing.
+
+Next: integrate actual faction contact/actions and expressive representatives with the personal voyage; connect remote supply/demand and automated freight without replacing hands-on trade. Keep authored ship/art/audio acceptance work open. Market panels and in-engine 1080p captures are functional layout evidence, not an approved visual redesign. 659 assertions plus UI checks pass (49 commerce); native input, balance and listening review remain open. Current playable: **build/versions/20260923-134743** via Play.cmd; exported-pack smoke passed. Earlier dated checkpoints below are history.
+
 ## Personal travel — latest checkpoint
 
 Read [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md). G or the sector navigation button opens revealed stars and planet destinations. The personal flagship now owns paid/timed travel across all 24 orbital destinations. Morrow, frozen Nacre I and arid Kestrel I support descent; others explicitly remain orbital-only. Hull, energy, equipment, packs and specimens travel together; inactive planets retain changes and continue aggregate production. Snapshot v2 migrates v1, saves transit and preserves per-world stock. The local chart stays surface-only. Next connect commodity cargo/markets, encountered-faction contact and badge-gated shop upgrades. The reused assets, neutral map and sound bank remain provisional/rejected; this is not full parity or visual approval.

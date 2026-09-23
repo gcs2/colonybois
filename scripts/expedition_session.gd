@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 2
+const VERSION := 3
+const Commerce = preload("res://scripts/space_commerce.gd")
+var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
 const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock"]
 const SECONDS_PER_DAY := 30
@@ -25,6 +27,7 @@ func tick(threat_distance: float = INF) -> String:
 	var result: String = field.tick(INF if traveling() else threat_distance)
 	advance_worlds()
 	if traveling(): advance_travel()
+	commerce.update_badges(self)
 	sector_clock += 1
 	if sector_clock >= SECONDS_PER_DAY:
 		sector_clock = 0
@@ -41,6 +44,7 @@ func import_legacy(path: String) -> Error:
 	field.bind_account(sector.state)
 	sector_clock = 0
 	worlds.clear()
+	commerce = Commerce.new()
 	configure_flagship()
 	return OK
 
@@ -50,7 +54,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -76,7 +80,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -90,7 +94,7 @@ func restore_snapshot(source: Variant) -> Error:
 	field_data["marks"] = 0
 	error = candidate_field.restore_snapshot(field_data)
 	if error != OK: return error
-	if source.version == VERSION and not source.has("worlds"): return ERR_INVALID_DATA
+	if source.version >= 2 and not source.has("worlds"): return ERR_INVALID_DATA
 	var saved_worlds: Variant = source.get("worlds",{})
 	if not saved_worlds is Dictionary or saved_worlds.size() > 23: return ERR_INVALID_DATA
 	for id: Variant in saved_worlds:
@@ -104,7 +108,9 @@ func restore_snapshot(source: Variant) -> Error:
 			if not saved_worlds[id].has(key): return ERR_INVALID_DATA
 			probe[key] = saved_worlds[id][key]
 		if Field.new().restore_snapshot(probe) != OK: return ERR_INVALID_DATA
-	if source.version == VERSION:
+	var candidate_commerce := Commerce.new()
+	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
+	if source.version >= 2:
 		var ship: Dictionary = candidate_sector.state.flagship
 		if not ship.has_all(["personal","planet","target_planet","duration","remaining","destination","system","route"]) or ship.personal != true: return ERR_INVALID_DATA
 		if ship.planet != candidate_field.state.planet_id or system_of(ship.planet) != ship.system: return ERR_INVALID_DATA
@@ -118,6 +124,7 @@ func restore_snapshot(source: Variant) -> Error:
 	field.bind_account(sector.state)
 	sector_clock = source.sector_clock
 	worlds = saved_worlds.duplicate(true)
+	commerce = candidate_commerce
 	if source.version == 1: configure_flagship()
 	return OK
 
@@ -147,7 +154,7 @@ func quote(id: String) -> Dictionary:
 	elif id == field.state.planet_id: reason = "Already in orbit here."
 	elif not sector.is_revealed(destination): reason = "Explore the frontier to reveal this system."
 	elif route.is_empty(): reason = "No accessible route; check border restrictions."
-	elif hops > 3: reason = "Beyond the drive's three-link range."
+	elif hops > commerce.drive_range(): reason = "Beyond the drive's %d-link range." % commerce.drive_range()
 	elif field.state.survey_active: reason = "Wait for the orbital survey to finish."
 	elif field.state.guardian_alert > 0: reason = "Break contact with the custodian before jumping."
 	elif field.state.energy < energy: reason = "Need %d energy. Dock or use a reserve pack." % energy

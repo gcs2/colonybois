@@ -33,7 +33,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Hostile empires, wars, raids, defense, conquest | Strategic relations only | AI decisions, attacks, territorial outcomes and diplomacy consequences |
 | Contact, expressive aliens, government/philosophy | Three authored faction rules; static UI | Animated representatives, coherent reasons, distinct actions/abilities |
 | Relations, gifts, treaties, alliances, tribute, buyouts | Some treaties/trade in strategic prototype | All interactions catalogued, costed and persistent; visible reactions |
-| Trade, cargo, supply chains, prices and demand | Local pod order and separate strategic resource trade | Connected physical cargo/economy, route access, finite demand, optional manual trading |
+| Trade, cargo, supply chains, prices and demand | Three carried commodities with provenance, finite markets, environment prices, real home-colony exports and dock/embargo checks; remote production and automated freight remain separate | Connected physical cargo/economy, route access, finite demand, optional manual trading |
 | Colonization, colony design, production, defenses | Existing aggregate city prototype | Integrated personal flight/empire loop, visible costs/time, viable specialization |
 | Terraforming climate and atmosphere | Strategic climate project; local thermal tool | Planet-wide states, tool effects, ecology support, capacity and consequences |
 | Collection, abduction, deployment, ecological tiers | Two modeled organisms; simple samples/cultivation | Species inventory, habitats/feeding relationships, meaningful interventions |
@@ -42,7 +42,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Planet destruction and extreme tools | Missing | Persistent outcomes and reactions; exhaustive special-tool inventory |
 | Discoveries, artifacts, rare collections, story | Six strategic discoveries; short local journal | Distinct discovery gameplay, useful rewards, ancestor campaign encounters |
 | Missions, timed dangers, ecological crises | Planting intro rejected; one optional charted wreck encounter offers a reward and danger, no mission variety yet | Variety without compulsory repeated errands; threats can be understood and prevented |
-| Badges, ranks, alternate unlocks, philosophies | Three strategic ranks; field milestones only log entries | Full progression inventory, meaningful alternate paths, audiovisual achievement delivery |
+| Badges, ranks, alternate unlocks, philosophies | Two five-tier badge pilots, case/progress, alternative shop paths and purchased hold/drive upgrades; reference families and master ranks remain incomplete | Full progression inventory, meaningful alternate paths, audiovisual achievement delivery |
 | Chronicle, decisions, losses, alliances, annihilation | Shared campaign contains sector history and world-scoped personal discoveries/travel events; the unified chronicle presentation remains incomplete | One persistent structured timeline covering actual gameplay events |
 | Sandbox, cheats, story unlocks | Strategic sandbox cheats exist | Same flight systems usable in sandbox; deliberate story rewards without withholding basics |
 | Human solar-system colonization | Not implemented | Selectable playable human scenario, coherent resources/locations and progression |

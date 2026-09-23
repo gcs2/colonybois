@@ -1,0 +1,15 @@
+{
+  "goods": {
+    "alloy": {"name":"Alloy billets","description":"Structural feedstock. Exporting home reserves competes with construction.","base":18,"factors":{"temperate":1.0,"frozen":0.7,"arid":1.65}},
+    "water": {"name":"Purified water","description":"Bulk life-support water. Glacial producers supply thirsty dry worlds.","base":12,"factors":{"temperate":1.0,"frozen":0.65,"arid":2.0}},
+    "glass": {"name":"Resonant glass","description":"Heat-grown crystal used in sensors. Arid deposits supply colder worlds.","base":28,"factors":{"temperate":1.15,"frozen":1.55,"arid":0.65}}
+  },
+  "badges": {
+    "explorer":{"name":"Explorer","levels":[2,3,5,8,12],"description":"Reach distinct star systems."},
+    "merchant":{"name":"Merchant","levels":[1,3,6,12,24],"description":"Complete distinct commodity deliveries between different worlds. Each origin, destination and commodity combination counts once."}
+  },
+  "upgrades": {
+    "hold":{"name":"Expanded cargo hold","price":120,"description":"Raises commodity capacity from 8 to 16 units. Specimen cradles and energy packs have separate storage.","requires":{"merchant":1,"explorer":2}},
+    "drive":{"name":"Extended-range drive","price":160,"description":"Raises jump range from 3 to 5 links. Energy consumption stays at 8 per link.","requires":{"explorer":1,"merchant":2}}
+  }
+}
