@@ -2,6 +2,20 @@ extends RefCounted
 ## Planet-fixed coordinates: north +Y; longitude zero +Z, east toward +X.
 static var cached_definition: Dictionary = {}
 static var sector_definitions: Dictionary = {}
+static func surface_height(world: Dictionary, x: float, z: float) -> float:
+	var height: float = surface_base(world,x,z)
+	if world.archetype != "temperate":
+		var basin: float = 1.0-smoothstep(4.4,6.5,Vector2(x-8,z+4).length())
+		height = lerpf(height,surface_base(world,8,-4),basin)
+	return height
+
+static func surface_base(world: Dictionary, x: float, z: float) -> float:
+	var ridge: float = smoothstep(25.0,45.0,Vector2(x,z).length())
+	var pool: float = 2.0*exp(-pow((x+23)/6,2)-pow(z/12,2))
+	if world.archetype == "frozen": return 0.3+sin(x*0.07+1.3)*cos(z*0.09)*0.5+ridge*(5.5+cos(z*0.13)*2.0)-pool*0.3
+	if world.archetype == "arid": return 0.6+sin(x*0.1+z*0.16)*0.8+ridge*(4.0+sin(x*0.12-z*0.18)*2.6)
+	return 0.25+sin(x*0.14)*cos(z*0.12)*0.65+ridge*(2.4+sin(x*0.28+z*0.19)*1.6)-pool
+
 static func definition(id: String = "morrow") -> Dictionary:
 	if id != "morrow": return sector_definition(id)
 	if cached_definition.is_empty():

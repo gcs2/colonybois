@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 4
+const VERSION := 5
+const Colonies = preload("res://scripts/expedition_colonies.gd")
+var colonies := Colonies.new()
 const Diplomacy = preload("res://scripts/expedition_diplomacy.gd")
 var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
@@ -40,6 +42,8 @@ func tick(threat_distance: float = INF) -> String:
 		for faction: Dictionary in sector.state.factions:
 			if faction.get("contacted",false): trade_access[faction.id] = faction.get("embargo",false)
 		sector.tick()
+		colonies.tick(self)
+		commerce.tick_markets(self)
 		for id: String in trade_access:
 			var faction: Dictionary = sector.faction_by_id(id)
 			if bool(faction.get("embargo",false)) != trade_access[id]:
@@ -57,6 +61,7 @@ func import_legacy(path: String) -> Error:
 	sector_clock = 0
 	worlds.clear()
 	commerce = Commerce.new()
+	colonies = Colonies.new()
 	diplomacy = Diplomacy.new()
 	diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	configure_flagship()
@@ -68,7 +73,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -94,7 +99,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -125,6 +130,8 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_commerce := Commerce.new()
 	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
 	var candidate_diplomacy := Diplomacy.new()
+	var candidate_colonies := Colonies.new()
+	if source.version >= 5 and candidate_colonies.restore(source.get("colonies"),candidate_sector,candidate_commerce) != OK: return ERR_INVALID_DATA
 	if source.version >= 4 and candidate_diplomacy.restore(source.get("diplomacy")) != OK: return ERR_INVALID_DATA
 	if not candidate_diplomacy.state.events.is_empty() and candidate_diplomacy.state.events.back().time > candidate_field.state.time: return ERR_INVALID_DATA
 	if source.version >= 2:
@@ -142,6 +149,7 @@ func restore_snapshot(source: Variant) -> Error:
 	sector_clock = source.sector_clock
 	worlds = saved_worlds.duplicate(true)
 	commerce = candidate_commerce
+	colonies = candidate_colonies
 	diplomacy = candidate_diplomacy
 	if source.version < 4: diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	if source.version == 1: configure_flagship()

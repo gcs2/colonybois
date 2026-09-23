@@ -19,6 +19,14 @@ var contact_reply: String = ""
 var contact_accepted: bool = true
 var chronicle_filter: String = "all"
 var chronicle_page: int = 0
+const OutpostVisual = preload("res://scripts/outpost_visual.gd")
+var kit_mode: bool = false
+var deploy_order: bool = false
+var deployment_site := Vector2.ZERO
+var outpost_visual: Node3D
+var outpost_signature: String = ""
+var selected_colony: String = ""
+var kit_marker: MeshInstance3D
 var persistence_blocked: bool = false
 const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
@@ -223,20 +231,10 @@ func _notification(what: int) -> void:
 		get_tree().quit()
 
 func terrain_height(x: float, z: float) -> float:
-	var height: float = _terrain_base(x,z)
-	if world_definition.archetype != "temperate":
-		# Keep the usable mineral patch above its supporting ground on steeper worlds.
-		var basin: float = 1.0-smoothstep(4.4,6.5,Vector2(x-8,z+4).length())
-		height = lerpf(height,_terrain_base(8,-4),basin)
-	return height
+	return Geography.surface_height(world_definition,x,z)
 
 func _terrain_base(x: float, z: float) -> float:
-	var ridge: float = smoothstep(25.0,45.0,Vector2(x,z).length())
-	var pool: float = 2.0*exp(-pow((x+23)/6,2)-pow(z/12,2))
-	var climate: String = world_definition.archetype
-	if climate == "frozen": return 0.3+sin(x*0.07+1.3)*cos(z*0.09)*0.5+ridge*(5.5+cos(z*0.13)*2.0)-pool*0.3
-	if climate == "arid": return 0.6+sin(x*0.1+z*0.16)*0.8+ridge*(4.0+sin(x*0.12-z*0.18)*2.6)
-	return 0.25+sin(x*0.14)*cos(z*0.12)*0.65+ridge*(2.4+sin(x*0.28+z*0.19)*1.6)-pool
+	return Geography.surface_base(world_definition,x,z)
 
 func _mat(color: Color, emissive: bool = false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -608,6 +606,7 @@ func _physics_process(delta: float) -> void:
 	var speed: float = 16.0 if orbital else 12.0
 	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
 	if not input_direction.is_zero_approx():
+		kit_mode = false; deploy_order = false
 		navigating = false
 		approach_subject = false
 		landing = false
@@ -713,6 +712,7 @@ func _process(delta: float) -> void:
 			motion.advance(delta,ship.position)
 			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
 	_update_visuals()
+	if deploy_order and not navigating and not paused and not _inspection_open(): _finish_deployment()
 	_operate(delta)
 	_operate_salvage(delta)
 	_operate_attack()
@@ -776,6 +776,7 @@ func _update_flight_effects(delta: float) -> void:
 	transition_caption.modulate.a = transition_veil.color.a
 
 func _update_visuals() -> void:
+	_update_outpost_visual()
 	var orbital: bool = model.state.flight_mode == "orbit"
 	orbit.guardian.position.x = model.state.guardian_x
 	orbit.guardian.position.z = model.state.guardian_z
@@ -819,7 +820,7 @@ func _update_visuals() -> void:
 	relay_light.visible = "relay" in model.state.scanned or model.state.growth >= 1
 	ring.position = _target_position()+Vector3(0,-0.8,0)
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
-	ring.visible = not camera.is_position_behind(_target_position())
+	ring.visible = not kit_mode and not deploy_order and not camera.is_position_behind(_target_position())
 	for id: String in labels:
 		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
 		var label: Label = labels[id]
@@ -857,7 +858,8 @@ func _hud_action(action: String) -> void:
 		"departure": _departure()
 		"use":
 			if not paused and not _inspection_open():
-				if model.state.flight_mode == "orbit":
+				if kit_mode or deploy_order: _stop()
+				elif model.state.flight_mode == "orbit":
 					if landing: _stop()
 					elif orbital_target == "guardian":
 						if weapon_selected: _command_guardian()
@@ -1094,6 +1096,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	if kit_mode and campaign != null and model.state.flight_mode == "surface":
+		var point: Variant = _surface_point(screen)
+		if point is Vector2: _order_deployment(point)
+		return
+	if outpost_visual != null and model.state.flight_mode == "surface":
+		var hub_at: Vector3 = outpost_visual.position+Vector3(0,2,0)
+		if not camera.is_position_behind(hub_at) and camera.unproject_position(hub_at).distance_to(screen) < 32:
+			selected_colony = campaign.colonies.strategic_id(model.state.planet_id)
+			_show_popup("colonies")
+			return
 	var provider: String = "orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"
 	var service_at: Vector3 = Model.service_position(provider)
 	if not camera.is_position_behind(service_at) and camera.unproject_position(service_at).distance_to(screen) < 22:
@@ -1159,6 +1171,8 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	kit_mode = false
+	deploy_order = false
 	service_order = ""
 	service_waypoints.clear()
 	zoom_ascent = false
@@ -1273,7 +1287,7 @@ func _refresh_ui() -> void:
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
-	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/2" % [model.marks,campaign.commerce.quantity(),campaign.commerce.capacity(),s.samples]
+	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/2" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),s.samples]
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
 	hud.hull_label.text = "HULL   %d / 100" % s.hull
@@ -1285,7 +1299,7 @@ func _refresh_ui() -> void:
 	hud.refresh_items(model,paused or _inspection_open())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
-	if campaign != null: hud.quick_cargo.tooltip_text = "Commodity hold: %d / %d · Specimens: %d / 2 · Energy packs: %d [I]" % [campaign.commerce.quantity(),campaign.commerce.capacity(),s.samples,s.energy_packs]
+	if campaign != null: hud.quick_cargo.tooltip_text = "Freight and kits: %d / %d · Specimens: %d / 2 · Energy packs: %d [I]" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity(),s.samples,s.energy_packs]
 	if campaign != null:
 		var pending: int = campaign.diplomacy.unread().size()
 		hud.navigation_actions[1].tooltip_text = "%d incoming transmissions · Communicate [Y]" % pending if pending > 0 else "Communicate · known civilizations and local services [Y]"
@@ -1379,6 +1393,15 @@ func _refresh_ui() -> void:
 	departure_button.disabled = paused or _inspection_open() or (orbital and model.definition().sites.is_empty())
 	departure_button.text = ("Cancel approach" if landing else "Descend") if orbital else "Leave atmosphere"
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
+	if kit_mode or deploy_order:
+		objective.text = "Choose a clear surface site for your colony hub."
+		subject.text = "Colony kit / landing footprint"
+		hud.action_state.text = "APPROACHING" if deploy_order else "CHOOSE SITE"
+		explanation.text = "Kit stays aboard until arrival. Stop to cancel." if deploy_order else "Click a green footprint. Red indicates unsuitable ground."
+		use_button.text = "Cancel"
+		use_button.disabled = paused or _inspection_open()
+		use_button.tooltip_text = "Cancel deployment and keep the colony kit aboard."
+		progress_bar.value = 0
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1478,7 +1501,7 @@ func _show_popup(kind: String) -> void:
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
-	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"
+	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -1501,6 +1524,8 @@ func _show_popup(kind: String) -> void:
 		_build_service_panel()
 	elif kind == "badges" and campaign != null:
 		_build_badges_panel()
+	elif kind == "colonies" and campaign != null:
+		_build_colonies_panel()
 	elif kind == "audio":
 		for channel: String in ["sfx","music","voice"]:
 			popup_body.add_child(_label({"sfx":"Effects and interface","music":"Music","voice":"Guide voice"}[channel],17))
@@ -1620,10 +1645,16 @@ func _build_cargo_panel() -> void:
 		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
 	var onboard: bool = cargo_location == "ship"
 	if onboard and campaign != null:
-		_panel_copy("CARGO HOLD   %d / %d" % [campaign.commerce.quantity(),campaign.commerce.capacity()],Instruments.CARGO)
+		_panel_copy("CARGO HOLD   %d / %d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.CARGO)
+		if campaign.colonies.reserved_space() > 0:
+			_panel_copy("COLONY KIT × 1 · occupies four cargo spaces",Instruments.GOLD)
+			var deploy: Button = _button("Deploy colony kit",_select_colony_kit,popup_body)
+			deploy.icon = Instruments.icon("cargo")
+			deploy.tooltip_text = campaign.colonies.deployment_reason(campaign)
+			deploy.disabled = paused or not deploy.tooltip_text.is_empty()
 		for lot: Dictionary in campaign.commerce.state.cargo:
 			_panel_copy("%s × %d\nOrigin: %s" % [campaign.commerce.catalog.goods[lot.item].name,lot.quantity,Geography.definition(lot.origin).name],Instruments.PAPER)
-		if campaign.commerce.state.cargo.is_empty(): _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
+		if campaign.commerce.used_space(campaign) == 0: _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
 		_panel_copy("Specimens and reserve energy packs use separate compartments.")
 	var amount: int = model.state.samples if onboard else model.state.produce
 	var capacity: int = 2 if onboard else 8
@@ -1871,14 +1902,15 @@ func _build_service_panel() -> void:
 	var port: Dictionary = model.local_services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
 	if campaign != null:
-		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.quantity(),campaign.commerce.capacity()],Instruments.GOLD)
+		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.GOLD)
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
-		for page: String in ["market","upgrades","energy"]:
+		for page: String in ["market","upgrades","energy","warehouse"]:
 			var tab: Button = _button(page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
 			tab.disabled = dock_page == page
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
+		if dock_page == "warehouse": _build_warehouse_panel(); return
 	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
 BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.marks],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
@@ -1933,7 +1965,9 @@ func _commerce_action(action: String, item: String = "") -> void:
 		"buy", "sell": error = campaign.commerce.transact(campaign,selected_service,ship.position,item,trade_amount,action == "buy")
 		"export": error = campaign.commerce.export_alloy(campaign,selected_service,ship.position,trade_amount)
 		"upgrade": error = campaign.commerce.buy_upgrade(campaign,selected_service,ship.position,item)
-	_toast(error if not error.is_empty() else "Cargo loaded" if action == "export" else "Upgrade installed" if action == "upgrade" else "Trade complete")
+		"kit": error = campaign.colonies.buy_kit(campaign,selected_service,ship.position)
+		"collect": error = campaign.colonies.collect(campaign,selected_service,ship.position,item,trade_amount)
+	_toast(error if not error.is_empty() else "Cargo loaded" if action in ["export","kit","collect"] else "Upgrade installed" if action == "upgrade" else "Trade complete")
 	for id: String in previous_badges:
 		if campaign.commerce.state.badges[id] > previous_badges[id]:
 			_toast("%s %d earned · inspect Badges for shop unlocks" % [campaign.commerce.catalog.badges[id].name,campaign.commerce.state.badges[id]])
@@ -1968,7 +2002,7 @@ func _build_market_panel() -> void:
 			var button: Button = _button("%s %d · %d Marks" % ["Buy" if buying else "Sell",trade_amount,commerce.price(planet,item,buying,campaign)*trade_amount],_commerce_action.bind("buy" if buying else "sell",item),actions)
 			button.disabled = paused or not blocked.is_empty()
 			button.tooltip_text = blocked if not blocked.is_empty() else "%d Marks per unit. %s" % [commerce.price(planet,item,buying,campaign),good.description]
-	_panel_copy("Both docks share this market. Stock and demand are finite; revisit other worlds for different prices.")
+	_panel_copy("Both docks share finite stocks. Every four colony days, local consumption restores one demand; export producers replenish one unit.")
 	_button("Undock",_close_popup,popup_body)
 
 func _upgrade_requirements(id: String) -> String:
@@ -1978,6 +2012,12 @@ func _upgrade_requirements(id: String) -> String:
 	return " or ".join(alternatives)
 
 func _build_upgrade_shop() -> void:
+	var kit_reason: String = campaign.colonies.buy_reason(campaign,selected_service,ship.position)
+	_panel_copy("Colony landing kit · four cargo spaces",Instruments.PAPER)
+	_panel_copy("300 Marks · 100 local materials · 80 local supplies. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.")
+	var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
+	kit.disabled = paused or not kit_reason.is_empty()
+	kit.tooltip_text = kit_reason
 	for id: String in campaign.commerce.catalog.upgrades:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
 		_panel_copy(upgrade.name,Instruments.PAPER)
@@ -2086,6 +2126,7 @@ func _build_contact_panel() -> void:
 				button.tooltip_text = blocked if not blocked.is_empty() else "One goodwill grant per nation. Each completed chart can be licensed to one nation only."
 			_panel_copy("A chart license is exclusive: choose which nation gains your findings.")
 	_button("Approach local dock",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
+	_button("Colony administration",_show_popup.bind("colonies"),popup_body)
 
 func _contact_copy(parent: Control, text: String, tint: Color) -> void:
 	var label: Label = _label(text,16,tint)
@@ -2122,6 +2163,134 @@ func _build_chronicle_panel() -> void:
 			var cause: Dictionary = campaign.diplomacy.state.events[entry.cause-1]
 			_panel_copy("Following: "+str(cause.summary))
 	if entries.is_empty(): _panel_copy("Your discoveries and decisions will appear here. Earlier activity is preserved in Local.")
+
+func _select_colony_kit() -> void:
+	if paused or campaign == null: return
+	var blocked: String = campaign.colonies.deployment_reason(campaign)
+	if not blocked.is_empty(): _toast(blocked); return
+	_cancel_orders()
+	popup.hide()
+	kit_mode = true
+	_toast("Choose clear ground · green footprint is valid · Stop or Escape cancels")
+	audio.play("ui_confirm")
+
+func _surface_point(screen: Vector2) -> Variant:
+	var from: Vector3 = camera.project_ray_origin(screen)
+	var ray: Vector3 = camera.project_ray_normal(screen)
+	for i: int in range(1,480):
+		var at: Vector3 = from+ray*float(i)*0.5
+		if at.y <= terrain_height(at.x,at.z): return Vector2(at.x,at.z)
+	return null
+
+func _order_deployment(at: Vector2) -> void:
+	var blocked: String = campaign.colonies.deployment_reason(campaign)
+	if blocked.is_empty(): blocked = campaign.colonies.site_reason(model.state.planet_id,at)
+	if not blocked.is_empty(): _toast(blocked); audio.play("error"); return
+	_navigate(Vector3(at.x,terrain_height(at.x,at.y)+7,at.y))
+	deployment_site = at
+	deploy_order = true
+	_toast("Approaching colony site · kit remains aboard until unloading")
+
+func _finish_deployment() -> void:
+	var error: String = campaign.colonies.deploy(campaign,deployment_site,ship.position)
+	_cancel_orders()
+	_toast(error if not error.is_empty() else "Colony kit landed · construction has begun")
+	audio.play("error" if not error.is_empty() else "cargo")
+	if error.is_empty(): _save(false)
+
+func _update_outpost_visual() -> void:
+	if campaign == null: return
+	if kit_marker == null:
+		kit_marker = MeshInstance3D.new()
+		var footprint := TorusMesh.new()
+		footprint.inner_radius = 4.6; footprint.outer_radius = 4.8
+		footprint.rings = 40; footprint.ring_segments = 6
+		kit_marker.mesh = footprint
+		kit_marker.material_override = _mat(Color("a4ddb1"),true)
+		surface_root.add_child(kit_marker)
+	kit_marker.visible = (kit_mode or deploy_order) and not _inspection_open() and model.state.flight_mode == "surface"
+	if kit_marker.visible:
+		var at: Variant = _surface_point(get_viewport().get_mouse_position()) if kit_mode else deployment_site
+		if at is Vector2:
+			kit_marker.position = Vector3(at.x,terrain_height(at.x,at.y)+0.35,at.y)
+			var valid: bool = campaign.colonies.site_reason(model.state.planet_id,at).is_empty()
+			kit_marker.material_override.albedo_color = Color("a4ddb1") if valid else Color("ed8a74")
+		else: kit_marker.visible = false
+	var id: String = campaign.colonies.strategic_id(model.state.planet_id)
+	if not campaign.colonies.state.outposts.has(id):
+		if outpost_visual != null: outpost_visual.queue_free(); outpost_visual = null
+		outpost_signature = ""
+		return
+	var record: Dictionary = campaign.colonies.state.outposts[id]
+	var phase: int = campaign.colonies.phase(campaign,id)
+	var signature: String = "%s:%d:%s:%s" % [id,phase,record.module,str(record.site)]
+	if signature != outpost_signature:
+		if outpost_visual != null: outpost_visual.queue_free()
+		outpost_visual = OutpostVisual.new()
+		outpost_visual.position = Vector3(record.site[0],terrain_height(record.site[0],record.site[1]),record.site[1])
+		surface_root.add_child(outpost_visual)
+		outpost_visual.build(phase,record.module)
+		outpost_signature = signature
+	outpost_visual.caption.text = "Colony hub" if phase == 3 else "Hub · %d / 18 days" % (18-int(campaign.sector.state.settlements[id].remaining))
+	var hub_at: Vector3 = outpost_visual.position+Vector3(0,2,0)
+	outpost_visual.caption.visible = not _inspection_open() and not camera.is_position_behind(hub_at) and camera.unproject_position(hub_at).distance_to(get_viewport().get_mouse_position()) < 48
+
+func _build_warehouse_panel() -> void:
+	var id: String = campaign.colonies.strategic_id(model.state.planet_id)
+	if not campaign.colonies.state.outposts.has(id):
+		_panel_copy("No export outpost on this world. Load a colony kit through Upgrades at an established colony.")
+		_button("Colony administration",_show_popup.bind("colonies"),popup_body)
+		return
+	var record: Dictionary = campaign.colonies.state.outposts[id]
+	_panel_copy(record.status,Instruments.PAPER)
+	_panel_copy("Warehouse holds 16 freight units total. Loading transfers actual local stock to your ship.")
+	var amounts := HBoxContainer.new()
+	popup_body.add_child(amounts)
+	for amount: int in [1,4,8]:
+		var choice: Button = _button("Load %d" % amount,func() -> void: trade_amount = amount; _show_popup("service"),amounts)
+		choice.disabled = trade_amount == amount
+	for item: String in record.stock:
+		var blocked: String = campaign.colonies.collect_reason(campaign,selected_service,ship.position,item,trade_amount)
+		var button: Button = _button("%s · %d stored · load %d" % [campaign.commerce.catalog.goods[item].name,record.stock[item],trade_amount],_commerce_action.bind("collect",item),popup_body)
+		button.disabled = paused or not blocked.is_empty()
+		button.tooltip_text = blocked
+	_button("Colony administration",_show_popup.bind("colonies"),popup_body)
+	_button("Undock",_close_popup,popup_body)
+
+func _install_export(item: String) -> void:
+	if paused or campaign == null: return
+	var error: String = campaign.colonies.install(campaign,selected_colony,item)
+	_toast(error if not error.is_empty() else "Export facility commissioned")
+	audio.play("error" if not error.is_empty() else "ui_confirm")
+	if error.is_empty(): _save(false)
+	_show_popup("colonies")
+
+func _build_colonies_panel() -> void:
+	if campaign.colonies.state.outposts.is_empty():
+		_panel_copy("No expedition outposts yet. Load a colony kit at your home dock, survey an unclaimed world, descend and deploy it from Inventory.",Instruments.PAPER)
+		return
+	if not campaign.colonies.state.outposts.has(selected_colony): selected_colony = campaign.colonies.state.outposts.keys()[0]
+	var tabs := HBoxContainer.new()
+	popup_body.add_child(tabs)
+	for id: String in campaign.colonies.state.outposts:
+		var tab: Button = _button(campaign.sector.state.planets[id].name,func() -> void: selected_colony = id; _show_popup("colonies"),tabs)
+		tab.disabled = id == selected_colony
+	var record: Dictionary = campaign.colonies.state.outposts[selected_colony]
+	_panel_copy(record.status,Instruments.PAPER)
+	if campaign.sector.state.settlements.has(selected_colony):
+		_panel_copy("%d / 18 colony days complete. Construction continues while you explore; inspection pauses time." % (18-int(campaign.sector.state.settlements[selected_colony].remaining)))
+		return
+	var colony: Dictionary = campaign.sector.state.colonies[selected_colony]
+	_panel_copy("LOCAL RESERVES · %d materials · %d supplies\nInstalled: %s" % [colony.materials,colony.supplies,"none" if record.module.is_empty() else campaign.commerce.catalog.goods[record.module].name])
+	_panel_copy("Choose one export facility. Installation or replacement: 60 Marks, 20 local materials, 10 local supplies. Warehouse stock is retained.")
+	for item: String in ["alloy","water","glass"]:
+		var output: int = campaign.colonies.yield_for(selected_colony,item)
+		var blocked: String = campaign.colonies.install_reason(campaign,selected_colony,item)
+		var button: Button = _button("%s · %d units / 2 days" % [campaign.commerce.catalog.goods[item].name,output],_install_export.bind(item),popup_body)
+		button.disabled = paused or not blocked.is_empty()
+		button.tooltip_text = blocked
+	_panel_copy("Per production cycle: 0.5 local supplies and %d Marks. Output pauses when storage is full or reserves run short." % (2 if Geography.definition(selected_colony).archetype == "frozen" else 1))
+	for item: String in record.stock: _panel_copy("%s: %d stored" % [campaign.commerce.catalog.goods[item].name,record.stock[item]])
 
 func _reload_destination() -> void:
 	var parent: Node = get_parent()

@@ -1,0 +1,10 @@
+{
+ "status":"Construction/readability prototype, not final building-art approval",
+ "purpose":"Show a carried colony kit assembling on the exact player-selected surface footprint; no fabricated occupied city at deployment.",
+ "dimensions":{"footprint_metres":[8,8],"clearance_metres":9,"hub_height_metres":4.7,"warehouse_units":16},
+ "palette":{"foundation":"354953","shell":"d0cbb4","service_modules":"c78169","glazing":"65a9a5","construction_beacons":"e9b65c"},
+ "construction":["Four cargo crates and footprint beacons","Foundation and lifting frame","Assembled pressure shell, utilities and communications","Commissioned hub with optional paid export module"],
+ "modules":{"water":"Three upright condenser tanks","alloy":"Three extraction/reduction heads on a gantry","glass":"Two thermal kilns with exhaust risers"},
+ "source":"scripts/outpost_visual.gd; reusable bounded meshes and materials. Geometry rebuilds only on construction stage or module change.",
+ "acceptance":"Same footprint before/after save and planet transitions, stages match real elapsed colony days, no overnight city pop-in, readable at flight and overview distance. Profile and human art review before expanding the kit."
+}

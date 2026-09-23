@@ -6,6 +6,7 @@ const SUPPLIES: float = 80.0
 const DAYS: int = 18
 
 static func begin(sim: RefCounted, pid: String, source: String) -> String:
+	if sim.state.flagship.get("personal",false): return "Carry a colony kit and deploy it from your ship."
 	if not sim.state.planets.has(pid): return "Unknown planet."
 	var planet: Dictionary = sim.state.planets[pid]
 	if sim.state.flagship.system != planet.system or not str(sim.state.flagship.destination).is_empty(): return "Bring your flagship to this system first."
@@ -30,7 +31,7 @@ static func phase(project: Dictionary) -> String:
 static func tick(sim: RefCounted) -> void:
 	for pid: String in sim.state.settlements.keys():
 		var project: Dictionary = sim.state.settlements[pid]
-		if sim.route_between(sim.state.planets[project.source].system,sim.state.planets[pid].system).is_empty():
+		if not project.get("delivered",false) and sim.route_between(sim.state.planets[project.source].system,sim.state.planets[pid].system).is_empty():
 			project["blocked"] = true
 			continue
 		project["blocked"] = false

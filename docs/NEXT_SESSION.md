@@ -1,5 +1,11 @@
 # Resume here
 
+## Carried colony kits and export outposts — latest checkpoint
+
+Read [EXPEDITION_COLONIES.md](EXPEDITION_COLONIES.md). Paid kits occupy four cargo spaces, require an orbital survey, and deploy at a mouse-selected clear surface footprint after the ship arrives. Stop/steer cancels without consuming the kit. Construction advances through cargo/frame/shell stages over 18 colony days, including while off-screen. The finished hub has no invented city population. Paid alloy/water/glass facilities have environment yields, operating costs and capped physical warehouses; collection transfers real stock to the ship. Snapshot v5 preserves all of this. Independent market supply/demand now has bounded time-based replenishment.
+
+Validation: 753 assertions plus UI checks, including 49 colony checks and real scene picking/flight/cancellation. Current playable: **build/versions/20260923-143311/FrontierWorlds.exe** via Play.cmd; exported-pack startup smoke passed. Construction and administration rendered at 1080p; prototype meshes, existing HUD/audio and native feel remain open acceptance gates. Next connect automated physical freight, destination demand and route access, then continue broader parity. Do not restart city-first or ecology-first production. Earlier checkpoint sections below are history.
+
 ## Alien contact and consequential agreements — latest checkpoint
 
 Read [EXPEDITION_CONTACT.md](EXPEDITION_CONTACT.md). Real territorial arrival now establishes first contact with an original portrait candidate; Y opens known representatives, their attitude/reason and contextual agreements/exchange. Trade pacts change actual prices; non-aggression permits transit during commercial embargo; alliances share usable charts without awarding visits. Goodwill is a one-time paid grant, survey licenses are exclusive, and withdrawals cost trust and revoke their benefits. Snapshot v4 persists those decisions and causal chronicle events; older saves mark a recording boundary. Chronicle filters/pagination retain the local log and colony ledger. Three animated vector busts have authored specs and 1080p placement review, but remain unapproved artwork; no final rigs/voices or fleet assistance is claimed.

@@ -11,6 +11,20 @@ func capacity() -> int:
 func drive_range() -> int:
 	return 5 if "drive" in state.upgrades else 3
 
+func used_space(game: RefCounted) -> int:
+	return quantity()+game.colonies.reserved_space()
+
+func tick_markets(game: RefCounted) -> void:
+	# Bounded aggregate production/consumption; opening a view never replenishes stock.
+	if int(game.sector.state.tick)%4 != 0: return
+	for planet: String in state.markets:
+		var limits: Dictionary = initial_market(planet)
+		var climate: String = Geography.definition(planet).archetype
+		for item: String in catalog.goods:
+			var offer: Dictionary = state.markets[planet][item]
+			offer.demand = mini(limits[item].demand,int(offer.demand)+1)
+			if float(catalog.goods[item].factors[climate]) < 1.0: offer.stock = mini(limits[item].stock,int(offer.stock)+1)
+
 func quantity(item: String = "") -> int:
 	var total: int = 0
 	for lot: Dictionary in state.cargo:
@@ -46,7 +60,7 @@ func reason(game: RefCounted, port: String, at: Vector3, item: String, amount: i
 	var planet: String = game.field.state.planet_id
 	var offer: Dictionary = market(planet)[item]
 	if buying:
-		if quantity()+amount > capacity(): return "Cargo hold is full."
+		if used_space(game)+amount > capacity(): return "Cargo hold is full."
 		if amount > offer.stock: return "Insufficient local stock."
 		if game.field.marks < price(planet,item,true,game)*amount: return "Insufficient Marks."
 	else:
@@ -96,7 +110,7 @@ func export_reason(game: RefCounted, port: String, at: Vector3, amount: int = 1)
 	if not blocked.is_empty(): return blocked
 	if game.field.state.planet_id != "morrow": return "Home colony exports are loaded at Morrow."
 	if amount <= 0: return "Choose a positive quantity."
-	if quantity()+amount > capacity(): return "Cargo hold is full."
+	if used_space(game)+amount > capacity(): return "Cargo hold is full."
 	if game.sector.state.colonies.s0p0.materials < 80+amount*4: return "Keep 80 construction materials in reserve."
 	return ""
 

@@ -28,6 +28,8 @@ Double-click **Play.cmd**, then choose **Urban tutorial**, **Expedition** or **S
 
 On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.ps1` to download the pinned engine from its official GitHub release. Alternatively, import `project.godot` in Godot 4.7.2 and press F6/F5. Use the editor or the engine with `--path .` when testing source changes; rebuild before using an existing executable.
 
+**Personal colonies:** at a home dock, buy a colony kit in **Upgrades** (300 Marks, 100 materials, 80 supplies; four cargo spaces). Survey Nacre I or Kestrel I from orbit, descend, then select the kit in **Inventory** and click clear ground. The ship delivers it and construction takes nine active minutes. Commission an export facility through Communications → Colony administration; collect its real output at the local dock's **Warehouse**. [Colony behavior, costs and remaining work](docs/EXPEDITION_COLONIES.md).
+
 ## First expedition
 
 For the new city opening, choose **New urban tutorial** instead:
