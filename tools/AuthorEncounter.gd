@@ -7,6 +7,9 @@ func _initialize() -> void:
 	palette = spec.palette
 	DirAccess.make_dir_recursive_absolute("res://assets/encounter")
 	for entry: Dictionary in spec.assets:
+		if entry.id == "scout":
+			print("Scout has a dedicated source: run tools/AuthorScout.gd")
+			continue
 		var asset: Node3D = make_asset(entry.id)
 		asset.name = entry.id.capitalize()
 		merge_materials(asset)
@@ -104,14 +107,6 @@ func tube(parent: Node3D, name_text: String, points: Array[Vector3], radii: Arra
 func make_asset(id: String) -> Node3D:
 	var root := Node3D.new()
 	match id:
-		"scout":
-			ellipsoid(root,"Ceramic hull",Vector3.ZERO,Vector3(0.9,0.46,1.9),"shell")
-			ellipsoid(root,"Canopy",Vector3(0,0.37,-0.55),Vector3(0.66,0.31,0.94),"glass")
-			for side: float in [-1.0,1.0]:
-				tube(root,"Swept fin",[Vector3(side*0.6,0,0.4),Vector3(side*1.2,-0.06,0.9),Vector3(side*1.9,0.05,1.7)],[0.43,0.26,0.02],"shell",12)
-				ellipsoid(root,"Engine collar",Vector3(side*0.65,0,1.4),Vector3(0.35,0.33,0.45),"trim")
-				ellipsoid(root,"Exhaust",Vector3(side*0.65,0,1.78),Vector3(0.22,0.20,0.13),"light",true)
-			ellipsoid(root,"Sensor",Vector3(0.65,-0.16,-1.3),Vector3(0.24,0.24,0.28),"light",true)
 		"pod":
 			for i: int in range(3):
 				var theta: float = i*TAU/3

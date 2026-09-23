@@ -34,6 +34,8 @@ On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.p
 
 ## First expedition
 
+**Scout art candidate:** the new Kiteback model has articulated shell shields and attached engine, survey and weapon effects. Its authored source and current review limits are in [Scout asset](docs/SCOUT_ASSET.md). This is a playable candidate awaiting art acceptance.
+
 **Orbital encounters:** Nacre I's raider pursues; Kestrel I's sentry is stationary. Select the arc lance and click a hostile ship. Move outside its marked strike volume (altitude works too), or retreat to break contact. Click its cleared wreck for cargo salvage. Distinct victories earn Defender progress; Defender 1 **or Explorer 2** unlocks the 180-Mark focused emitter at dock Upgrades. [Behavior, costs and limitations](docs/ORBITAL_ENCOUNTERS.md).
 
 For the new city opening, choose **New urban tutorial** instead:

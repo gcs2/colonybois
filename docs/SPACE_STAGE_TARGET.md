@@ -49,7 +49,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Ship/building/creature editors, user content | Previously deferred; absent | Explicit scope decision for editors; do not silently count as parity |
 | Galactic Adventures extension | Not assumed to be base Space Stage | Clarify expansion scope; do not claim expansion parity |
 | Professional HUD, icons, radar, tutorial arrows | First compact flight HUD, pointer, hull/energy/warning instruments; still placeholder visual design | Reviewed visual system and native readability at supported window sizes |
-| Lifelike animation and responsive ship FX | Three bounded procedural grazers; scout banks/pitches | Art-reviewed creature rigs, ship effects, encounters and achievement animation |
+| Lifelike animation and responsive ship FX | Three bounded procedural grazers; authored scout candidate banks/pitches with thrust-driven shield articulation and transformed engine/tool/weapon sockets; player art approval pending | Art-reviewed creature rigs, ship effects, encounters and achievement animation |
 | Full SFX coverage, music, spoken guidance | 20 original flight/UI WAVs, adaptive thrust, candidate music, captions and mixer; rejected Windows speech removed, replacement recorded voice missing; professional performances and full-game coverage still missing | Event coverage audit, mixed tracks, subtitles, volume controls, licensed masters |
 | Saves, performance, regression, fun | Tests cover existing bounded mechanics | Cross-view deterministic state, migrations, full sessions and clean-PC profiles |
 

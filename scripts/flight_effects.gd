@@ -18,9 +18,10 @@ func setup(actor: Node3D) -> void:
 	ship = actor
 	for side: float in [-1.0,1.0]:
 		var jet: CPUParticles3D = _emitter(48,0.38,Color("9aeed8"),0.4)
-		jet.name = "PortExhaust" if side < 0 else "StarboardExhaust"
-		jet.reparent(ship)
-		jet.position = Vector3(side*0.65,0,1.93)
+		jet.name = "EngineParticles"
+		var socket: Node3D = ship.find_child("PortExhaust" if side < 0 else "StarboardExhaust",true,false)
+		jet.reparent(socket if socket != null else ship)
+		jet.position = Vector3.ZERO if socket != null else Vector3(side*0.65,0,1.93)
 		jet.direction = Vector3.BACK
 		jet.local_coords = true
 		jet.spread = 9
@@ -131,8 +132,10 @@ func update(delta: float, speed: float, stopped: bool, orbital: bool, ground: fl
 		current_tool = tool
 		tool_particles.color = Equipment.effect_tint(tool)
 		tool_particles.restart(true)
-	var origin: Vector3 = ship.position if tool == "seed" else at
-	var end: Vector3 = at if tool == "seed" else ship.position
+	var socket: Node3D = ship.find_child("ToolEmitter",true,false)
+	var aperture: Vector3 = to_local(socket.global_position) if socket != null else ship.position
+	var origin: Vector3 = aperture if tool == "seed" else at
+	var end: Vector3 = at if tool == "seed" else aperture
 	tool_particles.position = origin
 	if tool in ["collect","seed"]:
 		tool_particles.direction = (end-origin).normalized()

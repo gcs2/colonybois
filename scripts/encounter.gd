@@ -49,6 +49,7 @@ var COLORS: Array[Color] = Equipment.colors()
 var model := Model.new()
 var save_path: String = "user://field_encounter.json"
 var ship: Node3D
+var scout_motion := preload("res://scripts/scout_motion.gd").new()
 var camera := Camera3D.new()
 var targets: Dictionary = {}
 var grown_plants: Array[Node3D] = []
@@ -254,6 +255,10 @@ func _mesh(mesh: Mesh, at: Vector3, material: Material, parent: Node3D = self) -
 	parent.add_child(node)
 	return node
 
+func _ship_socket(id: String) -> Vector3:
+	var socket: Node3D = ship.find_child(id,true,false)
+	return to_local(socket.global_position) if socket != null else ship.position
+
 func _asset(id: String, at: Vector3, size: float = 1.0) -> Node3D:
 	var node: Node3D = load("res://assets/encounter/"+id+".glb").instantiate()
 	node.position = at
@@ -391,6 +396,7 @@ func _make_world() -> void:
 	relay_light = _mesh(core,relay.position+Vector3(0,2.8,-0.1),_mat(Color("a8ebce"),true))
 	relay_light.visible = false
 	ship = _asset("scout",Vector3(0,5,17))
+	scout_motion.setup(ship)
 	var torus := TorusMesh.new()
 	torus.inner_radius = 1.9
 	torus.outer_radius = 2.0
@@ -777,6 +783,7 @@ func _zoom_camera(steps: float) -> void:
 func _update_flight_effects(delta: float) -> void:
 	var stopped: bool = paused or _inspection_open()
 	var orbital: bool = model.state.flight_mode == "orbit"
+	scout_motion.advance(delta,ship.basis.inverse()*velocity,stopped)
 	effects.update(delta,velocity.length(),stopped,orbital,terrain_height(ship.position.x,ship.position.z),tool,beam.visible,_target_position(),progress)
 	if not stopped: arrival_fade = maxf(0,arrival_fade-delta*1.8)
 	var outbound: float = 0
@@ -989,11 +996,12 @@ func _operate_attack() -> void:
 	if campaign != null: campaign.fire_weapon(ship.position)
 	else: model.fire_lance(ship.position)
 	weapon_flash = 0.17
-	weapon_beam.position = (ship.position+at)*0.5
-	var axis: Vector3 = (at-ship.position).normalized()
+	var origin: Vector3 = _ship_socket("WeaponEmitter")
+	weapon_beam.position = (origin+at)*0.5
+	var axis: Vector3 = (at-origin).normalized()
 	var side: Vector3 = axis.cross(Vector3.FORWARD).normalized()
 	if side.length() < 0.1: side = axis.cross(Vector3.RIGHT).normalized()
-	weapon_beam.basis = Basis(side,axis,side.cross(axis)).scaled(Vector3(1,ship.position.distance_to(at),1))
+	weapon_beam.basis = Basis(side,axis*origin.distance_to(at),side.cross(axis))
 	audio.play("scan_complete")
 	if model.state.guardian_disabled:
 		_cancel_orders()
@@ -1016,11 +1024,12 @@ func _operate_salvage(delta: float) -> void:
 	# A short, visible tether confirms that the ship is working the actual wreck.
 	beam.visible = true
 	var end: Vector3 = OrbitalScene.WRECK_POSITION
-	beam.position = (ship.position+end)*0.5
-	var axis: Vector3 = (end-ship.position).normalized()
+	var origin: Vector3 = _ship_socket("ToolEmitter")
+	beam.position = (origin+end)*0.5
+	var axis: Vector3 = (end-origin).normalized()
 	var side: Vector3 = axis.cross(Vector3.FORWARD).normalized()
 	if side.length() < 0.1: side = axis.cross(Vector3.RIGHT).normalized()
-	beam.basis = Basis(side,axis,side.cross(axis)).scaled(Vector3(1,ship.position.distance_to(end),1))
+	beam.basis = Basis(side,axis*origin.distance_to(end),side.cross(axis))
 	beam_material.albedo_color = Instruments.COMMS
 	beam_material.emission = Instruments.COMMS
 	if salvage_progress < 1: return
@@ -1047,12 +1056,12 @@ func _operate(delta: float) -> void:
 	progress += delta/Equipment.seconds(tool)
 	var end: Vector3 = _target_position()
 	beam.visible = true
-	beam.position = (ship.position+end)*0.5
-	beam.scale.y = ship.position.distance_to(end)
-	var axis: Vector3 = (end-ship.position).normalized()
+	var origin: Vector3 = _ship_socket("ToolEmitter")
+	beam.position = (origin+end)*0.5
+	var axis: Vector3 = (end-origin).normalized()
 	var side: Vector3 = axis.cross(Vector3.FORWARD).normalized()
 	if side.length() < 0.1: side = axis.cross(Vector3.RIGHT).normalized()
-	beam.basis = Basis(side,axis,side.cross(axis)).scaled(Vector3(1,ship.position.distance_to(end),1))
+	beam.basis = Basis(side,axis*origin.distance_to(end),side.cross(axis))
 	if progress >= 1:
 		error = model.act(tool,selected,ship.position.distance_to(end))
 		_toast(error if not error.is_empty() else ("Survey complete" if tool == "scan" else "Operation complete"))

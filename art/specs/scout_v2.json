@@ -1,0 +1,35 @@
+{
+  "id": "kiteback_scout",
+  "version": 2,
+  "status": "authored model candidate; player art acceptance pending",
+  "intent": "A curious, tough little survey tug with overlapping beetle shell plates, a recessed horizontal visor and two hooked side shields. Creepy-cute through proportions and silhouette, not painted cartoon eyes. Broad shoulders, narrow ventral machinery, visible gaps and recessed propulsion; no copper trim or spherical cockpit bubble.",
+  "units": "meters; Y up, forward -Z; flight pivot at hull center",
+  "envelope": [4.8, 1.8, 5.7],
+  "source": "tools/AuthorScout.gd",
+  "output": "assets/encounter/scout.glb",
+  "palette": {
+    "shell": {"color":"d6dbc3", "roughness":0.78},
+    "marking": {"color":"b65b48", "roughness":0.8},
+    "structure": {"color":"414451", "roughness":0.72},
+    "recess": {"color":"171d28", "roughness":0.9},
+    "glass": {"color":"244653", "roughness":0.24},
+    "light": {"color":"9de7d0", "roughness":0.5, "emission":0.55}
+  },
+  "hull_sections_z_width_height_y": [
+    [-2.35,0.12,0.12,-0.12],[-2.1,0.62,0.27,-0.08],[-1.5,0.97,0.4,0],
+    [-0.7,1.1,0.48,0.02],[0.25,1.06,0.5,0.02],[1.1,0.86,0.39,0],[1.85,0.5,0.23,-0.04],[2.08,0.15,0.1,-0.05]
+  ],
+  "sockets": {
+    "PortExhaust": [-1.05,-0.05,2.46],
+    "StarboardExhaust": [1.05,-0.05,2.46],
+    "ToolEmitter": [0,-0.62,-1.3],
+    "WeaponEmitter": [0,-0.22,-2.38]
+  },
+  "rig": {
+    "PortShield": [-0.82,0,0.15],
+    "StarboardShield": [0.82,0,0.15],
+    "motion": "Shields cant outward with actual thrust and independently trim against steering; damped, bounded angles. Pause freezes the rig. No continuous creature-like flapping."
+  },
+  "budgets": {"triangles_max":12000,"mesh_instances_max":20,"materials_max":6,"particles_max":184},
+  "review": ["front, rear, side, top and underside", "normal flight at 29 m and far flight at 95 m", "exhaust and beams follow transformed sockets", "orbital darkness and planet daylight", "pause and view transitions", "no gameplay balance changes from model geometry"]
+}

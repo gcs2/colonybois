@@ -1,6 +1,14 @@
 # Resume here
 
-## Multi-world orbital threats — latest checkpoint
+## Authored scout and attached flight effects — latest checkpoint
+
+Read [SCOUT_ASSET.md](SCOUT_ASSET.md). Kiteback v2 replaces the primitive scout with a dimensioned, reproducibly authored GLB: layered shell plates, an inset visor, hooked articulated shields, engine housings and a belly aperture. Two shield pivots track actual thrust/steering and pause. Named engine/tool/weapon sockets drive existing effects. Angled beams now reach their target correctly; previous world-axis scaling distorted them. The source validates triangle preservation during batching. Final geometry: 5,432 triangles, 14 mesh instances, six materials; the particle cap stays 184.
+
+Validation: full suite passed with 860 assertions plus UI checks; final mesh changes also passed 13 scout integration checks and export geometry validation. Actual 1080p model and surface/orbit captures at near/normal/far distances reviewed. Player art acceptance and native flight review remain open; this is not a final AAA asset claim. Next: finish the detailed base Space Stage tool/upgrade/ability inventory (R01), then use its gaps to expand the connected ship/tool/progression loop. Retain bounded presentation work and existing audio blockers. Do not spend the next checkpoint indefinitely reskinning this scout or expanding ecology.
+
+Playable package: **build/versions/20260923-153000/FrontierWorlds.exe** via Play.cmd; exported-pack startup smoke passed.
+
+## Multi-world orbital threats — previous checkpoint
 
 Read [ORBITAL_ENCOUNTERS.md](ORBITAL_ENCOUNTERS.md). Nacre I now has a pursuing Rake cutter and Kestrel I an anchored Watchbell sentry. Both telegraph fixed 3D strike volumes that can be evaded horizontally or vertically. Mouse weapon orders use the shared hull/energy/cooldown system. Defeats persist, reward a distinct-contact Defender badge and leave one-time physical cargo salvage. Defender 1 or Explorer 2 unlocks a 180-Mark emitter that changes actual damage from 22 to 33. Snapshots v7 migrate current and inactive planets; chronicle includes actual neutralizations, salvage and tows. Two authored mesh candidates and warning/resolution FX are integrated, but art/audio remain provisional.
 
