@@ -120,3 +120,7 @@ Current verification includes 92 baseline, 43 urban and 19 landing assertions, p
 All game geometry, icons, and shaders in this repository are original procedural/code assets. System fonts fall back to Segoe UI/Arial. Rejected generated concepts are archived locally and excluded from Git; unapproved concepts remain studies. The creepy-cute character direction and orderly urban architecture are documented in `docs/ART_DIRECTION.md`. No creature creator is in scope. The campaign direction is selected, while its final resolution remains open. Preview captures show running scenes; generated concepts are labeled separately. Godot is MIT-licensed; its notices can be found at https://godotengine.org/license/ and should accompany any public distribution.
 
 
+
+## Equipment and content production
+
+The four current field tools use `data/equipment.json` for reach, timing, costs, targets, presentation and starting acquisition descriptions. The command model, HUD and effects share validated definitions; existing saves are unchanged. This is the foundation for additional functional equipment, not an upgrade/unlock system yet. See [the content inventory](docs/CONTENT_INVENTORY.md) for actual playable content versus briefs and disconnected prototypes.

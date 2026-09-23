@@ -1,5 +1,12 @@
 # Resume here
 
+## Latest checkpoint: equipment catalog and content inventory
+
+[CONTENT_INVENTORY.md](CONTENT_INVENTORY.md) now audits all nine content families, with actual scope and brief/asset/mechanic/integration/review distinctions. Four existing field tools now read shared validated definitions in `data/equipment.json`; command costs/range/cycle, HUD, approach distance, keyboard slot order and effects use the same source. The equipment inspection states their starting acquisition. Save version stays 3. This is a content-production foundation, not new equipment breadth or final presentation approval.
+
+Validation: 380 assertions plus UI checks pass, including 27 new equipment checks and existing version 1/2 save migration. Rendered HUD/equipment text reviewed at 720p; Windows build `20260923-030715` and exported-pack smoke passed. Next content implementation: readable orbital danger, hull/damage/recovery and a distinct useful capability with an actual acquisition path; do not expand the optional farming lesson. Shared flight/sector state remains essential before claiming multi-world logistics. Approved AI audio acquisition, ship/globe artwork and native playtest gates remain open. Earlier checkpoint sections below are historical context.
+
+
 ## Latest steering and flight checkpoint
 
 The user requires broad, deep, distinct content for every major component of the game. This instruction is **independent of the attached screenshot**. Read [CONTENT_CORPUS.md](CONTENT_CORPUS.md); presentation-only progress is insufficient. After validating/backing up the current camera/effects work, the next content milestone is a data-driven equipment/content ledger tied to actual commands, acquisition and meaningful uses. Keep the full feature-family objective intact.

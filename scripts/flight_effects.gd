@@ -1,7 +1,7 @@
 extends Node3D
 ## Capped cosmetic effects. No simulation commands, random gameplay or saved particles.
 const MAX_PARTICLES := 184
-const TINTS := {"scan":Color("9cdeb2"),"collect":Color("efb884"),"warm":Color("ffd576"),"seed":Color("c3a8fa")}
+const Equipment = preload("res://scripts/equipment_catalog.gd")
 var exhaust: Array[CPUParticles3D] = []
 var tool_particles: CPUParticles3D
 var dust: CPUParticles3D
@@ -27,10 +27,10 @@ func setup(actor: Node3D) -> void:
 		jet.initial_velocity_min = 7
 		jet.initial_velocity_max = 12
 		exhaust.append(jet)
-	tool_particles = _emitter(40,0.55,TINTS.scan,0.23)
+	tool_particles = _emitter(40,0.55,Equipment.effect_tint("scan"),0.23)
 	tool_particles.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	tool_particles.emission_sphere_radius = 0.45
-	burst = _emitter(24,0.65,TINTS.scan,0.27)
+	burst = _emitter(24,0.65,Equipment.effect_tint("scan"),0.27)
 	burst.one_shot = true
 	burst.explosiveness = 1
 	burst.spread = 180
@@ -129,7 +129,7 @@ func update(delta: float, speed: float, stopped: bool, orbital: bool, ground: fl
 	if not tool_active: return
 	if tool != current_tool:
 		current_tool = tool
-		tool_particles.color = TINTS[tool]
+		tool_particles.color = Equipment.effect_tint(tool)
 		tool_particles.restart(true)
 	var origin: Vector3 = ship.position if tool == "seed" else at
 	var end: Vector3 = at if tool == "seed" else ship.position
@@ -146,13 +146,13 @@ func update(delta: float, speed: float, stopped: bool, orbital: bool, ground: fl
 		tool_particles.initial_velocity_max = 2.3 if tool == "warm" else 1.0
 	sweep.position = at
 	sweep.scale = Vector3.ONE*(0.7+fraction*2.5)
-	var color: Color = TINTS[tool]
+	var color: Color = Equipment.effect_tint(tool)
 	color.a = 0.25+sin(fraction*PI)*0.55
 	sweep_material.albedo_color = color
 
 func confirm(at: Vector3, tool: String) -> void:
 	burst.position = at
-	burst.color = TINTS[tool]
+	burst.color = Equipment.effect_tint(tool)
 	burst.visible = true
 	burst.restart(true)
 	burst.emitting = true

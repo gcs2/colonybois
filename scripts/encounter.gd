@@ -17,8 +17,9 @@ const SURFACE_ZOOM_MAX := 110.0
 const ORBIT_ZOOM_MIN := 18.0
 const ORBIT_ZOOM_MAX := 320.0
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
-const TOOLS: Array[String] = ["scan","collect","warm","seed"]
-const COLORS: Array[Color] = Instruments.TOOL_COLORS
+const Equipment = preload("res://scripts/equipment_catalog.gd")
+var TOOLS: Array[String] = Equipment.ids()
+var COLORS: Array[Color] = Equipment.colors()
 var model := Model.new()
 var save_path: String = "user://field_encounter.json"
 var ship: Node3D
@@ -515,7 +516,7 @@ func _physics_process(delta: float) -> void:
 		altitude_order = -1
 		zoom_ascent = false
 	if navigating:
-		if approach_subject: destination = _target_position()+Vector3(0,5,5)
+		if approach_subject: destination = _target_position()+Vector3(0,1,1).normalized()*Equipment.reach(tool)*0.55
 		var offset: Vector3 = destination-ship.position
 		move = FlightControls.arrival_velocity(offset,speed)
 		if offset.length() < 0.65:
@@ -721,7 +722,7 @@ func _operate(delta: float) -> void:
 	if progress == 0:
 		audio.play(tool)
 		for motion: RefCounted in grazer_motion: motion.react(tool,_target_position())
-	progress += delta/float(Model.ACTION_SECONDS[tool])
+	progress += delta/Equipment.seconds(tool)
 	var end: Vector3 = _target_position()
 	beam.visible = true
 	beam.position = (ship.position+end)*0.5
@@ -751,10 +752,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_M: _toggle_planet_map()
 			KEY_I: _toggle_drawer("cargo")
 			KEY_K: _toggle_drawer("systems")
-			KEY_1: _select_tool("scan")
-			KEY_2: _select_tool("collect")
-			KEY_3: _select_tool("warm")
-			KEY_4: _select_tool("seed")
+			KEY_1: _select_tool(TOOLS[0])
+			KEY_2: _select_tool(TOOLS[1])
+			KEY_3: _select_tool(TOOLS[2])
+			KEY_4: _select_tool(TOOLS[3])
 			KEY_TAB:
 				_cancel_orders()
 				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
@@ -823,8 +824,8 @@ func _activate_selected() -> void:
 	if not error.is_empty(): _toast(error); audio.play("error"); return
 	_cancel_orders()
 	audio.play("target_lock")
-	if ship.position.distance_to(_target_position()) > 11:
-		destination = _target_position()+Vector3(0,5,5)
+	if ship.position.distance_to(_target_position()) > Equipment.reach(tool)*0.85:
+		destination = _target_position()+Vector3(0,1,1).normalized()*Equipment.reach(tool)*0.55
 		navigating = true
 		approach_subject = true
 	else: held = true
@@ -896,6 +897,7 @@ func _apply_flight_mode() -> void:
 	_update_camera(1)
 
 func _select_tool(value: String) -> void:
+	if not Equipment.has_tool(value): return
 	_cancel_orders()
 	tool = value
 	progress = 0
@@ -948,7 +950,7 @@ func _refresh_ui() -> void:
 			explanation.text = "Moving into tool range."
 		elif held and not latched:
 			hud.action_state.text = "OPERATING"
-			explanation.text = "%s · %d%%" % [Instruments.TOOL_NAMES[tool],int(progress*100)]
+			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)]
 		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
 			hud.action_state.text = operation_feedback
 			explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
@@ -956,8 +958,8 @@ func _refresh_ui() -> void:
 			hud.action_state.text = "UNAVAILABLE"
 			explanation.text = _short_reason(reason)
 		else:
-			hud.action_state.text = "READY" if gap <= 13 else "OUT OF RANGE"
-			explanation.text = "Click Use to operate." if gap <= 13 else "Click Use to approach."
+			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
+			explanation.text = "Click Use to operate." if gap <= Equipment.reach(tool) else "Click Use to approach."
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = progress
 	if operation_feedback == "COMPLETE" and elapsed < operation_feedback_until: progress_bar.value = 1
@@ -966,14 +968,14 @@ func _refresh_ui() -> void:
 	if not orbital and not approach_subject and not (held and not latched):
 		use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
 	for i: int in range(toolbar.size()):
-		toolbar[i].tooltip_text = "Surface equipment · enter the atmosphere to operate." if orbital else Instruments.TOOL_HINTS[TOOLS[i]]
+		toolbar[i].tooltip_text = "Surface equipment · enter the atmosphere to operate." if orbital else Equipment.hint(TOOLS[i])
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
 	# Keep the full validated reason on hover; the instrument shows one short cause.
 	if reason.begins_with("Already catalogued"): return "Survey recorded. Select another tool."
 	if reason.begins_with("Sample cradle full"): return "Sample cradles full: 2 / 2."
-	if reason.begins_with("Need 25 energy"): return "Insufficient energy: 25 required."
+	if reason.begins_with("Need ") and "energy" in reason: return "Insufficient energy: %s required." % Equipment.amount(Equipment.energy(tool))
 	if reason.begins_with("The thermal tool"): return "Requires a cold mineral bed."
 	if reason.begins_with("Sample the seed pods"): return "Requires a scanned lantern pod."
 	if reason.begins_with("Keep the last native"): return "Native reserve protected."
@@ -1161,7 +1163,7 @@ func _build_cargo_panel() -> void:
 		_panel_copy("Origin: wild lantern pods, Morrow Basin. Each living seed occupies one cradle. Surface harvests are stored separately.")
 		var equip: Button = _button("Equip deployer",_equip_from_panel.bind("seed"),popup_body,"")
 		equip.disabled = amount == 0
-		equip.tooltip_text = "Collect a scanned wild pod first." if amount == 0 else Instruments.TOOL_HINTS.seed
+		equip.tooltip_text = "Collect a scanned wild pod first." if amount == 0 else Equipment.hint("seed")
 		Instruments.instrument(equip,"seed",COLORS[3])
 		_panel_copy("No specimens aboard. Scan a pod, then use the tractor." if amount == 0 else "Deployment needs a prepared bed. Selecting the tool does not consume the specimen.")
 	else:
@@ -1190,16 +1192,17 @@ func _build_systems_panel() -> void:
 	system_buttons.clear()
 	for i: int in range(TOOLS.size()):
 		var id: String = TOOLS[i]
-		var button: Button = _button(Instruments.TOOL_NAMES[id],_inspect_system.bind(id),modules)
+		var button: Button = _button(Equipment.title(id),_inspect_system.bind(id),modules)
 		button.custom_minimum_size = Vector2(232,62)
 		button.add_theme_font_size_override("font_size",14)
-		button.tooltip_text = Instruments.TOOL_HINTS[id]
+		button.tooltip_text = Equipment.hint(id)
 		Instruments.instrument(button,id,COLORS[i],inspected_system == id)
 		system_buttons[id] = button
 	var index: int = TOOLS.find(inspected_system)
-	popup_body.add_child(_label(Instruments.TOOL_NAMES[inspected_system].to_upper(),18,COLORS[index]))
-	_panel_copy(Instruments.TOOL_HINTS[inspected_system],Instruments.PAPER)
-	_panel_copy("Cycle: %.1f seconds · installed\n%s" % [Model.ACTION_SECONDS[inspected_system],"Currently selected in your hotbar." if tool == inspected_system else "Available to select in your hotbar."])
+	popup_body.add_child(_label(Equipment.title(inspected_system).to_upper(),18,COLORS[index]))
+	_panel_copy(Equipment.hint(inspected_system),Instruments.PAPER)
+	_panel_copy(str(Equipment.value(inspected_system,"acquisition")))
+	_panel_copy("Cycle: %.1f seconds · installed\n%s" % [Equipment.seconds(inspected_system),"Currently selected in your hotbar." if tool == inspected_system else "Available to select in your hotbar."])
 	var select: Button = _button("Select tool & return to flight",_equip_from_panel.bind(inspected_system),popup_body,"")
 	Instruments.instrument(select,inspected_system,COLORS[index],true)
 
@@ -1207,7 +1210,7 @@ func _equip_from_panel(id: String) -> void:
 	if id not in TOOLS: return
 	_select_tool(id)
 	popup.visible = false
-	_toast(Instruments.TOOL_NAMES[id]+" selected")
+	_toast(Equipment.title(id)+" selected")
 
 func _preview_tools() -> void:
 	if previewing_audio: return

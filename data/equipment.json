@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "id": "scan", "name": "Survey scanner", "category": "Survey",
+      "description": "Catalogue a lifeform or site.", "constraint": "Each subject can be catalogued once.",
+      "targets": ["pod", "grazer", "bed", "relay"], "requires_scan": false,
+      "target_error": "Select a lifeform or a site.",
+      "reach": 13, "seconds": 1.3, "energy": 0, "samples": 0,
+      "color": "86cf9a", "effect_color": "9cdeb2",
+      "icon": "res://assets/ui/flight/scan.svg", "acquisition": "Installed on the starting expedition ship."
+    },
+    {
+      "id": "collect", "name": "Tractor cradle", "category": "Cargo",
+      "description": "Collect a scanned wild pod.", "constraint": "Limited by onboard cradles; preserve the last native pod.",
+      "targets": ["pod"], "requires_scan": true,
+      "target_error": "Sample the seed pods. Leave the grazers free.",
+      "reach": 13, "seconds": 1.5, "energy": 0, "samples": 0,
+      "color": "eba66d", "effect_color": "efb884",
+      "icon": "res://assets/ui/flight/collect.svg", "acquisition": "Installed on the starting expedition ship."
+    },
+    {
+      "id": "warm", "name": "Thermal array", "category": "Environment",
+      "description": "Warm a scanned mineral bed.", "constraint": "One treatment prepares this bed for specimen deployment.",
+      "targets": ["bed"], "requires_scan": true,
+      "target_error": "The thermal tool is calibrated for the cold planting bed.",
+      "reach": 13, "seconds": 3.0, "energy": 25, "samples": 0,
+      "color": "f3c567", "effect_color": "ffd576",
+      "icon": "res://assets/ui/flight/warm.svg", "acquisition": "Installed on the starting expedition ship."
+    },
+    {
+      "id": "seed", "name": "Specimen deployer", "category": "Environment",
+      "description": "Plant a collected specimen in a prepared bed.", "constraint": "Requires a warmed, unoccupied mineral bed.",
+      "targets": ["bed"], "requires_scan": true,
+      "target_error": "Use the prepared planting bed.",
+      "reach": 13, "seconds": 1.2, "energy": 0, "samples": 1,
+      "color": "b9a0eb", "effect_color": "c3a8fa",
+      "icon": "res://assets/ui/flight/seed.svg", "acquisition": "Installed on the starting expedition ship."
+    }
+  ]
+}

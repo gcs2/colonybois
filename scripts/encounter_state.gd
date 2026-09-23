@@ -2,7 +2,7 @@ extends RefCounted
 ## Independent encounter snapshot. No changes to campaign economy or save slots.
 const VERSION := 3
 const Geography = preload("res://scripts/planet_geography.gd")
-const ACTION_SECONDS := {"scan":1.3, "collect":1.5, "warm":3.0, "seed":1.2}
+const Equipment = preload("res://scripts/equipment_catalog.gd")
 const TARGETS := ["pod", "grazer", "bed", "relay"]
 var state: Dictionary = fresh()
 
@@ -45,31 +45,30 @@ func note(id: String, text: String) -> void:
 	state.history.append({"id":id, "time":state.time, "text":text})
 
 func reason(action: String, target: String, distance: float) -> String:
-	if action not in ACTION_SECONDS: return "Unknown tool."
+	if not Equipment.has_tool(action): return "Unknown tool."
 	if target not in TARGETS: return "Select a lifeform or a site."
-	if not is_finite(distance) or distance < 0 or distance > 13.0: return "Fly closer — tool reach is 13 m."
+	if not is_finite(distance) or distance < 0 or distance > Equipment.reach(action): return "Fly closer — tool reach is %s m." % Equipment.amount(Equipment.reach(action))
 	if action == "scan":
 		if target in state.scanned: return "Already catalogued. Try another tool or another subject."
-		return ""
-	if target not in state.scanned: return "Scan this subject first."
+	if Equipment.value(action,"requires_scan") and target not in state.scanned: return "Scan this subject first."
+	if target not in Equipment.value(action,"targets"): return str(Equipment.value(action,"target_error"))
 	if action == "collect":
-		if target != "pod": return "Sample the seed pods. Leave the grazers free."
 		if state.native_stock <= 1: return "Keep the last native pod for the grazers. Cultivate more in the bed."
 		if state.samples >= 2: return "Sample cradle full (2). Plant one in the warmed bed."
 	if action == "warm":
-		if target != "bed": return "The thermal tool is calibrated for the cold planting bed."
 		if state.warm: return "The bed is warm. Deploy a collected seed."
-		if state.energy < 25: return "Need 25 energy. The ship recharges while you explore."
 	if action == "seed":
-		if target != "bed": return "Use the prepared planting bed."
 		if not state.warm: return "Warm the bed before planting."
 		if state.seeded: return "Already planted. Watch the canopy develop."
-		if state.samples < 1: return "Collect a seed pod first."
+	if state.samples < Equipment.samples(action): return "Collect a seed pod first."
+	if state.energy < Equipment.energy(action): return "Need %s energy. The ship recharges while you explore." % Equipment.amount(Equipment.energy(action))
 	return ""
 
 func act(action: String, target: String, distance: float) -> String:
 	var error: String = reason(action,target,distance)
 	if not error.is_empty(): return error
+	state.energy -= Equipment.energy(action)
+	state.samples -= Equipment.samples(action)
 	match action:
 		"scan":
 			state.scanned.append(target)
@@ -79,11 +78,9 @@ func act(action: String, target: String, distance: float) -> String:
 			state.native_stock -= 1
 			note("first_sample","Collected a living seed; retained a native feeding reserve.")
 		"warm":
-			state.energy -= 25
 			state.warm = true
-			note("warm_bed","Spent 25 ship energy warming the mineral bed.")
+			note("warm_bed","Spent %s ship energy warming the mineral bed." % Equipment.amount(Equipment.energy(action)))
 		"seed":
-			state.samples -= 1
 			state.seeded = true
 			note("seed_bed","Established lantern pods in the prepared bed.")
 	return ""

@@ -7,17 +7,11 @@ const GOLD := Color("f3c567")
 const CARGO := Color("eba66d")
 const NAV := Color("a9a7ef")
 const COMMS := Color("dca0cf")
-const TOOL_COLORS: Array[Color] = [Color("86cf9a"),Color("eba66d"),Color("f3c567"),Color("b9a0eb")]
-const TOOL_NAMES := {"scan":"Survey scanner", "collect":"Tractor cradle", "warm":"Thermal array", "seed":"Specimen deployer"}
-const TOOL_HINTS := {
-	"scan":"Catalogue a lifeform or site. 13 m reach · no energy cost.",
-	"collect":"Collect a scanned wild pod. 13 m reach · two cradle slots; preserve the last native pod.",
-	"warm":"Warm a scanned mineral bed. 13 m reach · 25 energy.",
-	"seed":"Plant a collected specimen in a prepared bed. 13 m reach · consumes one sample."
-}
+const Equipment = preload("res://scripts/equipment_catalog.gd")
 
 static func icon(id: String) -> Texture2D:
-	return load("res://assets/ui/flight/"+id+".svg") as Texture2D
+	var path: String = str(Equipment.value(id,"icon")) if Equipment.has_tool(id) else "res://assets/ui/flight/"+id+".svg"
+	return load(path) as Texture2D
 
 static func box(tint: Color, selected: bool = false) -> StyleBoxFlat:
 	var result := StyleBoxFlat.new()
@@ -38,7 +32,7 @@ static func instrument(button: Button, id: String, tint: Color, selected: bool =
 	button.add_theme_stylebox_override("hover",box(tint,true))
 	button.add_theme_stylebox_override("pressed",box(tint.darkened(0.15),true))
 	button.add_theme_color_override("font_color",PAPER if selected else tint.lightened(0.2))
-	var authored: bool = id in TOOL_NAMES
+	var authored: bool = Equipment.has_tool(id)
 	button.add_theme_color_override("icon_normal_color",Color.WHITE if authored else tint)
 	button.add_theme_color_override("icon_hover_color",Color.WHITE if authored else tint.lightened(0.2))
 	button.add_theme_constant_override("h_separation",10)

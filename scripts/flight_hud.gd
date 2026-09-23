@@ -6,8 +6,9 @@ signal altitude_requested(direction: float)
 signal ui_cue(cue: String)
 const Art = preload("res://scripts/flight_interface.gd")
 const Navigation = preload("res://scripts/flight_navigation.gd")
-const IDS: Array[String] = ["scan","collect","warm","seed"]
-const GROUPS := {"Survey":["scan"],"Cargo":["collect"],"Environment":["warm","seed"]}
+const Equipment = preload("res://scripts/equipment_catalog.gd")
+var IDS: Array[String] = Equipment.ids()
+var GROUPS: Dictionary = Equipment.groups()
 var navigation := Navigation.new()
 var toolbar: Array[Button] = []
 var category_buttons: Dictionary = {}
@@ -99,14 +100,14 @@ func _build() -> void:
 	tool_spec = label_at("",Rect2(961,696,320,20),12,Art.MUTED)
 	var group_index: int = 0
 	for group: String in GROUPS:
-		var button: Button = button_at(group,Rect2(959+group_index*102,725,98,31),"category:"+group,Art.TOOL_COLORS[group_index])
+		var button: Button = button_at(group,Rect2(959+group_index*102,725,98,31),"category:"+group,Equipment.tint(GROUPS[group][0]))
 		category_buttons[group] = button
 		group_index += 1
 	for i: int in range(IDS.size()):
-		var button: Button = button_at("",Rect2(963,766,70,69),"tool:"+IDS[i],Art.TOOL_COLORS[i],IDS[i])
+		var button: Button = button_at("",Rect2(963,766,70,69),"tool:"+IDS[i],Equipment.tint(IDS[i]),IDS[i])
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.add_theme_constant_override("icon_max_width",42)
-		button.tooltip_text = Art.TOOL_HINTS[IDS[i]]
+		button.tooltip_text = Equipment.hint(IDS[i])
 		var shortcut := Label.new()
 		shortcut.text = str(i+1)
 		shortcut.position = Vector2(7,3)
@@ -145,13 +146,13 @@ func _build() -> void:
 	action_state = label_at("",Rect2(407,792,100,18),11,Art.GOLD)
 	explanation = label_at("",Rect2(511,791,276,38),12,Art.MUTED)
 	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	use_button = button_at("Use",Rect2(803,775,91,43),"use",Art.TOOL_COLORS[0])
+	use_button = button_at("Use",Rect2(803,775,91,43),"use",Equipment.tint(IDS[0]))
 	progress_bar = ProgressBar.new()
 	progress_bar.position = Vector2(407,835)
 	progress_bar.size = Vector2(487,4)
 	progress_bar.max_value = 1
 	progress_bar.show_percentage = false
-	Art.meter(progress_bar,Art.TOOL_COLORS[0])
+	Art.meter(progress_bar,Equipment.tint(IDS[0]))
 	progress_bar.add_theme_font_size_override("font_size",1)
 	add_child(progress_bar)
 	progress_bar.size.y = 4
@@ -181,11 +182,12 @@ func show_group(group: String) -> void:
 		Art.instrument(category_buttons[key],"",Art.NAV,key == group)
 
 func select_tool(id: String) -> void:
+	if not Equipment.has_tool(id): return
 	selected_tool = id
 	for group: String in GROUPS:
 		if id in GROUPS[group]: show_group(group); break
 	for i: int in range(IDS.size()):
-		Art.instrument(toolbar[i],IDS[i],Art.TOOL_COLORS[i],IDS[i] == id)
+		Art.instrument(toolbar[i],IDS[i],Equipment.tint(IDS[i]),IDS[i] == id)
 		toolbar[i].add_theme_constant_override("icon_max_width",42)
-	tool_title.text = Art.TOOL_NAMES[id]
-	tool_spec.text = {"scan":"13 m reach  ·  no energy cost","collect":"13 m reach  ·  2 sample cradles","warm":"13 m reach  ·  25 energy","seed":"13 m reach  ·  1 specimen"}[id]
+	tool_title.text = Equipment.title(id)
+	tool_spec.text = Equipment.summary(id)

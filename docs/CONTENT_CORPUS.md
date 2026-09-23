@@ -40,3 +40,7 @@ After the current camera/effects checkpoint, start a data-driven equipment/conte
 Grow content in playable sets: a world creates a need or opportunity; a tool lets the player act on it; a resource/specimen has a useful destination; a faction or discovery adds a meaningful choice. Expansion should produce a richer session, not a catalog detached from the game.
 
 The next planning checkpoint must establish a per-family inventory with **brief / asset / mechanic / integrated / reviewed** status. Count working entries and their interactions separately from planned entries. Numerical corpus targets will be explicit production targets, not a substitute for playtesting or permission to cut requested feature families.
+
+## Inventory checkpoint
+
+[CONTENT_INVENTORY.md](CONTENT_INVENTORY.md) now records the per-family baseline and named species statuses. The shared equipment catalog is implemented for the four existing tools. It does not yet add acquired upgrades or new tools. Next: a distinct space-adventure capability with danger/recovery, followed by the shared-state prerequisites for multi-world content.
