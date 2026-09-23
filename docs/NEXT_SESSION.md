@@ -1,5 +1,7 @@
 # Resume here
 
+**Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. Latest user feedback likes the orbital concept's overall appearance, but requests a colorful interface rather than all ice blue, real inventory and ship subsystems, and an entire-planet map. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) specifies these interactions and dependencies. These are not yet implemented in the game. Prioritize this presentation/interaction pass before adding unrelated content.
+
 ## Active goal: spaceship adventure and Space Stage feature breadth
 
 **Latest steering:** the user explicitly rejected the `flight-sound-audition` palette as keyboard-like and wants actual AI-generated SFX, especially whirring/humming propulsion. Stop shopping for expensive sound libraries; no purchase was made or authorized. `art/specs/audio_ai_v2.json` contains the new prompts. The public ElevenLabs sound-effects page returned four spacecraft-hum candidates without signup/payment; the user subsequently liked Generations 1, 2 and 3, with 3 preferred. They remain unacquired browser auditions; approval of sound character does not supply files or release rights. Do not claim auditory review through browser controls. The rejected bank is still present in the last packaged build and must be replaced/removed in the next audio integration. The user also requests much wider zoom and visible particles synchronized with thrust/tool audio. These corrections precede the planned combat slice.
