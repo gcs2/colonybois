@@ -2,7 +2,7 @@
 
 ## Latest steering: deeper Spore GUI forensics
 
-The user explicitly requests a substantially deeper investigation of Spore's actual GUI. Study gameplay screenshots and interaction sequences, not only manual labels; compare composition, tool palettes, cargo, targeting, planetary radar, zoom transitions, diplomacy, trade, feedback and sound timing with our current build. Avoid interpreting recolored rectangular panels as the finished direction. Distinguish observed frames, documented mechanics and our inferences. Audio cannot be judged through browser controls alone. This research now takes priority before further interface redesign.
+Read [SPORE_GUI_FORENSICS.md](SPORE_GUI_FORENSICS.md) first. The research checkpoint inspects manual diagrams, game screenshots, timestamped gameplay states and community UI structure, then audits our code. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) now specifies a composed lower instrument assembly, live planetary navigation, category/item palettes by the ship, distinct targeting states and dedicated commerce/conversation layouts. Next: composition/state boards and an original housing/icon kit, then implement the bounded HUD slice and its acceptance matrix. Current colored buttons and generic drawers remain prototypes. Dense late-game states, frame-accurate motion, native retail input and listening audit remain open; do not claim those were verified.
 
 ## Planetary atlas checkpoint
 
@@ -10,13 +10,13 @@ The user explicitly requests a substantially deeper investigation of Spore's act
 
 Only Morrow Basin is landable. The globe is a shared procedural geographic scaffold, not a fully traversable surface or a finished planetary art asset. System/galaxy map integration, multiple landing regions and resource/political layers remain open. Existing local terrain detail is still authored separately from global geometry. Current validation: **313 assertions plus UI checks**, including 34 planet-map checks. Atlas captures in artifacts/flight_ui_atlas_*.png are rendered evidence, not native input review.
 
-**Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. Latest user feedback likes the orbital concept's overall appearance, but requests a colorful interface rather than all ice blue, real inventory and ship subsystems, and an entire-planet map. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) specifies these interactions and dependencies. The first colorful instrument/cargo/equipment pass is implemented; the entire-planet map and deeper subsystem mechanics remain pending. Prioritize this presentation/interaction pass before adding unrelated content.
+**Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. The colorful cargo/equipment pass and whole-planet atlas are implemented prototypes; the redesigned composition, live navigation instrument and deeper subsystem mechanics remain pending. Prioritize the forensic redesign before unrelated content.
 
 ## Interface checkpoint
 
-Cargo / **I** shows two real onboard sample cradles and separate eight-unit surface storage, with quantities, origin and a deployer action. Systems / **K** inspects installed tools, reach, cycle and energy cost, and selects a tool back into flight. Inventory does not fabricate items or count surface produce aboard. All inspection drawers pause both movement and economic time; closing preserves an explicit player pause. Four original vector tool icons use mint, apricot, honey and violet; energy is gold on warm plum housings. These are implemented UI improvements, not final art approval. Full power routing, upgrades, hull/damage and planetary cartography are still missing.
+Cargo / **I** shows two real onboard sample cradles and separate eight-unit surface storage, with quantities, origin and a deployer action. Systems / **K** inspects installed tools, reach, cycle and energy cost, and selects a tool back into flight. Inventory does not fabricate items or count surface produce aboard. All inspection drawers pause both movement and economic time; closing preserves an explicit player pause. Four original vector tool icons use mint, apricot, honey and violet; energy is gold on warm plum housings. These are implemented UI improvements, not final art approval. Full power routing, upgrades and hull/damage are still missing; the atlas checkpoint above supersedes the former missing-map status.
 
-Validation: **279 assertions plus UI checks** pass (flight now 37). `tests/review_flight_interface.gd` renders isolated review captures under ignored `artifacts/flight_ui_*.png`; reviewed 1440×810 and 1280×720 layouts. No native player-input/fun approval is implied.
+This earlier interface checkpoint passed 279 assertions; the subsequent atlas checkpoint passed **313 plus UI checks**. `tests/review_flight_interface.gd` renders isolated review captures under ignored `artifacts/flight_ui_*.png`; reviewed 1440×810 and 1280×720 layouts. No native player-input/fun approval is implied.
 
 ## Active goal: spaceship adventure and Space Stage feature breadth
 
@@ -44,13 +44,13 @@ Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates 
 
 ## Next work
 
-1. Continue the audio coverage and listening audit (initial flight implementation is in place): distinct tool equip cues, target acquisition, movement confirmation, thrust, scans, cancellation, warnings, impacts and transitions. Add separate SFX/music/voice controls and a music/VO production path. The user explicitly wants satisfying hotbar sounds and is willing to pay for quality audio. Browser-assisted sourcing/auditions are authorized; present a concrete price/license before purchase.
-2. Give the ship health and weapons, readable instruments, a telegraphed threat, meaningful energy and fair recovery. Improve original icons, targeting feedback, animations and tutorial arrows. Native playtesting and listening remain essential.
-3. Connect personal flight to the sector, diplomacy and cargo. Do not build another isolated demo to avoid integration.
-4. Follow the complete requirement ledger rather than declaring success from this slice.
+1. Follow the bounded HUD redesign and acceptance matrix in the forensic report. Preserve functioning inventory, equipment, atlas and save commands.
+2. Acquire approved AI audio and replace the rejected bank; complete the listening/feedback audit. Existing independent sound controls remain. Browser-assisted auditions are authorized; no purchase without an approved concrete price/license.
+3. Continue authored ship/planet assets, scale navigation and particles. Native playtesting and listening remain essential.
+4. Integrate flight with the sector, diplomacy and cargo, then the planned health/threat slice. Keep the full requirement ledger visible rather than declaring success from a presentation slice.
 
 ## Verification and backup
 
-Current verification: 279 assertions plus UI checks pass (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 18 audio). Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence, legacy migration and the interface behaviors above. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures and artifacts/flight_ui_*.png (ignored runtime output); they demonstrate rendering, not fun or native input quality.
+Latest code verification: 313 assertions plus UI checks (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 18 audio, 34 planet map). Tests are in tools/Test.ps1. The forensic checkpoint only changes documentation; no new runtime test result is claimed. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. The last packaged build is build/versions/20260923-020530/FrontierWorlds.exe; the atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.

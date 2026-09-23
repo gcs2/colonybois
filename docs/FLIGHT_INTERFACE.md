@@ -1,6 +1,6 @@
 # Flight interface: color, interaction and navigation
 
-23 September 2026. **Target specification with a partial implementation.** Colored vector tool icons, warm panels, actual inventory with separate onboard/surface storage, and an equipment inspection/selection panel are now implemented. Cargo / I and Systems / K pause the entire local encounter while open. Planet map, power routing, upgrades and the full HUD composition below remain unfinished. The user liked the new orbital concept but explicitly requested a more colorful UI, inventory, ship subsystems and a whole-planet map. Preserve readable negative space while increasing useful interaction. Keep original creepy-cute character; avoid generic icy military instruments.
+23 September 2026. **Revised target after [Spore GUI forensics](SPORE_GUI_FORENSICS.md), with a partial implementation.** Colored vector icons, warm panels, real inventory, equipment inspection and the shared planetary atlas are implemented prototypes. Cargo / I, Systems / K and Atlas / M pause the local encounter while open. The composed HUD below, live navigation instrument, power routing and upgrades are unfinished. The research supersedes the previous generic-drawer composition. Preserve readable world space and original creepy-cute character.
 
 ## Visual language
 
@@ -19,18 +19,21 @@ Color never carries meaning alone. Reserve red warning animation for actual urge
 
 ## Flight HUD
 
-- Upper left: location and a compact breadcrumb **surface → planet → system → galaxy**. Each level opens a meaningful view; unavailable destinations explain why.
-- Lower left: compact ship condition/energy cluster. Clicking the cluster opens Systems. Do not display an invented hull value before health exists.
-- Lower center: colorful pictographic hotbar, grouped into survey, interaction and ship equipment. Hover explains range, resource cost and result; selection shows valid targets. Tool feedback comes from actual command state.
-- Lower right: local radar with a clearly labeled Planet Map control. Radar is a nearby navigation instrument; the whole-world map is a separate screen.
-- Right edge: Cargo, Systems, Comms and Chronicle controls with optional shortcuts. Use a single expandable drawer, not a wall of permanently open panels.
-- Contextual target card: name, distance, scan state and relevant actions. Expand detail on request. One primary tutorial prompt at a time.
+- Lower left: compact live navigation instrument with location, map/planetary-conditions toggle and nearby contact indicator. Planet Atlas expands into the existing full globe; it does not replace local orientation. Keep world coordinates and knowledge consistent.
+- Lower right: ship display, real energy and selected-tool socket beside a category/item palette. Systems opens from the ship. Do not display an invented hull value before health exists.
+- Tool palette: icon-first categories with populated, functioning items; counts, shortcut, selected and unavailable states remain distinct. Hover explains range, cost and result. Preserve selection across category changes. Do not present empty weapon/colony categories as implemented features.
+- Lower rail: quiet persistent Marks, rank/chronicle access and secondary controls. Avoid a permanent row of large application-menu buttons across the sky.
+- Contextual world feedback: selection marker and brief target information, then explicit approaching, in-range, executing, cancelled and completed states. Explain failure near the relevant action. Keep tutorial guidance compact and optional.
+- Inspection: quick cargo belongs with operational instruments; detailed inventory/equipment can use expanded panels. Diplomacy needs a character-led conversation layout; commerce needs a quantity/price transaction layout. They share components, not one universal drawer.
+- Scale: prototype wheel-based semantic zoom through supported views; retain altitude bindings and remapping. Unimplemented system/galaxy transitions must not pretend to navigate. Shared strategic state remains a dependency.
+
+Use the forensic report's production slice and acceptance matrix. Shaped housings, filled shaded icons and authored interaction states are required; recoloring flat default widgets is not the completed art direction. Frame-by-frame animation and listening review remain open.
 
 ## Inventory: usable cargo, not a numeric label
 
 Cargo opens a readable item grid with distinct silhouettes and category tabs: resources, specimens, artifacts and equipment. Selecting an item reveals quantity, origin, survey knowledge and supported uses. Show occupied versus available capacity with a documented unit; never mix mass and slot counts without explaining the rule.
 
-First implementation must bind to existing real field stock. Unimplemented specimen/artifact types must not appear as owned items. Equip and hotbar assignment use validated commands. Trade actions require a reachable contact/port and actual demand. Discard requires an explicit amount and confirmation; deployed specimens follow habitat/tool rules. During single-player inspection pause flight and show the pause state consistently; later unified simulation must have an explicit shared pause policy.
+Existing cargo binds to real field stock. Unimplemented specimen/artifact types must not appear as owned items. Equip and hotbar assignment use validated commands. Trade actions require a reachable contact/port and actual demand. Discard requires an explicit amount and confirmation; deployed specimens follow habitat/tool rules. Current full inspection pauses flight and simulation consistently. Keep that behavior until the revised mode policy is tested: palette selection stays live; detailed inspection may pause with an explicit indicator. Later unified simulation must share that policy. This policy is our design choice, not a verified Spore behavior.
 
 ## Systems: equipment with consequences
 
@@ -42,7 +45,7 @@ The initial panel can inspect current equipment and select supported tools. A la
 
 Provide a rotatable, zoomable globe of the **entire planet**, with the ship and known sites attached to stable latitude/longitude coordinates. A selected site's detail can show a local surface inset. This is not a stretched image of the existing 100×100 encounter patch.
 
-Start with terrain/biome, survey coverage, resources, settlements/jurisdictions and route layers. Reveal surveyed information gradually. Fog should distinguish unknown, remotely sensed and visited regions. Display multiple nations where scenario data provides them; a species does not imply a single planetary owner.
+Geography and survey coverage now exist; resources, settlements/jurisdictions and route layers remain future work. Reveal surveyed information gradually. Fog should distinguish unknown, remotely sensed and visited regions. Display multiple nations where scenario data provides them; a species does not imply a single planetary owner.
 
 Selecting a known destination shows distance, travel/resource requirements and available actions; committing a route changes actual navigation. Existing Morrow Basin must be labeled as the available landing site until more surfaces exist. Other mapped regions may be geographic context but must not promise playable terrain that has not been built. Globe, orbital planet and local terrain must share a geography seed and site coordinates; no rotating continent beneath a floating marker.
 
@@ -50,9 +53,10 @@ System view displays planets, moons and travel routes; galaxy view displays surv
 
 ## Review sequence
 
-1. Establish colored instrument components and clickable drawers using real existing data.
-2. Review flight readability and inventory interactions in engine at normal and small window sizes.
-3. Add persistent planet coordinates and honest map coverage, then route actions and shared-state integration.
-4. Add actual subsystem tradeoffs, reviewed sound/motion and richer equipment content.
+1. Produce the composed HUD and interaction-state boards specified in the forensic report, using real world captures and clearly labeled future states.
+2. Author original instrument housings, category tabs, icon silhouettes, target markers and their interaction states.
+3. Implement palettes, quick cargo and target feedback using existing validated commands; retain the functioning atlas, inventory and equipment inspection.
+4. Review native input, legibility, cancellation, shortage feedback, sound and motion at normal and small window sizes.
+5. Integrate strategic state and add actual subsystem tradeoffs and richer content. Do not expand decorative UI faster than its mechanics.
 
 The generated orbital image is a lighting/composition reference. It does not approve all of its ship details, typography or realism, and it does not replace an engine implementation or the original creepy-cute art direction.
