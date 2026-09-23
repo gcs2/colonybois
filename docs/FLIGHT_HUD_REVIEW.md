@@ -1,5 +1,11 @@
 # Flight instrument implementation review
 
+## Shared palette interaction checkpoint
+
+Current palette is adjacent to ship condition, supports collapse and category-relative number keys, and uses the same item path for weapons and counted packs. Tab browses categories without cancelling orders. Wrong-view tools explain their restriction. Menus and explicit pause block commands. 518 assertions plus UI checks passed; 46 HUD checks include 16 new palette/input/consumable cases. Bright-terrain backing and selected weapon/inventory/collapse captures are part of rendered inspection; no native-input or final art approval is implied.
+
+The rendered review restores its arranged pause state after focus loss, which otherwise prevents scripted selection while the window is in the background. Production focus-loss pause remains unchanged. Capture assertions verify the intended category/selection/collapse before saving images.
+
 ## Superseding user review: rejected
 
 The user rejected both rounded-panel and custom angular cockpit candidates. Rendered checks below are historical implementation evidence, not approval. Read [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md). Current functional correction removes the footer, uses Escape for utilities, uses inventory for energy packs, explains shield controls in Equipment and separates weapon selection from attacking. The cockpit artwork is still temporary; a new visual direction must follow Spore state/reference analysis.
@@ -7,7 +13,7 @@ The user rejected both rounded-panel and custom angular cockpit candidates. Rend
 
 23 September 2026. Candidate implementation following [Spore GUI forensics](SPORE_GUI_FORENSICS.md). This is an engine-rendered interface pass, not an approved AAA result. Ship, planet and terrain assets are unchanged.
 
-## Implemented
+## Historical first implementation
 
 - New `flight_hud.gd` owns the composed instrument layout; encounter commands retain simulation authority.
 - Lower-left local chart samples the surface height function. It shows ship heading, contacts, scanned status, selection and actual navigation destination. Click contacts to approach/use; click open ground to fly. In orbit it shows a local schematic with the actual planet/ship positions and a landing command. The full globe atlas remains separate.

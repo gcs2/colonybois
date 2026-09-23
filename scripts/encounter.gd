@@ -775,6 +775,20 @@ func _target_position(id: String = "") -> Vector3:
 	return node.position+Vector3(0,2.5 if id in ["pod","relay"] else 0.6,0)
 
 func _hud_action(action: String) -> void:
+	if action.begins_with("item:"):
+		if paused or _inspection_open(): return
+		var id: String = action.trim_prefix("item:")
+		if not hud.Palette.unavailable(id,model).is_empty(): return
+		if id == "lance": _select_weapon()
+		elif id == "pack": _hud_action("pack")
+		else: _select_tool(id)
+		_refresh_ui()
+		return
+	if action.begins_with("category:") or action == "palette_toggle":
+		if paused or _inspection_open(): return
+		hud._internal_action(action)
+		audio.play("ui_confirm")
+		return
 	match action:
 		"pause": _toggle_pause()
 		"menu": _exit_encounter()
@@ -851,9 +865,7 @@ func _select_weapon() -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
 	_cancel_orders()
 	weapon_selected = true
-	hud.tool_title.text = "Arc lance · energy weapon"
-	hud.tool_spec.text = "Click an enemy · 10 energy / shot · 2 s cooldown"
-	Instruments.instrument(hud.weapon_button,"lance",Instruments.CARGO,true)
+	hud.select_tool("lance")
 	audio.play("ui_confirm")
 
 func _target_guardian() -> void:
@@ -973,7 +985,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_M: _toggle_planet_map()
 		return
 	if event is InputEventKey and not event.echo:
-		if event.physical_keycode == KEY_F:
+		if event.physical_keycode == KEY_F and not paused and not _inspection_open():
 			held = event.pressed
 			if not held: latched = false
 		if not event.pressed: return
@@ -981,18 +993,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_M: _toggle_planet_map()
 			KEY_I: _toggle_drawer("cargo")
 			KEY_K: _toggle_drawer("systems")
-			KEY_1:
-				if model.state.flight_mode == "surface": _select_tool(TOOLS[0])
-			KEY_2:
-				if model.state.flight_mode == "surface": _select_tool(TOOLS[1])
-			KEY_3:
-				if model.state.flight_mode == "surface": _select_tool(TOOLS[2])
-			KEY_4:
-				if model.state.flight_mode == "surface": _select_tool(TOOLS[3])
-			KEY_5: _select_weapon()
+			KEY_Y: _toggle_drawer("contact")
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
+				if not paused and not _inspection_open():
+					hud.refresh_items(model,false)
+					hud.activate_slot(event.physical_keycode-KEY_1+(9 if event.ctrl_pressed else 0))
 			KEY_TAB:
-				_cancel_orders()
-				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
+				if not paused and not _inspection_open():
+					hud.cycle_group(-1 if event.shift_pressed else 1)
+					audio.play("ui_confirm")
 			KEY_SPACE: _toggle_pause()
 			KEY_ESCAPE: _escape_menu(); return
 			KEY_F5: _save()
@@ -1153,7 +1162,9 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	if not orbital: orbit.environment.environment = null
 	for button: Button in toolbar: button.disabled = orbital
 	weapon_selected = false
+	hud.select_tool(tool)
 	hud.set_orbital_mode(orbital)
+	if orbital: hud.show_group("Weapons")
 	use_button.disabled = orbital
 	if not preserve_zoom:
 		distance = 85 if orbital else 55
@@ -1168,6 +1179,7 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	_update_camera(0 if preserve_zoom else 1)
 
 func _select_tool(value: String) -> void:
+	if paused or _inspection_open(): return
 	if not Equipment.has_tool(value): return
 	if model.state.flight_mode == "orbit" and hud != null and hud.orbital_mode: return
 	_cancel_orders()
@@ -1195,8 +1207,7 @@ func _refresh_ui() -> void:
 	var field_distance: float = _wreck_distance()
 	hud.danger_label.text = "PULSE CORE · %d m · NEXT IN %d s" % [field_distance,6-int(s.threat_clock)] if orbital and field_distance < Model.HAZARD_RADIUS else ("PULSE FIELD · %d m · KEEP CLEAR" % field_distance if orbital and field_distance < Model.HAZARD_WARNING else "")
 	hud.guardian_warning.text = "CUSTODIAN LOCKING · %d s" % [3-int(s.guardian_alert)] if orbital and s.guardian_alert > 0 and s.guardian_alert < 3 else ("CUSTODIAN FIRING · %d s TO NEXT SHOT" % maxi(0,int(s.guardian_ready_at)-int(s.time)) if orbital and s.guardian_alert >= 3 and not s.guardian_disabled else "")
-	hud.weapon_button.disabled = paused or _inspection_open() or not orbital
-	hud.weapon_button.text = "Weapon"
+	hud.refresh_items(model,paused or _inspection_open())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
 	hud.paused_badge.text = ("GAME PAUSED" if popup.visible and popup_kind == "menu" else "INSPECTION PAUSED") if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
@@ -1279,8 +1290,6 @@ func _refresh_ui() -> void:
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
-	for i: int in range(toolbar.size()):
-		toolbar[i].tooltip_text = "Surface equipment · enter the atmosphere to operate." if orbital else Equipment.hint(TOOLS[i])
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1407,7 +1416,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\n1–4: surface tools · 5: select orbital weapon · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
@@ -1587,9 +1596,9 @@ func _build_systems_panel() -> void:
 	Instruments.instrument(select,inspected_system,COLORS[index],true)
 
 func _equip_from_panel(id: String) -> void:
-	if id not in TOOLS: return
-	_select_tool(id)
+	if id not in TOOLS or paused or model.state.flight_mode != "surface": return
 	popup.visible = false
+	_select_tool(id)
 	_toast(Equipment.title(id)+" selected")
 
 func _preview_tools() -> void:

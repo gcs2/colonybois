@@ -1,5 +1,11 @@
 # Resume here
 
+## Shared palette checkpoint and latest aesthetic steering
+
+The user likes the comparison board and says the work is getting closer. Next: a consistent original icon/button vocabulary, broad content presentation and explicit 1080p+ coverage. Use crisp source vectors where they suit the established assets; generated raster art is optional, not a replacement for consistent interaction design. Keep labels/tooltips where symbols would be unclear.
+
+Shared Main tools / Environment / Weapons / Inventory palette now separates browsing, selection and targeting. Tab/Shift-Tab browse without cancelling; numbers select current-category items; collapse preserves ship condition. Counted packs use the actual model, expose cooldowns and cannot double-spend. Escape remains the utility menu. 518 assertions plus UI checks passed, including 46 HUD checks; latest readability changes passed those 46 again. Final art and native input remain unapproved. See SPORE_PALETTE_AUDIT.md for current limits.
+
 ## Latest research checkpoint: ten-state interface board
 
 Open [ui-review/index.html](ui-review/index.html) and read [SPORE_PALETTE_AUDIT.md](SPORE_PALETTE_AUDIT.md). The board compares source evidence, proposed responsibilities and current captures for surface, tools, inventory, conditions, communications, shop, system, galaxy, badges and Escape menu. It is an interaction wireframe, not a newly approved skin. Eight reference tool families are distinguished from cargo and passive upgrades; exact retail palette ordering is still unverified.

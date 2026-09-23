@@ -14,20 +14,23 @@ The manual explains category → tool → target, when applicable. The [weapon-t
 
 ## Current code versus required behavior
 
-| Responsibility | Actual implementation | Next correction |
+Shared palette checkpoint (23 September 2026): commands remain in the scene/model; `flight_palette.gd` supplies presentation entries for the four existing field tools, energy weapon and owned pack. This is an interaction implementation, not an approved final skin.
+
+| Responsibility | Current implementation | Remaining gap |
 | --- | --- | --- |
-| Category model | equipment.json groups four handlers into Survey, Cargo and Environment | Establish complete reference families and inventory usage types; don't display empty categories as implemented |
-| Keyed slots | encounter.gd maps 1–4 to fixed handler IDs; 5 is a separate weapon branch | Resolve number keys against visible palette slots; label top versus bottom row consistently |
-| Tab | Cycles four local subjects and cancels orders | Palette browsing should cycle populated categories without targeting or firing |
-| Collapse | No palette collapse | Collapse the item area while ship condition and category access stay fixed |
-| Weapon | Separate button, orbit-only command path | Same selection/target contract as other active tools; context restrictions per item |
-| Consumable | Energy pack in a paused inventory drawer | Preserve validated quantity/use; move into the reviewed item-grid interaction rather than a standalone action button |
-| Cargo | Two sample cradles, separate surface store | Item identity, quantity, origin, capacity and permitted actions; no remote produce represented as ship stock |
-| Passive upgrade | No general ownership/prerequisite model | Installed capability entry, not a fake selectable weapon/tool slot |
-| Current effect | Shield state in Equipment | Explain active effect and energy upkeep; eventual palette/icon state must derive from the same model |
-| Unavailable item | Mostly disabled controls and strings | Distinguish wrong view, unknown target, insufficient energy, empty charges, cooldown and not yet owned |
-| Acquiring equipment | All four tools start installed; lance is implicit; shield is salvage | Distinct discovery, shop purchase, consumable stock and upgrade prerequisites; do not conflate eligibility with ownership |
-| Input through a window | Menu modal guard, inspection guard, mouse-aware Controls | Preserve these while rebuilding palettes; no firing through overlays or accidental activation during browsing |
+| Categories | Main tools, Environment, Weapons and Inventory share one adjacent palette; only working entries | Complete reference families and equipment content; local Environment tools are not planetary terraforming |
+| Keyed slots | Current-category 1–9; Ctrl-number addresses second row; empty slots do nothing | Dense multirow layout/content review; currently at most two entries in a category |
+| Tab | Tab/Shift-Tab cycle categories without touching selection/target/order | Native retail-equivalence and input-remapping review |
+| Collapse | Item area hides; categories, equipped-tool identity and ship condition stay fixed | Final open/close motion and sound |
+| Weapon | Shared item entry selects without firing; target click issues model command | More weapons, view restrictions and acquisition paths |
+| Consumable | Counted pack in quick Inventory palette and full inventory; real model checks prevent repeated spending | Wider consumable catalog and dedicated inventory artwork |
+| Cargo | Two sample cradles, separate surface store | Unified galaxy cargo and wider item capacity/identity |
+| Passive upgrades | Remain in Equipment inspection, never fake tool slots | Ownership/prerequisite catalog and meaningful installs |
+| Unavailable item | Context, pause, count, pack cooldown, and energy hints; target-specific reason stays at target | Full unlock/purchase presentation |
+| Acquisition | Four field tools and lance installed at start; packs purchased; shield salvaged | Badge-gated shops and wider discovery/purchase paths |
+| Modal input | Scene rejects commands during inspection/pause before another render | Native accessibility and full map hierarchy review |
+
+Surface/orbit transitions restore the last field tool; entering orbit browses Weapons without auto-equipping or attacking. Quick palette use stays live; full inventory inspection pauses. These are explicit current behaviors, not claims about every retail pause rule.
 
 ## Implementation contract for the next palette slice
 

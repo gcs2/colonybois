@@ -2,11 +2,18 @@ extends SceneTree
 ## Reproducible rendered review; isolated --script state, never the player's save.
 func _initialize() -> void: call_deferred("run")
 
-func capture(scene: Node, name: String) -> void:
+func resume_review(scene: Node) -> void:
+	# Focus-loss pause can arrive while the scripted render window is in background.
+	# Restore the arranged review state; this does not change production focus behavior.
+	scene.paused = false
 	scene._refresh_ui()
+
+func capture(scene: Node, name: String) -> void:
+	resume_review(scene)
 	scene._update_visuals()
 	# Allow the renderer to settle; scripted transitions update their paused camera explicitly.
 	for frame: int in range(30): await process_frame
+	resume_review(scene)
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://artifacts/flight_ui_"+name+".png")
 
@@ -50,6 +57,18 @@ func run() -> void:
 	scene._change_flight_mode("orbit")
 	scene._update_camera(1)
 	await capture(scene,"orbit_hud")
+	resume_review(scene)
+	scene._select_weapon()
+	assert(scene.weapon_selected)
+	await capture(scene,"weapon_palette_720")
+	resume_review(scene)
+	scene.hud.category_buttons.Inventory.pressed.emit()
+	assert(scene.hud.active_group == "Inventory")
+	await capture(scene,"quick_inventory_720")
+	resume_review(scene)
+	scene.hud.collapse_button.pressed.emit()
+	assert(not scene.hud.palette_expanded)
+	await capture(scene,"collapsed_palette_720")
 	scene.model.start_survey()
 	for i: int in range(12): scene.model.tick()
 	scene._toggle_planet_map()
