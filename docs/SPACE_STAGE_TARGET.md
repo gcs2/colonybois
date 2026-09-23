@@ -9,6 +9,8 @@ Updated 23 September 2026. The active user goal is feature breadth comparable to
 
 ## Latest playtest changes our priorities
 
+The [working reference inventory](parity/COVERAGE.md) now enumerates individual tool families/variants and progression names, with one task-board owner per responsibility and explicit source uncertainties. It exposes ship survival upgrades, distinct weapon roles, global climate/terrain/color tools, uplift and philosophy powers as concrete missing capabilities. Its counts do not establish exhaustive parity or replace native playtests.
+
 The user rejected the mandatory planting/warming sequence, constant-height flight, F-centric interaction, weak danger and cheap presentation. Ecology supports exploration and supply chains; it must not replace spaceship play. The desired experience includes mouse-first actions, arrows/numpad for a left-handed mouse setup, real vertical flight and planetary departure, health/energy/weapons, satisfying achievements and animation, sound on every meaningful interaction, music, spoken guidance and tutorial pointers. They are willing to pay for quality audio and authorize browser-assisted production. Approve a concrete price/license before purchase; willingness to pay is not a subscription order.
 
 Preserve the alien/Vanguard campaign. A human Sol-system start is an additional desired scenario direction; its precise historical relationship to that campaign is not settled. Do not erase one to implement the other.

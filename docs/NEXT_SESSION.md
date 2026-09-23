@@ -1,5 +1,13 @@
 # Resume here
 
+## Reference inventory and next ship progression — latest checkpoint
+
+Read [parity/COVERAGE.md](parity/COVERAGE.md). The sourced working manifests enumerate 84 tool/equipment families with 189 variant entries, 30 badge families, ten master ranks, 40 space-related achievements and twelve inherited traits. Each tool family has one task-board owner. Fourteen audit questions remain, including conflicting wiki values and missing retail verification; these counts are not a completed-feature percentage or an exhaustive parity claim. Run `tools/ParityReport.ps1` to validate references and report ownership counts. The existing board remains the only production queue.
+
+Next implement connected C01/P01 ship survival progression: purchased hull/energy capacity tiers with prerequisite purchases, inventory-selected repair consumables, service prices based on missing capacity, and durable ownership. Preserve no passive energy regeneration, free home recharge and real expedition costs. Then distinct weapons/surface targets, fleet assistance and planet manipulation. Do not wait for disputed reference numbers to implement clearly identified missing capabilities using explicit scenario tuning.
+
+This checkpoint changes research, planning and its reporting utility only. Latest playable remains **build/versions/20260923-153000/FrontierWorlds.exe** via Play.cmd; 860 gameplay assertions plus UI checks belong to the preceding scout checkpoint, not new validation of the research facts.
+
 ## Authored scout and attached flight effects — latest checkpoint
 
 Read [SCOUT_ASSET.md](SCOUT_ASSET.md). Kiteback v2 replaces the primitive scout with a dimensioned, reproducibly authored GLB: layered shell plates, an inset visor, hooked articulated shields, engine housings and a belly aperture. Two shield pivots track actual thrust/steering and pause. Named engine/tool/weapon sockets drive existing effects. Angled beams now reach their target correctly; previous world-axis scaling distorted them. The source validates triangle preservation during batching. Final geometry: 5,432 triangles, 14 mesh instances, six materials; the particle cap stays 184.

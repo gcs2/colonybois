@@ -1,0 +1,534 @@
+{
+  "schema": 1,
+  "as_of": "2026-09-23",
+  "owner": "P01",
+  "closure": "OPEN: named families, not complete counters/thresholds/points/unlock edges.",
+  "sources": {
+    "badges": "https://spore.fandom.com/wiki/Badge",
+    "achievements": "https://spore.fandom.com/wiki/Space_stage_achievements",
+    "hidden": "https://spore.fandom.com/wiki/Achievements",
+    "ranks": "https://spore.fandom.com/wiki/Space_Stage",
+    "traits": "https://spore.fandom.com/wiki/Friendly"
+  },
+  "evidence": "Indexed wiki excerpts and prior SPORE_BADGE_PARITY.md; exact retail behavior not yet verified.",
+  "badges": [
+    {
+      "id": "body_guard",
+      "name": "Body Guard",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "cleaner",
+      "name": "Cleaner",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "conqueror",
+      "name": "Conqueror",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "warmonger",
+      "name": "Warmonger",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "colonist",
+      "name": "Colonist",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "empire",
+      "name": "Empire",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "economist",
+      "name": "Economist",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "golden_touch",
+      "name": "Golden Touch",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "merchant",
+      "name": "Merchant",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": "data/space_commerce.json:merchant; distinct delivery routes, not retail sales total"
+    },
+    {
+      "id": "trader",
+      "name": "Trader",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "jack_of_all_trades",
+      "name": "Jack of All Trades",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "explorer",
+      "name": "Explorer",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": "data/space_commerce.json:explorer; scenario visits, not retail inspections"
+    },
+    {
+      "id": "frequent_flyer",
+      "name": "Frequent Flyer",
+      "tiers": 5,
+      "decision": "adapt",
+      "mapping": null
+    },
+    {
+      "id": "traveler",
+      "name": "Traveler",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "collector",
+      "name": "Collector",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "sightseer",
+      "name": "Sightseer",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "wonderland_wanderer",
+      "name": "Wonderland Wanderer",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "eco_hero",
+      "name": "Eco Hero",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "zoologist",
+      "name": "Zoologist",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "terra_wrangler",
+      "name": "Terra-Wrangler",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "planet_artiste",
+      "name": "Planet Artiste",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "brain_surgeon",
+      "name": "Brain Surgeon",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "diplomat",
+      "name": "Diplomat",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "split_personality",
+      "name": "Split Personality",
+      "tiers": 5,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "captain_s_badge",
+      "name": "Captain's Badge",
+      "tiers": 1,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "gopher",
+      "name": "Gopher",
+      "tiers": 5,
+      "decision": "adapt",
+      "mapping": null
+    },
+    {
+      "id": "missionista",
+      "name": "Missionista",
+      "tiers": 5,
+      "decision": "adapt",
+      "mapping": null
+    },
+    {
+      "id": "joker",
+      "name": "Joker",
+      "tiers": 1,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "badge_outta_heck",
+      "name": "Badge Outta Heck",
+      "tiers": 1,
+      "decision": "retain",
+      "mapping": null
+    },
+    {
+      "id": "dance_with_the_devil",
+      "name": "Dance With the Devil",
+      "tiers": 1,
+      "decision": "retain",
+      "mapping": null
+    }
+  ],
+  "master_ranks": {
+    "points": [
+      5,
+      15,
+      30,
+      50,
+      75,
+      105,
+      140,
+      180,
+      225,
+      275
+    ],
+    "names": [
+      "Commander",
+      "Commodore",
+      "Admiral",
+      "The Celebrated",
+      "The Renowned",
+      "The Great",
+      "The Legendary",
+      "All-Powerful",
+      "Ultimate Being",
+      "Omnipotent"
+    ],
+    "mapping": null,
+    "open": "Per-badge point awards and fleet-capacity thresholds require dedicated verification."
+  },
+  "achievements": [
+    {
+      "name": "Super Pilot",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Civil Engineer",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Conquistador",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Zoo Keeper",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Bio Engineer",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Palm Greaser",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Maxis Scout",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Empire Builder",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Quietus Star",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Quest Master",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Gunner",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Identity Crisis",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Thief",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Manifest Destiny",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Careless Parent",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "42",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Alter Ego",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Alter Ego's Alter Ego",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Split Personality",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Bard Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Bard Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Diplomat Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Diplomat Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Ecologist Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Ecologist Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Knight Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Knight Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Scientist Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Scientist Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Shaman Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Shaman Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Trader Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Trader Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Wanderer Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Wanderer Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Warrior Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Warrior Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Zealot Passion",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Zealot Hero",
+      "source": "achievements",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    },
+    {
+      "name": "Oh the Humanity!",
+      "source": "hidden",
+      "decision": "retain_or_adapt",
+      "mapping": null
+    }
+  ],
+  "cross_scope": [
+    {
+      "name": "Space Stage Unlocked",
+      "decision": "cross-stage boundary; separate from Space-only target"
+    },
+    {
+      "name": "Pathological Cheater",
+      "decision": "shared cheat/achievement rule; sandbox separation required"
+    },
+    {
+      "name": "Galactic Adventures achievements",
+      "decision": "not assumed base-game scope"
+    },
+    {
+      "name": "Removed achievements",
+      "decision": "not required retail features"
+    }
+  ],
+  "consequence_traits": {
+    "owner": "P02",
+    "names": [
+      "Social Suave",
+      "Gentle Generalist",
+      "Power Monger",
+      "Pleasing Performance",
+      "Speed Demon",
+      "Prime Specimen",
+      "Gracious Greeting",
+      "Colony Craze",
+      "Arms Dealer",
+      "Green Keeper",
+      "Spice Savant",
+      "Pirate B Gone"
+    ],
+    "open": "Names inventoried; each effect and scenario acquisition path still requires verification. Implement original selectable/history consequences without building the other four Spore stages."
+  },
+  "adaptation": "No forced delivery quotas or playtime farming. Preserve accomplishment and alternate shop paths; retune counts separately for our sector. Existing Defender measures distinct neutralizations, not Body Guard rescues.",
+  "acceptance": "Every accomplishment has a validated counter/event source, save deduplication, durable earned state, appropriate presentation, reward edges and a playable earning path. Purchases require actual eligibility, prerequisites, stock and payment. Names alone prove none of this."
+}

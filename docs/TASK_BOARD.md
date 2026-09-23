@@ -41,7 +41,22 @@ Status meanings: **In progress** = current work; **Next** = ordered near-term qu
 | S02 | Sandbox and alternative human start | **Prototype / later.** Strategic sandbox exists; integrated flight sandbox and Sol scenario absent. | Same core simulation, separate saves, deliberate cheats/story rewards; human scenario does not overwrite alien campaign. |
 | F01 | Fleet commands and eventual first-person combat | **Later.** Not implemented. | Bounded enjoyable flight/combat pilot before scaling; persistent ships and losses connected to production. |
 | U01 | Colony support, finite demand and service capacity | **Integrated outpost pilot.** [Carried kits](EXPEDITION_COLONIES.md), mouse-selected sites, eighteen-day construction and paid export modules now support personal travel/trade. Aggregate city prototype remains separate; full colony planning, services and defenses remain incomplete. Prototype art is unapproved. | Aggregate cities support trade, administration and recruitment. Finite demand, regional specialization and service capacities remain tracked. |
-| R01 | Full Space Stage feature inventory | **Active research.** Family ledger plus [badge parity report](SPORE_BADGE_PARITY.md); individual tool/upgrade audit incomplete. | Account for every base feature, distinguish source facts from adaptations, and keep missing editors/expansion scope explicit. |
+| R01 | Full Space Stage feature inventory | **Active research.** [Sourced coverage manifests](parity/COVERAGE.md) now enumerate 84 tool/equipment families / 189 variant entries, 30 badge families, ten master ranks, 40 achievements and twelve traits. Fourteen audit questions remain; exact costs, complete unlock edges and retail verification are open. `tools/ParityReport.ps1` validates ownership/references, not gameplay completion. Next implementation target is C01/P01 ship survival tiers. | Account for every base feature, distinguish source facts from adaptations, and keep missing editors/expansion scope explicit. |
+
+## Baseline responsibilities made explicit by the reference audit
+
+These required families were previously compressed into broad rows. [The reference manifest](parity/COVERAGE.md) gives each item one owning task; the following rows extend this same board, not a second queue. Existing R01 owns research closure, P01 owns unlock/progression infrastructure, and V/Q/A rows own cross-cutting presentation and validation.
+
+| ID | Task | Status / dependency | Gate |
+| --- | --- | --- | --- |
+| T01 | Planet-wide climate manipulation | **Required / missing from integrated flight.** Local bed heating and separate strategic climate projects are insufficient. | Both climate axes, energy/charged tools, stabilization, capacity, visible world changes, persistence and reactions. |
+| T02 | Terrain sculpting and discovered stamps | **Required / missing.** Reference inventory names the basic/Terra tools and five discovered series; some labels remain unresolved. | Actual persistent brushes/stamps, terrain and colony interaction, consistent map/surface results. |
+| T03 | Planet coloring and restoration | **Required / missing.** Eight palettes across sky/land/ocean and reset are inventoried. | Discoverable tools visibly change independent channels and persist through travel/save/load. |
+| L02 | Civilization stages and uplift | **Required / missing.** | Visible inhabited worlds advance and become persistent diplomatic actors; interventions have consequences. |
+| P02 | Philosophies, powers and inherited traits | **Required / missing.** Three faction priorities do not implement the nine player powers or twelve inherited consequences. | Distinct usable powers, identity/conversion and documented acquisition; governments remain separate. |
+| E02 | Contracts, emergencies and mission lifecycle | **Required / sparse prototype.** Optional wreck encounter exists; full mission/event matrix remains unaudited. | Clear offers, decisions, clocks, cancellation/failure/rewards and prevention; no compulsory delivery grind. |
+| W01 | Empire conflict, raids and territorial outcomes | **Required / missing.** C01 owns personal combat; W01 owns empire decisions and territory. | Attacks, defense, surrender/conquest/destruction, peace and diplomatic repercussions persist and affect the economy. |
+| X01 | Creation systems and scope boundaries | **Deferred / scope visible.** Creature creator explicitly deferred. Ship/building creation and online sharing scope require explicit accounting. | Approved scope per editor; deferred work never counts as delivered parity. Expansion content is separate. |
 
 ## How progress is reported
 

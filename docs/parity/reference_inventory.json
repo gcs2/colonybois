@@ -1,0 +1,1440 @@
+{
+  "schema": 1,
+  "as_of": "2026-09-23",
+  "implementation_commit": "305d428913912fe77204dac4e352486f2825796a",
+  "scope": "Base Spore Space Stage reference; original project adaptations are separate.",
+  "closure": "OPEN: inventory is source-backed working coverage, not retail-verified exhaustive parity.",
+  "production_queue": "docs/TASK_BOARD.md",
+  "sources": {
+    "tools": {
+      "url": "https://spore.fandom.com/wiki/Ship_Tools",
+      "evidence": "indexed excerpt; direct fetch blocked",
+      "limits": "Family navigation only; not a retail database."
+    },
+    "abilities": {
+      "url": "https://spore.fandom.com/wiki/Ship_Abilities",
+      "evidence": "indexed excerpt",
+      "limits": "Baseline and upgrade family names; drive range conflicts with dedicated page."
+    },
+    "costs": {
+      "url": "https://spore.fandom.com/wiki/Ship_Tool_Costs",
+      "evidence": "indexed excerpt; direct fetch blocked",
+      "limits": "Partial price table; seller coverage incomplete."
+    },
+    "drive": {
+      "url": "https://spore.fandom.com/wiki/Interstellar_Drive",
+      "evidence": "indexed excerpt",
+      "limits": "Five levels and alternative unlocks; level-three range conflicts with overview."
+    },
+    "cargo": {
+      "url": "https://spore.fandom.com/wiki/Cargo_Hold",
+      "evidence": "indexed excerpt",
+      "limits": "Three purchased capacities; base/Small naming conflicts with overview."
+    },
+    "energy": {
+      "url": "https://spore.fandom.com/wiki/Energy_Storage",
+      "evidence": "indexed excerpt",
+      "limits": "Four purchased upgrades after default; source omits icon labels in table."
+    },
+    "pulse": {
+      "url": "https://spore.fandom.com/wiki/Pulse",
+      "evidence": "indexed excerpt",
+      "limits": "Three weapon variants and progression."
+    },
+    "blaster": {
+      "url": "https://spore.fandom.com/wiki/Blaster",
+      "evidence": "indexed excerpt",
+      "limits": "Three automatic-fire variants; reference says this family operates outside atmosphere."
+    },
+    "happy": {
+      "url": "https://spore.fandom.com/wiki/Happy_Ray",
+      "evidence": "indexed excerpt",
+      "limits": "Three social-beam variants and progression."
+    },
+    "repair": {
+      "url": "https://spore.fandom.com/wiki/Repair_Pack",
+      "evidence": "indexed excerpt",
+      "limits": "Contradictory energy/health prose; do not import effects without corroboration."
+    },
+    "sculpt": {
+      "url": "https://spore.fandom.com/wiki/Planet_Sculpting",
+      "evidence": "indexed excerpt",
+      "limits": "Basic/Terra tool names; unlock conflict with individual terrain pages."
+    },
+    "gear": {
+      "url": "https://spore.fandom.com/wiki/Gear_Series",
+      "evidence": "indexed excerpt",
+      "limits": "Nine discoverable stamps."
+    },
+    "crystal": {
+      "url": "https://spore.fandom.com/wiki/Crystal_Series",
+      "evidence": "indexed excerpt",
+      "limits": "Eight listed stamps; Seas appears in StrategyWiki comparison."
+    },
+    "cute": {
+      "url": "https://spore.fandom.com/wiki/Cute_Series",
+      "evidence": "indexed excerpt",
+      "limits": "Nine stamps; Canyon singular/plural differs between summaries."
+    },
+    "strategy": {
+      "url": "https://strategywiki.org/wiki/Spore/Tools",
+      "evidence": "indexed excerpt; direct fetch 403",
+      "limits": "Tentacle/Chocolate stamps and Crystal Seas; spelling normalized and flagged."
+    },
+    "color": {
+      "url": "https://spore.fandom.com/wiki/Planet_Coloring",
+      "evidence": "indexed excerpt",
+      "limits": "Eight palettes across three channels; normalized labels below, not all retail names."
+    },
+    "climate": {
+      "url": "https://spore.fandom.com/wiki/Terraforming",
+      "evidence": "indexed excerpt",
+      "limits": "Temperature/atmosphere, energy versus charge tools, ecosystem stabilization."
+    },
+    "philosophy": {
+      "url": "https://spore.fandom.com/wiki/Philosophy",
+      "evidence": "indexed excerpt",
+      "limits": "Ten identities, nine powers; removed Wanderer power excluded."
+    },
+    "badges": {
+      "url": "https://spore.fandom.com/wiki/Badge",
+      "evidence": "indexed excerpt plus prior research",
+      "limits": "Family inventory from SPORE_BADGE_PARITY.md; thresholds and points still require closure."
+    },
+    "stage": {
+      "url": "https://spore.fandom.com/wiki/Space_Stage",
+      "evidence": "indexed excerpt",
+      "limits": "Navigation, collections, badge points, master ranks and special discoveries."
+    },
+    "achievements": {
+      "url": "https://spore.fandom.com/wiki/Space_stage_achievements",
+      "evidence": "indexed excerpt",
+      "limits": "Base Space achievements; cross-stage unlock recorded separately."
+    },
+    "hidden": {
+      "url": "https://spore.fandom.com/wiki/Achievements",
+      "evidence": "indexed excerpt",
+      "limits": "Hidden, removed and expansion achievements distinguished."
+    },
+    "missions": {
+      "url": "https://spore.fandom.com/wiki/Mission",
+      "evidence": "indexed excerpt",
+      "limits": "Main/tutorial, requested and emergency contract roles; exact encounter templates unresolved."
+    },
+    "lower": {
+      "url": "https://spore.fandom.com/wiki/Lower_Terrain",
+      "evidence": "indexed excerpt",
+      "limits": "Unlock contradiction; copied raise-surface prose is suspect."
+    },
+    "rally": {
+      "url": "https://spore.fandom.com/wiki/Rally_Call",
+      "evidence": "indexed excerpt",
+      "limits": "Fleet buff exists; item page does not clearly mark OR in summary."
+    },
+    "planets": {
+      "url": "https://spore.fandom.com/wiki/Planet",
+      "evidence": "indexed excerpt",
+      "limits": "Planet classes, orbit/environment identity and expansion boundary."
+    }
+  },
+  "families": [
+    {
+      "id": "scan",
+      "category": "Expedition tools",
+      "owner": "E01",
+      "variants": [
+        "Scan"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": "data/equipment.json:scan; bounded subjects only",
+      "decision": "retain"
+    },
+    {
+      "id": "radar",
+      "category": "Expedition tools",
+      "owner": "E01",
+      "variants": [
+        "Radar"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "hologram",
+      "category": "Expedition tools",
+      "owner": "E01",
+      "variants": [
+        "Hologram Scout"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "planet_scan",
+      "category": "Expedition tools",
+      "owner": "E01",
+      "variants": [
+        "Planet Scan"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": "scripts/expedition_session.gd: orbital chart; adaptation, not automatic parity",
+      "decision": "retain"
+    },
+    {
+      "id": "seti",
+      "category": "Navigation",
+      "owner": "E01",
+      "variants": [
+        "SETI"
+      ],
+      "source": "abilities",
+      "acquisition": "unresolved",
+      "mapping": "scripts/expedition_diplomacy.gd: contact on arrival; no signal detection",
+      "decision": "retain"
+    },
+    {
+      "id": "interplanetary",
+      "category": "Navigation",
+      "owner": "I01",
+      "variants": [
+        "Interplanetary Drive"
+      ],
+      "source": "abilities",
+      "acquisition": "baseline",
+      "mapping": "scripts/encounter.gd: surface/orbit; full system view absent",
+      "decision": "retain"
+    },
+    {
+      "id": "drive",
+      "category": "Navigation",
+      "owner": "E01",
+      "variants": [
+        "Interstellar Drive 1",
+        "Interstellar Drive 2",
+        "Interstellar Drive 3",
+        "Interstellar Drive 4",
+        "Interstellar Drive 5"
+      ],
+      "source": "drive",
+      "acquisition": "baseline then badge/shop",
+      "mapping": "data/space_commerce.json:drive; one paid upgrade only",
+      "decision": "adapt",
+      "open": [
+        "drive_range"
+      ],
+      "reference_unlocks": [
+        "baseline",
+        "Frequent Flyer 2 OR Gopher 1",
+        "Frequent Flyer 3 OR Gopher 2 + prior",
+        "Frequent Flyer 4 OR Gopher 3 + prior",
+        "Frequent Flyer 5 OR Gopher 4 + prior"
+      ],
+      "adaptation": "Essential range has non-errand paths; reference tier breadth retained."
+    },
+    {
+      "id": "wormhole",
+      "category": "Navigation",
+      "owner": "E01",
+      "variants": [
+        "Wormhole Key"
+      ],
+      "source": "abilities",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "abduction",
+      "category": "Collection",
+      "owner": "L01",
+      "variants": [
+        "Abduction Beam"
+      ],
+      "source": "abilities",
+      "acquisition": "baseline",
+      "mapping": "data/equipment.json:collect; pod-only sampler, no animals/citizens/artifacts",
+      "decision": "retain"
+    },
+    {
+      "id": "drop",
+      "category": "Collection",
+      "owner": "L01",
+      "variants": [
+        "Drop Cargo"
+      ],
+      "source": "abilities",
+      "acquisition": "baseline",
+      "mapping": "data/equipment.json:seed; one fixed planting site only",
+      "decision": "retain"
+    },
+    {
+      "id": "hold",
+      "category": "Collection",
+      "owner": "E01",
+      "variants": [
+        "Cargo hold default",
+        "Cargo hold upgrade 1",
+        "Cargo hold upgrade 2",
+        "Cargo hold upgrade 3"
+      ],
+      "source": "cargo",
+      "acquisition": "baseline then badge/shop",
+      "mapping": "data/space_commerce.json:hold; one paid commodity hold only",
+      "decision": "retain",
+      "open": [
+        "cargo_names"
+      ],
+      "reference_unlocks": [
+        "baseline",
+        "Collector 1 OR Merchant 2",
+        "Collector 2 OR Merchant 3 + prior",
+        "Collector 3 OR Merchant 4 + prior"
+      ]
+    },
+    {
+      "id": "energy",
+      "category": "Ship survival",
+      "owner": "C01",
+      "variants": [
+        "Basic Energy Storage",
+        "Small Energy Storage",
+        "Medium Energy Storage",
+        "Large Energy Storage",
+        "Extreme Energy Storage"
+      ],
+      "source": "energy",
+      "acquisition": "baseline then badge/shop",
+      "mapping": "scripts/encounter_state.gd: energy cap fixed",
+      "decision": "retain",
+      "reference_unlocks": [
+        "baseline",
+        "Missionista 1 OR Colonist 1",
+        "Missionista 2 OR Colonist 2 + prior",
+        "Missionista 3 OR Colonist 3 + prior",
+        "Missionista 4 OR Colonist 4 + prior"
+      ]
+    },
+    {
+      "id": "health",
+      "category": "Ship survival",
+      "owner": "C01",
+      "variants": [
+        "Basic Health",
+        "Small Health",
+        "Medium Health",
+        "Large Health",
+        "Extreme Health"
+      ],
+      "source": "abilities",
+      "acquisition": "baseline then badge/shop",
+      "mapping": "scripts/encounter_state.gd: hull cap fixed",
+      "decision": "retain"
+    },
+    {
+      "id": "colony_kit",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Colony Incredi-Pak"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": "scripts/expedition_colonies.gd: staged paid kit; colony planning incomplete",
+      "decision": "retain"
+    },
+    {
+      "id": "bio_protector",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Bio Protector"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "bio_stabilizer",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Bio Stabilizer"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "loyalty",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Loyalty Booster"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "happiness",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Happiness Booster"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "storage",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Spice Storage"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "turret",
+      "category": "Colony equipment",
+      "owner": "U01",
+      "variants": [
+        "Uber Turret"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "laser",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Mini Laser",
+        "Laser",
+        "Mega Laser"
+      ],
+      "source": "costs",
+      "acquisition": "baseline then badge/shop",
+      "mapping": "data/space_commerce.json:emitter and scripts/encounter_state.gd: arc lance; orbit-only adaptation",
+      "decision": "adapt",
+      "open": [
+        "combat_context"
+      ]
+    },
+    {
+      "id": "autoblaster",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Mini Auto Blaster",
+        "Auto Blaster",
+        "Mega Auto Blaster"
+      ],
+      "source": "blaster",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "reference_unlocks": [
+        "Colonist 1 OR Conqueror 1",
+        "Colonist 2 OR Conqueror 2 + prior",
+        "Colonist 3 OR Conqueror 3 + prior"
+      ]
+    },
+    {
+      "id": "pulse",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Mini Pulse",
+        "Pulse",
+        "Mega Pulse"
+      ],
+      "source": "pulse",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "reference_unlocks": [
+        "Colonist 1 OR Conqueror 1",
+        "Colonist 2 OR Conqueror 2 + prior",
+        "Colonist 3 OR Conqueror 3 + prior"
+      ]
+    },
+    {
+      "id": "missile",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Mini Proton Missile",
+        "Proton Missile",
+        "Mega Proton Missile"
+      ],
+      "source": "costs",
+      "acquisition": "baseline then badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "bomb",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Mini Bomb",
+        "Justa Bomb",
+        "Mega Bomb"
+      ],
+      "source": "costs",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "bomb_middle_name"
+      ]
+    },
+    {
+      "id": "antimatter_missile",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Anti-Matter Missile"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "antimatter_bomb",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Anti-Matter Bomb"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "planet_buster",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Planet Buster"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "cloak",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Cloaking Device"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "shield",
+      "category": "Weapons",
+      "owner": "C01",
+      "variants": [
+        "Shield"
+      ],
+      "source": "tools",
+      "acquisition": "badge/shop",
+      "mapping": "scripts/encounter_state.gd: shroud reduces damage; does not implement invisibility",
+      "decision": "retain"
+    },
+    {
+      "id": "aoe_repair",
+      "category": "Fleet support",
+      "owner": "F01",
+      "variants": [
+        "AOE Repair"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "rally",
+      "category": "Fleet support",
+      "owner": "F01",
+      "variants": [
+        "Rally Call"
+      ],
+      "source": "rally",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "repair",
+      "category": "Ship survival",
+      "owner": "C01",
+      "variants": [
+        "Repair Pack",
+        "Repair Mega Pack"
+      ],
+      "source": "repair",
+      "acquisition": "badge/shop",
+      "mapping": "scripts/encounter_state.gd: direct field repair; no carried repair pack",
+      "decision": "retain",
+      "open": [
+        "repair_copy"
+      ]
+    },
+    {
+      "id": "packs",
+      "category": "Ship survival",
+      "owner": "C01",
+      "variants": [
+        "Energy Pack",
+        "Energy Mega Pack"
+      ],
+      "source": "tools",
+      "acquisition": "shop",
+      "mapping": "scripts/encounter_state.gd: one purchased carried energy pack",
+      "decision": "retain"
+    },
+    {
+      "id": "happy",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Mini Happy Ray",
+        "Medium Happy Ray",
+        "Super Happy Ray"
+      ],
+      "source": "happy",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "reference_unlocks": [
+        "Diplomat 2 OR Economist 2",
+        "Diplomat 3 OR Economist 3 + prior",
+        "Diplomat 4 OR Economist 4 + prior"
+      ]
+    },
+    {
+      "id": "fireworks",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Fireworks"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "mind_erase",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Mind Erase"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "global_mind_erase",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Global Mind Erase"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "embassy",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Embassy"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "crop_circles",
+      "category": "Diplomatic tools",
+      "owner": "D01",
+      "variants": [
+        "Crop Circles"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "monolith",
+      "category": "Civilization intervention",
+      "owner": "L02",
+      "variants": [
+        "Monolith"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "eradicator",
+      "category": "Collection",
+      "owner": "L01",
+      "variants": [
+        "Species Eradicator"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "supersizer",
+      "category": "Collection",
+      "owner": "L01",
+      "variants": [
+        "Supersizer"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "sanctuary",
+      "category": "Collection",
+      "owner": "L01",
+      "variants": [
+        "Wildlife Sanctuary"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "tweaker",
+      "category": "Creation tools",
+      "owner": "X01",
+      "variants": [
+        "Creature Tweaker"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "deferred",
+      "adaptation": "User deferred creature creator; remains a visible parity exception, not delivered."
+    },
+    {
+      "id": "create_creature",
+      "category": "Creation tools",
+      "owner": "X01",
+      "variants": [
+        "Create Creature"
+      ],
+      "source": "tools",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "deferred",
+      "adaptation": "User deferred creature creator; remains a visible parity exception, not delivered."
+    },
+    {
+      "id": "cloud_accumulator",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Cloud Accumulator"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "cloud_vacuum",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Cloud Vacuum"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "refrigeration_ray",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Refrigeration Ray"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "heat_ray",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Heat Ray"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": "data/equipment.json:warm only affects a bed; sector projects separate",
+      "decision": "retain"
+    },
+    {
+      "id": "air_conditioning",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Air Conditioning"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "hot_cloud_seeder",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Hot Cloud Seeder"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "hot_cloud_vacuum",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Hot Cloud Vacuum"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "cold_cloud_vacuum",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Cold Cloud Vacuum"
+      ],
+      "source": "climate",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "climate_consumables",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Atmosphere Generator",
+        "Drought Generator",
+        "Ice Storm",
+        "Meteor Shower",
+        "Ice Comet",
+        "Volcano",
+        "Asteroid Call Button",
+        "Atmosphere Freezer"
+      ],
+      "source": "climate",
+      "acquisition": "consumable shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "staff",
+      "category": "Planet climate",
+      "owner": "T01",
+      "variants": [
+        "Staff of Life"
+      ],
+      "source": "climate",
+      "acquisition": "galactic-core reward",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "raise_terrain",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Raise Terrain (Small)",
+        "Raise Terrain (Medium)",
+        "Raise Terrain (Large)"
+      ],
+      "source": "sculpt",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "terrain_unlocks"
+      ]
+    },
+    {
+      "id": "lower_terrain",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Lower Terrain (Small)",
+        "Lower Terrain (Medium)",
+        "Lower Terrain (Large)"
+      ],
+      "source": "sculpt",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "terrain_unlocks"
+      ]
+    },
+    {
+      "id": "level_terrain",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Level Terrain (Small)",
+        "Level Terrain (Medium)",
+        "Level Terrain (Large)"
+      ],
+      "source": "sculpt",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "terrain_unlocks"
+      ]
+    },
+    {
+      "id": "terra",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Terra Hills",
+        "Terra Craters",
+        "Terra River",
+        "Terra Canyon",
+        "Terra Plateaus",
+        "Terra Mesas",
+        "Terra Mountain",
+        "Terra Lava Flow",
+        "Terra Seas"
+      ],
+      "source": "sculpt",
+      "acquisition": "badge/shop",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "gear",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Gear Walls",
+        "Gear Craters",
+        "Gear Rivers",
+        "Gear Canyons",
+        "Gear Plateaus",
+        "Gear Mesas",
+        "Gear Mountains",
+        "Gear Fissure",
+        "Gear Seas"
+      ],
+      "source": "gear",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "crystal",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Crystal Hills",
+        "Crystal Holes",
+        "Crystal River",
+        "Crystal Canyon",
+        "Crystal Plateau",
+        "Crystal Mesas",
+        "Crystal Mountains",
+        "Crystal Chasm"
+      ],
+      "source": "crystal",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "crystal_seas",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Crystal Seas"
+      ],
+      "source": "strategy",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "crystal_seas"
+      ]
+    },
+    {
+      "id": "cute",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Cute Hills",
+        "Cute Stamps",
+        "Cute Rivers",
+        "Cute Canyon",
+        "Cute Plateaus",
+        "Cute Mesas",
+        "Cute Mountains",
+        "Cute Walls",
+        "Cute Seas"
+      ],
+      "source": "cute",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "tentacle",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Tentacle Hills",
+        "Tentacle Mouth Hole",
+        "Tentacle River",
+        "Tentacle Canyon",
+        "Tentacle Plateau",
+        "Tentacle Suckers",
+        "Tentacle Mountains",
+        "Tentacle Arms",
+        "Tentacle Seas"
+      ],
+      "source": "strategy",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "stamp_names"
+      ]
+    },
+    {
+      "id": "chocolate",
+      "category": "Terrain sculpting",
+      "owner": "T02",
+      "variants": [
+        "Chocolate Hills",
+        "Chocolate Swirl Pond",
+        "Chocolate Swirl River",
+        "Swirly Valley",
+        "Chocolate Truffle",
+        "Chocolate Squares",
+        "Chocolate Swirl Spirals",
+        "Chocolate Strand",
+        "Chocolate Swirl Seas"
+      ],
+      "source": "strategy",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "open": [
+        "stamp_names"
+      ]
+    },
+    {
+      "id": "color_blue",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Blue sky",
+        "Blue land",
+        "Blue ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_cyan",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Cyan sky",
+        "Cyan land",
+        "Cyan ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_green",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Green sky",
+        "Green land",
+        "Green ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_orange",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Orange sky",
+        "Orange land",
+        "Orange ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_pink",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Pink sky",
+        "Pink land",
+        "Pink ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_purple",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Purple sky",
+        "Purple land",
+        "Purple ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_red",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Red sky",
+        "Red land",
+        "Red ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_yellow",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Yellow sky",
+        "Yellow land",
+        "Yellow ocean"
+      ],
+      "source": "color",
+      "acquisition": "discovery pickup",
+      "mapping": null,
+      "decision": "retain",
+      "normalized_labels": true,
+      "open": [
+        "color_names"
+      ]
+    },
+    {
+      "id": "color_reset",
+      "category": "Planet coloring",
+      "owner": "T03",
+      "variants": [
+        "Planet Color Reset"
+      ],
+      "source": "color",
+      "acquisition": "unresolved",
+      "mapping": null,
+      "decision": "retain"
+    },
+    {
+      "id": "power_bard",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Soothing Song"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Bard"
+    },
+    {
+      "id": "power_diplomat",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Static Cling"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Diplomat"
+    },
+    {
+      "id": "power_ecologist",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Safari Vacuum"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Ecologist"
+    },
+    {
+      "id": "power_knight",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Summon Mini-U"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Knight"
+    },
+    {
+      "id": "power_scientist",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Gravitation Wave"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Scientist"
+    },
+    {
+      "id": "power_shaman",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Return Ticket"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Shaman"
+    },
+    {
+      "id": "power_trader",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Cash Infusion"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Trader"
+    },
+    {
+      "id": "power_warrior",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Raider Rally"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Warrior"
+    },
+    {
+      "id": "power_zealot",
+      "category": "Philosophy powers",
+      "owner": "P02",
+      "variants": [
+        "Fanatical Frenzy"
+      ],
+      "source": "stage",
+      "acquisition": "archetype",
+      "mapping": null,
+      "decision": "retain",
+      "philosophy": "Zealot"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "retail_closure",
+      "question": "No retail Collections/data cross-check; inventory names do not establish exhaustive runtime item IDs.",
+      "owner": "R01"
+    },
+    {
+      "id": "exact_numbers",
+      "question": "Full seller inventories, costs, cooldowns, charges, ranges, all badge thresholds and unlock edges are not yet audited.",
+      "owner": "R01"
+    },
+    {
+      "id": "drive_range",
+      "question": "Dedicated drive page reports 8 at tier 3; ability overview reports 7. Preserve conflict, no guessed canonical value.",
+      "owner": "R01"
+    },
+    {
+      "id": "cargo_names",
+      "question": "Overview lists default/Small/Medium/Large while dedicated page labels prerequisites inconsistently. Use normalized tiers pending retail check.",
+      "owner": "R01"
+    },
+    {
+      "id": "terrain_unlocks",
+      "question": "Summary and individual pages disagree about Explorer tiers; Lower Terrain also contains copied raise prose.",
+      "owner": "R01"
+    },
+    {
+      "id": "repair_copy",
+      "question": "Repair Pack page mixes energy and health in its description. Verify effect and amount independently.",
+      "owner": "R01"
+    },
+    {
+      "id": "crystal_seas",
+      "question": "Absent from Crystal Series list; present in StrategyWiki matrix. Retain unresolved candidate rather than silently dropping it.",
+      "owner": "R01"
+    },
+    {
+      "id": "stamp_names",
+      "question": "Tentacle/Chocolate normalized spelling and singular/plural need retail label verification.",
+      "owner": "R01"
+    },
+    {
+      "id": "color_names",
+      "question": "24 combinations represented with normalized channel labels; exact retail display names remain unaudited.",
+      "owner": "R01"
+    },
+    {
+      "id": "bomb_middle_name",
+      "question": "Homeworld excerpt calls the middle tier Justa Bomb; cost overview excerpt incomplete.",
+      "owner": "R01"
+    },
+    {
+      "id": "combat_context",
+      "question": "Reference automatic blaster works outside atmosphere; our arc-lance fights are orbital. Surface combat remains missing; orbital expansion is an adaptation.",
+      "owner": "C01"
+    },
+    {
+      "id": "mission_templates",
+      "question": "Event roles recorded, but mission-by-mission trigger/offer/fail/reward matrix remains incomplete.",
+      "owner": "E02"
+    },
+    {
+      "id": "badge_edges",
+      "question": "Families are listed, but full tier thresholds, points and unlock graph remain incomplete; Defender is not retail Body Guard parity.",
+      "owner": "P01"
+    },
+    {
+      "id": "philosophy_traits",
+      "question": "Nine powers are named; prior-stage consequence abilities and conversion requirements still need itemized verification.",
+      "owner": "P02"
+    }
+  ]
+}
+
