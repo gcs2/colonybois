@@ -1,5 +1,7 @@
 # Roadmap and playtest gates
 
+**Superseding direction:** Follow [SPACE_FIRST_DIRECTION.md](SPACE_FIRST_DIRECTION.md). First validate a bounded flight/controller/renderer test and an authored planet/scout art pilot, then a three-world exploration and supply-chain loop, expressive diplomacy and durable historical events. Cities support that loop. The urban-first ordering below is historical/deferred; it is not a prerequisite for the space game. Do not migrate engines or rewrite presentation without a measured pilot.
+
 **Current priority: repair the player experience.** The user rejected the visual fidelity, UI, onboarding and instant colony founding. See [Playtest review](PLAYTEST_REVIEW.md) for the correction pass and open gates. Do not advance to national politics or fleets just because the systems tests pass. The city presentation remains placeholder art; the flagship loop still needs a meaningful exploration decision.
 
 The campaign direction now includes a developed urban opening. A–C below describe the existing prototype, not a finished campaign. Preserve that loop while testing the new opening in bounded slices. Full vision: [PROJECT_VISION.md](PROJECT_VISION.md); narrative: [STORY_CURRENT.md](STORY_CURRENT.md).

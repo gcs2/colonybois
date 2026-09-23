@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Current direction:** exploration of living alien worlds, useful interplanetary supply chains, expressive diplomacy and the ancestors' mystery. Cities support the space game. Later first-person ship combat is planned, with an early bounded feasibility test. See [Space-first direction](docs/SPACE_FIRST_DIRECTION.md), [flight stack assessment](docs/FLIGHT_TECH_ASSESSMENT.md), [diplomacy and history](docs/DIPLOMACY_AND_CHRONICLE.md), and [next session](docs/NEXT_SESSION.md). These plans extend the prototype; they are not all implemented.
+
 An early 3D colony-and-galaxy systems demo. Windows desktop; **Godot 4.7.2 stable**, typed GDScript, OpenGL compatibility renderer. The presentation and core-loop enjoyment still need substantial work; see [Playtest review](docs/PLAYTEST_REVIEW.md). No paid assets, runtime AI service, or API keys required.
 
 ## Play

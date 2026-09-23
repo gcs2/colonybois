@@ -1,5 +1,7 @@
 # Frontier Worlds: production plan for a polished city-and-space game
 
+**Priority superseded by the space-first pivot:** retain the production loop and quality gates, but use [SPACE_FIRST_DIRECTION.md](SPACE_FIRST_DIRECTION.md) for the next pilot: a distinctive expedition environment and an authored scout ship. HAB-01 and the municipal kit below are deferred. First-person flight means ships and navigable environments need real 3D sources; a fixed-angle city treatment remains optional. See [FLIGHT_TECH_ASSESSMENT.md](FLIGHT_TECH_ASSESSMENT.md).
+
 This is the forward production plan, not a claim that the current build meets the target. Art is a core deliverable. The immediate priority is one coherent, attractive, playable city block built from authored 3D assets. Do not expand factions, battles or procedural plot volume to conceal presentation problems.
 
 ## 1. What the finished slice should feel like

@@ -1,25 +1,27 @@
 # Resume here
 
-## User direction at this checkpoint
+## Latest direction: space exploration first
 
-The user logged off and requested a safe stopping point. Their latest additions prioritize a polished art production pipeline and SimCity 4-style city dynamics. Do not continue adding placeholder systems as a substitute for authored art. Pixel art / pre-rendered / real-time 3D is an open choice, not an approved rewrite.
+The user shifted the main focus to discovering distinctive living worlds, their environments/flora/fauna/resources, and creating meaningful interstellar supply chains. Cities support population, administration, production and eventual military recruitment. The ancestors' mystery remains central. Spore-inspired expressive diplomacy/trade and a persistent civilization timeline are desired. First-person ship flight/combat is a long-term requirement.
 
 Read in order:
 
-1. `docs/SC4_SYSTEMS_AND_RENDERING.md` — sourced research, finite demand, wealth/education/service capacity, regional specialization and rendering comparison.
-2. `docs/ART_PRODUCTION_PLAN.md` — complete production loop, scope gates, performance/UX/audio, eight-building kit and release-quality plan.
-3. `art/specs/building_kit_v1.json` — dimensional source briefs; no finished Blender/GLB assets exist yet.
-4. `docs/AI_AND_TRANSPORT.md` — explainable mayor/nation planners, bounded budgets and transport design.
+1. `docs/SPACE_FIRST_DIRECTION.md` — current priorities, three-world loop, ecology constraints and art pilot.
+2. `docs/FLIGHT_TECH_ASSESSMENT.md` — Godot recommendation, renderer comparison, local flight scenes and early test.
+3. `docs/DIPLOMACY_AND_CHRONICLE.md` — contact UI, real trade offers and structured persistent history.
+4. `docs/ART_PRODUCTION_PLAN.md` — retain spec/concept/model/review pipeline; city asset order is deferred.
 
 ## Exact next task
 
-Start the **HAB-01 courtyard terrace art pilot**. Verify/install an appropriate Blender toolchain if needed (not on PATH at checkpoint). Create a coordinated concept sheet from the spec, then a dimensionally correct model/blockout and Godot review scene. Compare real-time orthographic and pre-rendered isometric-style presentation using the same asset; include a pixel-style study before asking the user to choose the direction. Preserve the existing executable and renderer while experimenting. Do not mass-produce the kit before human visual review.
+Run a bounded technical/art discovery phase without replacing the working game. Specify one scout ship and one distinctive planetary expedition scene. Build a tiny isolated first-person flight controller test (motion cues, collision, one weapon, simple targets; then a few wingmates) and compare Compatibility with Forward+ under fixed settings. Create the scout/environment concepts and authored model pipeline for in-engine review. Full combat development follows the exploration/trade loop; this early test retires technical risk.
 
-After the pilot, implement finite demand/occupancy/construction reservations and service capacity in a bounded playable block. Appointed mayors follow those underlying economics; do not prioritize the mayor ahead of the art pilot based on an earlier commentary suggestion.
+Then prove home base plus two complementary worlds, about six provisional goods, two short production chains, finite demand and automatic delivery. One living ancestor encounter and one alien partner should make exploration matter. Timeline events must record actual validated outcomes.
+
+Do not resume HAB-01, municipal wealth-tier simulation or mayor development as the next priority. Preserve those specifications and the existing city prototype. No seamless planetary traversal, engine migration, full pixel-art rewrite or large fleet simulation has been approved.
 
 Suggested continuation prompt:
 
-> Resume from docs/NEXT_SESSION.md. Start HAB-01 from art/specs/building_kit_v1.json and prove the spec-to-3D-art production loop. Create an in-engine review block and compare orthographic 3D, pre-rendered sprites and a pixel-style study before committing to the full kit. Keep the working game intact and checkpoint the pilot to GitHub. Follow docs/SC4_SYSTEMS_AND_RENDERING.md for the next simulation work.
+> Resume from docs/NEXT_SESSION.md and SPACE_FIRST_DIRECTION.md. Start the bounded scout-flight feasibility test and authored expedition art pilot, preserving the working game. Use FLIGHT_TECH_ASSESSMENT.md for renderer/physics checks and the existing spec-to-model pipeline. Keep exploration, useful worlds, automated supply chains, expressive diplomacy and the ancestors' mystery as the main game. Checkpoint tested work to GitHub.
 
 ## Playable stopping point
 

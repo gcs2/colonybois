@@ -2,7 +2,9 @@
 
 Current design synthesis · 22 September 2026
 
-**Build places you care about, earn the power to shape their future, and discover what happened to the civilization that forgot yours.**
+**Explore living alien worlds, connect their strengths into a space civilization, and discover what happened to the ancestors who forgot yours.**
+
+Latest priority update: [Space-first direction](SPACE_FIRST_DIRECTION.md) supersedes the city-first sequence below. Cities now support exploration, logistics, administration and eventual fleet manpower. Preserve their existing prototype, but do not require a full municipal game before reaching space. Later first-person ship combat is desired; [the technical assessment](FLIGHT_TECH_ASSESSMENT.md) proposes an early small feasibility test. [Diplomacy and the chronicle](DIPLOMACY_AND_CHRONICLE.md) define expressive alien contact, meaningful trade and persistent history. The older urban detail below remains deferred design material, not the immediate production order.
 
 This is a single-player Windows 3D strategy game combining the accessible exploration, alien relationships and wonder of Spore's space stage with the legible urban planning and interdependence of SimCity. Its own identity is a creepy-cute inhabited universe with serious political consequences. Frontier Worlds is a working title. This document records the intended experience, not a claim that the campaign is implemented.
 
