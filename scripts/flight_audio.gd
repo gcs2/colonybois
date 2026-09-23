@@ -10,9 +10,7 @@ var music := AudioStreamPlayer.new()
 var voice := AudioStreamPlayer.new()
 var thrust: float = 0.0
 var hover_time: int = -1000
-var local_voice: String = ""
 var quiet: bool = false
-var voice_supported: bool = false
 
 func _ready() -> void:
 	super._ready()
@@ -27,10 +25,6 @@ func _ready() -> void:
 	_setup_loop(ambience,"surface_air")
 	_setup_loop(music,"morrow_drift")
 	add_child(voice)
-	voice_supported = DisplayServer.get_name() != "headless" and DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH)
-	if voice_supported:
-		var available: PackedStringArray = DisplayServer.tts_get_voices_for_language("en")
-		if not available.is_empty(): local_voice = available[0]
 	update_flight(0,0,false,false)
 
 func _setup_loop(player: AudioStreamPlayer, id: String) -> void:
@@ -62,7 +56,7 @@ func update_flight(delta: float, speed: float, orbital: bool, stopped: bool) -> 
 	engine.volume_db = -80 if silenced or thrust < 0.005 or float(mix.sfx) <= 0 else -22+linear_to_db(thrust*float(mix.sfx))
 	engine.pitch_scale = 0.8+thrust*0.65
 	ambience.volume_db = -80 if silenced or orbital or float(mix.sfx) <= 0 else -24+linear_to_db(float(mix.sfx))
-	var talking: bool = voice.playing or (voice_supported and DisplayServer.tts_is_speaking())
+	var talking: bool = voice.playing
 	var music_target: float = -80 if muted or float(mix.music) <= 0 else -13+linear_to_db(float(mix.music))-(9 if talking else 0)-(5 if stopped else 0)
 	music.volume_db = lerpf(music.volume_db,music_target,minf(1,delta*4))
 	voice.volume_db = -80 if muted or float(mix.voice) <= 0 else linear_to_db(float(mix.voice))-3
@@ -79,26 +73,20 @@ func save_settings() -> Error:
 	for channel: String in mix: config.set_value("mix",channel,mix[channel])
 	return config.save(settings_path)
 
-func guide(id: String, text: String) -> void:
+func guide(id: String, _text: String) -> void:
 	if muted or float(mix.voice) <= 0: return
-	# Licensed/acted recordings can replace scratch speech without changing gameplay.
+	# Only production recordings may speak. Missing lines retain their on-screen captions.
 	var recording: String = "res://assets/audio/voice/"+id+".wav"
 	if ResourceLoader.exists(recording):
 		stop_voice()
 		voice.stream = load(recording)
 		voice.play()
-	elif not local_voice.is_empty():
-		DisplayServer.tts_speak(text,local_voice,int(float(mix.voice)*100),1.0,1.0,0,true)
 
 func stop_voice() -> void:
 	voice.stop()
-	if voice_supported: DisplayServer.tts_stop()
 
 func suspend_voice(suspended: bool) -> void:
 	voice.stream_paused = suspended
-	if voice_supported:
-		if suspended: DisplayServer.tts_pause()
-		else: DisplayServer.tts_resume()
 
 func _exit_tree() -> void:
 	stop_voice()

@@ -1,5 +1,10 @@
 # Resume here
 
+## Flight correction checkpoint
+
+Descent now starts atmospheric approach from the mouse button, keyboard/numpad descent, Ctrl-wheel down, or inward zoom past the approach scale. Outward zoom or steering cancels. Far-side landing routes around the solid globe; camera scale no longer snaps at the frame transition; ascent starts when zoom reaches its boundary. Windows TTS fallback is removed; guide captions remain and only supplied recordings may speak. No replacement voice has been acquired. 11 new regression checks cover these behaviors; native feel remains unverified. Planet generation is next.
+
+
 ## Latest steering and combat checkpoint
 
 The user rejects the Windows guide voice, clunky zoom/ineffective descent, and current planet presentation. These corrections and a reusable planet-generation pipeline take priority over additional combat content. The unfinished combat work is now validated: one arc lance and warning/chase/disengage custodian, nonlethal disable, persisted state, version 4-to-5 migration. 440 assertions plus UI checks pass, including 23 combat checks. Geometry and firing sound remain placeholders. No native playtest or artistic approval is implied. The current packaged build predates this source checkpoint. See ORBITAL_COMBAT.md.

@@ -46,6 +46,8 @@ var pitch: float = 0.72
 var distance: float = 29.0
 var camera_distance_target: float = 29.0
 var zoom_ascent: bool = false
+var zoom_descent: bool = false
+var landing_waypoints: Array[Vector3] = []
 var arrival_fade: float = 0.0
 var transition_veil: ColorRect
 var transition_caption: Label
@@ -467,6 +469,9 @@ func _make_ui() -> void:
 	hud.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
 	hud.altitude_requested.connect(func(direction: float) -> void:
 		if paused or _inspection_open(): return
+		if direction < 0 and model.state.flight_mode == "orbit":
+			_begin_landing()
+			return
 		if direction != 0: _cancel_orders()
 		vertical_button = direction
 		altitude_order = -1)
@@ -532,6 +537,10 @@ func _physics_process(delta: float) -> void:
 	var input_direction: Vector3 = FlightControls.direction()
 	if Input.is_action_pressed("flight_brake"): _cancel_orders(); input_direction = Vector3.ZERO
 	var orbital: bool = model.state.flight_mode == "orbit"
+	# In orbit, an unambiguous descent input commands atmospheric approach.
+	if orbital and input_direction.y < 0 and is_zero_approx(input_direction.x) and is_zero_approx(input_direction.z):
+		if not landing: _begin_landing()
+		input_direction.y = 0
 	var speed: float = 16.0 if orbital else 12.0
 	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
 	if not input_direction.is_zero_approx():
@@ -557,7 +566,11 @@ func _physics_process(delta: float) -> void:
 		if offset.length() < 0.65:
 			navigating = false
 			move = Vector3.ZERO
-			if landing: _change_flight_mode("surface"); return
+			if landing:
+				if not landing_waypoints.is_empty():
+					destination = landing_waypoints.pop_front()
+					navigating = true
+				else: _change_flight_mode("surface"); return
 			if approach_subject: approach_subject = false; held = true; latched = false
 	if input_direction.y != 0 or vertical_button != 0:
 		move.y = clampf(input_direction.y+vertical_button,-1,1)*12
@@ -657,16 +670,20 @@ func _zoom_camera(steps: float) -> void:
 	if paused or _inspection_open(): return
 	var orbital: bool = model.state.flight_mode == "orbit"
 	if steps < 0 and zoom_ascent: _cancel_orders()
+	if steps > 0 and landing: _cancel_orders()
+	var minimum: float = ORBIT_ZOOM_MIN if orbital else SURFACE_ZOOM_MIN
+	var maximum: float = ORBIT_ZOOM_MAX if orbital else SURFACE_ZOOM_MAX
+	camera_distance_target = clampf(camera_distance_target*pow(1.14,steps),minimum,maximum)
 	if not orbital and steps > 0 and camera_distance_target >= SURFACE_ZOOM_MAX-0.1:
 		if not zoom_ascent:
 			_departure()
 			zoom_ascent = true
 			_toast("Ascending to orbit · scroll in or Stop to cancel")
-		return
-	var minimum: float = ORBIT_ZOOM_MIN if orbital else SURFACE_ZOOM_MIN
-	var maximum: float = ORBIT_ZOOM_MAX if orbital else SURFACE_ZOOM_MAX
-	camera_distance_target = clampf(camera_distance_target*pow(1.18,steps),minimum,maximum)
-	if orbital and camera_distance_target >= ORBIT_ZOOM_MAX and steps > 0:
+	elif orbital and steps < 0 and camera_distance_target <= 45:
+		if not landing:
+			_begin_landing()
+			zoom_descent = true
+	elif orbital and camera_distance_target >= ORBIT_ZOOM_MAX and steps > 0:
 		_toast("Morrow orbit overview · other systems are not connected yet")
 
 func _update_flight_effects(delta: float) -> void:
@@ -931,6 +948,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
 			var sign_y: float = 1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1
 			if not event.ctrl_pressed: _zoom_camera(-sign_y)
+			elif model.state.flight_mode == "orbit" and sign_y < 0:
+				_begin_landing()
 			else:
 				var target_altitude: float = ship.position.y if altitude_order < 0 else altitude_order
 				_cancel_orders()
@@ -1003,6 +1022,8 @@ func _activate_selected() -> void:
 
 func _cancel_orders() -> void:
 	zoom_ascent = false
+	zoom_descent = false
+	landing_waypoints.clear()
 	salvage_order = false
 	salvage_progress = 0
 	attack_order = false
@@ -1039,21 +1060,25 @@ func _departure() -> void:
 	audio.play("departure")
 
 func _begin_landing() -> void:
-	_navigate(OrbitalScene.APPROACH)
+	if paused or _inspection_open() or model.state.flight_mode != "orbit" or landing: return
+	var route: Array[Vector3] = FlightControls.landing_route(ship.position,OrbitalScene.APPROACH,orbit.planet.position)
+	_navigate(route.pop_front())
+	landing_waypoints = route
 	landing = true
+	_toast("Approaching Morrow Basin · Stop or steer to cancel")
 	audio.play("entry")
 
 func _change_flight_mode(mode: String) -> void:
 	if not model.change_flight_mode(mode): return
 	_cancel_orders()
 	_restore_ship()
-	_apply_flight_mode()
+	_apply_flight_mode(true)
 	arrival_fade = 1.0
 	audio.play("arrival")
 	_toast("Morrow orbit reached" if mode == "orbit" else "Atmospheric entry complete")
 	_save(false)
 
-func _apply_flight_mode() -> void:
+func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	var orbital: bool = model.state.flight_mode == "orbit"
 	surface_root.visible = not orbital
 	orbit.visible = orbital
@@ -1065,13 +1090,17 @@ func _apply_flight_mode() -> void:
 	for button: Button in toolbar: button.disabled = orbital
 	hud.set_orbital_mode(orbital)
 	use_button.disabled = orbital
-	distance = 85 if orbital else 55
-	camera_distance_target = distance
+	if not preserve_zoom:
+		distance = 85 if orbital else 55
+		camera_distance_target = distance
+	else:
+		# Reference-frame changes keep scale; settle gently instead of snapping.
+		camera_distance_target = clampf(camera_distance_target,45,ORBIT_ZOOM_MAX) if orbital else clampf(camera_distance_target,SURFACE_ZOOM_MIN,75)
 	effects.reset()
 	beam_material.albedo_color = COLORS[TOOLS.find(tool)]
 	beam_material.emission = COLORS[TOOLS.find(tool)]
 	camera_focus = ship.position
-	_update_camera(1)
+	_update_camera(0 if preserve_zoom else 1)
 
 func _select_tool(value: String) -> void:
 	if not Equipment.has_tool(value): return
@@ -1265,13 +1294,12 @@ func _show_popup(kind: String) -> void:
 			slider.drag_ended.connect(func(_changed: bool) -> void: audio.save_settings(); audio.play("ui_confirm"))
 			popup_body.add_child(slider)
 		_button("Preview tools",_preview_tools,popup_body)
-		_button("Preview guide",func() -> void: audio.guide("preview","Flight systems ready. Let's see what's beyond those clouds."),popup_body)
-		var copy: Label = _label("Original sound and music candidates. Guide speech currently uses your Windows voice; recorded performances can replace it. Voice volume zero disables speech. On-screen instructions remain available.",14,Color("a2bacb"))
+		var copy: Label = _label("Guide captions are available. Recorded guide voice is not installed. Effects and music have independent volume controls.",14,Color("a2bacb"))
 		copy.custom_minimum_size.x = 460
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nClick custodian or Arc lance: approach and disable\nClick wreck or Salvage: approach and recover shroud\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during that ascent to cancel\nRight drag: rotate camera\n1–4: surface tools · 5: orbital arc lance · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nClick custodian or Arc lance: approach and disable\nClick wreck or Salvage: approach and recover shroud\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\n1–4: surface tools · 5: orbital arc lance · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
