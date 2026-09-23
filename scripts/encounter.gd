@@ -3,7 +3,7 @@ extends Node3D
 signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
-const Sound = preload("res://scripts/audio_feedback.gd")
+const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
@@ -72,6 +72,10 @@ var departure_button: Button
 var guide_arrow: Label
 var navigation_marker: MeshInstance3D
 var pause_button: Button
+var heard_guides: Dictionary = {}
+var guide_caption: Label
+var caption_time: float = 0.0
+var previewing_audio: bool = false
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -117,7 +121,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_cancel_orders()
 		paused = true
+		audio.suspend_voice(true)
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		audio.save_settings()
 		_save(false)
 		get_tree().quit()
 
@@ -332,7 +338,7 @@ func _label(text: String, size: int, color: Color = Color("ebebdf")) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
-func _button(text: String, callback: Callable, parent: Control) -> Button:
+func _button(text: String, callback: Callable, parent: Control, cue: String = "ui_confirm") -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size.y = 42
@@ -340,7 +346,13 @@ func _button(text: String, callback: Callable, parent: Control) -> Button:
 	button.add_theme_stylebox_override("normal",_style(Color("273a48")))
 	button.add_theme_stylebox_override("hover",_style(Color("3e5962")))
 	button.add_theme_stylebox_override("pressed",_style(Color("416b64")))
-	button.pressed.connect(callback)
+	button.mouse_entered.connect(func() -> void:
+		if not button.disabled: audio.play("ui_hover")
+	)
+	button.pressed.connect(func() -> void:
+		if not cue.is_empty(): audio.play(cue)
+		callback.call()
+	)
 	parent.add_child(button)
 	return button
 
@@ -377,9 +389,10 @@ func _make_ui() -> void:
 	right.position = Vector2(950,24)
 	right.add_theme_constant_override("separation",6)
 	root.add_child(right)
-	_button("Comms",_show_popup.bind("contact"),right)
-	_button("Log",_show_popup.bind("journal"),right)
-	_button("Controls",_show_popup.bind("controls"),right)
+	_button("Comms",_show_popup.bind("contact"),right,"ui_open")
+	_button("Log",_show_popup.bind("journal"),right,"ui_open")
+	_button("Controls",_show_popup.bind("controls"),right,"ui_open")
+	_button("Audio",_show_popup.bind("audio"),right,"ui_open")
 	pause_button = _button("Pause",_toggle_pause,right)
 	_button("Menu",_exit_encounter,right)
 	var card: VBoxContainer = _panel(root,Rect2(24,145,320,110))
@@ -404,14 +417,14 @@ func _make_ui() -> void:
 	var lower: Button = _button("Descend",func() -> void: pass,flight_row)
 	lower.button_down.connect(func() -> void: vertical_button = -1; altitude_order = -1)
 	lower.button_up.connect(func() -> void: vertical_button = 0)
-	_button("Stop",_cancel_orders,flight_row)
+	_button("Stop",_stop,flight_row,"")
 	var footer: VBoxContainer = _panel(root,Rect2(370,732,840,144))
 	var tools_row := HBoxContainer.new()
 	tools_row.add_theme_constant_override("separation",8)
 	footer.add_child(tools_row)
 	for i: int in range(TOOLS.size()):
 		var names: Array[String] = ["Scan","Tractor","Thermal","Deploy"]
-		var button: Button = _button(str(i+1)+"  "+names[i],_select_tool.bind(TOOLS[i]),tools_row)
+		var button: Button = _button(str(i+1)+"  "+names[i],_select_tool.bind(TOOLS[i]),tools_row,"")
 		button.tooltip_text = "Click a target to approach and use this tool."
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		toolbar.append(button)
@@ -433,6 +446,14 @@ func _make_ui() -> void:
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(status)
+	guide_caption = _label("",16,Color("b7d2e0"))
+	guide_caption.position = Vector2(370,620)
+	guide_caption.size = Vector2(655,58)
+	guide_caption.add_theme_color_override("font_outline_color",Color("09131f"))
+	guide_caption.add_theme_constant_override("outline_size",5)
+	guide_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	guide_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	root.add_child(guide_caption)
 	guide_arrow = _label("▼",28,Color("ffe0a8"))
 	root.add_child(guide_arrow)
 	for id: String in targets:
@@ -502,6 +523,9 @@ func _physics_process(delta: float) -> void:
 	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
 
 func _process(delta: float) -> void:
+	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or popup.visible)
+	if not paused: caption_time -= delta
+	guide_caption.visible = caption_time > 0
 	frame_samples.append(delta*1000)
 	if frame_samples.size() > 600: frame_samples.pop_front()
 	if not paused:
@@ -550,6 +574,7 @@ func _update_visuals() -> void:
 		ring.visible = false
 		for label: Label in labels.values(): label.visible = false
 		return
+	if model.state.landings > 0: guide_arrow.visible = false
 	if "relay" not in model.state.scanned:
 		var projected: Vector2 = camera.unproject_position(_target_position("relay"))
 		guide_arrow.position = Vector2(clampf(projected.x-14,350,1180),clampf(projected.y-72,130,610))-Vector2(0,sin(elapsed*4)*5)
@@ -606,7 +631,7 @@ func _operate(delta: float) -> void:
 	if progress >= 1:
 		error = model.act(tool,selected,ship.position.distance_to(end))
 		_toast(error if not error.is_empty() else ("Survey complete" if tool == "scan" else "Operation complete"))
-		audio.play("error" if not error.is_empty() else "build")
+		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
 		progress = 0
 
@@ -625,7 +650,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_cancel_orders()
 				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
 			KEY_SPACE: _toggle_pause()
-			KEY_ESCAPE: popup.visible = false; _cancel_orders()
+			KEY_ESCAPE: popup.visible = false; _stop()
 			KEY_F5: _save()
 			KEY_F9: _load()
 	if popup.visible or paused: return
@@ -681,14 +706,15 @@ func _navigate(at: Vector3) -> void:
 		var flat := Vector2(at.x,at.z).limit_length(75)
 		destination = Vector3(flat.x,clampf(at.y,-50,70),flat.y)
 	navigating = true
-	audio.play("tap")
+	audio.play("navigation")
 
 func _activate_selected() -> void:
-	if held or approach_subject: _cancel_orders(); return
+	if held or approach_subject: _stop(); return
 	if model.state.flight_mode == "orbit": return
 	var error: String = model.reason(tool,selected,0)
 	if not error.is_empty(): _toast(error); audio.play("error"); return
 	_cancel_orders()
+	audio.play("target_lock")
 	if ship.position.distance_to(_target_position()) > 11:
 		destination = _target_position()+Vector3(0,5,5)
 		navigating = true
@@ -706,21 +732,26 @@ func _cancel_orders() -> void:
 	altitude_order = -1
 	velocity = Vector3.ZERO
 
+func _stop() -> void:
+	_cancel_orders()
+	audio.play("cancel")
+
 func _toggle_pause() -> void:
 	paused = not paused
 	_cancel_orders()
+	audio.suspend_voice(paused)
 
 func _departure() -> void:
 	if paused or popup.visible: return
 	if model.state.flight_mode == "orbit": _begin_landing(); return
 	_cancel_orders()
 	altitude_order = 63
-	audio.play("launch")
+	audio.play("departure")
 
 func _begin_landing() -> void:
 	_navigate(OrbitalScene.APPROACH)
 	landing = true
-	audio.play("launch")
+	audio.play("entry")
 
 func _change_flight_mode(mode: String) -> void:
 	if not model.change_flight_mode(mode): return
@@ -755,8 +786,13 @@ func _select_tool(value: String) -> void:
 	var index: int = TOOLS.find(tool)
 	beam_material.albedo_color = COLORS[index]
 	beam_material.emission = COLORS[index]
-	for i: int in range(toolbar.size()): toolbar[i].modulate = COLORS[i] if i == index else Color("a1aaae")
-	audio.play("tap")
+	for i: int in range(toolbar.size()):
+		toolbar[i].modulate = COLORS[i] if i == index else Color("a1aaae")
+		var style: StyleBoxFlat = _style(Color("1c3d49") if i == index else Color("172630"))
+		style.border_width_bottom = 3 if i == index else 0
+		style.border_color = COLORS[i]
+		toolbar[i].add_theme_stylebox_override("normal",style)
+	audio.play("equip_"+value)
 
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
@@ -768,6 +804,7 @@ func _refresh_ui() -> void:
 	pause_button.text = "Resume" if paused else "Pause"
 	departure_button.text = "Return to Morrow" if orbital else "Leave atmosphere"
 	if orbital: objective.text = "You're in orbit. Click Morrow to approach and descend."
+	elif s.landings > 0: objective.text = "Flight assist complete. Survey the basin or return to orbit."
 	elif "relay" not in s.scanned: objective.text = "Click the old relay to approach and scan. Or leave whenever you're ready."
 	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "The signal points beyond the clouds. Ascend or choose Leave atmosphere."
 	else: objective.text = "Flight assist complete. Survey the basin or return to orbit."
@@ -782,6 +819,26 @@ func _refresh_ui() -> void:
 		else: explanation.text = "Click a target to use tool · Click terrain to fly · Wheel changes altitude"
 	progress_bar.value = progress
 	use_button.text = "Cancel" if (held and not latched) or approach_subject else "Use"
+	_update_guidance()
+
+func _update_guidance() -> void:
+	if elapsed < 1 or paused or popup.visible: return
+	var id: String = "survey"
+	var line: String = "Captain, that relay is still transmitting. Click it and we'll approach for a scan."
+	if model.state.flight_mode == "orbit":
+		id = "orbit"
+		line = "We're clear of the atmosphere. Click Morrow when you're ready to descend."
+	elif model.state.landings > 0:
+		id = "return"
+		line = "Back in the basin. Your surveys are secure. You're free to explore."
+	elif "relay" in model.state.scanned:
+		id = "ascend"
+		line = "The signal leads off-world. Scroll up to climb, or select Leave atmosphere."
+	if heard_guides.has(id): return
+	heard_guides[id] = true
+	guide_caption.text = line
+	caption_time = maxf(6,line.length()/14.0)
+	audio.guide(id,line)
 
 func _toast(text: String) -> void:
 	status.text = text
@@ -794,16 +851,34 @@ func _show_popup(kind: String) -> void:
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
-	var title: Label = _label("FLIGHT CONTROLS" if kind == "controls" else ("EXPEDITION LOG" if kind == "journal" else "VELL / TRADE"),22)
+	var title: Label = _label("AUDIO MIX" if kind == "audio" else ("FLIGHT CONTROLS" if kind == "controls" else ("EXPEDITION LOG" if kind == "journal" else "VELL / TRADE")),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
-	_button("×",func() -> void: popup.visible = false,header)
-	if kind == "controls":
+	_button("×",func() -> void: popup.visible = false; audio.save_settings(),header,"ui_close")
+	if kind == "audio":
+		for channel: String in ["sfx","music","voice"]:
+			popup_body.add_child(_label({"sfx":"Effects and interface","music":"Music","voice":"Guide voice"}[channel],17))
+			var slider := HSlider.new()
+			slider.min_value = 0
+			slider.max_value = 100
+			slider.step = 1
+			slider.value = float(audio.mix[channel])*100
+			slider.custom_minimum_size = Vector2(460,30)
+			slider.value_changed.connect(func(value: float) -> void: audio.set_volume(channel,value/100))
+			slider.drag_ended.connect(func(_changed: bool) -> void: audio.save_settings(); audio.play("ui_confirm"))
+			popup_body.add_child(slider)
+		_button("Preview tools",_preview_tools,popup_body)
+		_button("Preview guide",func() -> void: audio.guide("preview","Flight systems ready. Let's see what's beyond those clouds."),popup_body)
+		var copy: Label = _label("Original sound and music candidates. Guide speech currently uses your Windows voice; recorded performances can replace it. Voice volume zero disables speech. On-screen instructions remain available.",14,Color("a2bacb"))
+		copy.custom_minimum_size.x = 460
+		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		popup_body.add_child(copy)
+	elif kind == "controls":
 		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: altitude · Ctrl + wheel: camera zoom\nRight drag: rotate camera\n1–4: tools · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
-		_button("Sound: off" if audio.muted else "Sound: on",func() -> void: audio.muted = not audio.muted; _show_popup("controls"),popup_body)
+		_button("Audio settings",_show_popup.bind("audio"),popup_body)
 	elif kind == "journal":
 		var scroll := ScrollContainer.new()
 		scroll.custom_minimum_size = Vector2(450,400)
@@ -833,6 +908,14 @@ func _show_popup(kind: String) -> void:
 	var hint: Label = _label("Isolated field save · campaign resources are untouched",12,Color("9fcbbf"))
 	popup_body.add_child(hint)
 
+func _preview_tools() -> void:
+	if previewing_audio: return
+	previewing_audio = true
+	for item: String in TOOLS:
+		audio.play("equip_"+item)
+		await get_tree().create_timer(0.45).timeout
+	previewing_audio = false
+
 func _trade(recurring: bool) -> void:
 	var error: String = model.set_route(not model.state.route) if recurring else model.sell()
 	_toast(error if not error.is_empty() else ("Delivery agreement updated." if recurring else "Sold one pod for 18 Marks."))
@@ -843,6 +926,7 @@ func _save(notify: bool = true) -> void:
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
 	model.state.yaw = yaw
 	var error: Error = model.save_to(save_path if notify else save_path.replace(".json","_auto.json"))
+	if notify: audio.play("saved" if error == OK else "error")
 	if notify or error != OK: _toast("Field progress saved." if error == OK else "Could not save: "+error_string(error))
 
 func _load() -> void:
@@ -856,6 +940,7 @@ func _load() -> void:
 		tick_clock = 0
 		if popup.visible: _show_popup(popup_kind)
 	_toast("Field progress restored." if error == OK else "Could not load field progress: "+error_string(error))
+	audio.play("saved" if error == OK else "error")
 
 func _restore_ship() -> void:
 	var at: Array = model.state.position
@@ -866,6 +951,7 @@ func _restore_ship() -> void:
 	velocity = Vector3.ZERO
 
 func _exit_encounter() -> void:
+	audio.save_settings()
 	_save(false)
 	if leave.get_connections().is_empty(): get_tree().quit()
 	else: leave.emit()
@@ -880,6 +966,7 @@ func _capture_flight(delta: float) -> void:
 	capture_step += 1
 	if capture_step == 1: _departure()
 	elif capture_step == 5: _begin_landing()
+	elif capture_step == 7: _show_popup("audio")
 	elif capture_step == 8: get_tree().quit()
 
 func _capture(delta: float) -> void:

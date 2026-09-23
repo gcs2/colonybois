@@ -14,15 +14,19 @@ The opening now points to scanning an old relay and leaving the atmosphere; plan
 
 One expedition model continues through both views. Version 1 field saves migrate additively to version 2. Survey, stock, trade and history survive a round trip. **The field is still isolated from the strategic campaign**; a unified ship/sector state is a required next integration, not solved by a Menu button. The full galaxy, other visitable surfaces and human scenario are not present in this flight slice.
 
+## Audio checkpoint
+
+Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates now include distinct hotbar equips, UI/target/navigation feedback, thrust, atmosphere and a 48-second music loop. Audio settings separate effects, music and voice. Four contextual guide lines use local Windows scratch narration plus captions, with a replacement contract for licensed recordings. Actual listening and paid casting/music selection remain open. No paid services were purchased.
+
 ## Next work
 
-1. Audit sound for every user/world event: distinct tool equip cues, target acquisition, movement confirmation, thrust, scans, cancellation, warnings, impacts and transitions. Add separate SFX/music/voice controls and a music/VO production path. The user explicitly wants satisfying hotbar sounds and is willing to pay for quality audio. Browser-assisted sourcing/auditions are authorized; present a concrete price/license before purchase.
+1. Continue the audio coverage and listening audit (initial flight implementation is in place): distinct tool equip cues, target acquisition, movement confirmation, thrust, scans, cancellation, warnings, impacts and transitions. Add separate SFX/music/voice controls and a music/VO production path. The user explicitly wants satisfying hotbar sounds and is willing to pay for quality audio. Browser-assisted sourcing/auditions are authorized; present a concrete price/license before purchase.
 2. Give the ship health and weapons, readable instruments, a telegraphed threat, meaningful energy and fair recovery. Improve original icons, targeting feedback, animations and tutorial arrows. Native playtesting and listening remain essential.
 3. Connect personal flight to the sector, diplomacy and cargo. Do not build another isolated demo to avoid integration.
 4. Follow the complete requirement ledger rather than declaring success from this slice.
 
 ## Verification and backup
 
-Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence and legacy migration. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures (ignored runtime output); they demonstrate rendering, not fun or native input quality.
+Current verification: 267 assertions plus UI checks pass (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 25 flight, 18 audio). Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence and legacy migration. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures (ignored runtime output); they demonstrate rendering, not fun or native input quality.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.
