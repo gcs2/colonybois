@@ -3,6 +3,9 @@ extends Node3D
 signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
+const Campaign = preload("res://scripts/expedition_session.gd")
+var campaign: RefCounted = null
+var persistence_blocked: bool = false
 const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
@@ -129,11 +132,20 @@ func _ready() -> void:
 	if "--playtest" in OS.get_cmdline_user_args() or "--field-capture" in OS.get_cmdline_user_args() or "--flight-capture" in OS.get_cmdline_user_args(): save_path = "user://review_field_encounter.json"
 	var testing: bool = "--script" in OS.get_cmdline_args()
 	if testing: save_path = "res://artifacts/field_test_session.json"
-	var resume_path: String = save_path.replace(".json","_auto.json")
-	if not FileAccess.file_exists(resume_path): resume_path = save_path
-	if not testing and "--field-capture" not in OS.get_cmdline_user_args() and "--flight-capture" not in OS.get_cmdline_user_args() and FileAccess.file_exists(resume_path):
-		var error: Error = model.load_from(resume_path)
-		if error != OK: push_warning("Field save rejected; starting an isolated new encounter.")
+	var startup_error: Error = OK
+	if campaign != null:
+		model = campaign.field
+	elif not testing:
+		campaign = Campaign.new()
+		model = campaign.field
+		if "--field-capture" not in OS.get_cmdline_user_args() and "--flight-capture" not in OS.get_cmdline_user_args():
+			var resume_path: String = Campaign.newest_save(_campaign_path(false),_campaign_path(true))
+			if not resume_path.is_empty(): startup_error = campaign.load_from(resume_path)
+			else:
+				var legacy_path: String = Campaign.newest_save(save_path,save_path.replace(".json","_auto.json"))
+				if not legacy_path.is_empty(): startup_error = campaign.import_legacy(legacy_path)
+			model = campaign.field
+	persistence_blocked = startup_error != OK
 	FlightControls.install()
 	add_child(audio)
 	_make_world()
@@ -178,6 +190,9 @@ func _ready() -> void:
 	_update_camera(1.0)
 	_refresh_ui()
 	get_tree().auto_accept_quit = false
+	if persistence_blocked:
+		paused = true
+		_toast("Save could not be restored. Saving disabled to protect your progress: "+error_string(startup_error))
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -631,7 +646,8 @@ func _process(delta: float) -> void:
 		while tick_clock >= 1:
 			tick_clock -= 1
 			var old_count: int = model.state.history.size()
-			var pulse: String = model.tick(ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.state.flight_mode == "orbit" else INF)
+			var distance: float = ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.state.flight_mode == "orbit" else INF
+			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
 			var attack: String = model.guardian_step(ship.position) if pulse != "tow" else ""
 			if pulse == "tow" or attack == "tow":
 				_cancel_orders()
@@ -1198,7 +1214,7 @@ func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
-	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [s.marks,s.samples,s.scanned.size()]
+	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
 	hud.hull_label.text = "HULL   %d / 100" % s.hull
@@ -1422,6 +1438,9 @@ func _show_popup(kind: String) -> void:
 		popup_body.add_child(copy)
 		_button("Audio settings",_show_popup.bind("audio"),popup_body)
 	elif kind == "journal":
+		if campaign != null:
+			var ledger: Dictionary = campaign.sector.state.get("ledger",{})
+			popup_body.add_child(_label("Colony day %d · treasury %d Marks\nLatest day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],14,Instruments.GOLD))
 		var scroll := ScrollContainer.new()
 		scroll.custom_minimum_size = Vector2(450,400)
 		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -1615,16 +1634,23 @@ func _trade(recurring: bool) -> void:
 	audio.play("error" if not error.is_empty() else "arrival")
 	_show_popup("contact")
 
+func _campaign_path(automatic: bool) -> String:
+	return save_path.get_basename()+ ("_campaign_auto.fw" if automatic else "_campaign.fw")
+
 func _save(notify: bool = true) -> void:
+	if persistence_blocked:
+		if notify: _toast("Saving disabled: the existing campaign could not be restored.")
+		return
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
 	model.state.yaw = yaw
-	var error: Error = model.save_to(save_path if notify else save_path.replace(".json","_auto.json"))
+	var error: Error = campaign.save_to(_campaign_path(not notify)) if campaign != null else model.save_to(save_path if notify else save_path.replace(".json","_auto.json"))
 	if notify: audio.play("saved" if error == OK else "error")
-	if notify or error != OK: _toast("Field progress saved." if error == OK else "Could not save: "+error_string(error))
+	if notify or error != OK: _toast("Expedition saved." if error == OK else "Could not save: "+error_string(error))
 
 func _load() -> void:
-	var error: Error = model.load_from(save_path)
+	var error: Error = campaign.load_from(_campaign_path(false)) if campaign != null else model.load_from(save_path)
 	if error == OK:
+		persistence_blocked = false
 		_cancel_orders()
 		_restore_ship()
 		_apply_flight_mode()
@@ -1635,7 +1661,7 @@ func _load() -> void:
 		if planet_map.visible:
 			planet_map.hide()
 			_toggle_planet_map()
-	_toast("Field progress restored." if error == OK else "Could not load field progress: "+error_string(error))
+	_toast("Expedition restored." if error == OK else "Could not load field progress: "+error_string(error))
 	audio.play("saved" if error == OK else "error")
 
 func _restore_ship() -> void:
@@ -1736,7 +1762,7 @@ func _build_service_panel() -> void:
 	var port: Dictionary = Model.services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
 	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
-BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.state.marks],Instruments.GOLD)
+BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.marks],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
 	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
 	var reason: String = model.service_reason(selected_service,ship.position)

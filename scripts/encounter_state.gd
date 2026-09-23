@@ -1,5 +1,5 @@
 extends RefCounted
-## Independent encounter snapshot. No changes to campaign economy or save slots.
+## Local encounter rules. A campaign may bind its shared treasury as the account.
 const VERSION := 6
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
@@ -24,6 +24,23 @@ const PACK_CAPACITY := 3
 const PACK_COOLDOWN := 8
 static var service_catalog: Dictionary = {}
 var state: Dictionary = fresh()
+var account: Dictionary = {}
+var marks: float:
+	get:
+		return float(account.credits) if not account.is_empty() else float(state.marks)
+	set(value):
+		if not account.is_empty(): account.credits = value
+		else: state.marks = int(value)
+
+func bind_account(treasury: Dictionary) -> void:
+	account = treasury
+	state.erase("marks")
+
+func snapshot() -> Dictionary:
+	var result: Dictionary = state.duplicate(true)
+	# Legacy format uses integer Marks. Integrated saves store the exact treasury separately.
+	result["marks"] = int(marks)
+	return result
 
 static func services() -> Dictionary:
 	if service_catalog.is_empty(): service_catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/energy_services.json"))
@@ -46,17 +63,17 @@ func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> Str
 	if purchase_pack:
 		if state.energy_packs >= PACK_CAPACITY: return "Energy-pack storage full (3)."
 		if state.service_stock[id] <= 0: return "This shop has sold its remaining energy packs."
-		if state.marks < int(port.pack_price): return "Need %d Marks for an energy pack." % int(port.pack_price)
+		if marks < int(port.pack_price): return "Need %d Marks for an energy pack." % int(port.pack_price)
 	else:
 		if state.energy >= 100: return "Energy is already full."
-		if state.marks < recharge_price(id): return "Recharge costs %d Marks." % recharge_price(id)
+		if marks < recharge_price(id): return "Recharge costs %d Marks." % recharge_price(id)
 	return ""
 
 func recharge(id: String, at: Vector3) -> String:
 	var error: String = service_reason(id,at)
 	if not error.is_empty(): return error
 	var cost: int = recharge_price(id)
-	state.marks -= cost
+	marks -= cost
 	state.energy = 100.0
 	note("first_recharge","Docked for a recharge. Homeworld service is free; away from home, shops set their own rates.")
 	return ""
@@ -64,7 +81,7 @@ func recharge(id: String, at: Vector3) -> String:
 func buy_energy_pack(id: String, at: Vector3) -> String:
 	var error: String = service_reason(id,at,true)
 	if not error.is_empty(): return error
-	state.marks -= int(services()[id].pack_price)
+	marks -= int(services()[id].pack_price)
 	state.service_stock[id] -= 1
 	state.energy_packs += 1
 	return ""
@@ -318,7 +335,7 @@ func sell() -> String:
 	if state.buyer_remaining <= 0: return "The nursery's order is filled. Keep the remaining harvest."
 	state.produce -= 1
 	state.buyer_remaining -= 1
-	state.marks += 18
+	marks += 18
 	var shipment: int = 6-int(state.buyer_remaining)
 	note("sale_%d" % shipment,"Nursery delivery %d: one cultivated pod sold for 18 Marks." % shipment)
 	return ""
@@ -334,13 +351,16 @@ func set_route(enabled: bool) -> String:
 func save_to(path: String) -> Error:
 	var file := FileAccess.open(path,FileAccess.WRITE)
 	if file == null: return FileAccess.get_open_error()
-	file.store_string(JSON.stringify(state))
+	file.store_string(JSON.stringify(snapshot()))
 	return OK
 
 func load_from(path: String) -> Error:
 	var file := FileAccess.open(path,FileAccess.READ)
 	if file == null: return FileAccess.get_open_error()
-	var value: Variant = JSON.parse_string(file.get_as_text())
+	return restore_snapshot(JSON.parse_string(file.get_as_text()))
+
+func restore_snapshot(source: Variant) -> Error:
+	var value: Variant = source.duplicate(true) if source is Dictionary else source
 	if not value is Dictionary: return ERR_INVALID_DATA
 	# Additive migration preserves the original field save and its optional ecology.
 	if value.get("version") == 1:
@@ -423,4 +443,5 @@ func load_from(path: String) -> Error:
 		elif typeof(defaults[key]) == TYPE_FLOAT: value[key] = float(value[key])
 	for entry: Dictionary in value.history: entry.time = int(entry.time)
 	state = value.duplicate(true)
+	account = {}
 	return OK

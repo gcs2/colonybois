@@ -627,7 +627,10 @@ func load_game(path: String = "") -> Error:
 	var file := FileAccess.open(path,FileAccess.READ)
 	if file == null: return FileAccess.get_open_error()
 	if file.get_buffer(8).get_string_from_utf8() != "FWORLD01": return ERR_FILE_UNRECOGNIZED
-	var parsed: Variant = file.get_var(false)
+	return restore_snapshot(file.get_var(false))
+
+func restore_snapshot(source: Variant) -> Error:
+	var parsed: Variant = source.duplicate(true) if source is Dictionary else source
 	if not parsed is Dictionary: return ERR_PARSE_ERROR
 	if int(parsed.get("version",0)) not in [1,2,SAVE_VERSION]: return ERR_FILE_UNRECOGNIZED
 	for field: String in ["planets","colonies","systems","factions","flagship","agreements","milestones","discoveries","log","credits","tick","seed","rank"]:

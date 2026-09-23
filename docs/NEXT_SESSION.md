@@ -1,8 +1,12 @@
 # Resume here
 
+## Shared expedition integration — latest checkpoint
+
+Read [EXPEDITION_SESSION.md](EXPEDITION_SESSION.md). Morrow flight now owns the sector and field models in one campaign container, using one treasury, a persisted 30-second colony-day cadence and an atomic combined save. Original field JSON migrates without overwriting it or granting new Marks/energy. Pause and inspection stop both clocks. Other worlds remain unvisitable; old standalone strategic modes are intentionally not silently merged. Next connect authoritative personal travel and separate per-world local state. Earlier presentation sections below remain open acceptance feedback.
+
 Latest meta-direction: keep the active Space Stage goal and TASK_BOARD.md. [GOAL_AND_CHECKINS.md](GOAL_AND_CHECKINS.md) provides positive goal wording and the check-in contract. The parity status/TSV are preliminary research, not a competing queue. Advance the connected expedition milestone alongside bounded presentation work; do not organize the whole project around the latest criticism. No game code changed in this planning checkpoint.
 
-Current playable package: **build/versions/20260923-123429** through Play.cmd. Corrected exported-pack smoke passed; 537 assertions plus UI checks pass, including 50 HUD and 15 capacity checks.
+Current playable package: **build/versions/20260923-130227** through Play.cmd. Exported-pack flight smoke passed; 565 assertions plus UI checks pass, including 28 new shared-session checks.
 
 ## Latest review: icon styling and typography rejected
 
