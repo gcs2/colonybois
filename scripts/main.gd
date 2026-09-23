@@ -1,5 +1,7 @@
 extends Node3D
 ## Presentation and input only; all gameplay mutations go through Simulation.command.
+const PlanetGlobe = preload("res://scripts/planet_globe.gd")
+const PlanetGenerator = preload("res://scripts/planet_generator.gd")
 const Simulation = preload("res://scripts/simulation.gd")
 const UrbanView = preload("res://scripts/urban_view.gd")
 const AudioFeedback = preload("res://scripts/audio_feedback.gd")
@@ -42,7 +44,7 @@ var selected_cell := Vector2i(-1,-1)
 var last_painted := Vector2i(-1,-1)
 var hover_mesh: MeshInstance3D
 var ship_mesh: Node3D
-var overview_globe: MeshInstance3D
+var overview_globe: Node3D
 var hud := CanvasLayer.new()
 var title_label: Label
 var stats_label: Label
@@ -289,8 +291,7 @@ func _on_sim_changed() -> void:
 		if site_planet_id != (planet_id if sim.state.colonies.has(planet_id) or sim.state.settlements.has(planet_id) else ""):
 			_rebuild_world()
 		var planet: Dictionary = sim.state.planets[planet_id]
-		var material := overview_globe.material_override as ShaderMaterial
-		material.set_shader_parameter("recovery",float(planet.terraform))
+		overview_globe.set_recovery(float(planet.terraform))
 
 func _on_message(text: String) -> void:
 	_toast(text)
@@ -1191,14 +1192,16 @@ func _draw_planet() -> void:
 		_sphere(world,Vector3.ZERO,6,Color("1b3044"))
 		_world_label(world,"SURVEY REQUIRED",Vector3(0,0,7),MUTED,28)
 		return
-	var color: Color = _planet_color(planet)
-	overview_globe = _sphere(world,Vector3.ZERO,6.0,color)
-	var material := ShaderMaterial.new()
-	material.shader = preload("res://assets/planet.gdshader")
-	material.set_shader_parameter("climate",["temperate","frozen","arid"].find(planet.environment))
-	material.set_shader_parameter("world_seed",float(planet.seed % 100))
-	material.set_shader_parameter("recovery",float(planet.terraform))
-	overview_globe.material_override = material
+	overview_globe = PlanetGlobe.new()
+	overview_globe.radius = 6
+	var recipe: Dictionary = PlanetGenerator.make_recipe(planet.id,int(planet.seed),planet.environment)
+	# Stable original landing coordinates, now constrained to actual generated land.
+	var at: Vector3 = Vector3(1.5,1.5,5.8).normalized()
+	recipe.sites = [{"latitude":rad_to_deg(asin(at.y)),"longitude":rad_to_deg(atan2(at.x,at.z)),"landable":true}]
+	overview_globe.planet_definition = recipe
+	world.add_child(overview_globe)
+	overview_globe.site_marker.hide()
+	overview_globe.set_recovery(float(planet.terraform))
 	var ring := TorusMesh.new()
 	ring.inner_radius = 7.3
 	ring.outer_radius = 7.34

@@ -51,6 +51,7 @@ func _ready() -> void:
 
 func advance(delta: float) -> void:
 	planet.rotation.y += delta*0.018
+	planet.advance(delta)
 	phase += delta
 	wreck.rotation.y += delta*0.18
 	field_ring.scale = Vector3.ONE*(1+sin(phase*TAU/6)*0.025)

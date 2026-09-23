@@ -1,0 +1,5 @@
+{
+  "temperate": {"sea_level": -0.04, "equator_temperature": 29.0, "moisture": 0.63, "relief": 1.0, "cloud_cover": 0.42, "atmosphere": "73c8d5", "deep_ocean": "102c48", "shallow_ocean": "368d91", "lowland": "769d80", "forest": "3f706b", "dryland": "c09b77", "highland": "999b95", "ice": "e0ebdf"},
+  "frozen": {"sea_level": -0.12, "equator_temperature": -10.0, "moisture": 0.40, "relief": 1.3, "cloud_cover": 0.28, "atmosphere": "9bb9df", "deep_ocean": "152940", "shallow_ocean": "447c97", "lowland": "91a4b1", "forest": "526976", "dryland": "9c8f97", "highland": "667c91", "ice": "d6e7ee"},
+  "arid": {"sea_level": -0.40, "equator_temperature": 47.0, "moisture": 0.16, "relief": 1.25, "cloud_cover": 0.08, "atmosphere": "e5ae7b", "deep_ocean": "1c4c58", "shallow_ocean": "4e9e92", "lowland": "a49a65", "forest": "4e7f70", "dryland": "c88c63", "highland": "896a77", "ice": "dfd4bc"}
+}

@@ -1,5 +1,19 @@
 # Resume here
 
+## Latest user direction: finite energy and keep moving
+
+The user accepts the current visual pass as good enough to move on; do not keep polishing one task unless pressing. Energy must NOT passively regenerate. Recharge through consumable energy packs or shop service with variable costs; the homeworld is always free. This supersedes the prototype reactor trickle and recharge-based recovery. Implement real commands/costs/access/UI and preserve recoverability without making remote expeditions free.
+
+Visual checkpoint package: `build/versions/20260923-111151`, 469 assertions plus UI checks and exported flight smoke passed.
+
+
+## Latest checkpoint: flight correction and shared planet geography
+
+Read [PLANET_GENERATION.md](PLANET_GENERATION.md). Morrow orbit/atlas and all surveyed strategic planet overviews now share a versioned spherical generator and terrestrial climate profiles. Color/conditions/relief maps are cached; clouds and atmosphere are separate. Strategic terraforming blends climate without moving geography. 469 assertions plus UI checks cover current systems. Flight descent works from wheel, mouse and keyboard, with far-side routing and cancellation; Windows TTS removed. Voice replacement is still missing.
+
+**Next:** actual generated landing regions linked to shared planet IDs and ship state; native zoom/descent review; acquire approved AI SFX and audition a proper guide voice; authored scout and astronomically grounded sky. Morrow remains the only personal-flight landing site. No final art/feel approval. Full Space Stage goal remains active. Prior checkpoint sections are history.
+
+
 ## Flight correction checkpoint
 
 Descent now starts atmospheric approach from the mouse button, keyboard/numpad descent, Ctrl-wheel down, or inward zoom past the approach scale. Outward zoom or steering cancels. Far-side landing routes around the solid globe; camera scale no longer snaps at the frame transition; ascent starts when zoom reaches its boundary. Windows TTS fallback is removed; guide captions remain and only supplied recordings may speak. No replacement voice has been acquired. 11 new regression checks cover these behaviors; native feel remains unverified. Planet generation is next.

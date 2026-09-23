@@ -23,6 +23,8 @@ func run() -> void:
 	check(not scene.landing and not scene.navigating,"Outward zoom cancels entry")
 	scene.hud.altitude_requested.emit(-1)
 	check(scene.landing,"Mouse descent button commands atmospheric approach")
+	scene._refresh_ui()
+	check(scene.hud.action_state.text == "DESCENDING" and scene.use_button.text == "Cancel","Target card explains descent and exposes cancellation")
 	scene._stop()
 	Input.action_press("flight_descend")
 	for i: int in range(30): scene._physics_process(1.0/60)

@@ -61,3 +61,7 @@ Do not put restricted paid source libraries in the public repository. Track lice
 ## Verification and remaining listening gate
 
 `tests/test_audio.gd` verifies that each actual hotbar button emits exactly one equip event, the four assets differ, hover cannot chatter, valid targets/navigation/cancel have cues, loops respond to movement/pause/orbit/mute, settings persist and the three volume sliders are available. These checks prove routing and state, not that it sounds satisfying. Waveform inspection checks peaks and loop boundaries; rendered smoke checks asset loading and runtime errors. Listening through the real game and external speakers/headphones remains necessary before accepting the mix.
+
+## Latest guide-voice decision — 23 September
+
+User rejected the Windows scratch voice. The fallback is now removed entirely. Contextual captions remain, and the recorded-line playback path remains available. No replacement voice is supplied yet. Next: short AI auditions for an understated, expressive alien expedition guide; review delivery in the actual flight mix before committing to casting. No paid voice service or license has been purchased or authorized.

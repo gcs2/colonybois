@@ -693,7 +693,7 @@ func _update_flight_effects(delta: float) -> void:
 	if not stopped: arrival_fade = maxf(0,arrival_fade-delta*1.8)
 	var outbound: float = 0
 	if not orbital and velocity.y > 0.1: outbound = smoothstep(53,58,ship.position.y)
-	if orbital and landing: outbound = 1-smoothstep(1,9,ship.position.distance_to(destination))
+	if orbital and landing and landing_waypoints.is_empty(): outbound = 1-smoothstep(1,9,ship.position.distance_to(destination))
 	transition_veil.color.a = maxf(arrival_fade,outbound)
 	transition_caption.text = "MORROW / ORBIT" if orbital else "MORROW / ATMOSPHERE"
 	transition_caption.modulate.a = transition_veil.color.a
@@ -766,7 +766,8 @@ func _hud_action(action: String) -> void:
 		"use":
 			if not paused and not _inspection_open():
 				if model.state.flight_mode == "orbit":
-					if orbital_target == "guardian": _command_guardian()
+					if landing: _stop()
+					elif orbital_target == "guardian": _command_guardian()
 					else: _command_wreck()
 				else: _activate_selected()
 		"weapon": _command_guardian()
@@ -1054,7 +1055,10 @@ func _toggle_pause() -> void:
 
 func _departure() -> void:
 	if paused or _inspection_open(): return
-	if model.state.flight_mode == "orbit": _begin_landing(); return
+	if model.state.flight_mode == "orbit":
+		if landing: _stop()
+		else: _begin_landing()
+		return
 	_cancel_orders()
 	altitude_order = 63
 	audio.play("departure")
@@ -1158,7 +1162,7 @@ func _refresh_ui() -> void:
 	for id: String in targets: hud.navigation.points[id] = Vector2(targets[id].position.x,targets[id].position.z)
 	hud.navigation.queue_redraw()
 	pause_button.text = "Resume" if paused else "Pause"
-	departure_button.text = "Return to Morrow" if orbital else "Leave atmosphere"
+	departure_button.text = ("Cancel approach" if landing else "Return to Morrow") if orbital else "Leave atmosphere"
 	if orbital:
 		if s.survey_ticks < int(Geography.definition().survey_seconds): objective.text = "Chart Morrow from the atlas to locate orbital signals."
 		elif not s.guardian_disabled and not s.shroud_unlocked: objective.text = "A custodian guards the wreck. Disable it or risk a fast salvage."
@@ -1169,7 +1173,13 @@ func _refresh_ui() -> void:
 	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "Follow the signal. Leave the atmosphere."
 	else: objective.text = "Explore freely. Your surveys are secure."
 	if orbital:
-		if orbital_target == "guardian" and not s.guardian_disabled:
+		if landing:
+			subject.text = "Morrow Basin / atmospheric approach"
+			hud.action_state.text = "DESCENDING"
+			explanation.text = "Routing around the planet" if not landing_waypoints.is_empty() else "On final approach · Stop or steer to cancel"
+			use_button.text = "Cancel"
+			use_button.disabled = paused or _inspection_open()
+		elif orbital_target == "guardian" and not s.guardian_disabled:
 			var skiff_gap: float = ship.position.distance_to(skiff_at)
 			subject.text = "Custodian skiff  /  %.0f m" % skiff_gap
 			hud.action_state.text = "APPROACHING" if navigating and attack_order else ("FIRING" if attack_order else "TARGETED")

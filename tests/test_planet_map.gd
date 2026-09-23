@@ -70,8 +70,7 @@ func run() -> void:
 	scene._process(2)
 	check(scene.model.state.time == instant,"Atlas inspection does not advance survey or economy")
 	check(atlas.globe.site_marker.position.normalized().is_equal_approx(scene.orbit.planet.site_marker.position.normalized()),"Map and orbital markers use the same planet-fixed coordinates")
-	var shader_offset: Vector3 = atlas.globe.material.get_shader_parameter("geography_offset")
-	check(shader_offset.is_equal_approx(scene.orbit.planet.material.get_shader_parameter("geography_offset")),"Map and orbital geography share the same seeded material")
+	check(atlas.globe.material.get_shader_parameter("surface_map") == scene.orbit.planet.material.get_shader_parameter("surface_map"),"Map and orbit share the same generated geography texture")
 	atlas.globe.rotation.y = PI
 	check(not atlas.marker_visible(atlas.globe.site_marker),"Back-side site cannot display through the planet")
 	check(not atlas.pick_site(Vector2.ZERO),"Back-side site cannot be picked through the globe")

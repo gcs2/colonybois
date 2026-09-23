@@ -23,7 +23,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Surface altitude, orbit, planetary return | Same Morrow state survives surface/orbit round trip; tests in test_flight.gd | Natural-feeling transitions, more than one visitable world; native input review |
 | System/galaxy navigation, range, fog, wormholes, core | Existing strategic graph/fog; field flight is still isolated | Unified ship/location/state and traversable range/access/endgame mechanics |
 | Health, energy, repair, recharge, damage, defeat/recovery | Energy plus a local pulse hazard, persistent hull, repair and emergency tow exist in Morrow orbit; broader danger/recovery absent | Actual damage and costs, readable bars/warnings, fair recoverable failure |
-| Weapons, targeting, upgrades, cooldowns, combat | One acquired phase shroud; weapons, hostile AI and combat missing in personal flight | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
+| Weapons, targeting, upgrades, cooldowns, combat | One acquired phase shroud, an arc lance and a warning/chase/disengage custodian exist in isolated Morrow flight; broader weapon/enemy/fleet systems missing | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
 | Allied fleet recruitment, commands, losses | Missing | Persistent fleet ships, ally consequences, usable flight combat |
 | Hostile empires, wars, raids, defense, conquest | Strategic relations only | AI decisions, attacks, territorial outcomes and diplomacy consequences |
 | Contact, expressive aliens, government/philosophy | Three authored faction rules; static UI | Animated representatives, coherent reasons, distinct actions/abilities |
@@ -45,7 +45,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Galactic Adventures extension | Not assumed to be base Space Stage | Clarify expansion scope; do not claim expansion parity |
 | Professional HUD, icons, radar, tutorial arrows | First compact flight HUD, pointer, hull/energy/warning instruments; still placeholder visual design | Reviewed visual system and native readability at supported window sizes |
 | Lifelike animation and responsive ship FX | Three bounded procedural grazers; scout banks/pitches | Art-reviewed creature rigs, ship effects, encounters and achievement animation |
-| Full SFX coverage, music, spoken guidance | 20 original flight/UI WAVs, adaptive thrust, candidate music, Windows scratch speech/captions and mixer; professional performances and full-game coverage still missing | Event coverage audit, mixed tracks, subtitles, volume controls, licensed masters |
+| Full SFX coverage, music, spoken guidance | 20 original flight/UI WAVs, adaptive thrust, candidate music, captions and mixer; rejected Windows speech removed, replacement recorded voice missing; professional performances and full-game coverage still missing | Event coverage audit, mixed tracks, subtitles, volume controls, licensed masters |
 | Saves, performance, regression, fun | Tests cover existing bounded mechanics | Cross-view deterministic state, migrations, full sessions and clean-PC profiles |
 
 ## Production order
