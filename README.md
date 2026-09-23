@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+Flight correction: **Escape** opens the game menu; **I** opens Inventory, where an owned energy pack can be used. Energy never regenerates passively. Homeworld recharge is free through local services; select Weapon before clicking a hostile target. The current cockpit artwork is rejected and remains temporary; see [interface correction contract](docs/SPORE_INTERFACE_CONTRACT.md).
+
 [Current task board](docs/TASK_BOARD.md) tracks active work, dependencies, prototype gaps and deferred features. [Flight interface specification](docs/FLIGHT_INTERFACE.md) records the latest colorful HUD, cargo, subsystem and whole-planet map requirements. The composed instrument HUD, clickable local chart, cargo/equipment panels and planetary atlas are implemented candidates; broader requirements remain in production. See [HUD review](docs/FLIGHT_HUD_REVIEW.md).
 
 **New flight panels:** **Cargo / I** shows onboard specimens separately from surface stock. **Systems / K** inspects tool range, cycle, energy use and selects equipment into the hotbar. Inspection pauses the local simulation; Esc closes it. Gold energy, mint survey, apricot tractor and violet deployer instruments replace the uniform blue palette. These panels still use the isolated field state; the whole-planet atlas is implemented, while deeper ship systems remain pending.

@@ -91,7 +91,6 @@ var energy_bar: ProgressBar
 var departure_button: Button
 var guide_arrow: Label
 var navigation_marker: MeshInstance3D
-var pause_button: Button
 var heard_guides: Dictionary = {}
 var guide_caption: Label
 var caption_time: float = 0.0
@@ -113,6 +112,12 @@ var guardian_label: Label
 var orbital_target: String = "wreck"
 var attack_order: bool = false
 var weapon_flash: float = 0.0
+var service_order: String = ""
+var service_waypoints: Array[Vector3] = []
+var selected_service: String = "basin_port"
+var weapon_selected: bool = false
+var menu_return: bool = false
+var menu_shade: ColorRect
 var weapon_beam: MeshInstance3D
 
 func _exit_tree() -> void:
@@ -152,6 +157,7 @@ func _ready() -> void:
 			child.reparent(surface_root)
 	orbit = OrbitalScene.new()
 	add_child(orbit)
+	_build_service_ports()
 	var lance_mesh := CylinderMesh.new()
 	lance_mesh.top_radius = 0.07
 	lance_mesh.bottom_radius = 0.13
@@ -382,9 +388,9 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 func _style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.set_corner_radius_all(16)
+	style.set_corner_radius_all(1)
 	style.set_border_width_all(1)
-	style.border_color = Color("65556e")
+	style.border_color = Color("45606d")
 	style.content_margin_left = 20
 	style.content_margin_right = 20
 	style.content_margin_top = 16
@@ -435,7 +441,7 @@ func _make_ui() -> void:
 	canvas.add_child(root)
 	var theme := Theme.new()
 	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Bahnschrift","Segoe UI"])
+	font.font_names = PackedStringArray(["Segoe UI Variable Text","Segoe UI"])
 	theme.default_font = font
 	theme.default_font_size = 16
 	root.theme = theme
@@ -460,7 +466,6 @@ func _make_ui() -> void:
 	flight_readout = hud.flight_readout
 	energy_bar = hud.energy_bar
 	progress_bar = hud.progress_bar
-	pause_button = hud.pause_button
 	departure_button = hud.departure_button
 	use_button = hud.use_button
 	toolbar = hud.toolbar
@@ -511,6 +516,11 @@ func _make_ui() -> void:
 		label.add_theme_constant_override("outline_size",3)
 		labels[id] = label
 		root.add_child(label)
+	menu_shade = ColorRect.new()
+	menu_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_shade.color = Color(0,0,0,0.65)
+	menu_shade.hide()
+	root.add_child(menu_shade)
 	popup = PanelContainer.new()
 	popup.position = Vector2(1020,100)
 	popup.size = Vector2(555,595)
@@ -524,6 +534,7 @@ func _make_ui() -> void:
 	popup_body.add_theme_constant_override("separation",12)
 	popup_scroll.add_child(popup_body)
 	popup.visible = false
+	popup.visibility_changed.connect(func() -> void: menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return))
 	planet_map = PlanetMap.new()
 	root.add_child(planet_map)
 	planet_map.close_requested.connect(func() -> void: planet_map.hide(); audio.play("ui_close"))
@@ -554,6 +565,7 @@ func _physics_process(delta: float) -> void:
 		salvage_order = false
 		salvage_progress = 0
 		attack_order = false
+		service_order = ""
 	if navigating:
 		if approach_subject: destination = _target_position()+Vector3(0,1,1).normalized()*Equipment.reach(tool)*0.55
 		if attack_order:
@@ -571,6 +583,13 @@ func _physics_process(delta: float) -> void:
 					destination = landing_waypoints.pop_front()
 					navigating = true
 				else: _change_flight_mode("surface"); return
+			if not service_order.is_empty():
+				if not service_waypoints.is_empty():
+					destination = service_waypoints.pop_front()
+					navigating = true
+				else:
+					selected_service = service_order
+					_show_popup("service")
 			if approach_subject: approach_subject = false; held = true; latched = false
 	if input_direction.y != 0 or vertical_button != 0:
 		move.y = clampf(input_direction.y+vertical_button,-1,1)*12
@@ -618,10 +637,10 @@ func _process(delta: float) -> void:
 				_cancel_orders()
 				_restore_ship()
 				arrival_fade = 0.8
-				_toast("Emergency tow · hull 35 / 100 · retreat, recharge and repair")
+				_toast("Emergency tow · return to a dock or use an energy pack")
 				audio.play("error")
 			elif pulse == "pulse" or attack == "guardian_hit":
-				_toast("Incoming fire · retreat, shroud or disable the custodian" if attack == "guardian_hit" else "Defense pulse hit · leave the core or engage the shroud")
+				_toast("Incoming fire · retreat, shield or disable the custodian" if attack == "guardian_hit" else "Defense pulse hit · leave the core or engage the shield")
 				audio.play("error")
 			if model.state.history.size() != old_count:
 				if pulse not in ["pulse","tow"] and attack not in ["guardian_hit","tow"]:
@@ -767,14 +786,22 @@ func _hud_action(action: String) -> void:
 			if not paused and not _inspection_open():
 				if model.state.flight_mode == "orbit":
 					if landing: _stop()
-					elif orbital_target == "guardian": _command_guardian()
+					elif orbital_target == "guardian":
+						if weapon_selected: _command_guardian()
+						else: _select_weapon()
 					else: _command_wreck()
 				else: _activate_selected()
-		"weapon": _command_guardian()
+		"weapon": _select_weapon()
+		"dock": _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port")
+		"pack":
+			if paused or _inspection_open(): return
+			var error: String = model.use_energy_pack()
+			_toast(error if not error.is_empty() else "Energy pack consumed · energy %d / 100" % model.state.energy)
+			audio.play("error" if not error.is_empty() else "cargo")
 		"shroud":
 			if paused or _inspection_open(): return
 			var error: String = model.toggle_shroud()
-			_toast(error if not error.is_empty() else ("Phase shroud engaged" if model.state.shroud_on else "Phase shroud disengaged"))
+			_toast(error if not error.is_empty() else ("Shield active · consumes 2 energy per second" if model.state.shroud_on else "Shield deactivated"))
 			audio.play("error" if not error.is_empty() else "ui_confirm")
 		"repair":
 			if paused or _inspection_open(): return
@@ -797,8 +824,11 @@ func _chart_navigate(at: Vector2) -> void:
 	else: _navigate(Vector3(at.x,ship.position.y,at.y))
 
 func _command_target(id: String) -> void:
+	if id == "service":
+		_approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port")
+		return
 	if id == "wreck": _command_wreck(); return
-	if id == "guardian": _command_guardian(); return
+	if id == "guardian": _target_guardian(); return
 	if paused or _inspection_open() or id not in targets: return
 	if id != selected: _cancel_orders()
 	selected = id
@@ -816,6 +846,21 @@ func _command_wreck() -> void:
 	_navigate(OrbitalScene.WRECK_POSITION+Vector3(0,0,8))
 	salvage_order = true
 	audio.play("target_lock")
+
+func _select_weapon() -> void:
+	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
+	_cancel_orders()
+	weapon_selected = true
+	hud.tool_title.text = "Arc lance · energy weapon"
+	hud.tool_spec.text = "Click an enemy · 10 energy / shot · 2 s cooldown"
+	Instruments.instrument(hud.weapon_button,"lance",Instruments.CARGO,true)
+	audio.play("ui_confirm")
+
+func _target_guardian() -> void:
+	if paused or _inspection_open(): return
+	orbital_target = "guardian"
+	if weapon_selected: _command_guardian()
+	else: _toast("Select the weapon first, then click the skiff to attack")
 
 func _command_guardian() -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
@@ -880,7 +925,7 @@ func _operate_salvage(delta: float) -> void:
 	if salvage_progress < 1: return
 	var error: String = model.salvage(_wreck_distance())
 	_cancel_orders()
-	_toast(error if not error.is_empty() else "Phase shroud secured · toggle at the ship panel")
+	_toast(error if not error.is_empty() else "Shield recovered · inspect and activate it in Equipment")
 	audio.play("error" if not error.is_empty() else "achievement")
 
 func _operate(delta: float) -> void:
@@ -919,6 +964,14 @@ func _operate(delta: float) -> void:
 		if error.is_empty(): effects.confirm(end,tool)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and popup.visible:
+		if event.physical_keycode == KEY_ESCAPE: _escape_menu()
+		elif popup_kind != "menu" and not menu_return:
+			match event.physical_keycode:
+				KEY_I: _toggle_drawer("cargo")
+				KEY_K: _toggle_drawer("systems")
+				KEY_M: _toggle_planet_map()
+		return
 	if event is InputEventKey and not event.echo:
 		if event.physical_keycode == KEY_F:
 			held = event.pressed
@@ -936,12 +989,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				if model.state.flight_mode == "surface": _select_tool(TOOLS[2])
 			KEY_4:
 				if model.state.flight_mode == "surface": _select_tool(TOOLS[3])
-			KEY_5: _command_guardian()
+			KEY_5: _select_weapon()
 			KEY_TAB:
 				_cancel_orders()
 				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
 			KEY_SPACE: _toggle_pause()
-			KEY_ESCAPE: popup.visible = false; planet_map.hide(); _stop()
+			KEY_ESCAPE: _escape_menu(); return
 			KEY_F5: _save()
 			KEY_F9: _load()
 	if _inspection_open() or paused: return
@@ -962,11 +1015,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	var provider: String = "orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"
+	var service_at: Vector3 = Model.service_position(provider)
+	if not camera.is_position_behind(service_at) and camera.unproject_position(service_at).distance_to(screen) < 22:
+		_approach_service(provider)
+		return
 	if model.state.flight_mode == "orbit":
 		var wreck_gap: float = camera.unproject_position(OrbitalScene.WRECK_POSITION).distance_to(screen) if not camera.is_position_behind(OrbitalScene.WRECK_POSITION) else INF
 		var guardian_gap: float = camera.unproject_position(model.guardian_position()).distance_to(screen) if not camera.is_position_behind(model.guardian_position()) else INF
 		if guardian_gap < 37 and guardian_gap < wreck_gap:
-			_command_guardian()
+			_target_guardian()
 			return
 		if wreck_gap < 33:
 			_command_wreck()
@@ -1022,6 +1080,8 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	service_order = ""
+	service_waypoints.clear()
 	zoom_ascent = false
 	zoom_descent = false
 	landing_waypoints.clear()
@@ -1092,6 +1152,7 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	if not orbit.has_meta("environment"): orbit.set_meta("environment",orbit.environment.environment)
 	if not orbital: orbit.environment.environment = null
 	for button: Button in toolbar: button.disabled = orbital
+	weapon_selected = false
 	hud.set_orbital_mode(orbital)
 	use_button.disabled = orbital
 	if not preserve_zoom:
@@ -1125,25 +1186,23 @@ func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
-	stats.text = "%d Marks   ·   Cradle %d/2   ·   %d surveys" % [s.marks,s.samples,s.scanned.size()]
+	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [s.marks,s.samples,s.scanned.size()]
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
 	hud.hull_label.text = "HULL   %d / 100" % s.hull
 	hud.energy_label.text = "ENERGY   %d / 100" % s.energy
 	flight_readout.text = "%s %.0f m  ·  %.0f m/s" % ["Y" if orbital else "ALT",ship.position.y,velocity.length()]
-	hud.shroud_button.visible = s.shroud_unlocked
-	hud.shroud_button.text = "SHROUD ON" if s.shroud_on else "SHROUD"
-	hud.shroud_button.disabled = paused or _inspection_open() or not orbital or (not s.shroud_on and s.energy < 2)
-	hud.repair_button.disabled = paused or _inspection_open() or not model.repair_reason(_wreck_distance()).is_empty()
-	hud.repair_button.tooltip_text = model.repair_reason(_wreck_distance()) if hud.repair_button.disabled else "Restore up to 35 hull · 30 energy · 20 s cooldown"
 	var field_distance: float = _wreck_distance()
 	hud.danger_label.text = "PULSE CORE · %d m · NEXT IN %d s" % [field_distance,6-int(s.threat_clock)] if orbital and field_distance < Model.HAZARD_RADIUS else ("PULSE FIELD · %d m · KEEP CLEAR" % field_distance if orbital and field_distance < Model.HAZARD_WARNING else "")
 	hud.guardian_warning.text = "CUSTODIAN LOCKING · %d s" % [3-int(s.guardian_alert)] if orbital and s.guardian_alert > 0 and s.guardian_alert < 3 else ("CUSTODIAN FIRING · %d s TO NEXT SHOT" % maxi(0,int(s.guardian_ready_at)-int(s.time)) if orbital and s.guardian_alert >= 3 and not s.guardian_disabled else "")
-	hud.weapon_button.disabled = paused or _inspection_open() or not orbital or s.guardian_disabled or (s.energy < Model.LANCE_ENERGY and not attack_order)
-	hud.weapon_button.text = "Disable skiff" if attack_order else "Arc lance"
-	hud.quick_cargo.text = "%d / 2" % s.samples
-	hud.paused_badge.text = "INSPECTION PAUSED" if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
+	hud.weapon_button.disabled = paused or _inspection_open() or not orbital
+	hud.weapon_button.text = "Weapon"
+	hud.quick_cargo.text = "Inventory"
+	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
+	hud.paused_badge.text = ("GAME PAUSED" if popup.visible and popup_kind == "menu" else "INSPECTION PAUSED") if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
 	hud.navigation.orbital = orbital
+	var service_at: Vector3 = Model.service_position("orbit_tender" if orbital else "basin_port")
+	hud.navigation.service_at = Vector2(service_at.x,service_at.z)
 	hud.navigation.ship_at = Vector2(ship.position.x,ship.position.z)
 	hud.navigation.heading = -ship.rotation.y
 	hud.navigation.planet_at = Vector2(orbit.planet.position.x,orbit.planet.position.z)
@@ -1161,13 +1220,12 @@ func _refresh_ui() -> void:
 	hud.navigation.locked = paused or _inspection_open()
 	for id: String in targets: hud.navigation.points[id] = Vector2(targets[id].position.x,targets[id].position.z)
 	hud.navigation.queue_redraw()
-	pause_button.text = "Resume" if paused else "Pause"
 	departure_button.text = ("Cancel approach" if landing else "Return to Morrow") if orbital else "Leave atmosphere"
 	if orbital:
-		if s.survey_ticks < int(Geography.definition().survey_seconds): objective.text = "Chart Morrow from the atlas to locate orbital signals."
+		if s.survey_ticks < int(Geography.definition().survey_seconds): objective.text = "Chart Morrow from Planet map to locate orbital signals."
 		elif not s.guardian_disabled and not s.shroud_unlocked: objective.text = "A custodian guards the wreck. Disable it or risk a fast salvage."
-		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its shroud."
-		else: objective.text = "Shroud recovered. Explore, repair or return to Morrow."
+		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its shield."
+		else: objective.text = "Shield recovered. Explore, repair or return to Morrow."
 	elif s.landings > 0: objective.text = "Explore freely. Your surveys are secure."
 	elif "relay" not in s.scanned: objective.text = "Click the relay to investigate its signal."
 	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "Follow the signal. Leave the atmosphere."
@@ -1184,16 +1242,16 @@ func _refresh_ui() -> void:
 			subject.text = "Custodian skiff  /  %.0f m" % skiff_gap
 			hud.action_state.text = "APPROACHING" if navigating and attack_order else ("FIRING" if attack_order else "TARGETED")
 			explanation.text = "Hull %d/66 · 10 energy/shot · 2 s" % s.guardian_hull
-			use_button.text = "Cancel" if attack_order else "Disable"
-			use_button.disabled = paused or _inspection_open() or (s.energy < Model.LANCE_ENERGY and not attack_order)
-			use_button.tooltip_text = "Click to approach and fire the arc lance until the skiff is disabled."
+			use_button.text = "Cancel" if attack_order else ("Fire" if weapon_selected else "Equip")
+			use_button.disabled = paused or _inspection_open() or (weapon_selected and s.energy < Model.LANCE_ENERGY and not attack_order)
+			use_button.tooltip_text = "Click to approach and fire the selected weapon." if weapon_selected else "Select the energy weapon first, then click the skiff to fire."
 		else:
 			subject.text = "Drifting wreck  /  %.0f m" % field_distance if hud.navigation.wreck_known and not s.shroud_unlocked else "Morrow  /  orbital flight"
 			hud.action_state.text = "SALVAGING" if salvage_order and not navigating else ("APPROACHING" if salvage_order else ("DANGER" if field_distance < Model.HAZARD_RADIUS else "ORBIT"))
-			explanation.text = "%d%% · stay near the wreck" % int(salvage_progress*100) if salvage_order and not navigating else ("Defense pulse repeats every 6 s." if field_distance < Model.HAZARD_WARNING else "Chart in the atlas; click the wreck to approach." if hud.navigation.wreck_known and not s.shroud_unlocked else "Click Morrow to descend.")
+			explanation.text = "%d%% · stay near the wreck" % int(salvage_progress*100) if salvage_order and not navigating else ("Defense pulse repeats every 6 s." if field_distance < Model.HAZARD_WARNING else "Chart in Planet map; click the wreck to approach." if hud.navigation.wreck_known and not s.shroud_unlocked else "Click Morrow to descend.")
 			use_button.text = "Cancel" if salvage_order else ("Salvage" if hud.navigation.wreck_known and not s.shroud_unlocked else "Use")
 			use_button.disabled = paused or _inspection_open() or not hud.navigation.wreck_known or s.shroud_unlocked
-			use_button.tooltip_text = "Approach the wreck; recovering its shroud takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
+			use_button.tooltip_text = "Approach the wreck; recovering its shield takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
 		var reason: String = model.reason(tool,selected,0)
@@ -1244,19 +1302,19 @@ func _update_guidance() -> void:
 	if model.state.flight_mode == "orbit":
 		if model.state.survey_ticks < int(Geography.definition().survey_seconds):
 			id = "orbit"
-			line = "We're clear of the atmosphere. Chart Morrow in the atlas to locate signals."
+			line = "We're clear of the atmosphere. Chart Morrow in Planet map to locate signals."
 		elif not model.state.guardian_disabled and model.state.guardian_alert > 0:
 			id = "custodian"
 			line = "A custodian skiff warns before firing. Leave its exclusion zone or click it to disable it with the arc lance."
 		elif model.state.guardian_disabled and not model.state.shroud_unlocked:
 			id = "safe_wreck"
-			line = "The skiff is disabled, not destroyed. The pulse field remains. Click the wreck to recover its shroud."
+			line = "The skiff is disabled, not destroyed. The pulse field remains. Click the wreck to recover its shield."
 		elif not model.state.shroud_unlocked:
 			id = "wreck"
 			line = "The chart found a wreck inside a repeating pulse field. A skiff guards it. Click the wreck to approach or disable the skiff first."
 		else:
 			id = "shroud"
-			line = "That shroud can blunt pulses, but it drains reactor energy while engaged. Toggle it beside your hull gauge."
+			line = "The recovered shield reduces damage. Activate it in Equipment; it consumes 2 energy per second."
 	elif model.state.landings > 0:
 		id = "return"
 		line = "Back in the basin. Your surveys are secure. You're free to explore."
@@ -1273,24 +1331,64 @@ func _toast(text: String) -> void:
 	status.text = text
 	toast_time = 6
 
+func _escape_menu() -> void:
+	if popup.visible:
+		if menu_return and popup_kind != "menu": _show_popup("menu")
+		else: _close_popup()
+	elif planet_map.visible:
+		planet_map.hide()
+	else:
+		menu_return = false
+		_show_popup("menu")
+
+func _close_popup() -> void:
+	popup.hide()
+	menu_return = false
+	audio.save_settings()
+	audio.play("ui_close")
+
+func _menu_page(kind: String) -> void:
+	menu_return = true
+	_show_popup(kind)
+
+func _inventory_action(action: String, panel: String) -> void:
+	# The item invokes the same validated command; keep inventory open for feedback.
+	if paused: return
+	popup.hide()
+	_hud_action(action)
+	_show_popup(panel)
+
 func _show_popup(kind: String) -> void:
 	_cancel_orders()
 	planet_map.hide()
 	popup_kind = kind
+	if kind == "menu": menu_return = false
+	menu_shade.visible = kind == "menu" or menu_return
+	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
-	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE"}
+	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
-	_button("×",func() -> void: popup.visible = false; audio.save_settings(),header,"ui_close")
+	_button("×",_escape_menu,header,"ui_close")
 	popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
-	if kind == "cargo":
+	if kind == "menu":
+		_button("Resume game",_close_popup,popup_body)
+		_button("Save game",_save,popup_body)
+		_button("Load game",func() -> void: _load(); _close_popup(),popup_body)
+		_button("Chronicle",_menu_page.bind("journal"),popup_body)
+		_button("Controls",_menu_page.bind("controls"),popup_body)
+		_button("Audio settings",_menu_page.bind("audio"),popup_body)
+		_button("Return to title",_exit_encounter,popup_body)
+	elif kind == "cargo":
 		_build_cargo_panel()
 	elif kind == "systems":
 		_build_systems_panel()
+	elif kind == "service":
+		_build_service_panel()
 	elif kind == "audio":
 		for channel: String in ["sfx","music","voice"]:
 			popup_body.add_child(_label({"sfx":"Effects and interface","music":"Music","voice":"Guide voice"}[channel],17))
@@ -1309,7 +1407,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nClick custodian or Arc lance: approach and disable\nClick wreck or Salvage: approach and recover shroud\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\n1–4: surface tools · 5: orbital arc lance · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\n1–4: surface tools · 5: select orbital weapon · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
@@ -1329,6 +1427,7 @@ func _show_popup(kind: String) -> void:
 			entries.add_child(text)
 		if model.state.history.is_empty(): entries.add_child(_label("Your first discovery will appear here.",16))
 	else:
+		_button("Local ship services",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
 		var portrait := TextureRect.new()
 		portrait.texture = load("res://assets/advisors/finance-v1.png")
 		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -1426,6 +1525,12 @@ func _build_cargo_panel() -> void:
 			slot.add_child(empty)
 	popup_body.add_child(_label("LANTERN POD  /  "+("LIVING SPECIMEN" if onboard else "CULTIVATED PRODUCE"),16,COLORS[0]))
 	if onboard:
+		_panel_copy("ENERGY PACKS  %d / 3 · +50 energy each · consumable equipment storage" % model.state.energy_packs,Instruments.GOLD)
+		var pack: Button = _button("Energy pack × %d   ·   Use +50 energy" % model.state.energy_packs,_inventory_action.bind("pack","cargo"),popup_body)
+		pack.icon = preload("res://assets/ui/flight/energy_pack.svg")
+		pack.add_theme_constant_override("icon_max_width",38)
+		pack.tooltip_text = model.pack_reason() if not model.pack_reason().is_empty() else "Consumes one pack. Excess energy is lost. Cooldown: 8 seconds."
+		pack.disabled = not model.pack_reason().is_empty() or paused
 		_panel_copy("Origin: wild lantern pods, Morrow Basin. Each living seed occupies one cradle. Surface harvests are stored separately.")
 		var equip: Button = _button("Equip deployer",_equip_from_panel.bind("seed"),popup_body,"")
 		equip.disabled = amount == 0
@@ -1449,7 +1554,7 @@ func _build_systems_panel() -> void:
 	system_energy.value = model.state.energy
 	Instruments.meter(system_energy,Instruments.GOLD)
 	popup_body.add_child(system_energy)
-	_panel_copy("Recharge: 1.5 energy / second while simulation runs. Equipment inspection pauses flight and the simulation.")
+	_panel_copy("Energy does not regenerate. Carry reserve packs or dock for recharge. Homeworld recharge is free; other worlds charge local rates.")
 	var modules := GridContainer.new()
 	modules.columns = 2
 	modules.add_theme_constant_override("h_separation",8)
@@ -1457,7 +1562,13 @@ func _build_systems_panel() -> void:
 	popup_body.add_child(modules)
 	system_buttons.clear()
 	_panel_copy("HULL  %d / 100 · field repair restores 35 for 30 reactor energy outside a hazard. Repair cooldown: 20 s." % model.state.hull)
-	_panel_copy("PHASE SHROUD  %s · absorbs most pulse damage, drains 2 energy/s." % ("ACTIVE" if model.state.shroud_on else "INSTALLED" if model.state.shroud_unlocked else "NOT ACQUIRED"))
+	_panel_copy("RECOVERED SHIELD (phase shroud)  %s · absorbs most pulse damage, drains 2 energy/s." % ("ACTIVE" if model.state.shroud_on else "INSTALLED" if model.state.shroud_unlocked else "NOT ACQUIRED"))
+	if model.state.shroud_unlocked:
+		var shield: Button = _button("Deactivate shield" if model.state.shroud_on else "Activate shield · 2 energy / second",_inventory_action.bind("shroud","systems"),popup_body)
+		shield.disabled = paused or model.state.flight_mode != "orbit" or (not model.state.shroud_on and model.state.energy < 2)
+	var repair: Button = _button("Field repair · 30 energy",_inventory_action.bind("repair","systems"),popup_body)
+	repair.disabled = paused or not model.repair_reason(_wreck_distance()).is_empty()
+	repair.tooltip_text = model.repair_reason(_wreck_distance())
 	_panel_copy("ARC LANCE  installed · 24 m · 10 energy/shot · 2 s recovery. Disables the orbital custodian without destroying it. Custodian hull: %d / 66." % model.state.guardian_hull)
 	for i: int in range(TOOLS.size()):
 		var id: String = TOOLS[i]
@@ -1574,3 +1685,68 @@ func _capture(delta: float) -> void:
 		sorted.sort()
 		print("Field rendered sample: p50=%.2f ms p95=%.2f ms; draw calls=%d; triangles=%d" % [sorted[sorted.size()/2],sorted[int(sorted.size()*0.95)],Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
 		get_tree().quit()
+
+func _build_service_ports() -> void:
+	for id: String in Model.services():
+		var port: Dictionary = Model.services()[id]
+		var parent: Node3D = orbit if port.mode == "orbit" else surface_root
+		var at: Vector3 = Model.service_position(id)
+		var pad := MeshInstance3D.new()
+		var mesh := TorusMesh.new()
+		mesh.inner_radius = 3.3
+		mesh.outer_radius = 3.7
+		mesh.rings = 48
+		mesh.ring_segments = 8
+		pad.mesh = mesh
+		pad.position = at-Vector3(0,2.5,0)
+		pad.material_override = _mat(Color("82d9c0"),true)
+		parent.add_child(pad)
+		var label := Label3D.new()
+		label.text = "RECHARGE / HOME PORT" if id == "basin_port" else "GUILD SERVICE TENDER"
+		label.position = at+Vector3(0,2,0)
+		label.font_size = 24
+		label.pixel_size = 0.015
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.modulate = Color("a2dec5")
+		parent.add_child(label)
+
+func _approach_service(id: String) -> void:
+	if paused or _inspection_open() or not Model.services().has(id): return
+	if Model.services()[id].mode != model.state.flight_mode: return
+	selected_service = id
+	if ship.position.distance_to(Model.service_position(id)) <= float(Model.services()[id].reach):
+		_show_popup("service")
+		return
+	var route: Array[Vector3] = FlightControls.landing_route(ship.position,Model.service_position(id),orbit.planet.position) if model.state.flight_mode == "orbit" else [Model.service_position(id)]
+	_navigate(route.pop_front())
+	service_waypoints = route
+	service_order = id
+	_toast("Approaching "+str(Model.services()[id].name))
+
+func _build_service_panel() -> void:
+	var port: Dictionary = Model.services()[selected_service]
+	_panel_copy(port.name,Instruments.PAPER)
+	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
+BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.state.marks],Instruments.GOLD)
+	var price: int = model.recharge_price(selected_service)
+	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
+	var reason: String = model.service_reason(selected_service,ship.position)
+	charge.disabled = paused or not reason.is_empty()
+	charge.tooltip_text = reason
+	var pack: Button = _button("Buy energy pack · %d Marks" % int(port.pack_price),_service_action.bind(true),popup_body)
+	reason = model.service_reason(selected_service,ship.position,true)
+	pack.disabled = paused or not reason.is_empty()
+	pack.tooltip_text = reason
+	_panel_copy("Pack restores 50 energy. %d remaining in this shop.
+Only consume what you need; excess energy is lost.
+
+Homeworld recharge is free. Portable packs are purchased supplies." % model.state.service_stock[selected_service])
+	_button("Undock",func() -> void: popup.hide(); audio.play("ui_close"),popup_body)
+
+func _service_action(purchase_pack: bool) -> void:
+	if paused: return
+	var error: String = model.buy_energy_pack(selected_service,ship.position) if purchase_pack else model.recharge(selected_service,ship.position)
+	_toast(error if not error.is_empty() else ("Reserve energy pack loaded" if purchase_pack else "Recharge complete · 100 energy"))
+	audio.play("error" if not error.is_empty() else "cargo")
+	if error.is_empty(): _save(false)
+	_show_popup("service")

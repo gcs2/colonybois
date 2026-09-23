@@ -1,5 +1,10 @@
 # Spore Space Stage GUI: forensic review
 
+## Superseding correction after user rejection
+
+Read [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md). The prior inference that a custom connected cockpit would satisfy the target was wrong. Source observations below remain useful; our independent radar/center-deck/console composition was rejected. Current baseline is close Spore Space Stage parity before optional divergence, with explicit user differences (Escape utilities, inventory pack use, no compulsory gopher grind). Reinspection identifies category → item → target, item-local counts, contextual communications and distinct shop/badge/cargo layouts as requirements, not decorative inspirations.
+
+
 23 September 2026. Research checkpoint, not a shipped interface redesign. This supersedes the earlier assumption that recolored buttons and generic drawers would establish the desired visual direction. Related work: V01–V04, V05, D01, P01 and I01 in [TASK_BOARD.md](TASK_BOARD.md).
 
 The code audit below describes atlas checkpoint `cfc1020`. Subsequent candidate implementation and rendered evidence are tracked separately in [FLIGHT_HUD_REVIEW.md](FLIGHT_HUD_REVIEW.md).

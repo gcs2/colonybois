@@ -46,7 +46,7 @@ func run() -> void:
 	check(model.state.energy < 80,"Shielding drains actual energy over time")
 	model.state.energy = 0
 	model.tick(40)
-	check(not model.state.shroud_on,"Shroud disengages when recharge cannot cover upkeep")
+	check(not model.state.shroud_on,"Shroud disengages when remaining energy cannot cover upkeep")
 	before = model.state.duplicate(true)
 	check(not model.repair(0).is_empty() and model.state == before,"Repair cannot be used inside the pulse field")
 	check(not model.repair(NAN).is_empty() and model.state == before,"Invalid ship position cannot bypass repair safety")
@@ -67,7 +67,9 @@ func run() -> void:
 	var restored := Model.new()
 	check(restored.load_from(path) == OK and restored.state == model.state,"Hull, shroud, repair timer and losses persist through save/load")
 	for i: int in range(20): restored.tick(40)
-	check(restored.repair(40).is_empty() and restored.state.hull == 70,"Recovered ship can recharge and repair without a softlock")
+	check(not restored.repair(40).is_empty(),"Waiting after defeat does not refill repair energy")
+	restored.recharge("orbit_tender",Model.service_position("orbit_tender"))
+	check(restored.repair(40).is_empty() and restored.state.hull == 70,"Docking supplies energy needed to repair after defeat")
 	var legacy: Dictionary = Model.fresh()
 	legacy.version = 3
 	for key: String in ["hull","shroud_unlocked","shroud_on","threat_clock","tow_count","last_repair_at"]: legacy.erase(key)
@@ -118,7 +120,8 @@ func run() -> void:
 	check(scene.model.state == before,"Paused ship controls cannot change hull, energy or equipment")
 	scene._toggle_pause()
 	scene._refresh_ui()
-	check(scene.hud.hull_bar.value == scene.model.state.hull and scene.hud.shroud_button.text == "SHROUD ON","Ship instruments reflect actual danger and defense state")
+	scene._update_visuals()
+	check(scene.hud.hull_bar.value == scene.model.state.hull and scene.model.state.shroud_on and scene.shroud_ring.visible,"Ship instruments reflect actual danger and defense state")
 	scene.queue_free()
 	await process_frame
 	print("Orbital threat checks: %d, failures: %d" % [checks,failures])

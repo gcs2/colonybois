@@ -80,7 +80,7 @@ func run() -> void:
 	scene.model.state.samples = 1
 	scene.model.state.produce = 4
 	scene._refresh_ui()
-	check("Cradle 1/2" in scene.stats.text,"HUD does not count remote produce as onboard cargo")
+	check("Cargo 1/2" in scene.stats.text,"HUD does not count remote produce as onboard cargo")
 	scene._show_popup("cargo")
 	check("1 / 2" in scene.cargo_quantity.text,"Onboard inventory reflects real cradle occupancy")
 	var time_before: int = scene.model.state.time

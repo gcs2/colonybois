@@ -1,5 +1,10 @@
 # Flight instrument implementation review
 
+## Superseding user review: rejected
+
+The user rejected both rounded-panel and custom angular cockpit candidates. Rendered checks below are historical implementation evidence, not approval. Read [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md). Current functional correction removes the footer, uses Escape for utilities, uses inventory for energy packs, explains shield controls in Equipment and separates weapon selection from attacking. The cockpit artwork is still temporary; a new visual direction must follow Spore state/reference analysis.
+
+
 23 September 2026. Candidate implementation following [Spore GUI forensics](SPORE_GUI_FORENSICS.md). This is an engine-rendered interface pass, not an approved AAA result. Ship, planet and terrain assets are unchanged.
 
 ## Implemented

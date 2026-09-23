@@ -1,5 +1,10 @@
 # Roadmap and playtest gates
 
+## Active ordering: reference fidelity → connected loop → content epic
+
+Follow [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md) after the latest HUD rejection. The user wants Space Stage parity before discretionary redesign. Then prove the connected loop and subsystem integration in [CORE_LOOP_AND_CONTENT_EPIC.md](CORE_LOOP_AND_CONTENT_EPIC.md); the next epic fills out content, synergies and story on that foundation. Full parity remains the overall success criterion. Older city-first ordering below is historical.
+
+
 **Playable field checkpoint (2026-09-23):** [Morrow Basin](FIELD_ENCOUNTER.md) implements the bounded personal ship/tool encounter, four original candidate GLBs, ecological growth, a finite local trade order and persistent journal. Native input/fun review and human art approval remain open; the first-person combat/controller test is still separate future work. Review this slice before widening the economy.
 
 **Superseding direction:** Follow [SPACE_FIRST_DIRECTION.md](SPACE_FIRST_DIRECTION.md). First validate a bounded flight/controller/renderer test and an authored planet/scout art pilot, then a three-world exploration and supply-chain loop, expressive diplomacy and durable historical events. Cities support that loop. The urban-first ordering below is historical/deferred; it is not a prerequisite for the space game. Do not migrate engines or rewrite presentation without a measured pilot.

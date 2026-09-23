@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs><linearGradient id="cell"><stop stop-color="#f6da83"/><stop offset="1" stop-color="#997130"/></linearGradient></defs>
+<path d="M24 5H40V12H48L53 19V52L46 59H18L11 52V19L18 12H24Z" fill="#253e4b" stroke="#95c6c3" stroke-width="2"/>
+<path d="M19 21H45V49H19Z" fill="url(#cell)"/>
+<path d="M34 23L24 37H31L28 48L41 32H33Z" fill="#243443"/>
+<path d="M25 7H39M20 54H44" stroke="#e5eadb" stroke-width="3"/>
+</svg>

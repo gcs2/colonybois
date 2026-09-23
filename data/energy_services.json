@@ -1,0 +1,4 @@
+{
+  "basin_port": {"name":"Basin home port", "planet":"morrow", "mode":"surface", "position":[0,5,12], "reach":8.0, "marks_per_energy":0.45, "pack_price":24, "pack_stock":4},
+  "orbit_tender": {"name":"Guild service tender", "planet":"morrow", "mode":"orbit", "position":[-32,8,28], "reach":8.0, "marks_per_energy":0.75, "pack_price":38, "pack_stock":2}
+}

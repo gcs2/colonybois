@@ -16,6 +16,7 @@ var destination := Vector2.ZERO
 var planet_at := Vector2.ZERO
 var wreck_at := Vector2.ZERO
 var wreck_known: bool = false
+var service_at := Vector2.ZERO
 var guardian_at := Vector2.ZERO
 var guardian_known: bool = false
 var guardian_disabled: bool = false
@@ -34,6 +35,7 @@ func set_terrain(height_at: Callable) -> void:
 			var h: float = height_at.call((float(x)/95*2-1)*FIELD_RADIUS,(float(y)/95*2-1)*FIELD_RADIUS)
 			var color: Color = Color("202d39").lerp(Color("6c7770"),clampf((h+3)/8,0,1))
 			if fposmod(h,0.75) < 0.08: color = color.lightened(0.15)
+			if Vector2(x-47.5,y-47.5).length() > 47.0: color.a = 0
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
@@ -53,7 +55,10 @@ func unproject(at: Vector2) -> Vector2:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
-		if locked or not chart_rect().has_point(event.position): return
+		if locked or event.position.distance_to(size*0.5) > size.x*0.5-6: return
+		if event.position.distance_to(project(service_at)) < 9:
+			target_requested.emit("service")
+			return
 		if orbital:
 			var wreck_gap: float = event.position.distance_to(project(wreck_at)) if wreck_known else INF
 			var guardian_gap: float = event.position.distance_to(project(guardian_at)) if guardian_known else INF
@@ -72,7 +77,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	var rect: Rect2 = chart_rect()
-	draw_style_box(_background(),Rect2(Vector2.ZERO,size))
+	draw_circle(size*0.5,size.x*0.5-5,Color("0d202b"))
 	if not orbital and terrain != null: draw_texture_rect(terrain,rect,false)
 	else:
 		draw_circle(project(planet_at),19,Color("69639b"))
@@ -87,11 +92,11 @@ func _draw() -> void:
 			var skiff_color := Color("818793") if guardian_disabled else (Color("ef897f") if guardian_alert >= 3 else Color("eab77e"))
 			draw_arc(skiff,7,0,TAU,24,skiff_color,2,true)
 			draw_circle(skiff,3,skiff_color)
-	for i: int in range(1,4):
-		var x: float = rect.position.x+rect.size.x*i/4
-		var y: float = rect.position.y+rect.size.y*i/4
-		draw_line(Vector2(x,rect.position.y),Vector2(x,rect.end.y),Color(0.7,0.8,0.8,0.12))
-		draw_line(Vector2(rect.position.x,y),Vector2(rect.end.x,y),Color(0.7,0.8,0.8,0.12))
+	var center: Vector2 = size*0.5
+	var radius: float = size.x*0.5-7
+	for ring: float in [0.33,0.66,1.0]: draw_arc(center,radius*ring,0,TAU,64,Color(0.45,0.77,0.78,0.16),1,true)
+	draw_line(center-Vector2(radius,0),center+Vector2(radius,0),Color(0.45,0.77,0.78,0.16))
+	draw_line(center-Vector2(0,radius),center+Vector2(0,radius),Color(0.45,0.77,0.78,0.16))
 	if not orbital:
 		for id: String in points:
 			var p: Vector2 = project(points[id])
@@ -100,16 +105,12 @@ func _draw() -> void:
 			if id == selected: draw_arc(p,8,0,TAU,24,Color("f8cf77"),1.5,true)
 			draw_circle(p,3,color)
 			if not known: draw_circle(p,1.5,Color("27313b"))
+	var port: Vector2 = project(service_at)
+	draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
 	var pos: Vector2 = project(ship_at)
 	pos = pos.clamp(rect.position+Vector2(5,5),rect.end-Vector2(5,5))
 	if navigating: draw_line(pos,project(destination).clamp(rect.position,rect.end),Color("f0c972"),1.5,true)
 	var arrow := PackedVector2Array()
 	for p: Vector2 in [Vector2(0,-7),Vector2(5,5),Vector2(0,2),Vector2(-5,5)]: arrow.append(pos+p.rotated(heading))
 	draw_colored_polygon(arrow,Color("fff1cd"))
-	draw_string(ThemeDB.fallback_font,Vector2(size.x-20,20),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("c1c9cf"))
-
-func _background() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("0e1724")
-	style.set_corner_radius_all(12)
-	return style
+	draw_string(ThemeDB.fallback_font,Vector2(size.x*0.5-4,17),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("c1c9cf"))

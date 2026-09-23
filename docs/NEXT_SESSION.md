@@ -1,5 +1,23 @@
 # Resume here
 
+Current package: `build/versions/20260923-114317` via Play.cmd. Full suite: **502 assertions plus UI checks passed**; final frame removal also passed the 30 HUD checks. Exported-pack smoke passed. Rendered inspection is not native playtest or art approval. Verify the source checkpoint remote hash before unrelated work. The multistate review camera is explicitly settled after scripted orbit transition (normal processing is disabled in the capture); final captures show the ship and planet.
+
+## Latest checkpoint: rejected cockpit, interaction corrections
+
+The user rejected the custom cockpit screenshot and reiterated **Spore Space Stage parity first**. Read [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md). Do not continue reskinning the current radar/center-deck/console as if its visual direction were approved. Next: annotated reference-to-project state boards and the remaining category/input audit, then a faithful original interface kit. Current changes only correct explicit interaction problems.
+
+Escape opens a modal utility menu (resume/save/load/chronicle/controls/audio/title); the bottom bar is gone. Inventory contains a usable energy-pack item; no HUD recharge/pack/shroud/repair buttons. Shield controls are explained in Equipment. Weapon selection no longer orders an attack; select, then click the target. Cargo capacity is labeled and separated from the weapon. Planet map and Communicate replace Atlas/Contact labels. Full Spore-like palettes and character service UI remain missing.
+
+[ENERGY_ECONOMY.md](ENERGY_ECONOMY.md): no passive recharge, finite packs and shop stock, provider quotes, free homeworld. Both live docks are on Morrow (homeworld), so foreign prices are model-tested only. Flight/sector integration is still absent. Current console artwork, simple ships, service rings and generic drawers remain placeholders/rejected, not final art.
+
+[SPORE_BADGE_PARITY.md](SPORE_BADGE_PARITY.md) inventories 30 families, alternate shop paths, ranks, achievement distinctions and unresolved source contradictions. Badge-gated shops are not implemented. [CORE_LOOP_AND_CONTENT_EPIC.md](CORE_LOOP_AND_CONTENT_EPIC.md) records all subsystem responsibilities and the user's next epic; core-loop alignment and presentation review must precede broad content production. Continue full feature parity after proving the foundation. Do not mark the active goal complete.
+
+
+## Latest additive content steering
+
+Read [RESOURCE_AND_UNLOCK_DIRECTION.md](RESOURCE_AND_UNLOCK_DIRECTION.md): visible mines, farms, biological/material/cultural goods, expensive worthwhile investments, abundant normal items without modifiers and scarce exceptional traits. User schedules this as potentially post-MVP. Badges/achievements must unlock technologies and purchasable shop stock through meaningful varied accomplishments. Continue the active finite-energy and rejected-HUD corrections first.
+
+
 ## Latest user direction: finite energy and keep moving
 
 The user accepts the current visual pass as good enough to move on; do not keep polishing one task unless pressing. Energy must NOT passively regenerate. Recharge through consumable energy packs or shop service with variable costs; the homeworld is always free. This supersedes the prototype reactor trickle and recharge-based recovery. Implement real commands/costs/access/UI and preserve recoverability without making remote expeditions free.
@@ -103,3 +121,5 @@ Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates 
 Current code verification: 353 assertions plus UI checks. Camera/effects adds 21 presentation assertions, including manual input overriding approach/ascent. Tests are in tools/Test.ps1. The forensic checkpoint was documentation-only; the subsequent HUD implementation adds the 19 interaction checks. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. Use build/current.txt for the latest completed package; the earlier atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.
+
+The rejected cockpit SVG is preserved only under ignored artifacts. Production uses neutral readability backing pending the reviewed art kit; this is not a replacement art direction.

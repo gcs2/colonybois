@@ -5,8 +5,8 @@ func _initialize() -> void: call_deferred("run")
 func capture(scene: Node, name: String) -> void:
 	scene._refresh_ui()
 	scene._update_visuals()
-	await process_frame
-	await process_frame
+	# Allow the renderer to settle; scripted transitions update their paused camera explicitly.
+	for frame: int in range(30): await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://artifacts/flight_ui_"+name+".png")
 
@@ -35,6 +35,8 @@ func run() -> void:
 	scene._activate_selected()
 	await capture(scene,"approach")
 	scene._stop()
+	scene.model.state.energy_packs = 1
+	scene.model.state.energy = 30
 	scene._show_popup("cargo")
 	await capture(scene,"cargo")
 	scene._show_popup("systems")
@@ -46,6 +48,7 @@ func run() -> void:
 	await capture(scene,"atlas_uncharted")
 	scene.planet_map.hide()
 	scene._change_flight_mode("orbit")
+	scene._update_camera(1)
 	await capture(scene,"orbit_hud")
 	scene.model.start_survey()
 	for i: int in range(12): scene.model.tick()
@@ -53,5 +56,8 @@ func run() -> void:
 	await capture(scene,"atlas_charted")
 	scene.planet_map.set_layer(true)
 	await capture(scene,"atlas_coverage")
+	scene.planet_map.hide()
+	scene._escape_menu()
+	await capture(scene,"escape_menu_720")
 	scene.free()
 	quit()

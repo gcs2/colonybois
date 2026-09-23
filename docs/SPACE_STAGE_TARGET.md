@@ -1,5 +1,10 @@
 # Space Stage successor: complete target and evidence
 
+## Latest correction: parity before liberties
+
+The user explicitly rejected the custom cockpit and ambiguous labels. [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md) is the active UI contract; [SPORE_BADGE_PARITY.md](SPORE_BADGE_PARITY.md) records progression research. Every base Space Stage feature must be accounted for before claiming success; user-requested exceptions are explicit. Additional content/synergies/story form the next epic after connected core-loop and presentation alignment: [CORE_LOOP_AND_CONTENT_EPIC.md](CORE_LOOP_AND_CONTENT_EPIC.md). Neither gate has passed.
+
+
 Updated 23 September 2026. The active user goal is feature breadth comparable to **all of Spore's Space Stage**, with original art, more satisfying flight and richer trade. A single encounter is not completion. These rows are implementation families, not a claim that every individual Spore tool has already been inventoried. The tool-by-tool, mission-by-mission and upgrade-by-upgrade inventory remains required before a parity audit can pass. Previous small-MVP exclusions describe production order, not the final goal.
 
 ## Latest playtest changes our priorities

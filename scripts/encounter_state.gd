@@ -1,6 +1,6 @@
 extends RefCounted
 ## Independent encounter snapshot. No changes to campaign economy or save slots.
-const VERSION := 5
+const VERSION := 6
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const TARGETS := ["pod", "grazer", "bed", "relay"]
@@ -19,7 +19,71 @@ const LANCE_RANGE := 24.0
 const LANCE_ENERGY := 10.0
 const LANCE_DAMAGE := 22.0
 const LANCE_COOLDOWN := 2
+const PACK_ENERGY := 50.0
+const PACK_CAPACITY := 3
+const PACK_COOLDOWN := 8
+static var service_catalog: Dictionary = {}
 var state: Dictionary = fresh()
+
+static func services() -> Dictionary:
+	if service_catalog.is_empty(): service_catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/energy_services.json"))
+	return service_catalog.duplicate(true)
+
+static func service_position(id: String) -> Vector3:
+	var at: Array = services()[id].position
+	return Vector3(at[0],at[1],at[2])
+
+func recharge_price(id: String) -> int:
+	if not services().has(id): return -1
+	if state.planet_id == state.homeworld_id: return 0
+	return int(ceil((100.0-float(state.energy))*float(services()[id].marks_per_energy)))
+
+func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> String:
+	if not services().has(id): return "Unknown service provider."
+	var port: Dictionary = services()[id]
+	if state.planet_id != port.planet or state.flight_mode != port.mode: return "Travel to %s first." % port.name
+	if not at.is_finite() or at.distance_to(service_position(id)) > float(port.reach): return "Approach %s to dock." % port.name
+	if purchase_pack:
+		if state.energy_packs >= PACK_CAPACITY: return "Energy-pack storage full (3)."
+		if state.service_stock[id] <= 0: return "This shop has sold its remaining energy packs."
+		if state.marks < int(port.pack_price): return "Need %d Marks for an energy pack." % int(port.pack_price)
+	else:
+		if state.energy >= 100: return "Energy is already full."
+		if state.marks < recharge_price(id): return "Recharge costs %d Marks." % recharge_price(id)
+	return ""
+
+func recharge(id: String, at: Vector3) -> String:
+	var error: String = service_reason(id,at)
+	if not error.is_empty(): return error
+	var cost: int = recharge_price(id)
+	state.marks -= cost
+	state.energy = 100.0
+	note("first_recharge","Docked for a recharge. Homeworld service is free; away from home, shops set their own rates.")
+	return ""
+
+func buy_energy_pack(id: String, at: Vector3) -> String:
+	var error: String = service_reason(id,at,true)
+	if not error.is_empty(): return error
+	state.marks -= int(services()[id].pack_price)
+	state.service_stock[id] -= 1
+	state.energy_packs += 1
+	return ""
+
+func pack_reason() -> String:
+	if state.energy_packs <= 0: return "No energy packs aboard. Dock at a shop to buy one."
+	if state.energy >= 100: return "Energy is already full."
+	if state.time < state.pack_ready_at: return "Pack coupling cooling down."
+	return ""
+
+func use_energy_pack() -> String:
+	var error: String = pack_reason()
+	if not error.is_empty(): return error
+	state.energy_packs -= 1
+	state.energy = minf(100,float(state.energy)+PACK_ENERGY)
+	state.pack_ready_at = state.time+PACK_COOLDOWN
+	note("first_energy_pack","Consumed a reserve pack to restore ship energy away from a recharge dock.")
+	return ""
+
 
 static func fresh() -> Dictionary:
 	return {"version":VERSION, "time":0, "scanned":[], "samples":0, "native_stock":3,
@@ -32,7 +96,8 @@ static func fresh() -> Dictionary:
 		"guardian_x":GUARDIAN_HOME.x, "guardian_z":GUARDIAN_HOME.z,
 		"guardian_hull":66.0, "guardian_alert":0, "guardian_ready_at":0,
 		"guardian_disabled":false, "guardian_shots":0,
-		"weapon_ready_at":0, "weapon_shots":0}
+		"weapon_ready_at":0, "weapon_shots":0, "homeworld_id":"morrow",
+		"energy_packs":0, "pack_ready_at":0, "service_stock":{"basin_port":4,"orbit_tender":2}}
 
 func guardian_position() -> Vector3:
 	return Vector3(float(state.guardian_x),GUARDIAN_HOME.y,float(state.guardian_z))
@@ -185,7 +250,7 @@ func reason(action: String, target: String, distance: float) -> String:
 		if not state.warm: return "Warm the bed before planting."
 		if state.seeded: return "Already planted. Watch the canopy develop."
 	if state.samples < Equipment.samples(action): return "Collect a seed pod first."
-	if state.energy < Equipment.energy(action): return "Need %s energy. The ship recharges while you explore." % Equipment.amount(Equipment.energy(action))
+	if state.energy < Equipment.energy(action): return "Need %s energy. Use an energy pack or dock for recharge." % Equipment.amount(Equipment.energy(action))
 	return ""
 
 func act(action: String, target: String, distance: float) -> String:
@@ -211,7 +276,6 @@ func act(action: String, target: String, distance: float) -> String:
 
 func tick(threat_distance: float = INF) -> String:
 	state.time += 1
-	state.energy = minf(100.0,float(state.energy)+1.5)
 	if state.survey_active and state.flight_mode == "orbit":
 		state.survey_ticks += 1
 		if state.survey_ticks >= int(Geography.definition().survey_seconds):
@@ -297,7 +361,7 @@ func load_from(path: String) -> Error:
 		value.tow_count = 0
 		value.last_repair_at = -REPAIR_COOLDOWN
 	if value.get("version") == 4:
-		value.version = VERSION
+		value.version = 5
 		value.guardian_x = GUARDIAN_HOME.x
 		value.guardian_z = GUARDIAN_HOME.z
 		value.guardian_hull = 66.0
@@ -307,6 +371,12 @@ func load_from(path: String) -> Error:
 		value.guardian_shots = 0
 		value.weapon_ready_at = 0
 		value.weapon_shots = 0
+	if value.get("version") == 5:
+		value.version = VERSION
+		value.homeworld_id = "morrow"
+		value.energy_packs = 0
+		value.pack_ready_at = 0
+		value.service_stock = {"basin_port":4,"orbit_tender":2}
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -315,6 +385,14 @@ func load_from(path: String) -> Error:
 		elif typeof(defaults[key]) != typeof(value[key]): return ERR_INVALID_DATA
 	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3: return ERR_INVALID_DATA
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
+	if value.homeworld_id.is_empty() or value.homeworld_id.length() > 64: return ERR_INVALID_DATA
+	if value.energy_packs < 0 or value.energy_packs > PACK_CAPACITY or value.pack_ready_at < 0 or value.pack_ready_at > value.time+PACK_COOLDOWN: return ERR_INVALID_DATA
+	if value.service_stock.size() != services().size(): return ERR_INVALID_DATA
+	for id: String in services():
+		if not value.service_stock.has(id): return ERR_INVALID_DATA
+		var stock: Variant = value.service_stock[id]
+		if not (stock is int or stock is float) or not is_finite(float(stock)) or stock != floorf(stock) or stock < 0 or stock > int(services()[id].pack_stock): return ERR_INVALID_DATA
+		value.service_stock[id] = int(stock)
 	if value.energy < 0 or value.energy > 100 or value.time < 0 or value.marks < 0: return ERR_INVALID_DATA
 	if value.hull <= 0 or value.hull > 100 or value.threat_clock < 0 or value.threat_clock >= 6 or value.tow_count < 0: return ERR_INVALID_DATA
 	if value.last_repair_at > value.time or value.last_repair_at < -REPAIR_COOLDOWN: return ERR_INVALID_DATA
