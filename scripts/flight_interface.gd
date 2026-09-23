@@ -38,8 +38,9 @@ static func instrument(button: Button, id: String, tint: Color, selected: bool =
 	button.add_theme_stylebox_override("hover",box(tint,true))
 	button.add_theme_stylebox_override("pressed",box(tint.darkened(0.15),true))
 	button.add_theme_color_override("font_color",PAPER if selected else tint.lightened(0.2))
-	button.add_theme_color_override("icon_normal_color",tint)
-	button.add_theme_color_override("icon_hover_color",tint.lightened(0.2))
+	var authored: bool = id in TOOL_NAMES
+	button.add_theme_color_override("icon_normal_color",Color.WHITE if authored else tint)
+	button.add_theme_color_override("icon_hover_color",Color.WHITE if authored else tint.lightened(0.2))
 	button.add_theme_constant_override("h_separation",10)
 	button.add_theme_constant_override("icon_max_width",26)
 	button.expand_icon = true

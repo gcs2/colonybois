@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g fill="none" stroke="#fff4e0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="21"/><circle cx="32" cy="32" r="11"/><path d="M32 5v10M32 49v10M5 32h10M49 32h10M32 32l17-17"/><circle cx="32" cy="32" r="3" fill="#fff4e0"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+<defs><linearGradient id="shell" x2=".5" y2="1"><stop stop-color="#fff6df"/><stop offset=".45" stop-color="#c8d7c6"/><stop offset="1" stop-color="#617879"/></linearGradient><radialGradient id="lens" cx=".35" cy=".3"><stop stop-color="#edfff1"/><stop offset=".35" stop-color="#8fcdaa"/><stop offset="1" stop-color="#264b54"/></radialGradient></defs>
+<path d="M35 59H62L67 86H29Z" fill="url(#shell)" stroke="#1c303b" stroke-width="3"/>
+<ellipse cx="48" cy="82" rx="24" ry="7" fill="#657c79" stroke="#213844" stroke-width="3"/>
+<circle cx="48" cy="39" r="32" fill="url(#shell)" stroke="#233441" stroke-width="3"/>
+<circle cx="48" cy="39" r="24" fill="url(#lens)" stroke="#435d62" stroke-width="3"/>
+<path d="M27 41H69M48 17V61M33 24L65 54" stroke="#caefcc" opacity=".45" stroke-width="1.5"/>
+<path d="M48 39L66 23" stroke="#edffce" stroke-width="4" stroke-linecap="round"/>
+<circle cx="48" cy="39" r="5" fill="#fff7c9"/><path d="M30 18Q45 7 60 17" fill="none" stroke="#fffbea" stroke-width="3" stroke-linecap="round"/>
+</svg>

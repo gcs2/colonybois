@@ -1,0 +1,32 @@
+{
+  "id": "flight_instruments_v1",
+  "status": "implemented candidate; human visual and native-input approval pending",
+  "direction": "Original creepy-cute expedition instruments, warm ceramic-metal housings, plum recesses, ivory labels and distinct colored tools. No extracted Spore assets.",
+  "composition": {
+    "design_canvas": [1600, 900],
+    "review_windows": [[1440, 810], [1280, 720]],
+    "navigation": [20, 605, 342, 248],
+    "target_feedback": [384, 750, 533, 103],
+    "equipment_and_ship": [938, 655, 642, 198],
+    "secondary_rail_y": 858
+  },
+  "assets": [
+    {"source":"assets/ui/flight/housing.svg","size":[128,128],"use":"Nine-slice instrument shell, 28-pixel protected corners. Raised warm edge, recessed interior, small fasteners."},
+    {"source":"assets/ui/flight/scan.svg","size":[96,96],"use":"Mint optical scanner lens on a pedestal; sweep, center lens and metallic rim read at 42 pixels."},
+    {"source":"assets/ui/flight/collect.svg","size":[96,96],"use":"Apricot tractor emitter, translucent beam and physical cargo capsule."},
+    {"source":"assets/ui/flight/warm.svg","size":[96,96],"use":"Gold thermal array with three heat paths above an emitter."},
+    {"source":"assets/ui/flight/seed.svg","size":[96,96],"use":"Violet alien specimen over a deployment cradle; avoid a generic leaf glyph."}
+  ],
+  "runtime_contract": {
+    "chart": "Sample 96x96 height pixels once from the surface terrain function. Redraw bounded markers at HUD update frequency. No second simulation or per-agent radar scan.",
+    "palettes": "Survey, Cargo, Environment. Category browsing preserves active equipment and orders. Equipping cancels the previous operation. Numeric shortcuts reveal the selected category.",
+    "states": ["available", "hover", "selected", "unavailable in orbit", "insufficient resources", "approaching", "operating", "complete", "cancelled"],
+    "ownership": "HUD emits commands. The encounter validates them. Full inspection pauses the local simulation; category browsing remains live."
+  },
+  "review": {
+    "capture_script": "tests/review_flight_interface.gd",
+    "interaction_tests": "tests/test_flight_hud.gd",
+    "output_pattern": "artifacts/flight_ui_*.png",
+    "known_gaps": ["unapproved overall art direction", "no authored ship portrait", "no advanced subsystem mechanics", "no planetary-condition instrument toggle yet", "limited motion treatment", "rejected audio bank still requires replacement", "no semantic zoom or unified sector state"]
+  }
+}

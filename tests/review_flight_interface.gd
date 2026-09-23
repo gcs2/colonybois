@@ -4,6 +4,7 @@ func _initialize() -> void: call_deferred("run")
 
 func capture(scene: Node, name: String) -> void:
 	scene._refresh_ui()
+	scene._update_visuals()
 	await process_frame
 	await process_frame
 	await RenderingServer.frame_post_draw
@@ -21,6 +22,19 @@ func run() -> void:
 	scene.model.act("collect","pod",4)
 	scene._refresh_ui()
 	await capture(scene,"hud")
+	scene.hud.category_buttons.Environment.pressed.emit()
+	await capture(scene,"palette")
+	scene._select_tool("warm")
+	scene.model.state.scanned.append("bed")
+	scene.model.state.energy = 10
+	scene.selected = "bed"
+	await capture(scene,"shortage")
+	scene.model.state.energy = 100
+	scene._select_tool("scan")
+	scene.selected = "relay"
+	scene._activate_selected()
+	await capture(scene,"approach")
+	scene._stop()
 	scene._show_popup("cargo")
 	await capture(scene,"cargo")
 	scene._show_popup("systems")
@@ -32,6 +46,7 @@ func run() -> void:
 	await capture(scene,"atlas_uncharted")
 	scene.planet_map.hide()
 	scene._change_flight_mode("orbit")
+	await capture(scene,"orbit_hud")
 	scene.model.start_survey()
 	for i: int in range(12): scene.model.tick()
 	scene._toggle_planet_map()

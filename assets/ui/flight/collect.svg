@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g fill="none" stroke="#fff4e0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h28l7 10H11zM20 26l-7 25M44 26l7 25M32 27v15"/><path d="M22 47l10-6 10 6v10H22z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+<defs><linearGradient id="metal" x2=".3" y2="1"><stop stop-color="#fff1cc"/><stop offset=".5" stop-color="#c79a70"/><stop offset="1" stop-color="#695366"/></linearGradient><linearGradient id="beam" x2="0" y2="1"><stop stop-color="#eac596" stop-opacity=".85"/><stop offset="1" stop-color="#eac596" stop-opacity="0"/></linearGradient></defs>
+<path d="M36 30H60L78 82H18Z" fill="url(#beam)"/>
+<path d="M25 17Q48 4 71 17L80 34Q48 48 16 34Z" fill="url(#metal)" stroke="#332a40" stroke-width="3"/>
+<ellipse cx="48" cy="34" rx="25" ry="8" fill="#5a4a5c"/><ellipse cx="48" cy="35" rx="17" ry="4" fill="#ffe6ba"/>
+<path d="M29 23Q48 15 67 23" fill="none" stroke="#fff4d4" stroke-width="4" stroke-linecap="round"/>
+<path d="M32 69L48 59L65 69V85L48 93L32 85Z" fill="url(#metal)" stroke="#332a40" stroke-width="3"/>
+<path d="M32 69L48 78L65 69M48 78V91" fill="none" stroke="#775868" stroke-width="2"/>
+<path d="M23 48L18 60M73 48L78 60" stroke="#f8d09b" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -10,6 +10,7 @@ const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
+const FlightHUD = preload("res://scripts/flight_hud.gd")
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
 const COLORS: Array[Color] = Instruments.TOOL_COLORS
@@ -85,6 +86,9 @@ var cargo_quantity: Label
 var system_energy: ProgressBar
 var system_buttons: Dictionary = {}
 var planet_map: PanelContainer
+var hud: Control
+var operation_feedback: String = ""
+var operation_feedback_until: float = 0.0
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -386,87 +390,38 @@ func _make_ui() -> void:
 	theme.default_font = font
 	theme.default_font_size = 16
 	root.theme = theme
-	var top: VBoxContainer = _panel(root,Rect2(24,24,365,105))
-	location_label = _label("MORROW / SURFACE",22)
-	top.add_child(location_label)
-	stats = _label("",14,Instruments.MUTED)
-	top.add_child(stats)
-	var right := HBoxContainer.new()
-	right.position = Vector2(715,24)
-	right.add_theme_constant_override("separation",6)
-	root.add_child(right)
-	var cargo_button: Button = _button("Cargo",_show_popup.bind("cargo"),right,"ui_open")
-	Instruments.instrument(cargo_button,"cargo",Instruments.CARGO)
-	cargo_button.tooltip_text = "Inventory [I] · onboard samples and remote storage"
-	var systems_button: Button = _button("Systems",_show_popup.bind("systems"),right,"ui_open")
-	Instruments.instrument(systems_button,"systems",Instruments.GOLD)
-	systems_button.tooltip_text = "Ship equipment [K] · inspect and select a tool"
-	Instruments.instrument(_button("Comms",_show_popup.bind("contact"),right,"ui_open"),"comms",Instruments.COMMS)
-	Instruments.instrument(_button("Log",_show_popup.bind("journal"),right,"ui_open"),"log",Instruments.NAV)
-	_button("Controls",_show_popup.bind("controls"),right,"ui_open")
-	_button("Audio",_show_popup.bind("audio"),right,"ui_open")
-	pause_button = _button("Pause",_toggle_pause,right)
-	_button("Menu",_exit_encounter,right)
-	var card: VBoxContainer = _panel(root,Rect2(24,145,320,110))
-	card.add_child(_label("FLIGHT ASSIST",12,Instruments.GOLD))
-	objective = _label("",17)
-	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	objective.custom_minimum_size.x = 280
-	card.add_child(objective)
-	var instruments: VBoxContainer = _panel(root,Rect2(24,716,320,160))
-	flight_readout = _label("",18)
-	instruments.add_child(flight_readout)
-	energy_bar = ProgressBar.new()
-	energy_bar.custom_minimum_size.y = 8
-	energy_bar.show_percentage = false
-	energy_bar.tooltip_text = "Ship energy"
-	Instruments.meter(energy_bar,Instruments.GOLD)
-	instruments.add_child(energy_bar)
-	var flight_row := HBoxContainer.new()
-	instruments.add_child(flight_row)
-	var rise: Button = _button("Ascend",func() -> void: pass,flight_row)
-	rise.button_down.connect(func() -> void: vertical_button = 1; altitude_order = -1)
-	rise.button_up.connect(func() -> void: vertical_button = 0)
-	var lower: Button = _button("Descend",func() -> void: pass,flight_row)
-	lower.button_down.connect(func() -> void: vertical_button = -1; altitude_order = -1)
-	lower.button_up.connect(func() -> void: vertical_button = 0)
-	_button("Stop",_stop,flight_row,"")
-	var footer: VBoxContainer = _panel(root,Rect2(370,732,840,144))
-	var tools_row := HBoxContainer.new()
-	tools_row.add_theme_constant_override("separation",8)
-	footer.add_child(tools_row)
-	for i: int in range(TOOLS.size()):
-		var names: Array[String] = ["Scan","Tractor","Thermal","Deploy"]
-		var button: Button = _button(str(i+1)+"  "+names[i],_select_tool.bind(TOOLS[i]),tools_row,"")
-		button.tooltip_text = Instruments.TOOL_HINTS[TOOLS[i]]
-		button.custom_minimum_size.y = 54
-		Instruments.instrument(button,TOOLS[i],COLORS[i])
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		toolbar.append(button)
-	use_button = _button("Use",_activate_selected,tools_row)
-	subject = _label("",17)
-	footer.add_child(subject)
-	explanation = _label("",13,Instruments.MUTED)
-	footer.add_child(explanation)
-	progress_bar = ProgressBar.new()
-	progress_bar.custom_minimum_size.y = 4
-	progress_bar.show_percentage = false
-	progress_bar.max_value = 1
-	Instruments.meter(progress_bar,COLORS[0])
-	footer.add_child(progress_bar)
-	var nav: VBoxContainer = _panel(root,Rect2(1235,714,340,162))
-	departure_button = _button("Leave atmosphere",_departure,nav)
-	Instruments.instrument(departure_button,"systems",Instruments.NAV)
-	Instruments.instrument(_button("Planet atlas  [M]",_toggle_planet_map,nav,"ui_open"),"scan",Instruments.NAV)
+	hud = FlightHUD.new()
+	root.add_child(hud)
+	location_label = hud.location_label
+	stats = hud.stats
+	objective = hud.objective
+	subject = hud.subject
+	explanation = hud.explanation
+	flight_readout = hud.flight_readout
+	energy_bar = hud.energy_bar
+	progress_bar = hud.progress_bar
+	pause_button = hud.pause_button
+	departure_button = hud.departure_button
+	use_button = hud.use_button
+	toolbar = hud.toolbar
+	hud.action_requested.connect(_hud_action)
+	hud.tool_requested.connect(_select_tool)
+	hud.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
+	hud.altitude_requested.connect(func(direction: float) -> void: vertical_button = direction; altitude_order = -1)
+	hud.navigation.set_terrain(terrain_height)
+	hud.navigation.destination_requested.connect(_chart_navigate)
+	hud.navigation.target_requested.connect(_command_target)
+	hud.navigation.landing_requested.connect(func() -> void:
+		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",18,Color("ffe0a8"))
-	status.position = Vector2(435,655)
-	status.size = Vector2(730,58)
+	status.position = Vector2(390,676)
+	status.size = Vector2(530,58)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(status)
 	guide_caption = _label("",16,Color("b7d2e0"))
-	guide_caption.position = Vector2(370,620)
-	guide_caption.size = Vector2(655,58)
+	guide_caption.position = Vector2(390,605)
+	guide_caption.size = Vector2(530,58)
 	guide_caption.add_theme_color_override("font_outline_color",Color("09131f"))
 	guide_caption.add_theme_constant_override("outline_size",5)
 	guide_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -476,6 +431,8 @@ func _make_ui() -> void:
 	root.add_child(guide_arrow)
 	for id: String in targets:
 		var label: Label = _label(TITLES[id],13,Color("e3e9de"))
+		label.add_theme_color_override("font_outline_color",Color("191724"))
+		label.add_theme_constant_override("outline_size",3)
 		labels[id] = label
 		root.add_child(label)
 	popup = PanelContainer.new()
@@ -598,7 +555,7 @@ func _update_visuals() -> void:
 	navigation_marker.position = destination-Vector3(0,0.8,0)
 	guide_arrow.visible = not paused and not _inspection_open()
 	if orbital:
-		guide_arrow.position = Vector2(1390,674)
+		guide_arrow.position = Vector2(1400,615)
 		ring.visible = false
 		for label: Label in labels.values(): label.visible = false
 		return
@@ -607,7 +564,7 @@ func _update_visuals() -> void:
 		var projected: Vector2 = camera.unproject_position(_target_position("relay"))
 		guide_arrow.position = Vector2(clampf(projected.x-14,350,1180),clampf(projected.y-72,130,610))-Vector2(0,sin(elapsed*4)*5)
 		guide_arrow.visible = guide_arrow.visible and not camera.is_position_behind(_target_position("relay"))
-	else: guide_arrow.position = Vector2(1390,674+sin(elapsed*4)*4)
+	else: guide_arrow.position = Vector2(1400,615+sin(elapsed*4)*4)
 	for i: int in range(wild_plants.size()):
 		wild_plants[i].scale = Vector3.ONE*(0.9 if i == 0 else (0.7 if i < int(model.state.native_stock) else 0.3))
 		wild_plants[i].rotation.z = sin(elapsed*1.1+i)*0.035
@@ -631,6 +588,35 @@ func _target_position(id: String = "") -> Vector3:
 	if id.is_empty(): id = selected
 	var node: Node3D = targets[id]
 	return node.position+Vector3(0,2.5 if id in ["pod","relay"] else 0.6,0)
+
+func _hud_action(action: String) -> void:
+	match action:
+		"pause": _toggle_pause()
+		"menu": _exit_encounter()
+		"save": _save()
+		"load": _load()
+		"atlas": _toggle_planet_map()
+		"departure": _departure()
+		"use":
+			if not paused and not _inspection_open(): _activate_selected()
+		"stop": _stop()
+		"cargo", "systems", "contact", "journal", "controls", "audio":
+			_toggle_drawer(action)
+		_:
+			if action.begins_with("category:"): audio.play("ui_confirm")
+
+func _chart_navigate(at: Vector2) -> void:
+	if paused or _inspection_open(): return
+	if model.state.flight_mode == "surface":
+		at = at.limit_length(38)
+		_navigate(Vector3(at.x,maxf(ship.position.y,terrain_height(at.x,at.y)+4),at.y))
+	else: _navigate(Vector3(at.x,ship.position.y,at.y))
+
+func _command_target(id: String) -> void:
+	if paused or _inspection_open() or id not in targets: return
+	if id != selected: _cancel_orders()
+	selected = id
+	_activate_selected()
 
 func _operate(delta: float) -> void:
 	beam.visible = false
@@ -661,7 +647,10 @@ func _operate(delta: float) -> void:
 		_toast(error if not error.is_empty() else ("Survey complete" if tool == "scan" else "Operation complete"))
 		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
+		held = false
 		progress = 0
+		operation_feedback = "COMPLETE" if error.is_empty() else "FAILED"
+		operation_feedback_until = elapsed+3
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and not event.echo:
@@ -717,8 +706,7 @@ func _pick(screen: Vector2) -> void:
 		var d: float = camera.unproject_position(at).distance_to(screen)
 		if d < closest: closest = d; picked = id
 	if not picked.is_empty():
-		selected = picked
-		_activate_selected()
+		_command_target(picked)
 		return
 	# Ray march against the actual terrain height, never an arbitrary screen plane.
 	var from: Vector3 = camera.project_ray_origin(screen)
@@ -753,6 +741,7 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	operation_feedback = ""
 	navigating = false
 	approach_subject = false
 	landing = false
@@ -764,7 +753,11 @@ func _cancel_orders() -> void:
 	velocity = Vector3.ZERO
 
 func _stop() -> void:
+	var had_order: bool = navigating or (held and not latched) or altitude_order >= 0
 	_cancel_orders()
+	if had_order:
+		operation_feedback = "CANCELLED"
+		operation_feedback_until = elapsed+2
 	audio.play("cancel")
 
 func _toggle_pause() -> void:
@@ -817,8 +810,7 @@ func _select_tool(value: String) -> void:
 	var index: int = TOOLS.find(tool)
 	beam_material.albedo_color = COLORS[index]
 	beam_material.emission = COLORS[index]
-	for i: int in range(toolbar.size()):
-		Instruments.instrument(toolbar[i],TOOLS[i],COLORS[i],i == index)
+	hud.select_tool(value)
 	Instruments.meter(progress_bar,COLORS[index])
 	audio.play("equip_"+value)
 
@@ -828,26 +820,72 @@ func _refresh_ui() -> void:
 	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
 	stats.text = "%d Marks   ·   Cradle %d/2   ·   %d surveys" % [s.marks,s.samples,s.scanned.size()]
 	energy_bar.value = s.energy
-	flight_readout.text = "%s  %.0f m   /   %.0f m/s\nENERGY  %d / 100" % ["Y" if orbital else "ALT",ship.position.y,velocity.length(),s.energy]
+	flight_readout.text = "%s %.0f m  ·  %.0f m/s\nENERGY   %d / 100" % ["Y" if orbital else "ALT",ship.position.y,velocity.length(),s.energy]
+	hud.quick_cargo.text = "%d / 2" % s.samples
+	hud.paused_badge.text = "INSPECTION PAUSED" if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
+	hud.navigation.orbital = orbital
+	hud.navigation.ship_at = Vector2(ship.position.x,ship.position.z)
+	hud.navigation.heading = -ship.rotation.y
+	hud.navigation.planet_at = Vector2(orbit.planet.position.x,orbit.planet.position.z)
+	hud.navigation.surveyed = s.scanned
+	hud.navigation.selected = selected
+	hud.navigation.navigating = navigating
+	hud.navigation.destination = Vector2(destination.x,destination.z)
+	hud.navigation.locked = paused or _inspection_open()
+	for id: String in targets: hud.navigation.points[id] = Vector2(targets[id].position.x,targets[id].position.z)
+	hud.navigation.queue_redraw()
 	pause_button.text = "Resume" if paused else "Pause"
 	departure_button.text = "Return to Morrow" if orbital else "Leave atmosphere"
 	if orbital: objective.text = "You're in orbit. Click Morrow to approach and descend."
-	elif s.landings > 0: objective.text = "Flight assist complete. Survey the basin or return to orbit."
-	elif "relay" not in s.scanned: objective.text = "Click the old relay to approach and scan. Or leave whenever you're ready."
-	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "The signal points beyond the clouds. Ascend or choose Leave atmosphere."
-	else: objective.text = "Flight assist complete. Survey the basin or return to orbit."
+	elif s.landings > 0: objective.text = "Explore freely. Your surveys are secure."
+	elif "relay" not in s.scanned: objective.text = "Click the relay to investigate its signal."
+	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "Follow the signal. Leave the atmosphere."
+	else: objective.text = "Explore freely. Your surveys are secure."
 	if orbital:
-		subject.text = "MORROW  /  orbital flight"
-		explanation.text = "Click planet to descend · Click space to fly · Wheel changes altitude"
+		subject.text = "Morrow  /  orbital flight"
+		hud.action_state.text = "ORBIT"
+		explanation.text = "Click the planet to approach."
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
-		subject.text = "%s   /   %.0f m   /   %s" % [TITLES[selected],gap,tool.capitalize()]
-		if approach_subject: explanation.text = "Approaching target · Stop or steer to cancel"
-		elif held and not latched: explanation.text = "Tool active · Click Use or press Escape to cancel"
-		else: explanation.text = "Click a target to use tool · Click terrain to fly · Wheel changes altitude"
+		var reason: String = model.reason(tool,selected,0)
+		subject.text = "%s   /   %.0f m" % [TITLES[selected],gap]
+		if approach_subject:
+			hud.action_state.text = "APPROACHING"
+			explanation.text = "Moving into tool range."
+		elif held and not latched:
+			hud.action_state.text = "OPERATING"
+			explanation.text = "%s · %d%%" % [Instruments.TOOL_NAMES[tool],int(progress*100)]
+		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
+			hud.action_state.text = operation_feedback
+			explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
+		elif not reason.is_empty():
+			hud.action_state.text = "UNAVAILABLE"
+			explanation.text = _short_reason(reason)
+		else:
+			hud.action_state.text = "READY" if gap <= 13 else "OUT OF RANGE"
+			explanation.text = "Click Use to operate." if gap <= 13 else "Click Use to approach."
+		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = progress
+	if operation_feedback == "COMPLETE" and elapsed < operation_feedback_until: progress_bar.value = 1
 	use_button.text = "Cancel" if (held and not latched) or approach_subject else "Use"
+	use_button.disabled = orbital or paused or _inspection_open()
+	if not orbital and not approach_subject and not (held and not latched):
+		use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
+	for i: int in range(toolbar.size()):
+		toolbar[i].tooltip_text = "Surface equipment · enter the atmosphere to operate." if orbital else Instruments.TOOL_HINTS[TOOLS[i]]
 	_update_guidance()
+
+func _short_reason(reason: String) -> String:
+	# Keep the full validated reason on hover; the instrument shows one short cause.
+	if reason.begins_with("Already catalogued"): return "Survey recorded. Select another tool."
+	if reason.begins_with("Sample cradle full"): return "Sample cradles full: 2 / 2."
+	if reason.begins_with("Need 25 energy"): return "Insufficient energy: 25 required."
+	if reason.begins_with("The thermal tool"): return "Requires a cold mineral bed."
+	if reason.begins_with("Sample the seed pods"): return "Requires a scanned lantern pod."
+	if reason.begins_with("Keep the last native"): return "Native reserve protected."
+	if reason.begins_with("The bed is warm"): return "Bed already warmed."
+	if reason.begins_with("Already planted"): return "Specimen already deployed."
+	return reason
 
 func _update_guidance() -> void:
 	if elapsed < 1 or paused or _inspection_open(): return

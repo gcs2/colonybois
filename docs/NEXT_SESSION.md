@@ -1,5 +1,10 @@
 # Resume here
 
+## Latest implementation: composed flight instruments
+
+Read [FLIGHT_HUD_REVIEW.md](FLIGHT_HUD_REVIEW.md). The first composed HUD slice now exists: original shaded tool icons and instrument housings, live clickable local navigation, category palettes, quick cargo, adjacent ship energy/equipment and explicit target states. Category browsing is live and preserves equipment; expanded inspection still pauses. Full globe atlas remains intact. 332 assertions plus UI checks pass, including 19 new HUD integration checks. This is a candidate engine implementation, not art approval. Next: native-input/readability review, dedicated character/trade layouts and richer motion; approved audio acquisition, ship/planet assets and shared sector state remain outstanding. The earlier instruction below to begin this slice is historical context.
+
+
 ## Latest steering: deeper Spore GUI forensics
 
 Read [SPORE_GUI_FORENSICS.md](SPORE_GUI_FORENSICS.md) first. The research checkpoint inspects manual diagrams, game screenshots, timestamped gameplay states and community UI structure, then audits our code. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) now specifies a composed lower instrument assembly, live planetary navigation, category/item palettes by the ship, distinct targeting states and dedicated commerce/conversation layouts. Next: composition/state boards and an original housing/icon kit, then implement the bounded HUD slice and its acceptance matrix. Current colored buttons and generic drawers remain prototypes. Dense late-game states, frame-accurate motion, native retail input and listening audit remain open; do not claim those were verified.
@@ -51,6 +56,6 @@ Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates 
 
 ## Verification and backup
 
-Latest code verification: 313 assertions plus UI checks (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 18 audio, 34 planet map). Tests are in tools/Test.ps1. The forensic checkpoint only changes documentation; no new runtime test result is claimed. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. The last packaged build is build/versions/20260923-020530/FrontierWorlds.exe; the atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
+Latest code verification: 332 assertions plus UI checks (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 19 flight HUD, 18 audio, 34 planet map). Tests are in tools/Test.ps1. The forensic checkpoint was documentation-only; the subsequent HUD implementation adds the 19 interaction checks. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. Use build/current.txt for the latest completed package; the earlier atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.

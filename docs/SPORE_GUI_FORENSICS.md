@@ -2,6 +2,8 @@
 
 23 September 2026. Research checkpoint, not a shipped interface redesign. This supersedes the earlier assumption that recolored buttons and generic drawers would establish the desired visual direction. Related work: V01–V04, V05, D01, P01 and I01 in [TASK_BOARD.md](TASK_BOARD.md).
 
+The code audit below describes atlas checkpoint `cfc1020`. Subsequent candidate implementation and rendered evidence are tracked separately in [FLIGHT_HUD_REVIEW.md](FLIGHT_HUD_REVIEW.md).
+
 ## Finding
 
 Our interface organizes software features. Spore's interface organizes the experience of operating a ship in a living world. The useful lesson is the relationship between spatial navigation, tools, cargo, planetary conditions and characters. Copying its blue frames would miss that relationship.
