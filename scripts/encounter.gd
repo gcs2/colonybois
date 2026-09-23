@@ -664,8 +664,9 @@ func _capture(delta: float) -> void:
 	capture_clock += delta
 	if capture_clock < 2: return
 	capture_clock = 0
-	DirAccess.make_dir_recursive_absolute("res://artifacts")
-	get_viewport().get_texture().get_image().save_png("res://artifacts/field_%d.png" % capture_step)
+	var capture_dir: String = ProjectSettings.globalize_path("user://field_captures")
+	DirAccess.make_dir_recursive_absolute(capture_dir)
+	get_viewport().get_texture().get_image().save_png(capture_dir.path_join("field_%d.png" % capture_step))
 	capture_step += 1
 	if capture_step == 1:
 		model.act("scan","pod",4)

@@ -47,7 +47,7 @@ Rendered review:
 .tools/godot/Godot_v4.7.2-stable_win64_console.exe --path . res://scenes/encounter.tscn -- --field-capture
 ```
 
-This writes four disposable actual-engine captures under `artifacts/field_0.png` through `field_3.png`, then exits. The capture sequence stages before/after ecology using real model commands; it is not a manual playthrough. Captures and runtime/build output stay out of Git.
+This writes four disposable actual-engine captures under the game's user directory, `field_captures/field_0.png` through `field_3.png`, then exits. The writable user path also works in an exported pack; an initial pack check exposed and corrected use of the read-only resource path. The capture sequence stages before/after ecology using real model commands; it is not a manual playthrough. Captures and runtime/build output stay out of Git.
 
 ## Verification and remaining gates
 
