@@ -25,6 +25,7 @@ const PACK_ENERGY := 50.0
 const PACK_CAPACITY := 3
 const PACK_COOLDOWN := 8
 static var service_catalog: Dictionary = {}
+static var upgrade_catalog: Dictionary = {}
 var state: Dictionary = fresh()
 var account: Dictionary = {}
 var marks: float:
@@ -77,10 +78,18 @@ func has_guardian() -> bool:
 func lance_damage() -> float:
 	return 33.0 if "emitter" in installed_upgrades else LANCE_DAMAGE
 
+func max_capacity(family: String) -> float:
+	if upgrade_catalog.is_empty(): upgrade_catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/space_commerce.json")).upgrades
+	var capacity: float = 100.0
+	for id: String in installed_upgrades:
+		var upgrade: Dictionary = upgrade_catalog.get(id,{})
+		if upgrade.get("family","") == family: capacity = maxf(capacity,float(upgrade.get("capacity",100)))
+	return capacity
+
 func recharge_price(id: String) -> int:
 	if not services().has(id): return -1
 	if state.planet_id == state.homeworld_id: return 0
-	return int(ceil((100.0-float(state.energy))*float(local_services()[id].marks_per_energy)))
+	return int(ceil(maxf(0,max_capacity("energy")-float(state.energy))*float(local_services()[id].marks_per_energy)))
 
 func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> String:
 	if not services().has(id): return "Unknown service provider."
@@ -92,7 +101,7 @@ func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> Str
 		if state.service_stock[id] <= 0: return "This shop has sold its remaining energy packs."
 		if marks < int(port.pack_price): return "Need %d Marks for an energy pack." % int(port.pack_price)
 	else:
-		if state.energy >= 100: return "Energy is already full."
+		if state.energy >= max_capacity("energy"): return "Energy is already full."
 		if marks < recharge_price(id): return "Recharge costs %d Marks." % recharge_price(id)
 	return ""
 
@@ -101,7 +110,7 @@ func recharge(id: String, at: Vector3) -> String:
 	if not error.is_empty(): return error
 	var cost: int = recharge_price(id)
 	marks -= cost
-	state.energy = 100.0
+	state.energy = max_capacity("energy")
 	note("first_recharge","Docked for a recharge. Homeworld service is free; away from home, shops set their own rates.")
 	return ""
 
@@ -115,7 +124,7 @@ func buy_energy_pack(id: String, at: Vector3) -> String:
 
 func pack_reason() -> String:
 	if state.energy_packs <= 0: return "No energy packs aboard. Dock at a shop to buy one."
-	if state.energy >= 100: return "Energy is already full."
+	if state.energy >= max_capacity("energy"): return "Energy is already full."
 	if state.time < state.pack_ready_at: return "Pack coupling cooling down."
 	return ""
 
@@ -123,7 +132,7 @@ func use_energy_pack() -> String:
 	var error: String = pack_reason()
 	if not error.is_empty(): return error
 	state.energy_packs -= 1
-	state.energy = minf(100,float(state.energy)+PACK_ENERGY)
+	state.energy = minf(max_capacity("energy"),float(state.energy)+PACK_ENERGY)
 	state.pack_ready_at = state.time+PACK_COOLDOWN
 	note("first_energy_pack","Consumed a reserve pack to restore ship energy away from a recharge dock.")
 	return ""
@@ -253,7 +262,7 @@ func toggle_shroud() -> String:
 	return ""
 
 func repair_reason(threat_distance: float) -> String:
-	if state.hull >= 100: return "Hull is sound."
+	if state.hull >= max_capacity("hull"): return "Hull is sound."
 	if state.flight_mode == "orbit" and (not is_finite(threat_distance) or threat_distance < 0): return "Ship location unavailable."
 	if state.flight_mode == "orbit" and threat_distance < HAZARD_WARNING: return "Clear the pulse field before repair."
 	if state.time-int(state.last_repair_at) < REPAIR_COOLDOWN: return "Repair cradle cooling down."
@@ -264,7 +273,7 @@ func repair(threat_distance: float) -> String:
 	var error: String = repair_reason(threat_distance)
 	if not error.is_empty(): return error
 	state.energy -= REPAIR_ENERGY
-	state.hull = minf(100,float(state.hull)+REPAIR_HULL)
+	state.hull = minf(max_capacity("hull"),float(state.hull)+REPAIR_HULL)
 	state.last_repair_at = state.time
 	note("first_repair","Used the field cradle to repair the scout's hull.")
 	return ""
@@ -477,8 +486,8 @@ func restore_snapshot(source: Variant) -> Error:
 		var stock: Variant = value.service_stock[id]
 		if not (stock is int or stock is float) or not is_finite(float(stock)) or stock != floorf(stock) or stock < 0 or stock > int(services()[id].pack_stock): return ERR_INVALID_DATA
 		value.service_stock[id] = int(stock)
-	if value.energy < 0 or value.energy > 100 or value.time < 0 or value.marks < 0: return ERR_INVALID_DATA
-	if value.hull <= 0 or value.hull > 100 or value.threat_clock < 0 or value.threat_clock >= 6 or value.tow_count < 0: return ERR_INVALID_DATA
+	if value.energy < 0 or value.energy > max_capacity("energy") or value.time < 0 or value.marks < 0: return ERR_INVALID_DATA
+	if value.hull <= 0 or value.hull > max_capacity("hull") or value.threat_clock < 0 or value.threat_clock >= 6 or value.tow_count < 0: return ERR_INVALID_DATA
 	if value.last_repair_at > value.time or value.last_repair_at < -REPAIR_COOLDOWN: return ERR_INVALID_DATA
 	if value.shroud_on and not value.shroud_unlocked: return ERR_INVALID_DATA
 	if value.guardian_hull < 0 or value.guardian_hull > Encounters.hull(value.planet_id) or value.guardian_alert < 0 or value.guardian_alert > 3: return ERR_INVALID_DATA

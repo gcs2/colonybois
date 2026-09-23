@@ -11,6 +11,7 @@ var changing_planet: bool = false
 const Campaign = preload("res://scripts/expedition_session.gd")
 var campaign: RefCounted = null
 var dock_page: String = "market"
+var upgrade_family: String = "ship"
 var trade_amount: int = 1
 const AlienPortrait = preload("res://scripts/alien_portrait.gd")
 var contacted_faction: String = ""
@@ -895,7 +896,7 @@ func _hud_action(action: String) -> void:
 		"pack":
 			if paused or _inspection_open(): return
 			var error: String = model.use_energy_pack()
-			_toast(error if not error.is_empty() else "Energy pack consumed · energy %d / 100" % model.state.energy)
+			_toast(error if not error.is_empty() else "Energy pack consumed · energy %d / %d" % [model.state.energy,model.max_capacity("energy")])
 			audio.play("error" if not error.is_empty() else "cargo")
 		"shroud":
 			if paused or _inspection_open(): return
@@ -1324,10 +1325,12 @@ func _refresh_ui() -> void:
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
 	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/2" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),s.samples]
+	energy_bar.max_value = model.max_capacity("energy")
+	hud.hull_bar.max_value = model.max_capacity("hull")
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
-	hud.hull_label.text = "HULL   %d / 100" % s.hull
-	hud.energy_label.text = "ENERGY   %d / 100" % s.energy
+	hud.hull_label.text = "HULL   %d / %d" % [s.hull,model.max_capacity("hull")]
+	hud.energy_label.text = "ENERGY   %d / %d" % [s.energy,model.max_capacity("energy")]
 	flight_readout.text = "%s %.0f m  ·  %.0f m/s" % ["Y" if orbital else "ALT",ship.position.y,velocity.length()]
 	var field_distance: float = _wreck_distance()
 	hud.danger_label.text = "PULSE CORE · %d m · NEXT IN %d s" % [field_distance,6-int(s.threat_clock)] if orbital and field_distance < Model.HAZARD_RADIUS else ("PULSE FIELD · %d m · KEEP CLEAR" % field_distance if orbital and field_distance < Model.HAZARD_WARNING else "")
@@ -1763,10 +1766,11 @@ func _build_systems_panel() -> void:
 	if campaign != null:
 		_panel_copy("CARGO  %d units · DRIVE  %d links" % [campaign.commerce.capacity(),campaign.commerce.drive_range()],Instruments.CARGO)
 		_button("Badges & upgrade eligibility",_show_popup.bind("badges"),popup_body)
-	popup_body.add_child(_label("REACTOR  ·  %d / 100 ENERGY" % model.state.energy,17,Instruments.GOLD))
+	popup_body.add_child(_label("REACTOR  ·  %d / %d ENERGY" % [model.state.energy,model.max_capacity("energy")],17,Instruments.GOLD))
 	system_energy = ProgressBar.new()
 	system_energy.custom_minimum_size.y = 10
 	system_energy.show_percentage = false
+	system_energy.max_value = model.max_capacity("energy")
 	system_energy.value = model.state.energy
 	Instruments.meter(system_energy,Instruments.GOLD)
 	popup_body.add_child(system_energy)
@@ -1777,7 +1781,7 @@ func _build_systems_panel() -> void:
 	modules.add_theme_constant_override("v_separation",8)
 	popup_body.add_child(modules)
 	system_buttons.clear()
-	_panel_copy("HULL  %d / 100 · field repair restores 35 for 30 reactor energy outside a hazard. Repair cooldown: 20 s." % model.state.hull)
+	_panel_copy("HULL  %d / %d · field repair restores 35 for 30 reactor energy outside a hazard. Repair cooldown: 20 s." % [model.state.hull,model.max_capacity("hull")])
 	_panel_copy("RECOVERED SHIELD (phase shroud)  %s · absorbs most pulse damage, drains 2 energy/s." % ("ACTIVE" if model.state.shroud_on else "INSTALLED" if model.state.shroud_unlocked else "NOT ACQUIRED"))
 	if model.state.shroud_unlocked:
 		var shield: Button = _button("Deactivate shield" if model.state.shroud_on else "Activate shield · 2 energy / second",_inventory_action.bind("shroud","systems"),popup_body)
@@ -1965,8 +1969,8 @@ func _build_service_panel() -> void:
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
 		if dock_page == "warehouse": _build_warehouse_panel(); return
-	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
-BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.marks],Instruments.GOLD)
+	_panel_copy("ENERGY  %d / %d     RESERVE PACKS  %d / 3
+BALANCE  %d Marks" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs,model.marks],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
 	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
 	var reason: String = model.service_reason(selected_service,ship.position)
@@ -1985,7 +1989,7 @@ Homeworld recharge is free. Portable packs are purchased supplies." % model.stat
 func _service_action(purchase_pack: bool) -> void:
 	if paused: return
 	var error: String = model.buy_energy_pack(selected_service,ship.position) if purchase_pack else model.recharge(selected_service,ship.position)
-	_toast(error if not error.is_empty() else ("Reserve energy pack loaded" if purchase_pack else "Recharge complete · 100 energy"))
+	_toast(error if not error.is_empty() else ("Reserve energy pack loaded" if purchase_pack else "Recharge complete · %d energy" % model.max_capacity("energy")))
 	audio.play("error" if not error.is_empty() else "cargo")
 	if error.is_empty(): _save(false)
 	_show_popup("service")
@@ -2063,23 +2067,36 @@ func _upgrade_requirements(id: String) -> String:
 	var alternatives: PackedStringArray = []
 	for badge: String in campaign.commerce.catalog.upgrades[id].requires:
 		alternatives.append("%s %d" % [campaign.commerce.catalog.badges[badge].name,campaign.commerce.catalog.upgrades[id].requires[badge]])
-	return " or ".join(alternatives)
+	var prior: String = campaign.commerce.catalog.upgrades[id].get("prior", "")
+	var badges: String = " or ".join(alternatives)
+	return badges if prior.is_empty() else "(%s) + %s installed" % [badges,campaign.commerce.catalog.upgrades[prior].name]
 
 func _build_upgrade_shop() -> void:
-	var kit_reason: String = campaign.colonies.buy_reason(campaign,selected_service,ship.position)
-	_panel_copy("Colony landing kit · four cargo spaces",Instruments.PAPER)
-	_panel_copy("300 Marks · 100 local materials · 80 local supplies. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.")
-	var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
-	kit.disabled = paused or not kit_reason.is_empty()
-	kit.tooltip_text = kit_reason
+	var families := HBoxContainer.new()
+	popup_body.add_child(families)
+	for family: String in ["ship","hull","energy"]:
+		var tab: Button = _button({"ship":"Equipment","hull":"Hull","energy":"Reactor"}[family],func() -> void: upgrade_family = family; _show_popup("service"),families)
+		tab.disabled = family == upgrade_family
+		tab.tooltip_text = "Compare installed equipment and available upgrades."
+	if upgrade_family == "ship":
+		var kit_reason: String = campaign.colonies.buy_reason(campaign,selected_service,ship.position)
+		_panel_copy("Colony landing kit · four cargo spaces",Instruments.PAPER)
+		_panel_copy("300 Marks · 100 local materials · 80 local supplies. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.")
+		var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
+		kit.disabled = paused or not kit_reason.is_empty()
+		kit.tooltip_text = kit_reason
+	else:
+		_panel_copy("%s capacity: %d · installation preserves your current reserves." % ["Hull" if upgrade_family == "hull" else "Energy",model.max_capacity(upgrade_family)],Instruments.GOLD)
 	for id: String in campaign.commerce.catalog.upgrades:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
+		if upgrade.get("family","ship") != upgrade_family: continue
 		_panel_copy(upgrade.name,Instruments.PAPER)
 		_panel_copy(upgrade.description)
 		_panel_copy("Requires "+_upgrade_requirements(id),Instruments.GOLD)
 		var blocked: String = campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id)
 		var owned: bool = id in campaign.commerce.state.upgrades
 		var button: Button = _button("Installed" if owned else "Purchase · %d Marks" % upgrade.price,_commerce_action.bind("upgrade",id),popup_body)
+		button.set_meta("upgrade_id",id)
 		button.disabled = paused or not blocked.is_empty()
 		button.tooltip_text = blocked
 		if not blocked.is_empty() and not owned: _panel_copy(blocked)

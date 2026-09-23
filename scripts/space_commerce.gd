@@ -143,6 +143,9 @@ func update_badges(game: RefCounted) -> void:
 			game.field.note("badge_%s_%d" % [id,level],"%s %d earned · open Badges for progress and shop requirements." % [catalog.badges[id].name,level])
 
 func eligible(id: String) -> bool:
+	if not catalog.upgrades.has(id): return false
+	var prior: String = catalog.upgrades[id].get("prior", "")
+	if not prior.is_empty() and prior not in state.upgrades: return false
 	for badge: String in catalog.upgrades[id].requires:
 		if int(state.badges[badge]) >= int(catalog.upgrades[id].requires[badge]): return true
 	return false
@@ -152,6 +155,8 @@ func upgrade_reason(game: RefCounted, port: String, at: Vector3, id: String) -> 
 	if not blocked.is_empty(): return blocked
 	if not catalog.upgrades.has(id): return "Unknown upgrade."
 	if id in state.upgrades: return "Installed."
+	var prior: String = catalog.upgrades[id].get("prior", "")
+	if not prior.is_empty() and prior not in state.upgrades: return "Install %s first." % catalog.upgrades[prior].name
 	if not eligible(id): return "Earn either of the listed badge tiers first."
 	if game.field.marks < float(catalog.upgrades[id].price): return "Insufficient Marks."
 	return ""
@@ -175,6 +180,8 @@ func restore(source: Variant) -> Error:
 	var seen: Array = []
 	for id: Variant in source.upgrades:
 		if not id is String or not catalog.upgrades.has(id) or id in seen: return ERR_INVALID_DATA
+		var prior: String = catalog.upgrades[id].get("prior", "")
+		if not prior.is_empty() and prior not in source.upgrades: return ERR_INVALID_DATA
 		seen.append(id)
 	for id: String in catalog.badges:
 		if not source.badges.get(id) is int or source.badges[id] < 0 or source.badges[id] > 5: return ERR_INVALID_DATA

@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 7
+const VERSION := 8
 const Freight = preload("res://scripts/expedition_freight.gd")
 var freight := Freight.new()
 const Colonies = preload("res://scripts/expedition_colonies.gd")
@@ -103,7 +103,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -112,6 +112,10 @@ func restore_snapshot(source: Variant) -> Error:
 	var error: Error = candidate_sector.restore_snapshot(source.sector)
 	if error != OK: return error
 	var candidate_field := Field.new()
+	# Validate owned equipment before hull/energy; a forged capacity cannot admit an overfilled ship.
+	var candidate_commerce := Commerce.new()
+	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
+	candidate_field.installed_upgrades = candidate_commerce.state.upgrades
 	var field_data: Dictionary = source.field.duplicate(true)
 	if field_data.has("marks"): return ERR_INVALID_DATA
 	field_data["marks"] = 0
@@ -135,8 +139,6 @@ func restore_snapshot(source: Variant) -> Error:
 			if not saved_worlds[id].has(key): return ERR_INVALID_DATA
 			probe[key] = saved_worlds[id][key]
 		if Field.new().restore_snapshot(probe) != OK: return ERR_INVALID_DATA
-	var candidate_commerce := Commerce.new()
-	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
 	var candidate_diplomacy := Diplomacy.new()
 	var candidate_colonies := Colonies.new()
 	if source.version >= 5 and candidate_colonies.restore(source.get("colonies"),candidate_sector,candidate_commerce) != OK: return ERR_INVALID_DATA

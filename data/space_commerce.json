@@ -12,6 +12,14 @@
   "upgrades": {
     "hold":{"name":"Expanded cargo hold","price":120,"description":"Raises commodity capacity from 8 to 16 units. Specimen cradles and energy packs have separate storage.","requires":{"merchant":1,"explorer":2}},
     "emitter":{"name":"Focused arc emitter","price":180,"description":"Raises arc-lance damage from 22 to 33. Energy cost, reach and cooldown stay unchanged.","requires":{"defender":1,"explorer":2}},
-    "drive":{"name":"Extended-range drive","price":160,"description":"Raises jump range from 3 to 5 links. Energy consumption stays at 8 per link.","requires":{"explorer":1,"merchant":2}}
+    "drive":{"name":"Extended-range drive","price":160,"description":"Raises jump range from 3 to 5 links. Energy consumption stays at 8 per link.","requires":{"explorer":1,"merchant":2}},
+    "hull_1":{"name":"Hull reinforcement I","family":"hull","capacity":150,"price":160,"description":"150 maximum hull. Current hull is preserved; repairs still cost energy.","requires":{"defender":1,"explorer":1}},
+    "hull_2":{"name":"Hull reinforcement II","family":"hull","capacity":225,"prior":"hull_1","price":320,"description":"225 maximum hull. A stronger frame for sustained expeditions.","requires":{"defender":2,"explorer":2}},
+    "hull_3":{"name":"Hull reinforcement III","family":"hull","capacity":325,"prior":"hull_2","price":650,"description":"325 maximum hull. Installation does not repair existing damage.","requires":{"defender":3,"explorer":3}},
+    "hull_4":{"name":"Hull reinforcement IV","family":"hull","capacity":450,"prior":"hull_3","price":1200,"description":"450 maximum hull. Repair and recovery costs remain meaningful.","requires":{"defender":4,"explorer":4}},
+    "energy_1":{"name":"Reactor reservoir I","family":"energy","capacity":150,"price":180,"description":"150 maximum energy. Additional capacity is empty until recharged.","requires":{"merchant":1,"explorer":1}},
+    "energy_2":{"name":"Reactor reservoir II","family":"energy","capacity":225,"prior":"energy_1","price":360,"description":"225 maximum energy. Packs still restore 50; equipment costs stay unchanged.","requires":{"merchant":2,"explorer":2}},
+    "energy_3":{"name":"Reactor reservoir III","family":"energy","capacity":325,"prior":"energy_2","price":700,"description":"325 maximum energy. Foreign docks bill for each missing unit.","requires":{"merchant":3,"explorer":3}},
+    "energy_4":{"name":"Reactor reservoir IV","family":"energy","capacity":450,"prior":"energy_3","price":1300,"description":"450 maximum energy. No passive regeneration; homeworld recharge remains free.","requires":{"merchant":4,"explorer":4}}
   }
 }

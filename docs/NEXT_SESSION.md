@@ -1,5 +1,13 @@
 # Resume here
 
+## Purchased ship capacities — latest checkpoint
+
+Read [SHIP_CAPACITY.md](SHIP_CAPACITY.md). Four hull and four reactor tiers now expand maximum capacity through paid, badge-gated purchases with prior-installation requirements. The ship keeps its existing reserves during installation. Packs, repairs, travel, local recharge prices, HUD and systems use the same authoritative capacity. Snapshot v8 validates ownership before loading expanded reserves and preserves legacy scarcity. Shops separate equipment/hull/reactor families.
+
+Validation: 906 assertions plus UI checks, including 46 new checks and a trade-funded peaceful purchase; native renderer captures at 1080p/1440p reviewed for layout. Final presentation and native player balance/feel remain unapproved. Next: inventory-selected repair consumables with actual shop stock/costs, then distinct weapon roles and surface targets. The reference inventory below remains open; do not equate these eight upgrades with completed C01/P01 or full parity.
+
+Playable: **build/versions/20260923-155315/FrontierWorlds.exe** through Play.cmd. Exported-pack encounter startup smoke passed.
+
 ## Reference inventory and next ship progression — latest checkpoint
 
 Read [parity/COVERAGE.md](parity/COVERAGE.md). The sourced working manifests enumerate 84 tool/equipment families with 189 variant entries, 30 badge families, ten master ranks, 40 space-related achievements and twelve inherited traits. Each tool family has one task-board owner. Fourteen audit questions remain, including conflicting wiki values and missing retail verification; these counts are not a completed-feature percentage or an exhaustive parity claim. Run `tools/ParityReport.ps1` to validate references and report ownership counts. The existing board remains the only production queue.

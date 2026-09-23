@@ -54,7 +54,7 @@ Reference behavior underpinning these boundaries: [Spore research](../SPORE_SPAC
 
 ## Next implementation target
 
-Expand **ship survival and equipment progression** through the existing voyage: purchased hull/energy capacity tiers, prior-upgrade requirements, repair consumables selected from inventory, services priced against actual missing capacity, and durable unlock/ownership records. Preserve meaningful costs, no passive energy regeneration and free home recharge. A player should be able to choose a stronger ship, pay for it and use it on a longer or riskier expedition. This closes concrete C01/P01 gaps without creating another isolated scene.
+The subsequent [ship capacity checkpoint](../SHIP_CAPACITY.md) implements purchased hull/energy tiers, prior-installation requirements, expanded service quotes and durable ownership. The manifests above retain their stated implementation-comparison commit. Continue **ship survival and equipment progression** with repair consumables selected from inventory, finite shop stock and meaningful costs. Preserve no passive energy regeneration and free home recharge. A player should choose a stronger ship, pay for it and use it on a longer or riskier expedition.
 
 After that, implement distinct weapon roles and surface targets, then allied fleet help and world-scale manipulation. Keep the native HUD/flight/audio review gates active. This order is scheduling, not permission to omit any reference family or postpone baseline breadth into the enrichment epic.
 

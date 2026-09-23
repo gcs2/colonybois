@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Ship progression:** dock services → Upgrades → Hull / Reactor now offers four purchased capacity tiers per family, with badge and prior-installation requirements. New capacity starts empty; home recharge is free and energy never regenerates. See [ship capacity behavior and verification](docs/SHIP_CAPACITY.md).
+
 Flight correction: **Escape** opens the game menu; **I** opens Inventory, where an owned energy pack can be used. Energy never regenerates passively. Homeworld recharge is free through local services; select Weapon before clicking a hostile target. The current cockpit artwork is rejected and remains temporary; see [interface correction contract](docs/SPORE_INTERFACE_CONTRACT.md).
 
 [Current task board](docs/TASK_BOARD.md) tracks active work, dependencies, prototype gaps and deferred features. [Flight interface specification](docs/FLIGHT_INTERFACE.md) records the latest colorful HUD, cargo, subsystem and whole-planet map requirements. The composed instrument HUD, clickable local chart, cargo/equipment panels and planetary atlas are implemented candidates; broader requirements remain in production. See [HUD review](docs/FLIGHT_HUD_REVIEW.md).
