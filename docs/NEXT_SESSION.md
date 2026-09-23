@@ -1,5 +1,11 @@
 # Resume here
 
+## Alien contact and consequential agreements — latest checkpoint
+
+Read [EXPEDITION_CONTACT.md](EXPEDITION_CONTACT.md). Real territorial arrival now establishes first contact with an original portrait candidate; Y opens known representatives, their attitude/reason and contextual agreements/exchange. Trade pacts change actual prices; non-aggression permits transit during commercial embargo; alliances share usable charts without awarding visits. Goodwill is a one-time paid grant, survey licenses are exclusive, and withdrawals cost trust and revoke their benefits. Snapshot v4 persists those decisions and causal chronicle events; older saves mark a recording boundary. Chronicle filters/pagination retain the local log and colony ledger. Three animated vector busts have authored specs and 1080p placement review, but remain unapproved artwork; no final rigs/voices or fleet assistance is claimed.
+
+Validation: 704 assertions plus UI checks (45 diplomacy); current playable **build/versions/20260923-140812** via Play.cmd; exported-pack startup smoke passed. Next connect personal colonization/production to renewable market supply and automatic freight; continue danger/fleet breadth and the full feature inventory. Keep final HUD/ship/audio/character direction as open quality gates rather than treating these portraits as approval. No ecology-first corpus expansion. Earlier checkpoint sections are history.
+
 ## Cargo, finite trade and purchased upgrades — latest checkpoint
 
 Read [SHIP_COMMERCE.md](SHIP_COMMERCE.md). One persistent expedition now carries three ordinary commodities, draws alloy from real home-colony materials, trades at finite environment-priced markets, earns Explorer/Merchant tiers and purchases functioning cargo/drive upgrades. Y approaches a dock; I inspects provenance/capacity; Escape opens Badges. Purchases require actual proximity, stock, money, capacity and open trade access. Both planetary docks share market exhaustion. Snapshot v3 preserves commerce and migrates earlier campaigns without free goods/equipment. Full Spore progression is not claimed: only two families with five scenario-scaled tiers exist; master ranks and most families remain missing.

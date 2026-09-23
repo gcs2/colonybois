@@ -65,7 +65,7 @@ func faction_by_id(id: String) -> Dictionary:
 func is_revealed(sid: String) -> bool:
 	var system: Dictionary = system_by_id(sid)
 	if system.is_empty(): return false
-	if system.visited: return true
+	if system.visited or system.get("charted",false): return true
 	for neighbor: String in system.links:
 		if system_by_id(neighbor).visited: return true
 	return false
@@ -354,9 +354,9 @@ func route_between(start: String, end: String, known_only: bool = false) -> Arra
 			return route
 		for next: String in system_by_id(current).links:
 			if previous.has(next): continue
-			if known_only and not system_by_id(next).visited and next != end: continue
+			if known_only and not system_by_id(next).visited and not system_by_id(next).get("charted",false) and next != end: continue
 			var owner: String = system_by_id(next).owner
-			if not owner.is_empty() and bool(faction_by_id(owner).get("embargo",false)): continue
+			if not owner.is_empty() and bool(faction_by_id(owner).get("embargo",false)) and owner+":non_aggression" not in state.agreements: continue
 			previous[next] = current
 			queue.append(next)
 	return []

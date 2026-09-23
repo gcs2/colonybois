@@ -1,0 +1,12 @@
+{
+ "status":"Unapproved original vector portrait candidates, integrated for interaction review. Not final 3D characters or lip-sync.",
+ "direction":"Creepy-cute emissaries with different body plans, readable eyes, biological asymmetry and simple civic clothing. No human heads with alien skin, borrowed Spore species, military uniform stereotype or metallic portrait frames.",
+ "source":"assets/aliens/*.svg; editable 400x300 authored vector busts. Eyes/mouth animated by scripts/alien_portrait.gd.",
+ "representatives":[
+  {"faction":"consortium","species":"Oolun","speaker":"Tavi Rill","silhouette":"Wide soft mantle, curled grasping limbs, throat folds","palette":"Mulberry, parchment, sea glass","prop":"Small amber-filled trade flask","motion":"Slow mantle breathing, curious gaze, irregular blink, brief speaking mouth"},
+  {"faction":"directorate","species":"Veyri","speaker":"Orr Vask","silhouette":"Asymmetric carapace crest, blunt manipulator hands and three support limbs","palette":"Clay, shell ivory, slate teal","prop":"Public-register civic sash","motion":"Still body with small breathing movement; narrowed eyes on disagreement"},
+  {"faction":"commune","species":"Velith","speaker":"Nema of Reeds","silhouette":"Branching sensory fan, three eyes, paired clasping hands","palette":"Reed green, rose skin, bone light spots","prop":"Unadorned woven mantle","motion":"Fan/body breathing, paired gaze and a third sensing eye"}
+ ],
+ "limits":"Single bust pose each. Responses drive facial mood; motion is procedural presentation, not simulated biology. No voice performance included. Species/person names remain candidate authored content; government, philosophy and species stay separate fields.",
+ "acceptance":"Inspect first contact, friendly pact, refusal and embargo at 1080p and above. Reviewer must judge appeal and originality; functional animation checks cannot approve final art. Replace with authored 3D rigs or improved layered portraits after direction review."
+}

@@ -36,7 +36,7 @@ class StarGraph extends Control:
 			var ink := Color("ecca77") if current else (Color("9dd9d0") if system.visited else Color("687387"))
 			draw_circle(at,7,ink)
 			if system.id == selected_id: draw_arc(at,15,0,TAU,32,Color("e4e9ed"),2,true)
-			draw_string(font,at+Vector2(16,5),system.name if system.visited else "Uncharted",HORIZONTAL_ALIGNMENT_LEFT,-1,17,ink)
+			draw_string(font,at+Vector2(16,5),system.name if system.visited or system.get("charted",false) else "Uncharted",HORIZONTAL_ALIGNMENT_LEFT,-1,17,ink)
 		var ship: Dictionary = campaign.sector.state.flagship
 		if campaign.traveling():
 			var fraction: float = 1.0-float(ship.remaining)/maxf(1,ship.duration)
@@ -132,12 +132,12 @@ func select_system(id: String) -> void:
 	graph.selected_id = id
 	for child: Node in worlds.get_children(): worlds.remove_child(child); child.queue_free()
 	var system: Dictionary = campaign.sector.system_by_id(id)
-	heading.text = "SECTOR CHART  /  "+ (system.name.to_upper() if system.visited else "UNCHARTED SIGNAL")
+	heading.text = "SECTOR CHART  /  "+ (system.name.to_upper() if system.visited or system.get("charted",false) else "UNCHARTED SIGNAL")
 	selected_planet = Session.local_id(system.planets[0])
 	for pid: String in system.planets:
 		var world: String = Session.local_id(pid)
-		if not system.visited and pid != system.planets[0]: continue
-		var title: String = Geography.definition(world).name if system.visited else "Approach first orbital body"
+		if not system.visited and not system.get("charted",false) and pid != system.planets[0]: continue
+		var title: String = Geography.definition(world).name if system.visited or system.get("charted",false) else "Approach first orbital body"
 		var item: Button = button(title,func() -> void: selected_planet = world; refresh())
 		item.set_meta("planet",world)
 		item.disabled = campaign.traveling()
@@ -147,7 +147,8 @@ func select_system(id: String) -> void:
 func refresh() -> void:
 	if campaign == null: return
 	var offer: Dictionary = campaign.quote(selected_planet)
-	var known: bool = campaign.sector.system_by_id(selected_system).visited
+	var known_system: Dictionary = campaign.sector.system_by_id(selected_system)
+	var known: bool = known_system.visited or known_system.get("charted",false)
 	var definition: Dictionary = Geography.definition(selected_planet)
 	details.text = (definition.name+" · "+definition.archetype.capitalize()+"\n"+("Landing site available" if not definition.sites.is_empty() else "Orbital visit · surface not available in this build")) if known else "Uncharted system. Arrival reveals its orbital bodies; individual planetary surveys remain separate."
 	travel.text = "Depart · %d energy · %d seconds" % [offer.energy,offer.seconds]

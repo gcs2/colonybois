@@ -1,6 +1,6 @@
 # Alien contact and the civilization chronicle
 
-User-endorsed direction: approachable, expressive diplomacy and trade inspired by Spore, plus a persistent timeline of discoveries, decisions, allies, wars and fleet losses. This is a design specification, not implemented functionality.
+User-endorsed direction: approachable, expressive diplomacy and trade inspired by Spore, plus a persistent timeline of discoveries, decisions, allies, wars and fleet losses. This is the full design specification. [EXPEDITION_CONTACT.md](EXPEDITION_CONTACT.md) records the integrated first-contact, portrait, treaty-consequence and structured-history pilot; the remaining scope below is not all implemented.
 
 ## Contact screen
 

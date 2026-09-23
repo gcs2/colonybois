@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 3
+const VERSION := 4
+const Diplomacy = preload("res://scripts/expedition_diplomacy.gd")
+var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
@@ -24,14 +26,24 @@ func _init() -> void:
 	configure_flagship()
 
 func tick(threat_distance: float = INF) -> String:
+	var was_surveying: bool = field.state.survey_active
 	var result: String = field.tick(INF if traveling() else threat_distance)
+	if was_surveying and not field.state.survey_active:
+		diplomacy.record(self,"exploration","Completed orbital survey of "+str(field.definition().name)+".","",{"survey_ticks":field.state.survey_ticks},0,"survey:"+str(field.state.planet_id))
 	advance_worlds()
 	if traveling(): advance_travel()
 	commerce.update_badges(self)
 	sector_clock += 1
 	if sector_clock >= SECONDS_PER_DAY:
 		sector_clock = 0
+		var trade_access: Dictionary = {}
+		for faction: Dictionary in sector.state.factions:
+			if faction.get("contacted",false): trade_access[faction.id] = faction.get("embargo",false)
 		sector.tick()
+		for id: String in trade_access:
+			var faction: Dictionary = sector.faction_by_id(id)
+			if bool(faction.get("embargo",false)) != trade_access[id]:
+				diplomacy.record(self,"diplomacy",str(faction.name)+(" imposed a trade embargo." if faction.embargo else " reopened trade."),id,{"embargo":faction.embargo,"relation":faction.relation,"reason":faction.reason})
 	return result
 
 func import_legacy(path: String) -> Error:
@@ -45,6 +57,8 @@ func import_legacy(path: String) -> Error:
 	sector_clock = 0
 	worlds.clear()
 	commerce = Commerce.new()
+	diplomacy = Diplomacy.new()
+	diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	configure_flagship()
 	return OK
 
@@ -54,7 +68,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -80,7 +94,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -110,6 +124,9 @@ func restore_snapshot(source: Variant) -> Error:
 		if Field.new().restore_snapshot(probe) != OK: return ERR_INVALID_DATA
 	var candidate_commerce := Commerce.new()
 	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
+	var candidate_diplomacy := Diplomacy.new()
+	if source.version >= 4 and candidate_diplomacy.restore(source.get("diplomacy")) != OK: return ERR_INVALID_DATA
+	if not candidate_diplomacy.state.events.is_empty() and candidate_diplomacy.state.events.back().time > candidate_field.state.time: return ERR_INVALID_DATA
 	if source.version >= 2:
 		var ship: Dictionary = candidate_sector.state.flagship
 		if not ship.has_all(["personal","planet","target_planet","duration","remaining","destination","system","route"]) or ship.personal != true: return ERR_INVALID_DATA
@@ -125,6 +142,8 @@ func restore_snapshot(source: Variant) -> Error:
 	sector_clock = source.sector_clock
 	worlds = saved_worlds.duplicate(true)
 	commerce = candidate_commerce
+	diplomacy = candidate_diplomacy
+	if source.version < 4: diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	if source.version == 1: configure_flagship()
 	return OK
 
@@ -174,7 +193,8 @@ func begin_travel(id: String) -> String:
 	ship.route = offer.route
 	ship.remaining = offer.seconds
 	ship.duration = offer.seconds
-	var destination_name: String = Geography.definition(id).name if sector.system_by_id(system_of(id)).visited else "an uncharted system"
+	var known_system: Dictionary = sector.system_by_id(system_of(id))
+	var destination_name: String = Geography.definition(id).name if known_system.visited or known_system.get("charted",false) else "an uncharted system"
 	field.note("departure_%d" % field.state.time,"Departed for %s; drive consumed %d energy." % [destination_name,offer.energy])
 	return ""
 
@@ -201,7 +221,8 @@ func advance_travel() -> void:
 	ship.target_planet = ""; ship.destination = ""; ship.remaining = 0; ship.route = []
 	var system: Dictionary = sector.system_by_id(ship.system)
 	system.visited = true
-	if not str(system.owner).is_empty(): sector.faction_by_id(system.owner)["contacted"] = true
+	if not str(system.owner).is_empty(): diplomacy.contact(self,system.owner)
+	diplomacy.record(self,"exploration","Reached "+str(Geography.definition(target).name)+".","",{"planet":target},0,"arrival:"+target)
 	field.note("arrival_%d" % field.state.time,"Reached "+Geography.definition(target).name+". Chart its orbit or approach a landing site.")
 
 func advance_worlds() -> void:

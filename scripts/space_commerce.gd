@@ -22,9 +22,13 @@ func market(planet: String) -> Dictionary:
 	if state.markets.has(planet): return state.markets[planet]
 	return initial_market(planet)
 
-func price(planet: String, item: String, buying: bool) -> int:
+func price(planet: String, item: String, buying: bool, game: RefCounted = null) -> int:
 	var good: Dictionary = catalog.goods[item]
-	return maxi(1,int(ceil(float(good.base)*float(good.factors[Geography.definition(planet).archetype])*(1.2 if buying else 0.8))))
+	var treaty: float = 1.0
+	if game != null:
+		var owner: String = game.sector.system_by_id(game.system_of(planet)).owner
+		if not owner.is_empty() and owner+":trade" in game.sector.state.agreements: treaty = 0.9 if buying else 1.1
+	return maxi(1,int(ceil(float(good.base)*float(good.factors[Geography.definition(planet).archetype])*(1.2 if buying else 0.8)*treaty)))
 
 func access(game: RefCounted, port: String, at: Vector3) -> String:
 	if game.traveling(): return "Complete the journey first."
@@ -44,7 +48,7 @@ func reason(game: RefCounted, port: String, at: Vector3, item: String, amount: i
 	if buying:
 		if quantity()+amount > capacity(): return "Cargo hold is full."
 		if amount > offer.stock: return "Insufficient local stock."
-		if game.field.marks < price(planet,item,true)*amount: return "Insufficient Marks."
+		if game.field.marks < price(planet,item,true,game)*amount: return "Insufficient Marks."
 	else:
 		if quantity(item) < amount: return "Not enough aboard."
 		if offer.demand < amount: return "Local demand is exhausted."
@@ -63,7 +67,7 @@ func transact(game: RefCounted, port: String, at: Vector3, item: String, amount:
 	var planet: String = game.field.state.planet_id
 	var offer: Dictionary = market(planet)
 	state.markets[planet] = offer
-	var total: int = price(planet,item,buying)*amount
+	var total: int = price(planet,item,buying,game)*amount
 	if buying:
 		offer[item].stock -= amount
 		game.field.marks -= total
@@ -81,6 +85,9 @@ func transact(game: RefCounted, port: String, at: Vector3, item: String, amount:
 			if lot.origin != planet and flow not in state.flows: state.flows.append(flow)
 		state.cargo = state.cargo.filter(func(lot: Dictionary) -> bool: return lot.quantity > 0)
 	game.field.note("commerce_%d" % game.field.state.history.size(),"%s %d %s at %s for %d Marks." % ["Bought" if buying else "Sold",amount,catalog.goods[item].name,Geography.definition(planet).name,total])
+	var owner: String = game.sector.system_by_id(game.system_of(planet)).owner
+	var agreement_cause: int = game.diplomacy.state.keys.get("pact:"+owner+":trade",0) if owner+":trade" in game.sector.state.agreements else 0
+	game.diplomacy.record(game,"trade","%s %d %s for %d Marks." % ["Bought" if buying else "Sold",amount,catalog.goods[item].name,total],owner,{"item":item,"quantity":amount,"buying":buying,"total":total},agreement_cause)
 	update_badges(game)
 	return ""
 
@@ -136,6 +143,7 @@ func buy_upgrade(game: RefCounted, port: String, at: Vector3, id: String) -> Str
 	game.field.marks -= float(catalog.upgrades[id].price)
 	state.upgrades.append(id)
 	game.field.note("upgrade_"+id,"Installed "+str(catalog.upgrades[id].name)+".")
+	game.diplomacy.record(game,"equipment","Installed "+str(catalog.upgrades[id].name)+".","",{"upgrade":id,"price":catalog.upgrades[id].price})
 	return ""
 
 func restore(source: Variant) -> Error:

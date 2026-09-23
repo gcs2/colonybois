@@ -12,6 +12,8 @@ An early 3D colony-and-galaxy systems demo. Windows desktop; **Godot 4.7.2 stabl
 
 ## Play
 
+**Alien contact:** enter an inhabited system, then open **Communicate / Y**. Three original animated portrait candidates present trade agreements, transit pledges, chart-sharing alliances, goodwill and exclusive survey licenses. Agreements change real prices/access; decisions persist in **Escape → Chronicle**. [Contact behavior and current limits](docs/EXPEDITION_CONTACT.md).
+
 **Trading pilot:** open communications (**Y**) and approach the local dock. Market trades real ship cargo; Upgrades sells badge-gated hold/drive improvements; Energy provides recharge and reserve packs. At Morrow, load alloy from actual colony construction stock, then carry it to another world. Frozen water and arid resonant glass offer different trade opportunities. **I** shows cargo origins and capacity; **Escape → Badges** shows unlock progress. Markets have finite stock/demand. [Exact behavior and remaining work](docs/SHIP_COMMERCE.md).
 
 **Latest presentation checkpoint:** shared seeded geography now drives Morrow and surveyed strategic globes, with distinct terrestrial climates, relief, clouds and atmosphere. [Planet pipeline and remaining work](docs/PLANET_GENERATION.md). Morrow Basin, frozen Nacre I and arid Kestrel I support personal surface flight. All 24 sector planets support orbital visits; further landing regions remain pending.

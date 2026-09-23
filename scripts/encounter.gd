@@ -12,6 +12,13 @@ const Campaign = preload("res://scripts/expedition_session.gd")
 var campaign: RefCounted = null
 var dock_page: String = "market"
 var trade_amount: int = 1
+const AlienPortrait = preload("res://scripts/alien_portrait.gd")
+var contacted_faction: String = ""
+var contact_page: String = "agreements"
+var contact_reply: String = ""
+var contact_accepted: bool = true
+var chronicle_filter: String = "all"
+var chronicle_page: int = 0
 var persistence_blocked: bool = false
 const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
@@ -1279,6 +1286,10 @@ func _refresh_ui() -> void:
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
 	if campaign != null: hud.quick_cargo.tooltip_text = "Commodity hold: %d / %d · Specimens: %d / 2 · Energy packs: %d [I]" % [campaign.commerce.quantity(),campaign.commerce.capacity(),s.samples,s.energy_packs]
+	if campaign != null:
+		var pending: int = campaign.diplomacy.unread().size()
+		hud.navigation_actions[1].tooltip_text = "%d incoming transmissions · Communicate [Y]" % pending if pending > 0 else "Communicate · known civilizations and local services [Y]"
+		hud.navigation_actions[1].modulate = Color("ffe9ac") if pending > 0 else Color.WHITE
 	hud.paused_badge.text = ("GAME PAUSED" if popup.visible and popup_kind == "menu" else "INSPECTION PAUSED") if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
 	hud.navigation.orbital = orbital
 	var service_at: Vector3 = Model.service_position("orbit_tender" if orbital else "basin_port")
@@ -1458,7 +1469,10 @@ func _show_popup(kind: String) -> void:
 	if kind == "menu": menu_return = false
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
-	popup.size = Vector2(555,660 if kind == "service" and campaign != null else 595)
+	popup.size = Vector2(555,660 if kind in ["service","contact"] and campaign != null else 595)
+	if kind == "contact" and campaign != null:
+		popup.position = Vector2(690,100)
+		popup.size = Vector2(885,660)
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
 	popup.visible = true
 	var header := HBoxContainer.new()
@@ -1512,6 +1526,9 @@ func _show_popup(kind: String) -> void:
 		_button("Audio settings",_show_popup.bind("audio"),popup_body)
 	elif kind == "journal":
 		if campaign != null:
+			_build_chronicle_panel()
+			return
+		if campaign != null:
 			var ledger: Dictionary = campaign.sector.state.get("ledger",{})
 			popup_body.add_child(_label("Colony day %d · treasury %d Marks\nLatest day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],14,Instruments.GOLD))
 		var scroll := ScrollContainer.new()
@@ -1528,16 +1545,7 @@ func _show_popup(kind: String) -> void:
 			entries.add_child(text)
 		if model.state.history.is_empty(): entries.add_child(_label("Your first discovery will appear here.",16))
 	elif kind == "contact" and campaign != null:
-		_panel_copy(Geography.definition(model.state.planet_id).name,Instruments.PAPER)
-		var owner: String = campaign.sector.system_by_id(campaign.sector.state.flagship.system).owner
-		if not owner.is_empty():
-			var faction: Dictionary = campaign.sector.faction_by_id(owner)
-			_panel_copy("%s · %s / %s" % [faction.name,faction.government,faction.philosophy])
-			_panel_copy("Trade suspended by embargo." if faction.get("embargo",false) else "Local markets are accepting visiting ships.")
-		_panel_copy("Dock to trade cargo, purchase upgrades or recharge.")
-		_button("Approach local dock",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
-		_button("Inventory",_show_popup.bind("cargo"),popup_body)
-		_button("Badges & unlocks",_show_popup.bind("badges"),popup_body)
+		_build_contact_panel()
 	else:
 		_button("Local ship services",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
 		var portrait := TextureRect.new()
@@ -1957,9 +1965,9 @@ func _build_market_panel() -> void:
 		popup_body.add_child(actions)
 		for buying: bool in [true,false]:
 			var blocked: String = commerce.reason(campaign,selected_service,ship.position,item,trade_amount,buying)
-			var button: Button = _button("%s %d · %d Marks" % ["Buy" if buying else "Sell",trade_amount,commerce.price(planet,item,buying)*trade_amount],_commerce_action.bind("buy" if buying else "sell",item),actions)
+			var button: Button = _button("%s %d · %d Marks" % ["Buy" if buying else "Sell",trade_amount,commerce.price(planet,item,buying,campaign)*trade_amount],_commerce_action.bind("buy" if buying else "sell",item),actions)
 			button.disabled = paused or not blocked.is_empty()
-			button.tooltip_text = blocked if not blocked.is_empty() else "%d Marks per unit. %s" % [commerce.price(planet,item,buying),good.description]
+			button.tooltip_text = blocked if not blocked.is_empty() else "%d Marks per unit. %s" % [commerce.price(planet,item,buying,campaign),good.description]
 	_panel_copy("Both docks share this market. Stock and demand are finite; revisit other worlds for different prices.")
 	_button("Undock",_close_popup,popup_body)
 
@@ -2003,6 +2011,118 @@ func _build_badges_panel() -> void:
 		_panel_copy("%s · %s\n%s" % [campaign.commerce.catalog.upgrades[id].name,"INSTALLED" if id in campaign.commerce.state.upgrades else "ELIGIBLE TO BUY" if campaign.commerce.eligible(id) else "LOCKED",_upgrade_requirements(id)],Instruments.PAPER)
 	_panel_copy("Badges unlock shop access. Equipment still costs Marks.")
 
+func _contact_select(id: String) -> void:
+	contacted_faction = id
+	contact_reply = ""
+	_show_popup("contact")
+
+func _contact_action(action: String) -> void:
+	if paused or campaign == null: return
+	var error: String = campaign.diplomacy.act(campaign,contacted_faction,action)
+	contact_accepted = error.is_empty()
+	var profile: Dictionary = campaign.diplomacy.profiles[contacted_faction]
+	contact_reply = str(profile.get(action,profile.accepted)) if contact_accepted else str(profile.declined)+" "+error
+	audio.play("ui_confirm" if contact_accepted else "error")
+	if contact_accepted: _save(false)
+	_show_popup("contact")
+	_refresh_ui()
+
+func _build_contact_panel() -> void:
+	var known: Array = []
+	for f: Dictionary in campaign.sector.state.factions:
+		if f.get("contacted",false): known.append(f.id)
+	var local: String = campaign.sector.system_by_id(campaign.sector.state.flagship.system).owner
+	if contacted_faction not in known: contacted_faction = local if local in known else str(known[0]) if not known.is_empty() else ""
+	var roster := HBoxContainer.new()
+	popup_body.add_child(roster)
+	for id: String in known:
+		var button: Button = _button(campaign.diplomacy.profiles[id].speaker,_contact_select.bind(id),roster)
+		button.disabled = id == contacted_faction
+		button.tooltip_text = campaign.sector.faction_by_id(id).name
+	if contacted_faction.is_empty():
+		_panel_copy("No alien channels established. Explore inhabited systems to make first contact.",Instruments.PAPER)
+	else:
+		var f: Dictionary = campaign.sector.faction_by_id(contacted_faction)
+		var profile: Dictionary = campaign.diplomacy.profiles[contacted_faction]
+		campaign.diplomacy.acknowledge(contacted_faction)
+		var introduction := HBoxContainer.new()
+		introduction.add_theme_constant_override("separation",18)
+		popup_body.add_child(introduction)
+		var portrait := AlienPortrait.new()
+		portrait.custom_minimum_size = Vector2(320,250)
+		portrait.faction_id = contacted_faction
+		portrait.mood = "wary" if f.get("embargo",false) else "pleased" if f.relation >= 40 else "neutral"
+		introduction.add_child(portrait)
+		if not contact_reply.is_empty(): portrait.respond(contact_accepted)
+		var dialogue := VBoxContainer.new()
+		dialogue.add_theme_constant_override("separation",14)
+		dialogue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		introduction.add_child(dialogue)
+		_contact_copy(dialogue,"%s · %s\n%s\n%s / %s" % [profile.speaker,profile.species,f.name,f.government,f.philosophy],Color(profile.color))
+		_contact_copy(dialogue,"“%s”" % (contact_reply if not contact_reply.is_empty() else campaign.diplomacy.greeting(campaign,contacted_faction)),Instruments.PAPER)
+		_contact_copy(dialogue,"Relations %+d · %s\n%s" % [f.relation,"trade embargo" if f.get("embargo",false) else "open communications",f.reason],Instruments.MUTED)
+		var tabs := HBoxContainer.new()
+		popup_body.add_child(tabs)
+		for page: String in ["agreements","exchange"]:
+			var tab: Button = _button(page.capitalize(),func() -> void: contact_page = page; _show_popup("contact"),tabs)
+			tab.disabled = contact_page == page
+		if contact_page == "agreements":
+			var offers: Dictionary = {"trade":"Trade agreement · preferred market prices","non_aggression":"Non-aggression · guaranteed transit","alliance":"Alliance · shared navigation charts"}
+			var descriptions: Dictionary = {"trade":"Local buy prices 10% lower; sale prices 10% higher, rounded to Marks. Stock and demand stay finite.","non_aggression":"Allows passage through this nation's territory even during a commercial embargo. It does not reopen its markets.","alliance":"Shares navigation through two links around your ally. Charts do not count as visits or planetary surveys."}
+			for pact: String in offers:
+				var active: bool = contacted_faction+":"+pact in campaign.sector.state.agreements
+				var action: String = "cancel_"+pact if active else pact
+				var blocked: String = campaign.diplomacy.reason(campaign,contacted_faction,action)
+				var button: Button = _button(("Withdraw · "+pact.replace("_"," ")+" · −20 relations") if active else offers[pact],_contact_action.bind(action),popup_body)
+				button.disabled = paused or not blocked.is_empty()
+				button.tooltip_text = descriptions[pact]+("\n"+blocked if not blocked.is_empty() else "")
+				if not active and not blocked.is_empty(): _panel_copy(blocked)
+		else:
+			var choices: Dictionary = {"gift":"Goodwill grant · 120 Marks · +15 trust","chart":"License current survey · +25 Marks / +8 trust","reconcile":"Reconciliation · 80 Marks · reset relations to 0"}
+			for action: String in choices:
+				var blocked: String = campaign.diplomacy.reason(campaign,contacted_faction,action)
+				var button: Button = _button(choices[action],_contact_action.bind(action),popup_body)
+				button.disabled = paused or not blocked.is_empty()
+				button.tooltip_text = blocked if not blocked.is_empty() else "One goodwill grant per nation. Each completed chart can be licensed to one nation only."
+			_panel_copy("A chart license is exclusive: choose which nation gains your findings.")
+	_button("Approach local dock",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
+
+func _contact_copy(parent: Control, text: String, tint: Color) -> void:
+	var label: Label = _label(text,16,tint)
+	label.custom_minimum_size.x = 450
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	parent.add_child(label)
+
+func _build_chronicle_panel() -> void:
+	var ledger: Dictionary = campaign.sector.state.get("ledger",{})
+	_panel_copy("Colony day %d · treasury %d Marks\nLast day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],Instruments.GOLD)
+	var filters := HBoxContainer.new()
+	popup_body.add_child(filters)
+	for filter: String in ["all","diplomacy","trade","exploration","local"]:
+		var button: Button = _button(filter.capitalize(),func() -> void: chronicle_filter = filter; chronicle_page = 0; _show_popup("journal"),filters)
+		button.add_theme_font_size_override("font_size",13)
+		button.disabled = chronicle_filter == filter
+	var entries: Array = model.state.history.duplicate() if chronicle_filter == "local" else campaign.diplomacy.state.events.duplicate()
+	if chronicle_filter == "diplomacy": entries = entries.filter(func(entry: Dictionary) -> bool: return entry.kind in ["diplomacy","contact"])
+	elif chronicle_filter not in ["all","local"]: entries = entries.filter(func(entry: Dictionary) -> bool: return entry.kind == chronicle_filter)
+	entries.reverse()
+	chronicle_page = clampi(chronicle_page,0,maxi(0,(entries.size()-1)/15))
+	var pager := HBoxContainer.new()
+	popup_body.add_child(pager)
+	_button("Newer",func() -> void: chronicle_page -= 1; _show_popup("journal"),pager).disabled = chronicle_page == 0
+	pager.add_child(_label("%d events · page %d" % [entries.size(),chronicle_page+1],14))
+	_button("Older",func() -> void: chronicle_page += 1; _show_popup("journal"),pager).disabled = (chronicle_page+1)*15 >= entries.size()
+	for entry: Dictionary in entries.slice(chronicle_page*15,(chronicle_page+1)*15):
+		if chronicle_filter == "local":
+			_panel_copy("%02d:%02d · %s" % [int(entry.time)/60,int(entry.time)%60,entry.text],Instruments.PAPER)
+			continue
+		_panel_copy("%02d:%02d · %s · %s" % [int(entry.time)/60,int(entry.time)%60,entry.kind.capitalize(),Geography.definition(entry.location).name],Instruments.GOLD)
+		_panel_copy(entry.summary,Instruments.PAPER)
+		if entry.cause > 0:
+			var cause: Dictionary = campaign.diplomacy.state.events[entry.cause-1]
+			_panel_copy("Following: "+str(cause.summary))
+	if entries.is_empty(): _panel_copy("Your discoveries and decisions will appear here. Earlier activity is preserved in Local.")
+
 func _reload_destination() -> void:
 	var parent: Node = get_parent()
 	var next: Node3D = load("res://scenes/encounter.tscn").instantiate()
@@ -2018,5 +2138,9 @@ func _reload_destination() -> void:
 	next.save_path = path
 	next.arrival_fade = 1.0
 	next._save(false)
+	if not campaign.diplomacy.unread().is_empty():
+		var incoming: String = campaign.diplomacy.unread()[0]
+		next._toast("Incoming transmission · "+str(campaign.sector.faction_by_id(incoming).name)+" · Communicate [Y]")
+		next.audio.play("ui_open")
 	if campaign.traveling(): next._toggle_sector_map()
 	queue_free()
