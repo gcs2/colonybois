@@ -1,6 +1,14 @@
 # Resume here
 
-## Surface weapons and defenses — latest checkpoint
+## Allied escorts — latest checkpoint
+
+Read [ALLIED_FLEET.md](ALLIED_FLEET.md). Alliances now supply one escort per nation, with scenario badge-based slots capped at three. Contact → Fleet handles local-orbit recruitment; the HUD roster shows real hull and opens orders. Escorts follow and assist the selected attack, take actual enemy aim-volume damage, preserve damage through travel/dismissal, and incur relationship loss and a paid/delayed replacement when destroyed. Dock fleet repair uses real proximity/prices/access. Alliance withdrawal or embargo recalls ships. Snapshot v11 validates fleet ownership, slots, hull, cooldowns and history; earlier campaigns gain no free ships.
+
+Validation: full suite passes with **1,042 assertions plus UI checks**, including 53 fleet checks for actual scene attack/cancellation/inspection, enemy strikes, recruitment UI, atomic persistence and three distinct allies. Orbit, roster and contact renders reviewed at 1080p/1440p. Mesh kit, HUD, reused audio and native combat feel remain unapproved. Next: connect planet-wide climate/atmosphere tools (T01) to personal ship use, globe/surface appearance, habitability, colony capacity and diplomatic response. Continue missing weapon/fleet support families; do not expand ecology catalog or launch empire conquest merely because escorts now work.
+
+Playable: **build/versions/20260923-165619/FrontierWorlds.exe** through Play.cmd. Exported-pack encounter startup smoke passed.
+
+## Surface weapons and defenses — previous checkpoint
 
 Read [SURFACE_COMBAT.md](SURFACE_COMBAT.md). Nacre I and Kestrel I now have one bounded pursuing flyer and two fixed defenses each. The starting surface laser, paid seeker missile and paid ground bomb have distinct target/cost/range/timing rules. Mouse orders approach before firing; Stop/manual steering cancel. Telegraphed 3D strikes reward altitude evasion. Separate wreck clicks recover finite cargo; persistent kills contribute to Defender and chronicle. Shared-clock projectiles resolve even after ascent. Snapshot v10 preserves the combat model and migrates earlier campaigns without free victories.
 

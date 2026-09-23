@@ -45,7 +45,7 @@ Reference behavior underpinning these boundaries: [Spore research](../SPORE_SPAC
 
 ## Concrete corrections to current progress claims
 
-- **Three pilot badges are not three reference-complete families.** Explorer counts distinct visits; Merchant counts distinct commodity routes; Defender counts neutralizations. Reference activities and thresholds differ, and master rank/fleet unlocks are absent.
+- **Three pilot badges are not three reference-complete families.** Explorer counts distinct visits; Merchant counts distinct commodity routes; Defender counts neutralizations. Reference activities and thresholds differ; the three-slot escort bridge uses these pilot tiers while reference master ranks/fleet unlocks remain absent.
 - **The recovered shroud is a shield-like damage reducer.** It provides no invisibility; do not count Cloaking Device as implemented.
 - **Four initial weapon roles are not the weapon catalog.** The orbital arc lance is now joined by a surface laser, homing missile and ground-area bomb. Multiple tiers, automatic defense, ground-pulse, consumable and support roles remain missing. The blaster reference also limits which weapons work outside an atmosphere; our orbital combat is an explicit extension, not proof of surface parity. [Blaster](https://spore.fandom.com/wiki/Blaster).
 - **Paid freight is an endorsed extension.** It does not close economic takeover, system purchases or all shop progression.
@@ -54,7 +54,7 @@ Reference behavior underpinning these boundaries: [Spore research](../SPORE_SPAC
 
 ## Next implementation target
 
-Subsequent [ship capacity](../SHIP_CAPACITY.md), [repair supply](../REPAIR_SUPPLIES.md) and [surface combat](../SURFACE_COMBAT.md) checkpoints implement purchased hull/energy tiers, prior-installation requirements, expanded service quotes, finite repair stock, inventory/hotbar consumption and three surface weapon roles against six persistent defenses. The manifests above retain their stated implementation-comparison commit. Continue with **allied fleet assistance**, preserving the shared ship, meaningful energy/repair costs and persistent outcomes. No passive energy regeneration; home recharge stays free.
+Subsequent [ship capacity](../SHIP_CAPACITY.md), [repair supply](../REPAIR_SUPPLIES.md), [surface combat](../SURFACE_COMBAT.md) and [allied fleet](../ALLIED_FLEET.md) checkpoints implement purchased hull/energy tiers, finite repair stock, three surface weapon roles and persistent allied escorts with real damage/losses. The manifests above retain their stated implementation-comparison commit. Continue with **planet-wide climate/atmosphere manipulation**, preserving the shared ship, meaningful energy/repair costs and persistent outcomes. No passive energy regeneration; home recharge stays free.
 
 Then continue weapon-family breadth and world-scale manipulation. Keep the native HUD/flight/audio review gates active. This order is scheduling, not permission to omit any reference family or postpone baseline breadth into the enrichment epic.
 

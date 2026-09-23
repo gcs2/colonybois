@@ -1,0 +1,5 @@
+{
+  "directorate":{"name":"Latchwing","hull":100,"damage":10,"cycle":3,"color":"e7a484","shape":"claw"},
+  "consortium":{"name":"Bellrunner","hull":80,"damage":8,"cycle":2,"color":"eacb78","shape":"bell"},
+  "commune":{"name":"Reedskate","hull":120,"damage":8,"cycle":3,"color":"a1d5b2","shape":"fin"}
+}

@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 10
+const VERSION := 11
+const Fleet = preload("res://scripts/allied_fleet.gd")
+var fleet := Fleet.new()
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
 var combat := SurfaceCombat.new()
 const Freight = preload("res://scripts/expedition_freight.gd")
@@ -54,6 +56,7 @@ func tick(threat_distance: float = INF) -> String:
 			var faction: Dictionary = sector.faction_by_id(id)
 			if bool(faction.get("embargo",false)) != trade_access[id]:
 				diplomacy.record(self,"diplomacy",str(faction.name)+(" imposed a trade embargo." if faction.embargo else " reopened trade."),id,{"embargo":faction.embargo,"relation":faction.relation,"reason":faction.reason})
+	fleet.reconcile(self)
 	return result
 
 func import_legacy(path: String) -> Error:
@@ -68,6 +71,7 @@ func import_legacy(path: String) -> Error:
 	worlds.clear()
 	commerce = Commerce.new()
 	combat = SurfaceCombat.new()
+	fleet = Fleet.new()
 	colonies = Colonies.new()
 	freight = Freight.new()
 	diplomacy = Diplomacy.new()
@@ -81,7 +85,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -107,7 +111,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -146,6 +150,10 @@ func restore_snapshot(source: Variant) -> Error:
 		if Field.new().restore_snapshot(probe) != OK: return ERR_INVALID_DATA
 	var candidate_diplomacy := Diplomacy.new()
 	var candidate_combat := SurfaceCombat.new()
+	var candidate_fleet := Fleet.new()
+	if source.version >= 11 and candidate_fleet.restore(source.get("fleet"),int(candidate_field.state.time),candidate_sector) != OK: return ERR_INVALID_DATA
+	var fleet_slots: int = mini(3,maxi(candidate_commerce.state.badges.explorer,maxi(candidate_commerce.state.badges.merchant,candidate_commerce.state.badges.defender)))
+	if candidate_fleet.active_ids().size() > fleet_slots: return ERR_INVALID_DATA
 	if source.version >= 10 and candidate_combat.restore(source.get("combat"),int(candidate_field.state.time),candidate_commerce.state.upgrades) != OK: return ERR_INVALID_DATA
 	var candidate_colonies := Colonies.new()
 	if source.version >= 5 and candidate_colonies.restore(source.get("colonies"),candidate_sector,candidate_commerce) != OK: return ERR_INVALID_DATA
@@ -169,6 +177,7 @@ func restore_snapshot(source: Variant) -> Error:
 	worlds = saved_worlds.duplicate(true)
 	commerce = candidate_commerce
 	combat = candidate_combat
+	fleet = candidate_fleet
 	field.installed_upgrades = commerce.state.upgrades
 	colonies = candidate_colonies
 	freight = candidate_freight

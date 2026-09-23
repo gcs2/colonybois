@@ -1,0 +1,11 @@
+{
+  "status":"Original modular candidates; player art acceptance pending",
+  "purpose":"Three faction escorts distinguish friendly support from hostile contacts at the flight camera's normal scale.",
+  "shared_dimensions_m":{"length":3.8,"width":4.6,"height":1.2},
+  "families":{"directorate":"Latchwing: forward armored claws, narrow bridge","consortium":"Bellrunner: paired rounded cargo/drive bells","commune":"Reedskate: broad flexible fins and slim dorsal body"},
+  "materials":"Matte faction-colored shell, dark canopy inset, pale green weapon/engine apertures",
+  "animation":"Formation translation/heading, bounded fin motion and short attached-color weapon beams. No per-ship physics or unlimited particles.",
+  "caps":{"ships":3,"beam_meshes":3},
+  "source":"scripts/allied_fleet_visual.gd",
+  "review":"Actual surface/orbit play camera, readable affiliation, silhouette, formation and damage roster at 1080p and 1440p. Prototype mesh does not imply final art approval."
+}

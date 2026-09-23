@@ -225,15 +225,19 @@ func fire_lance(ship_at: Vector3) -> String:
 	state.energy -= LANCE_ENERGY
 	state.weapon_ready_at = state.time+LANCE_COOLDOWN
 	state.weapon_shots += 1
-	state.guardian_hull = maxf(0,float(state.guardian_hull)-lance_damage())
+	damage_guardian(lance_damage())
+	return ""
+
+func damage_guardian(amount: float) -> void:
+	if state.guardian_disabled: return
+	state.guardian_hull = maxf(0,float(state.guardian_hull)-amount)
 	if state.guardian_hull == 0:
 		state.guardian_disabled = true
 		state.guardian_alert = 0
 		state.guardian_fire_at = 0
 		note("guardian_disabled","Arc lance disabled the custodian skiff without destroying it. Its old exclusion order fell silent; ownership of the wreck remains unknown." if has_wreck() else enemy_profile().name+" neutralized. Its cargo can be recovered.")
-	return ""
 
-func guardian_step(ship_at: Vector3) -> String:
+func guardian_step(ship_at: Vector3, escorts: Array = []) -> String:
 	if not has_guardian(): return ""
 	# Called once after tick(), with the actual ship position. No scene nodes or RNG.
 	if not ship_at.is_finite(): return ""
@@ -254,6 +258,9 @@ func guardian_step(ship_at: Vector3) -> String:
 		current = current.move_toward(GUARDIAN_HOME,4.0)
 	state.guardian_x = current.x
 	state.guardian_z = current.z
+	var target: Vector3 = ship_at
+	for escort: Vector3 in escorts:
+		if escort.distance_to(current) < target.distance_to(current): target = escort
 	if int(enemy_profile().windup) > 0:
 		if state.guardian_fire_at > 0:
 			if state.time < state.guardian_fire_at: return ""
@@ -266,13 +273,15 @@ func guardian_step(ship_at: Vector3) -> String:
 			if state.hull > 0: return "guardian_hit"
 			_emergency_tow(); return "tow"
 		if intruding and state.guardian_alert >= 3 and current.distance_to(ship_at) <= GUARDIAN_FIRE_RANGE and state.time >= state.guardian_ready_at:
-			state.guardian_aim = [ship_at.x,ship_at.y,ship_at.z]
+			state.guardian_aim = [target.x,target.y,target.z]
 			state.guardian_fire_at = state.time+int(enemy_profile().windup)
 			return "guardian_aim"
 		return ""
 	if not intruding or state.guardian_alert < 3 or current.distance_to(ship_at) > GUARDIAN_FIRE_RANGE or state.time < state.guardian_ready_at: return ""
 	state.guardian_ready_at = state.time+4
 	state.guardian_shots += 1
+	state.guardian_aim = [target.x,target.y,target.z]
+	if target.distance_to(ship_at) > 0.5: return "guardian_miss"
 	state.hull = maxf(0,float(state.hull)-(3 if state.shroud_on else 10))
 	note("first_guardian_fire","A custodian skiff challenged the scout inside the wreck's exclusion zone. It breaks pursuit when ships withdraw.")
 	if state.hull > 0: return "guardian_hit"

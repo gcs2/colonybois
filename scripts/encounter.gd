@@ -41,6 +41,11 @@ const FlightHUD = preload("res://scripts/flight_hud.gd")
 const FlightEffects = preload("res://scripts/flight_effects.gd")
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
 const SurfaceVisual = preload("res://scripts/surface_combat_visual.gd")
+const FleetVisual = preload("res://scripts/allied_fleet_visual.gd")
+var fleet_visual: Node3D
+var fleet_strip: HBoxContainer
+var fleet_button: Button
+var fleet_bars: Dictionary = {}
 var surface_combat_visual: Node3D
 var surface_weapon: String = ""
 var surface_selected: String = ""
@@ -210,6 +215,8 @@ func _ready() -> void:
 		surface_combat_visual = SurfaceVisual.new()
 		surface_root.add_child(surface_combat_visual)
 		surface_combat_visual.setup(model.state.planet_id)
+		fleet_visual = FleetVisual.new(); add_child(fleet_visual)
+		fleet_visual.setup(campaign.fleet.catalog)
 	var lance_mesh := CylinderMesh.new()
 	lance_mesh.top_radius = 0.07
 	lance_mesh.bottom_radius = 0.13
@@ -225,6 +232,7 @@ func _ready() -> void:
 	navigation_marker.visible = false
 	_make_ui()
 	_restore_ship()
+	if campaign != null: campaign.fleet.prepare(campaign,ship.position)
 	_apply_flight_mode()
 	_update_visuals()
 	_update_camera(1.0)
@@ -573,6 +581,19 @@ func _make_ui() -> void:
 	root.add_child(guide_caption)
 	guide_arrow = _label("▼",28,Color("ffe0a8"))
 	root.add_child(guide_arrow)
+	if campaign != null:
+		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(575,24)
+		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
+		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
+		fleet_button.icon = load("res://assets/ui/flight/fleet.svg")
+		fleet_button.custom_minimum_size.x = 104
+		fleet_button.add_theme_constant_override("icon_max_width",32)
+		for id: String in campaign.fleet.catalog:
+			var bar := ProgressBar.new(); bar.custom_minimum_size = Vector2(78,10)
+			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER; bar.show_percentage = false
+			bar.mouse_filter = Control.MOUSE_FILTER_STOP
+			Instruments.meter(bar,Color(campaign.fleet.catalog[id].color))
+			fleet_strip.add_child(bar); fleet_bars[id] = bar
 	ship_locator = _label("◇  SHIP",12,Instruments.GOLD)
 	planet_locator = _label(model.definition().name.to_upper(),13,Instruments.PAPER)
 	wreck_label = _label("◇  DRIFTING WRECK · PULSE FIELD",13,Instruments.COMMS)
@@ -711,17 +732,25 @@ func _process(delta: float) -> void:
 			tick_clock -= 1
 			var old_count: int = model.state.history.size()
 			var distance: float = ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.state.flight_mode == "orbit" else INF
+			var old_shots: int = model.state.guardian_shots
+			var old_pulse: int = model.state.threat_clock
+			var old_escorts: Array = campaign.fleet.active_ids() if campaign != null else []
 			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
 			if model.state.planet_id != rendered_planet:
 				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
 				return
 			if sector_map.visible: sector_map.refresh()
-			var attack: String = model.guardian_step(ship.position) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
+			if campaign != null: campaign.fleet.prepare(campaign,ship.position)
+			var escorts: Array = campaign.fleet.positions(campaign) if campaign != null else []
+			var attack: String = model.guardian_step(ship.position,escorts) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
+			if campaign != null: campaign.fleet.orbit_hits(campaign,old_shots,old_pulse)
 			if campaign != null and model.state.flight_mode == "surface":
 				var ground_event: String = campaign.combat.step(campaign,ship.position)
 				if ground_event == "tow": attack = "tow"
 				elif ground_event == "hit": _toast("Surface defenses hit · move clear of their aim"); audio.play("error")
 				elif ground_event == "aim": audio.play("target_lock")
+			if campaign != null and pulse != "tow" and attack != "tow":
+				campaign.fleet.assist(campaign,"guardian" if model.state.flight_mode == "orbit" else surface_selected,attack_order if model.state.flight_mode == "orbit" else surface_order and not surface_salvage_order,ship.position)
 			if not model.has_wreck() and attack in ["guardian_hit","guardian_miss","tow"]:
 				enemy_flash = 0.35
 				audio.play("scan_complete")
@@ -745,6 +774,10 @@ func _process(delta: float) -> void:
 					audio.play("arrival")
 				if popup.visible: _show_popup(popup_kind)
 			if int(model.state.time)%30 == 0 and "--field-capture" not in OS.get_cmdline_user_args(): _save(false)
+			if campaign != null:
+				for id: String in old_escorts:
+					if campaign.fleet.state.ships[id].status == "lost":
+						_toast(campaign.fleet.catalog[id].name+" lost · relations −7"); audio.play("error")
 	_update_camera(delta)
 	if not paused and not _inspection_open() and model.state.flight_mode == "orbit": orbit.advance(delta)
 	if not paused and not _inspection_open() and model.state.flight_mode == "surface":
@@ -758,6 +791,7 @@ func _process(delta: float) -> void:
 	_operate_attack()
 	_operate_surface_attack()
 	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
+	if fleet_visual != null: fleet_visual.refresh(campaign,delta,paused or _inspection_open())
 	if not paused and not _inspection_open():
 		weapon_flash = maxf(0,weapon_flash-delta)
 		enemy_flash = maxf(0,enemy_flash-delta)
@@ -1601,6 +1635,7 @@ func _refresh_ui() -> void:
 		use_button.tooltip_text = "Cancel deployment and keep the colony kit aboard."
 		progress_bar.value = 0
 	_refresh_surface_combat_ui()
+	_refresh_fleet_ui()
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1701,6 +1736,7 @@ func _show_popup(kind: String) -> void:
 	popup_body.add_child(header)
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
 	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
+	titles.fleet = "ALLIED FLEET"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -1730,6 +1766,8 @@ func _show_popup(kind: String) -> void:
 		_build_service_panel()
 	elif kind == "badges" and campaign != null:
 		_build_badges_panel()
+	elif kind == "fleet" and campaign != null:
+		_build_fleet_panel()
 	elif kind == "colonies" and campaign != null:
 		_build_colonies_panel()
 	elif kind == "audio":
@@ -2120,12 +2158,13 @@ func _build_service_panel() -> void:
 		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.GOLD)
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
-		for page: String in ["market","upgrades","energy","warehouse"]:
+		for page: String in ["market","upgrades","energy","warehouse","fleet"]:
 			var tab: Button = _button("Supplies" if page == "energy" else page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
 			tab.disabled = dock_page == page
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
 		if dock_page == "warehouse": _build_warehouse_panel(); return
+		if dock_page == "fleet": _build_fleet_panel(); return
 	_panel_copy("ENERGY  %d / %d · PACKS  %d / 3" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
 	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
@@ -2355,12 +2394,12 @@ func _build_contact_panel() -> void:
 		_contact_copy(dialogue,"Relations %+d · %s\n%s" % [f.relation,"trade embargo" if f.get("embargo",false) else "open communications",f.reason],Instruments.MUTED)
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
-		for page: String in ["agreements","exchange"]:
+		for page: String in ["agreements","exchange","fleet"]:
 			var tab: Button = _button(page.capitalize(),func() -> void: contact_page = page; _show_popup("contact"),tabs)
 			tab.disabled = contact_page == page
 		if contact_page == "agreements":
-			var offers: Dictionary = {"trade":"Trade agreement · preferred market prices","non_aggression":"Non-aggression · guaranteed transit","alliance":"Alliance · shared navigation charts"}
-			var descriptions: Dictionary = {"trade":"Local buy prices 10% lower; sale prices 10% higher, rounded to Marks. Stock and demand stay finite.","non_aggression":"Allows passage through this nation's territory even during a commercial embargo. It does not reopen its markets.","alliance":"Shares navigation through two links around your ally. Charts do not count as visits or planetary surveys."}
+			var offers: Dictionary = {"trade":"Trade agreement · preferred market prices","non_aggression":"Non-aggression · guaranteed transit","alliance":"Alliance · charts and escort access"}
+			var descriptions: Dictionary = {"trade":"Local buy prices 10% lower; sale prices 10% higher, rounded to Marks. Stock and demand stay finite.","non_aggression":"Allows passage through this nation's territory even during a commercial embargo. It does not reopen its markets.","alliance":"Shares nearby navigation charts and permits one loaned escort, subject to your fleet capacity. Request it in allied orbit. Charts do not count as visits."}
 			for pact: String in offers:
 				var active: bool = contacted_faction+":"+pact in campaign.sector.state.agreements
 				var action: String = "cancel_"+pact if active else pact
@@ -2369,6 +2408,8 @@ func _build_contact_panel() -> void:
 				button.disabled = paused or not blocked.is_empty()
 				button.tooltip_text = descriptions[pact]+("\n"+blocked if not blocked.is_empty() else "")
 				if not active and not blocked.is_empty(): _panel_copy(blocked)
+		elif contact_page == "fleet":
+			_build_fleet_panel(contacted_faction)
 		else:
 			var choices: Dictionary = {"gift":"Goodwill grant · 120 Marks · +15 trust","chart":"License current survey · +25 Marks / +8 trust","reconcile":"Reconciliation · 80 Marks · reset relations to 0"}
 			for action: String in choices:
@@ -2385,6 +2426,57 @@ func _contact_copy(parent: Control, text: String, tint: Color) -> void:
 	label.custom_minimum_size.x = 450
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(label)
+
+func _refresh_fleet_ui() -> void:
+	if fleet_strip == null: return
+	var ids: Array = campaign.fleet.active_ids()
+	fleet_strip.visible = not _inspection_open() and (campaign.fleet.capacity(campaign) > 0 or not ids.is_empty())
+	fleet_button.text = "%d / %d" % [ids.size(),campaign.fleet.capacity(campaign)]
+	fleet_button.tooltip_text = "Allied fleet · %s\nInspect hull, return escorts or arrange dock repairs." % ("assist attacks" if campaign.fleet.state.assist else "following, holding fire")
+	for id: String in fleet_bars:
+		var bar: ProgressBar = fleet_bars[id]
+		bar.visible = id in ids
+		if not bar.visible: continue
+		bar.max_value = campaign.fleet.catalog[id].hull
+		bar.value = campaign.fleet.state.ships[id].hull
+		bar.tooltip_text = "%s · %s\nHull %d / %d" % [campaign.fleet.catalog[id].name,campaign.sector.faction_by_id(id).name,bar.value,bar.max_value]
+
+func _fleet_action(id: String, action: String) -> void:
+	if paused or campaign == null: return
+	var blocked: String = campaign.fleet.command(campaign,id,action,ship.position)
+	_toast(blocked if not blocked.is_empty() else "Fleet order accepted")
+	audio.play("error" if not blocked.is_empty() else "ui_confirm")
+	if blocked.is_empty(): _save(false)
+	_show_popup(popup_kind); _refresh_ui()
+
+func _build_fleet_panel(only: String = "") -> void:
+	var fleet: RefCounted = campaign.fleet
+	_panel_copy("ALLIED FLEET · %d / %d slots" % [fleet.active_ids().size(),fleet.capacity(campaign)],Instruments.PAPER)
+	var stance: Button = _button("Assist attacks" if fleet.state.assist else "Follow · hold fire",func() -> void:
+		if paused: return
+		fleet.set_assist(campaign,not fleet.state.assist); _save(false); _show_popup(popup_kind),popup_body)
+	stance.icon = load("res://assets/ui/flight/fleet.svg"); stance.add_theme_constant_override("icon_max_width",28)
+	stance.tooltip_text = "Toggle whether escorts fire on the target you engage. Following ships can still take enemy fire."
+	stance.disabled = paused
+	for id: String in fleet.catalog:
+		if not only.is_empty() and id != only: continue
+		if not campaign.sector.faction_by_id(id).get("contacted",false): continue
+		var spec: Dictionary = fleet.catalog[id]
+		var unit: Dictionary = fleet.state.ships.get(id,{})
+		var status_text: String = unit.get("status","available")
+		_panel_copy("%s · %s%s" % [spec.name,status_text," · %d / %d hull" % [unit.hull,spec.hull] if not unit.is_empty() else ""],Color(spec.color))
+		var actions := HBoxContainer.new(); popup_body.add_child(actions)
+		var choices: Array = ["dismiss","repair"] if status_text == "active" else ["recruit"]
+		for action: String in choices:
+			var blocked: String = fleet.reason(campaign,id,action,ship.position)
+			var label: String = "Return ship" if action == "dismiss" else "Repair · %d Marks" % fleet.repair_cost(id) if action == "repair" else "Request replacement · 120 Marks" if status_text == "lost" else "Request escort"
+			var button: Button = _button(label,_fleet_action.bind(id,action),actions)
+			button.set_meta("fleet_action",id+":"+action)
+			button.disabled = paused or not blocked.is_empty()
+			button.tooltip_text = blocked if not blocked.is_empty() else "One loaned ship per ally. Hull damage persists after dismissal."
+			if action == "recruit" and not blocked.is_empty(): _panel_copy(blocked)
+	_panel_copy("One slot per highest Explorer, Merchant or Defender tier, up to three. Lost escorts cost trust (−7); replacements take 60 seconds and 120 Marks.")
+	if only.is_empty(): _button("Communications",_show_popup.bind("contact"),popup_body)
 
 func _build_chronicle_panel() -> void:
 	var ledger: Dictionary = campaign.sector.state.get("ledger",{})

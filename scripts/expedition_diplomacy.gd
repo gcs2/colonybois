@@ -102,6 +102,7 @@ func act(game: RefCounted, id: String, action: String) -> String:
 			for known: String in charts: game.sector.system_by_id(known)["charted"] = true
 			outcome.charts = charts
 	f.embargo = int(f.relation) < -15
+	game.fleet.reconcile(game)
 	outcome.relation_before = old_relation
 	outcome.relation_after = int(f.relation)
 	outcome.marks_delta = game.field.marks-old_money

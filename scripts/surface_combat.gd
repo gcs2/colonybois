@@ -104,6 +104,9 @@ func step(game: RefCounted, ship: Vector3) -> String:
 		if unit.hull <= 0: continue
 		var spec: Dictionary = profiles(planet)[id]
 		var at: Vector3 = position(unit.at)
+		var target: Vector3 = ship
+		for escort: Vector3 in game.fleet.positions(game):
+			if escort.distance_to(at) < target.distance_to(at): target = escort
 		var intruding: bool = home(planet,id).distance_to(ship) < 32
 		if spec.kind == "air":
 			var destination: Vector3 = home(planet,id)
@@ -115,6 +118,7 @@ func step(game: RefCounted, ship: Vector3) -> String:
 		if unit.fire_at > 0:
 			if unit.fire_at > game.field.state.time: continue
 			unit.fire_at = 0; unit.ready = int(game.field.state.time)+4
+			game.fleet.hit_volume(game,position(unit.aim),float(spec.radius),float(spec.damage))
 			if ship.distance_to(position(unit.aim)) <= float(spec.radius):
 				game.field.state.hull = maxf(0,float(game.field.state.hull)-float(spec.damage)); event = "hit"
 				if game.field.state.hull <= 0:
@@ -123,7 +127,7 @@ func step(game: RefCounted, ship: Vector3) -> String:
 					return "tow"
 			elif event != "hit": event = "miss"
 		elif intruding and at.distance_to(ship) <= float(spec.range) and game.field.state.time >= unit.ready:
-			unit.aim = packed(ship); unit.fire_at = int(game.field.state.time)+int(spec.windup)
+			unit.aim = packed(target); unit.fire_at = int(game.field.state.time)+int(spec.windup)
 			if event.is_empty(): event = "aim"
 	return event
 func salvage(game: RefCounted, target: String, at: Vector3) -> String:

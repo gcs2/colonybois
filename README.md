@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Allied fleet:** establish an alliance, earn a badge tier and request an escort through Communications → Fleet while in allied orbit. Escorts follow, assist your attacks and retain damage/losses. Use the HUD fleet icon for orders and dock services → Fleet for paid repairs. [Rules, limitations and verification](docs/ALLIED_FLEET.md).
+
 **Surface combat:** Nacre I and Kestrel I have hostile flyers and sentries. Select the defense laser, or buy a seeker/bomb bay at a dock; click targets/ground to fire, move out of marked strikes, and click wrecks separately for cargo. [Controls, limits and verification](docs/SURFACE_COMBAT.md).
 
 **Repair supplies:** buy basic/full repair packs through dock services → Supplies, then click an owned item in Inventory / I or its hotbar category. Packs have real stock, costs, a shared three-slot locker and a 20-second repair cooldown. [Behavior and verification](docs/REPAIR_SUPPLIES.md).
