@@ -52,3 +52,34 @@ static func meter(bar: ProgressBar, tint: Color) -> void:
 	fill.set_corner_radius_all(0)
 	bar.add_theme_stylebox_override("background",bg)
 	bar.add_theme_stylebox_override("fill",fill)
+
+static func symbol(button: Button, id: String, tint: Color, selected: bool = false) -> void:
+	instrument(button,id,tint,selected)
+	# Rejected ornamental wells are removed. Neutral hit areas pending art review.
+	for state: String in ["normal","hover","pressed","disabled"]:
+		var area := StyleBoxFlat.new()
+		area.bg_color = Color(0.7,0.8,0.85,0.10) if state == "hover" else Color(0,0,0,0)
+		area.border_width_bottom = 2 if selected else 0
+		area.border_color = Color("d5dfdf")
+		area.content_margin_left = 9
+		area.content_margin_right = 9
+		area.content_margin_top = 7
+		area.content_margin_bottom = 7
+		button.add_theme_stylebox_override(state,area)
+	button.add_theme_color_override("icon_normal_color",Color.WHITE)
+	button.add_theme_color_override("icon_hover_color",Color.WHITE)
+	button.add_theme_constant_override("icon_max_width",38)
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+static func tooltip(copy: String) -> String:
+	# Native tooltip labels do not wrap; keep explanations within a readable column.
+	var lines: PackedStringArray = []
+	for paragraph: String in copy.split("\n"):
+		var line: String = ""
+		for word: String in paragraph.split(" "):
+			if line.length()+word.length()+1 > 64 and not line.is_empty():
+				lines.append(line)
+				line = ""
+			line += (" " if not line.is_empty() else "")+word
+		lines.append(line)
+	return "\n".join(lines)

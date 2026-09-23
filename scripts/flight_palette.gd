@@ -2,6 +2,10 @@ extends RefCounted
 ## Presentation entries only. Effects and ownership remain in EncounterState.
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const Model = preload("res://scripts/encounter_state.gd")
+const PAGE_SIZE := 18
+const CATEGORY_ICONS := {"Main tools":"category_tools", "Environment":"category_life", "Weapons":"category_weapons", "Inventory":"inventory"}
+static func slot_rect(slot: int) -> Rect2:
+	return Rect2(766+(slot%9)*59,748+(slot/9)*56,56,54)
 const GROUPS := {
 	"Main tools": ["scan", "collect"],
 	"Environment": ["warm", "seed"],

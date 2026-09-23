@@ -95,12 +95,9 @@ func run() -> void:
 	scene.model.state.survey_ticks = 12
 	scene._change_flight_mode("orbit")
 	scene._refresh_ui()
-	check(scene.hud.navigation.wreck_known and scene.hud.use_button.text == "Salvage","Completed chart exposes a clickable salvage contact")
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	click.position = scene.hud.navigation.project(Vector2(Orbit.WRECK_POSITION.x,Orbit.WRECK_POSITION.z))
-	scene.hud.navigation._gui_input(click)
+	check(not scene.hud.navigation.visible and scene.hud.use_button.text == "Salvage","Completed planetary survey exposes salvage without an orbital local chart")
+	scene._update_camera(1)
+	scene._pick(scene.camera.unproject_position(Orbit.WRECK_POSITION))
 	check(scene.salvage_order and scene.navigating,"Wreck click orders actual ship travel")
 	scene._hud_action("stop")
 	check(not scene.salvage_order and scene.salvage_progress == 0,"Stop cancels approach without acquiring salvage")

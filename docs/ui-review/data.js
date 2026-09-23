@@ -170,7 +170,7 @@ const REVIEW = {
       "source": "manual",
       "observation": "Map and communications occupy the left; tools and ship occupy the right.",
       "required": "Keep a clear flight area; join tools to ship status and replace the local radar with geographic navigation.",
-      "gap": "Three separate placeholder blocks and a detached target console. No animated communicator.",
+      "gap": "User rejected icon ornament, typography and planet appearance. Rounded/metallic wells and persistent above-palette captions are removed; temporary glyphs and hover help remain.",
       "flow": [
         "Fly",
         "Choose category",
@@ -187,7 +187,7 @@ const REVIEW = {
         "world",
         "status"
       ],
-      "current_capture": "flight_ui_hud.png",
+      "current_capture": "flight_ui_surface_1080.png",
       "manual_page": 26
     },
     {
@@ -196,7 +196,7 @@ const REVIEW = {
       "source": "manual",
       "observation": "Tool bins distinguish shortcut numbers from consumable charges.",
       "required": "Provide expandable palettes, item-local costs and contextual targeting. Browsing must not spend energy or fire.",
-      "gap": "Four surface tools use global hotkeys. Orbital weapon is a separate special case; there is no scalable shared palette.",
+      "gap": "Shared selection, category-relative slots, two rows and paging work. Dense layout is fixture-tested; the actual equipment catalog is still small.",
       "flow": [
         "Category",
         "Item",
@@ -220,7 +220,7 @@ const REVIEW = {
       "source": "cargo",
       "observation": "Transaction items carry their own quantities; trade controls sit outside the item grid.",
       "required": "Use an owned pack directly from an inventory item. Separate consumables, installed equipment and physical cargo.",
-      "gap": "Full inspection drawer interrupts flow. Sample cradles do not represent a complete hold or commodity catalog.",
+      "gap": "Owned packs work in a live quick palette and paused detail drawer. Sample cradles do not yet represent a complete hold or commodity catalog.",
       "flow": [
         "Inventory",
         "Owned item",
@@ -313,7 +313,7 @@ const REVIEW = {
       "title": "System view",
       "source": "manual",
       "observation": "Planets, star and orbits replace the close planetary scene.",
-      "required": "Pull back into the same system; select a planet for travel and local contact. Preserve ship state.",
+      "required": "Pull back into the same system; select a planet for travel and local contact. Preserve ship state. No local terrain chart in this view; use the system/galaxy navigation itself.",
       "gap": "The personal-flight prototype has only Morrow; the strategic scene uses separate state.",
       "flow": [
         "Leave planet",
@@ -336,7 +336,7 @@ const REVIEW = {
       "title": "Galaxy view",
       "source": "manual",
       "observation": "The starmap exposes range, routes and filters.",
-      "required": "Show unknown versus visited systems, reachable hops and costs. Keep inventory and ship state continuous.",
+      "required": "Show unknown versus visited systems, reachable hops and costs. Keep inventory and ship state continuous. No local terrain chart in this view; use the system/galaxy navigation itself.",
       "gap": "Strategic graph exists, but personal flight cannot travel through it.",
       "flow": [
         "Pull back",
@@ -348,7 +348,6 @@ const REVIEW = {
       "regions": [
         "objective",
         "world",
-        "map",
         "palette",
         "ship"
       ],

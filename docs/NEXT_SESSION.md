@@ -1,5 +1,19 @@
 # Resume here
 
+Current playable package: **build/versions/20260923-123429** through Play.cmd. Corrected exported-pack smoke passed; 537 assertions plus UI checks pass, including 50 HUD and 15 capacity checks.
+
+## Latest review: icon styling and typography rejected
+
+The user rejects the rounded wells, shiny copper-like borders, current font and planet appearance. SVG glyphs are also below their quality target, but replacement is deferred. Removed the decorative wells and persistent tool title/specification above the palette; retain provisional glyphs, neutral selection underline, actual quantities and hover tooltips. Do not treat the earlier icon vocabulary as approved. Read [UI_ICON_VOCABULARY.md](UI_ICON_VOCABULARY.md).
+
+An isolated Godot pointer-event review successfully rendered the native named tooltip at 1080p; descriptions wrap into readable lines. All tool/category/navigation icons have help. Local chart remains surface-only, two-row pagination and large-display support remain intact. Next visual priority is coherent typography and planet/interface art direction; further ornamental skins without comparison evidence are not progress. Earlier sections below preserve history.
+
+## Icon vocabulary, dense palettes and surface-only chart
+
+Latest user corrections are implemented: local chart is visible only on the planetary surface; original icon controls replace text-only category/navigation buttons. See [UI_ICON_VOCABULARY.md](UI_ICON_VOCABULARY.md) and the icon gallery linked from the comparison board. There are 16 new vector symbols, clear hover names and state feedback. Shared palettes support 18 items/page with paging and current-page shortcuts. A 27-entry fixture is test-only, not shipped content.
+
+534 assertions plus UI checks passed, including 47 HUD and 15 capacity checks. Actual 1080p and 1440p flight/gallery renders reviewed; 4K geometry checked, not native 4K rendering. The new browser gallery is source-validated, not agent-browser-reviewed. Final aesthetic and native input remain open. Continue contextual contact/shop presentation and shared flight/sector integration; do not reopen the settled local-chart scope or expand ecology first.
+
 ## Shared palette checkpoint and latest aesthetic steering
 
 The user likes the comparison board and says the work is getting closer. Next: a consistent original icon/button vocabulary, broad content presentation and explicit 1080p+ coverage. Use crisp source vectors where they suit the established assets; generated raster art is optional, not a replacement for consistent interaction design. Keep labels/tooltips where symbols would be unclear.

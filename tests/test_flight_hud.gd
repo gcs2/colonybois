@@ -27,6 +27,10 @@ func run() -> void:
 	scene.set_physics_process(false)
 	scene.audio.muted = true
 	var hud: Control = scene.hud
+	check(not hud.tool_title.visible and not hud.tool_spec.visible,"Persistent text above tool icons is removed; identity and costs belong in hover help")
+	check(hud.item_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.category_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.navigation_actions.all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()),"Every tool, category and navigation icon has named hover help")
+	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")
+	check(icon_style is StyleBoxFlat and icon_style.corner_radius_top_left == 0 and not icon_style is StyleBoxTexture,"Icon controls do not use rounded decorative wells or metallic border textures")
 	scene._activate_selected()
 	var state: Dictionary = scene.model.state.duplicate(true)
 	var subject: String = scene.selected
@@ -109,7 +113,9 @@ func run() -> void:
 	check(scene.tool == orbit_tool and "atmosphere" in hud.toolbar[2].tooltip_text,"Wrong-view equipment explains why it is unavailable and cannot be selected")
 	hud.category_buttons.Weapons.pressed.emit()
 	click_chart(hud.navigation,hud.navigation.project(hud.navigation.planet_at))
-	check(scene.landing and scene.navigating and scene.model.state.flight_mode == "orbit","Orbital chart planet issues landing approach without teleportation")
+	check(not hud.navigation.visible and not hud.chart_heading.visible and not scene.landing,"Local terrain chart is absent and cannot accept commands in orbit")
+	hud.departure_button.pressed.emit()
+	check(scene.landing and scene.navigating and scene.model.state.flight_mode == "orbit","Return-to-planet control issues landing approach without an orbital local chart or teleportation")
 	check(scene.energy_bar.size.y <= 12,"Energy instrument does not overlap equipment controls")
 	scene._stop()
 	var before_select: Dictionary = scene.model.state.duplicate(true)

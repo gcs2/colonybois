@@ -53,6 +53,7 @@ func unproject(at: Vector2) -> Vector2:
 	return ((at-rect.position)/rect.size*2-Vector2.ONE)*(90.0 if orbital else FIELD_RADIUS)
 
 func _gui_input(event: InputEvent) -> void:
+	if not is_visible_in_tree(): return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		if locked or event.position.distance_to(size*0.5) > size.x*0.5-6: return

@@ -1,0 +1,134 @@
+{
+  "id": "flight_icon_vocabulary_v1",
+  "status": "visual direction rejected by user; icons retained provisionally, decorative wells removed",
+  "design": "Bioceramic instruments: pearl shells, colored glass cores, organic seed-shaped controls. Creepy-cute contact face; distinct silhouettes, never color alone.",
+  "source_size": [
+    96,
+    96
+  ],
+  "families": {
+    "nav": [
+      "#dafff5",
+      "#5da4ab",
+      "#25485a"
+    ],
+    "tools": [
+      "#e1ffe0",
+      "#91b59a",
+      "#3d645c"
+    ],
+    "life": [
+      "#f4e2ff",
+      "#ad91d9",
+      "#55436c"
+    ],
+    "comms": [
+      "#ffe3f4",
+      "#d39cb9",
+      "#714b6c"
+    ],
+    "weapons": [
+      "#fff1bf",
+      "#e5a171",
+      "#704953"
+    ],
+    "cargo": [
+      "#fff1c7",
+      "#d9b06e",
+      "#776247"
+    ]
+  },
+  "rules": [
+    "Navigation = mint glass + orbit arcs",
+    "Life = branching/leaf shapes + lilac",
+    "Weapons = pointed energy emitter + coral",
+    "Inventory = containing pod + amber",
+    "Communication = expressive antenna face + rose",
+    "Selected = neutral underline; no rounded well or metallic border; disabled = dim; hover names explain symbols",
+    "Use labels for ambiguous or destructive actions; inventory quantity is separate from shortcut",
+    "Do not use invented items to imply implemented content"
+  ],
+  "icons": [
+    {
+      "id": "planet_map",
+      "family": "nav",
+      "source": "assets/ui/flight/planet_map.svg"
+    },
+    {
+      "id": "communicator",
+      "family": "comms",
+      "source": "assets/ui/flight/communicator.svg"
+    },
+    {
+      "id": "category_tools",
+      "family": "tools",
+      "source": "assets/ui/flight/category_tools.svg"
+    },
+    {
+      "id": "category_life",
+      "family": "life",
+      "source": "assets/ui/flight/category_life.svg"
+    },
+    {
+      "id": "category_weapons",
+      "family": "weapons",
+      "source": "assets/ui/flight/category_weapons.svg"
+    },
+    {
+      "id": "inventory",
+      "family": "cargo",
+      "source": "assets/ui/flight/inventory.svg"
+    },
+    {
+      "id": "subsystems",
+      "family": "tools",
+      "source": "assets/ui/flight/subsystems.svg"
+    },
+    {
+      "id": "ascend",
+      "family": "nav",
+      "source": "assets/ui/flight/ascend.svg"
+    },
+    {
+      "id": "descend",
+      "family": "nav",
+      "source": "assets/ui/flight/descend.svg"
+    },
+    {
+      "id": "brake",
+      "family": "weapons",
+      "source": "assets/ui/flight/brake.svg"
+    },
+    {
+      "id": "zoom_in",
+      "family": "nav",
+      "source": "assets/ui/flight/zoom_in.svg"
+    },
+    {
+      "id": "zoom_out",
+      "family": "nav",
+      "source": "assets/ui/flight/zoom_out.svg"
+    },
+    {
+      "id": "palette_close",
+      "family": "tools",
+      "source": "assets/ui/flight/palette_close.svg"
+    },
+    {
+      "id": "palette_open",
+      "family": "tools",
+      "source": "assets/ui/flight/palette_open.svg"
+    },
+    {
+      "id": "page_previous",
+      "family": "tools",
+      "source": "assets/ui/flight/page_previous.svg"
+    },
+    {
+      "id": "page_next",
+      "family": "tools",
+      "source": "assets/ui/flight/page_next.svg"
+    }
+  ],
+  "rejection": "Rounded wells, shiny copper-like borders, simplistic icon artwork and typography rejected. Do not reproduce this material treatment. Icon-only controls require hover tooltips; persistent text above palette removed."
+}

@@ -10,6 +10,10 @@
 
 ## Product constraints
 
+- Latest visual rejection: no rounded icon wells, shiny copper-like borders or persistent selected-tool captions above the palette. Current SVG glyphs remain temporary; typography and planet art are rejected. Preserve named hover tooltips. Do not extend the rejected material style to other screens.
+
+- The local terrain chart appears only on a planet's surface, never in orbital/system/galaxy flight. Use separate maps for those scales. The user endorses the Spore comparison board and requests an original icon/button vocabulary, broad content capacity and 1080p+ support; see docs/UI_ICON_VOCABULARY.md. Do not substitute text-only labels for recognizable controls where symbols work, or claim preview fixtures are playable content.
+
 - Latest user playtest supersedes the ecology-led slice: read docs/SPACE_STAGE_TARGET.md. Spaceflight, mouse-first tools, arrows/numpad, altitude/orbit, real danger, professional HUD, sound/music/VO and full Space Stage feature breadth are the active goal. Existing small-MVP exclusions are staging decisions, not final success criteria. A human Sol scenario is desired alongside the alien campaign. Do not expand the food-web catalog before fixing spaceship play. User permits browser-assisted audio production and is willing to pay; get a concrete price/license approved before purchase.
 
 - Resume production from docs/NEXT_SESSION.md. Latest direction is SPACE_FIRST_DIRECTION.md: exploration, distinct living planets, supply chains and alien diplomacy take priority; cities support those systems. Preserve the authored-art pipeline but move its pilot to a planet expedition and scout ship. Read FLIGHT_TECH_ASSESSMENT.md for an early bounded first-person flight test, and DIPLOMACY_AND_CHRONICLE.md for expressive contact/trade and persistent history. No engine migration or rendering rewrite is approved. Older city-first milestones are deferred.

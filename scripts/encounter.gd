@@ -784,7 +784,7 @@ func _hud_action(action: String) -> void:
 		else: _select_tool(id)
 		_refresh_ui()
 		return
-	if action.begins_with("category:") or action == "palette_toggle":
+	if action.begins_with("category:") or action in ["palette_toggle","page_previous","page_next"]:
 		if paused or _inspection_open(): return
 		hud._internal_action(action)
 		audio.play("ui_confirm")
