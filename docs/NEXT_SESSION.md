@@ -1,5 +1,12 @@
 # Resume here
 
+## Latest research checkpoint: ten-state interface board
+
+Open [ui-review/index.html](ui-review/index.html) and read [SPORE_PALETTE_AUDIT.md](SPORE_PALETTE_AUDIT.md). The board compares source evidence, proposed responsibilities and current captures for surface, tools, inventory, conditions, communications, shop, system, galaxy, badges and Escape menu. It is an interaction wireframe, not a newly approved skin. Eight reference tool families are distinguished from cargo and passive upgrades; exact retail palette ordering is still unverified.
+
+Static board validation passed. In-app browser blocked the local file URL; no browser/layout approval is claimed and no alternate browser workaround was attempted. Game build remains `20260923-114317`; this checkpoint does not change executable behavior. Next implementation target is a shared, collapsible category/item palette with context-relative slots, separated browsing/selection/targeting and owned consumables. Review the visual grouping against the board; do not revive rejected housings or declare the full parity goal complete.
+
+
 Current package: `build/versions/20260923-114317` via Play.cmd. Full suite: **502 assertions plus UI checks passed**; final frame removal also passed the 30 HUD checks. Exported-pack smoke passed. Rendered inspection is not native playtest or art approval. Verify the source checkpoint remote hash before unrelated work. The multistate review camera is explicitly settled after scripted orbit transition (normal processing is disabled in the capture); final captures show the ship and planet.
 
 ## Latest checkpoint: rejected cockpit, interaction corrections

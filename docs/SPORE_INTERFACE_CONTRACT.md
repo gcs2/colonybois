@@ -1,5 +1,10 @@
 # Space Stage interface: correction contract
 
+## Concrete review board
+
+[Open the ten-state board](ui-review/index.html). It separates reference evidence, proposed layout responsibilities and current-build captures. [SPORE_PALETTE_AUDIT.md](SPORE_PALETTE_AUDIT.md) records actual category and shortcut mismatches and the next implementation contract. Source taxonomy is not assumed to be exact retail tab order. Browser preview was blocked by the local URL policy; only structure and syntax were verified.
+
+
 23 September 2026. **The user rejected the cockpit candidate.** This supersedes the custom-console recommendations in FLIGHT_INTERFACE.md and the approval implications of prior rendered reviews. Removing rounded corners or adding a vector frame does not establish quality. The target is close Spore Space Stage interaction and feature parity before elective divergence, with original assets.
 
 ## Evidence reviewed again

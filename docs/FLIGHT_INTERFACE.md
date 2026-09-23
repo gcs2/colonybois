@@ -1,5 +1,10 @@
 # Flight interface: color, interaction and navigation
 
+## Superseding reference contract
+
+The custom composition below is historical and was rejected. Use [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md), [SPORE_PALETTE_AUDIT.md](SPORE_PALETTE_AUDIT.md) and the [ten-state comparison board](ui-review/index.html). The board defines responsibilities and gaps, not approved artwork. The old secondary utility rail and generic cockpit framing must not return.
+
+
 23 September 2026. **Revised target after [Spore GUI forensics](SPORE_GUI_FORENSICS.md), with a partial implementation.** Colored vector icons, warm panels, real inventory, equipment inspection and the shared planetary atlas are implemented prototypes. Cargo / I, Systems / K and Atlas / M pause the local encounter while open. The first composed HUD and live local navigation are now implemented candidates; see [rendered review](FLIGHT_HUD_REVIEW.md). Planetary-condition toggles, dedicated trade/conversation layouts, semantic zoom, power routing and upgrades remain unfinished. The research supersedes the previous generic-drawer composition. Preserve readable world space and original creepy-cute character.
 
 ## Visual language

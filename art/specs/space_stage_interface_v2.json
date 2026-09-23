@@ -1,0 +1,465 @@
+{
+  "id": "space_stage_interface_v2",
+  "status": "reference-led interaction board; wireframes only; not visual approval",
+  "design_canvas": [
+    1600,
+    900
+  ],
+  "sources": {
+    "manual": {
+      "title": "EA / Maxis manual · pp. 46–51",
+      "url": "https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281",
+      "kind": "Primary manual"
+    },
+    "controls": {
+      "title": "EA control reference",
+      "url": "https://www.spore.com/comm/tutorials/controls",
+      "kind": "Primary web reference"
+    },
+    "categories": {
+      "title": "SporeWiki · Ship Tools",
+      "url": "https://spore.fandom.com/wiki/Ship_Tools",
+      "kind": "Indexed wiki; full page blocked"
+    },
+    "sdk": {
+      "title": "Community SDK · SpaceGameUI",
+      "url": "https://modapi-docs.sporecommunity.com/class_u_i_1_1_space_game_u_i.html",
+      "kind": "Primary community reverse engineering"
+    },
+    "shop": {
+      "title": "Spore shop screenshot",
+      "url": "https://www.gamepressure.com/spore/trade/z81520",
+      "image": "https://www.gamepressure.com/spore/gfx/word/893447343.jpg",
+      "kind": "Observed retail screenshot; localized"
+    },
+    "cargo": {
+      "title": "Spore cargo transaction screenshot",
+      "url": "https://www.gamepressure.com/spore/trade/z81520",
+      "image": "https://www.gamepressure.com/spore/gfx/word/893447375.jpg",
+      "kind": "Observed screenshot; transaction mode"
+    },
+    "badges": {
+      "title": "Spore badge case screenshot",
+      "url": "https://www.gamepressure.com/spore/trade/z81520",
+      "image": "https://www.gamepressure.com/spore/gfx/word/893447359.jpg",
+      "kind": "Observed screenshot; localized"
+    },
+    "contact": {
+      "title": "Spore communications screenshot",
+      "url": "https://www.gamepressure.com/spore/other-civilisations/zd151f",
+      "image": "https://www.gamepressure.com/spore/gfx/word/893408890.jpg",
+      "kind": "Earlier observed screenshot; localized"
+    }
+  },
+  "regions": {
+    "map": {
+      "rect": [
+        24,
+        654,
+        320,
+        210
+      ],
+      "title": "Navigation / conditions",
+      "detail": "Geographic minimap on a planet. Switch the same region to climate and ecosystem slots. Replace it with travel filters at galaxy scale. Our circular local radar does not fulfill this."
+    },
+    "comm": {
+      "rect": [
+        350,
+        724,
+        132,
+        140
+      ],
+      "title": "Contact",
+      "detail": "Portrait or call cue identifies the actual local speaker and relationship. Opening it leads to character dialogue, commerce and ship services. A generic Contact link is insufficient."
+    },
+    "palette": {
+      "rect": [
+        964,
+        666,
+        430,
+        198
+      ],
+      "title": "Category → item palette",
+      "detail": "Anchor beside the ship. Select a category, then an item, then a world target where required. Counts belong on consumables; cooldowns and selection belong on their slots. Collapse without moving ship status."
+    },
+    "ship": {
+      "rect": [
+        1404,
+        666,
+        172,
+        198
+      ],
+      "title": "Ship status",
+      "detail": "Recognizable ship representation; readable health and energy remain stable when palettes change. Clicking ship opens equipment details. No permanent recharge or mystery-toggle buttons."
+    },
+    "world": {
+      "rect": [
+        380,
+        145,
+        780,
+        430
+      ],
+      "title": "World and target",
+      "detail": "Leave most of the display for flying, targets and visible effects. Brief target-local feedback replaces the detached center console. A screen of controls must not replace the act of flying."
+    },
+    "objective": {
+      "rect": [
+        24,
+        28,
+        340,
+        95
+      ],
+      "title": "Current objective / notice",
+      "detail": "Short optional guidance. Explain a new capability when acquired. Important warnings should identify origin and action without producing repeated chores."
+    },
+    "status": {
+      "rect": [
+        24,
+        878,
+        1552,
+        18
+      ],
+      "title": "Marks and progression only",
+      "detail": "If a slim progression strip is retained, it contains game state only. Options, save/load, audio and controls open through Escape. This is an explicit user difference from the original footer."
+    },
+    "dialog": {
+      "rect": [
+        290,
+        160,
+        1020,
+        440
+      ],
+      "title": "Character dialogue",
+      "detail": "Dedicated portrait, nation, relationship reasons, speech and replies. Repair/refuel/trade are contextual services. This is a composition requirement, not an implemented diplomatic scene."
+    },
+    "store": {
+      "rect": [
+        400,
+        125,
+        1040,
+        510
+      ],
+      "title": "Shop inventory",
+      "detail": "Pictorial items, prices, provider stock, unlock state and purchase quantity. Keep item selection distinct from a purchase. The existing two-product dock list is not shop parity."
+    },
+    "collection": {
+      "rect": [
+        260,
+        115,
+        1080,
+        550
+      ],
+      "title": "Badge case / collections",
+      "detail": "Filter by rank or activity. Medallions communicate earned levels, progress and locked state. Selecting a badge explains its next tier and shop unlocks."
+    },
+    "menu": {
+      "rect": [
+        545,
+        160,
+        510,
+        530
+      ],
+      "title": "Escape menu",
+      "detail": "Resume, save/load, settings, history and title. Opening pauses the game; nested settings return here. Closing preserves a pre-existing explicit pause."
+    }
+  },
+  "states": [
+    {
+      "id": "surface",
+      "title": "Surface flight",
+      "source": "manual",
+      "observation": "Map and communications occupy the left; tools and ship occupy the right.",
+      "required": "Keep a clear flight area; join tools to ship status and replace the local radar with geographic navigation.",
+      "gap": "Three separate placeholder blocks and a detached target console. No animated communicator.",
+      "flow": [
+        "Fly",
+        "Choose category",
+        "Select tool",
+        "Click subject",
+        "See effect"
+      ],
+      "regions": [
+        "objective",
+        "map",
+        "comm",
+        "palette",
+        "ship",
+        "world",
+        "status"
+      ],
+      "current_capture": "flight_ui_hud.png",
+      "manual_page": 26
+    },
+    {
+      "id": "tools",
+      "title": "Expanded tools",
+      "source": "manual",
+      "observation": "Tool bins distinguish shortcut numbers from consumable charges.",
+      "required": "Provide expandable palettes, item-local costs and contextual targeting. Browsing must not spend energy or fire.",
+      "gap": "Four surface tools use global hotkeys. Orbital weapon is a separate special case; there is no scalable shared palette.",
+      "flow": [
+        "Category",
+        "Item",
+        "Target",
+        "Cost / cooldown",
+        "World result"
+      ],
+      "regions": [
+        "map",
+        "comm",
+        "palette",
+        "ship",
+        "world"
+      ],
+      "current_capture": "flight_ui_palette.png",
+      "manual_page": 27
+    },
+    {
+      "id": "inventory",
+      "title": "Inventory / packs",
+      "source": "cargo",
+      "observation": "Transaction items carry their own quantities; trade controls sit outside the item grid.",
+      "required": "Use an owned pack directly from an inventory item. Separate consumables, installed equipment and physical cargo.",
+      "gap": "Full inspection drawer interrupts flow. Sample cradles do not represent a complete hold or commodity catalog.",
+      "flow": [
+        "Inventory",
+        "Owned item",
+        "Use / deploy",
+        "Validated cost",
+        "Updated quantity"
+      ],
+      "regions": [
+        "map",
+        "comm",
+        "palette",
+        "ship",
+        "world"
+      ],
+      "current_capture": "flight_ui_cargo.png",
+      "manual_page": null
+    },
+    {
+      "id": "conditions",
+      "title": "Planet conditions",
+      "source": "manual",
+      "observation": "The planet instrument toggles between map and terraforming information.",
+      "required": "Place atmosphere, temperature, habitability and ecosystem requirements together. Selecting a condition should explain the limiting factor.",
+      "gap": "A local warm-bed mechanic is not planet terraforming or ecological-tier parity.",
+      "flow": [
+        "Measure",
+        "Identify limit",
+        "Choose intervention",
+        "Apply",
+        "Observe planet"
+      ],
+      "regions": [
+        "objective",
+        "map",
+        "comm",
+        "palette",
+        "ship",
+        "world"
+      ],
+      "current_capture": null,
+      "manual_page": 26
+    },
+    {
+      "id": "contact",
+      "title": "Communications",
+      "source": "contact",
+      "observation": "An alien portrait, dialogue and choices form a distinct encounter screen.",
+      "required": "Speaker identity, relationship and purpose precede actions. Ship services remain here, with the actual quote.",
+      "gap": "One static nursery contact and ad hoc service rings; no contextual nation or expressive performance.",
+      "flow": [
+        "Choose speaker",
+        "Read relationship",
+        "Choose reply / service",
+        "See consequence"
+      ],
+      "regions": [
+        "dialog",
+        "map",
+        "comm",
+        "ship"
+      ],
+      "current_capture": null,
+      "manual_page": null
+    },
+    {
+      "id": "shop",
+      "title": "Shop / trade",
+      "source": "shop",
+      "observation": "An eight-column item grid shows prices, quantities and dim entries.",
+      "required": "Show badge eligibility, prerequisites, price, quantity and stock before purchase. Sell from real ship cargo.",
+      "gap": "No full shop, badge-gated goods or buy/sell quantity interface.",
+      "flow": [
+        "Select item",
+        "Inspect eligibility",
+        "Set quantity",
+        "Review quote",
+        "Buy / sell"
+      ],
+      "regions": [
+        "store",
+        "map",
+        "comm",
+        "ship"
+      ],
+      "current_capture": null,
+      "manual_page": null
+    },
+    {
+      "id": "system",
+      "title": "System view",
+      "source": "manual",
+      "observation": "Planets, star and orbits replace the close planetary scene.",
+      "required": "Pull back into the same system; select a planet for travel and local contact. Preserve ship state.",
+      "gap": "The personal-flight prototype has only Morrow; the strategic scene uses separate state.",
+      "flow": [
+        "Leave planet",
+        "Choose world",
+        "Travel",
+        "Contact / descend"
+      ],
+      "regions": [
+        "objective",
+        "world",
+        "palette",
+        "ship",
+        "comm"
+      ],
+      "current_capture": null,
+      "manual_page": 27
+    },
+    {
+      "id": "galaxy",
+      "title": "Galaxy view",
+      "source": "manual",
+      "observation": "The starmap exposes range, routes and filters.",
+      "required": "Show unknown versus visited systems, reachable hops and costs. Keep inventory and ship state continuous.",
+      "gap": "Strategic graph exists, but personal flight cannot travel through it.",
+      "flow": [
+        "Pull back",
+        "Inspect system",
+        "Compare range / risk",
+        "Jump",
+        "Discover"
+      ],
+      "regions": [
+        "objective",
+        "world",
+        "map",
+        "palette",
+        "ship"
+      ],
+      "current_capture": null,
+      "manual_page": 27
+    },
+    {
+      "id": "badges",
+      "title": "Badges / unlocks",
+      "source": "badges",
+      "observation": "Medallions combine earned stars, progress strips and undiscovered silhouettes.",
+      "required": "Show requirements and alternate paths. Earning a tier unlocks a purchasable capability, not a free item.",
+      "gap": "Separate strategic ranks and local history; no shared badge case or unlock ledger.",
+      "flow": [
+        "Accomplishment",
+        "Badge level",
+        "Rank progress",
+        "Shop eligibility",
+        "Purchase"
+      ],
+      "regions": [
+        "collection",
+        "ship"
+      ],
+      "current_capture": null,
+      "manual_page": null
+    },
+    {
+      "id": "menu",
+      "title": "Escape menu",
+      "source": "controls",
+      "observation": "EA documents Escape as contextual dismissal, deselection or options access.",
+      "required": "User override: Escape opens utilities during flight; close current inspection first. Keep utility buttons off the HUD.",
+      "gap": "Functional correction exists; menu art and native review remain unfinished.",
+      "flow": [
+        "Escape",
+        "Choose utility",
+        "Return",
+        "Resume"
+      ],
+      "regions": [
+        "menu"
+      ],
+      "current_capture": "flight_ui_escape_menu_720.png",
+      "manual_page": null
+    }
+  ],
+  "categories": [
+    {
+      "id": "social",
+      "name": "Socialization",
+      "purpose": "Happy Ray / diplomacy actions",
+      "current": "No flight implementation"
+    },
+    {
+      "id": "weapons",
+      "name": "Weapons",
+      "purpose": "Offense, defense and recovery tools",
+      "current": "One non-equivalent lance, shield and repair command"
+    },
+    {
+      "id": "main",
+      "name": "Main tools",
+      "purpose": "Scan / information / exploration",
+      "current": "Scanner handles only four local subjects"
+    },
+    {
+      "id": "colonization",
+      "name": "Colonization",
+      "purpose": "Founding and colony protection",
+      "current": "Only separate strategic founding"
+    },
+    {
+      "id": "atmosphere",
+      "name": "Planet atmosphere",
+      "purpose": "Temperature and atmosphere tools",
+      "current": "Warm bed is not planetary parity"
+    },
+    {
+      "id": "sculpting",
+      "name": "Planet sculpting",
+      "purpose": "Terrain manipulation",
+      "current": "Missing"
+    },
+    {
+      "id": "coloring",
+      "name": "Planet coloring",
+      "purpose": "Ground / water / atmosphere colors",
+      "current": "Missing"
+    },
+    {
+      "id": "abilities",
+      "name": "Ship abilities",
+      "purpose": "Drives, capacity and abduction abilities",
+      "current": "Partial isolated movement and collection"
+    }
+  ],
+  "category_note": "Eight wiki tool families are not proof of eight identical clickable tabs. Cargo is separately identified by the community SDK; exact retail ordering and passive-upgrade presentation remain unverified.",
+  "explicit_differences": [
+    "Escape-only utility menu",
+    "Energy packs used as owned inventory items",
+    "Marks currency",
+    "No compulsory repeated delivery missions",
+    "Original artwork and characters",
+    "Arrows / numpad accessibility retained"
+  ],
+  "unverified": [
+    "Retail palette ordering at early and late progression",
+    "Per-tool contextual restrictions and exact targeting cursors",
+    "Native input and timing; references conflict on arrow / wheel wording",
+    "Sound and portrait animation timing",
+    "Complete tool variants and upgrade prerequisites"
+  ]
+}
