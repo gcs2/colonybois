@@ -2,9 +2,15 @@
 
 ## Active goal: spaceship adventure and Space Stage feature breadth
 
+**Latest steering:** the user explicitly rejected the `flight-sound-audition` palette as keyboard-like and wants actual AI-generated SFX, especially whirring/humming propulsion. Stop shopping for expensive sound libraries; no purchase was made or authorized. `art/specs/audio_ai_v2.json` contains the new prompts. The public ElevenLabs sound-effects page returned four spacecraft-hum candidates without signup/payment; the user subsequently liked Generations 1, 2 and 3, with 3 preferred. They remain unacquired browser auditions; approval of sound character does not supply files or release rights. Do not claim auditory review through browser controls. The rejected bank is still present in the last packaged build and must be replaced/removed in the next audio integration. The user also requests much wider zoom and visible particles synchronized with thrust/tool audio. These corrections precede the planned combat slice.
+
 Read [SPACE_STAGE_TARGET.md](SPACE_STAGE_TARGET.md) first. The user playtested Morrow and rejected the farming-led introduction, F-centric interaction, constant-height flight, lack of danger, weak UI and insufficient audio. The goal is a polished Spore Space Stage spiritual successor, with all its feature families tracked, plus richer trade, flight and a potential human solar-system start. This goal is not complete.
 
 Ecological expansion and city-first art work are deferred. Preserve the approved creepy-cute original assets and existing city/galaxy simulation. Do not add individual citizen/organism simulation. No engine migration is needed.
+
+## Presentation quality gate
+
+The user explicitly reiterated the AAA quality directive. Current ship, HUD and planet presentation are rejected; functional tests are not evidence of artistic success. Next presentation work must establish a coherent visual target, authored ship specification, much wider zoom, particles linked to tools/thrust, believable planetary scale/atmosphere, and a starfield grounded in real star-catalog positions/brightness. Do not call generated concept art an in-engine result or add arbitrary star dots and call them accurate. A Terraria-like exploration/equipment/access progression is endorsed as a possible direction, not authorization to replace spaceship gameplay with block mining.
 
 ## Current flight checkpoint
 

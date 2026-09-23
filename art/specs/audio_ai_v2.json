@@ -1,0 +1,46 @@
+{
+  "status": "sound_direction_approved_assets_not_yet_acquired",
+  "direction": "Original creepy-cute spacecraft equipment: whirring, humming, tactile and slightly organic. The previous keyboard-like pitched sound bank was explicitly rejected.",
+  "generation_method": "Text-to-sound AI, not the rejected oscillator generator",
+  "provider_trial": "https://elevenlabs.io/sound-effects",
+  "trial_result": "Public webpage displayed four Generation candidates after submitting ship_idle prompt. No purchase, signup or subscription. Auditory quality and release rights are not approved; no clips integrated.",
+  "reference_limit": "Current browser tools expose playback controls and visual state, not reliable audio listening by the assistant. Do not claim to have heard Spore gameplay or these drafts.",
+  "prompts": [
+    {
+      "id": "ship_idle",
+      "seconds": 8,
+      "loop": true,
+      "prompt": "A small alien spacecraft hovering nearby. Continuous warm anti-gravity hum layered with a fine rotating mechanical whirr and soft moving air. Subtle irregular vibration gives it a living, tactile quality. Restrained and smooth, suitable for long gameplay sessions. Isolated engine sound, no music, melody, bells, beeps, voices or bouncing pitch. Steady eight-second loop, no startup or shutdown.",
+      "visual_pairing": "Soft engine-core glow, faint continuous exhaust motes; intensity rises with actual thrust."
+    },
+    {
+      "id": "ship_thrust",
+      "seconds": 8,
+      "loop": true,
+      "prompt": "Close-up propulsion sound from a compact alien exploration ship under steady thrust. Dense smooth low hum, fast finely textured turbine whirr, soft pressurized-air movement. Weight and energy without a roaring jet or musical tone. Continuous stable eight-second loop. No melody, bells, beeps, speech, percussion, startup or ending.",
+      "visual_pairing": "Longer exhaust plume and faster particle flow driven by thrust, capped emission budget."
+    },
+    {
+      "id": "tool_equip",
+      "seconds": 0.6,
+      "loop": false,
+      "prompt": "One compact alien ship instrument engaging: a soft tactile latch, a very brief finely textured servo whirr, and a muted electrical settling sound. Crisp, intimate and satisfying at low volume. Single event under half a second with a clean ending. No musical note, melody, bell, chime, spring bounce, cartoon pop, voice or long reverb.",
+      "visual_pairing": "Brief tool-icon illumination and tiny instrument charge pulse, rather than a large world explosion."
+    },
+    {
+      "id": "scan_loop",
+      "seconds": 4,
+      "loop": true,
+      "prompt": "An alien survey instrument scanning continuously: a soft airy electromagnetic hum with fine rotating granular texture and gentle irregular modulation. Curious and precise, slightly organic. Quiet continuous four-second loop. No sonar ping, musical melody, keyboard notes, ringing bell, voice or percussion.",
+      "visual_pairing": "Sweep rings across the scanned target and fine flowing beam particles; stop immediately on cancellation."
+    },
+    {
+      "id": "tractor_loop",
+      "seconds": 4,
+      "loop": true,
+      "prompt": "A small spacecraft tractor field holding an object: warm low electromagnetic hum, softly fluttering pressure and fine vibrating mechanical texture. A contained physical force, not music. Smooth four-second loop without onset or ending. No beeps, melody, springy pitch bend, bells, speech or explosions.",
+      "visual_pairing": "Motes travel toward the ship along the beam; their motion and loop stop together."
+    }
+  ],
+  "user_review": "User liked Generations 1, 2 and 3; Generation 3 is the preferred engine candidate. Preserve all three for potential ship upgrade/class variants. Generation 4 is not approved."
+}

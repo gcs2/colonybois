@@ -1,5 +1,7 @@
 # Flight audio production
 
+**Rejected, 23 September:** the user rejected the first synthesized one-shot audition as keyboard-like. Passing routing tests was not artistic acceptance. The replacement must use an AI sound-generation model, with whirring/humming ship equipment and synchronized particles. See `art/specs/audio_ai_v2.json`. The public ElevenLabs page returned four hum candidates; no purchase/signup took place and none are integrated. The library shortlist below is historical research, not an approved shopping task. The previous runtime bank is pending replacement; do not present it as accepted.
+
 23 September 2026. The user explicitly wants sound for meaningful interaction, especially selecting hotbar tools, and is open to paying for higher-quality music and voice performances. These are **candidate sounds**, not a claim of final AAA audio quality.
 
 ## Implemented first pass
