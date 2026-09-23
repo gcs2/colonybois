@@ -124,3 +124,7 @@ All game geometry, icons, and shaders in this repository are original procedural
 ## Equipment and content production
 
 The four current field tools use `data/equipment.json` for reach, timing, costs, targets, presentation and starting acquisition descriptions. The command model, HUD and effects share validated definitions; existing saves are unchanged. This is the foundation for additional functional equipment, not an upgrade/unlock system yet. See [the content inventory](docs/CONTENT_INVENTORY.md) for actual playable content versus briefs and disconnected prototypes.
+
+## Orbital wreck encounter
+
+In Morrow orbit, chart the planet from **M / Atlas** to reveal a wreck in a visible pulse field. Click its world marker, local chart contact or **Salvage** to fly to it. A close, three-second recovery spends 20 energy and installs a phase shroud. The field warns before repeated hull damage; manual movement or Stop cancels salvage. **Shroud** near the hull gauge reduces damage while consuming energy. Leave the field and click **Repair** to recover hull for 30 energy. An emergency tow makes defeat recoverable. The local expedition saves hull, shroud, repair cooldown and losses in version 4 field saves; previous field saves migrate. This is one prototype danger, not fleet combat. [Details and limitations](docs/ORBITAL_THREAT.md).

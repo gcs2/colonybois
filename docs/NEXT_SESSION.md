@@ -1,5 +1,11 @@
 # Resume here
 
+## Latest checkpoint: orbital danger and acquired ship defense
+
+[ORBITAL_THREAT.md](ORBITAL_THREAT.md) documents the new charted wreck, telegraphed pulse field, persistent hull, emergency tow, repair and one recovered phase shroud. Chart/contact/world click issues actual ship travel and a timed salvage action; retreat and cancellation matter. Version 3 field saves migrate to version 4. HUD now shows hull beside energy and a clickable shroud/repair control. The 3D wreck and ring are prototype geometry; the previous sound bank is still unapproved. Existing field and strategic worlds remain separate.
+
+Validation: 417 assertions plus UI checks, including 37 orbital encounter checks; reviewed in-game orbital captures at 1600×900 and 1280×720; build `20260923-032255` and exported-pack smoke passed. Native playtesting, professional art/audio approval and a complete Space Stage capability set remain open. Next: weapon/hostile AI pilot, authored scout/wreck and approved AI sound acquisition, then shared flight/sector ship state. Earlier checkpoint sections below are historical context.
+
 ## Latest checkpoint: equipment catalog and content inventory
 
 [CONTENT_INVENTORY.md](CONTENT_INVENTORY.md) now audits all nine content families, with actual scope and brief/asset/mechanic/integration/review distinctions. Four existing field tools now read shared validated definitions in `data/equipment.json`; command costs/range/cycle, HUD, approach distance, keyboard slot order and effects use the same source. The equipment inspection states their starting acquisition. Save version stays 3. This is a content-production foundation, not new equipment breadth or final presentation approval.

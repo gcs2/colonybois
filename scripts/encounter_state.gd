@@ -1,9 +1,16 @@
 extends RefCounted
 ## Independent encounter snapshot. No changes to campaign economy or save slots.
-const VERSION := 3
+const VERSION := 4
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const TARGETS := ["pod", "grazer", "bed", "relay"]
+const HAZARD_WARNING := 31.0
+const HAZARD_RADIUS := 19.0
+const SALVAGE_REACH := 10.0
+const SALVAGE_ENERGY := 20.0
+const REPAIR_ENERGY := 30.0
+const REPAIR_HULL := 35.0
+const REPAIR_COOLDOWN := 20
 var state: Dictionary = fresh()
 
 static func fresh() -> Dictionary:
@@ -11,7 +18,49 @@ static func fresh() -> Dictionary:
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
 		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
-		"planet_id":"morrow", "survey_ticks":0, "survey_active":false}
+		"planet_id":"morrow", "survey_ticks":0, "survey_active":false,
+		"hull":100.0, "shroud_unlocked":false, "shroud_on":false,
+		"threat_clock":0, "tow_count":0, "last_repair_at":-REPAIR_COOLDOWN}
+
+func salvage_reason(distance: float) -> String:
+	if state.flight_mode != "orbit": return "Reach orbit to investigate the wreck."
+	if state.shroud_unlocked: return "The phase shroud has already been recovered."
+	if state.survey_ticks < int(Geography.definition().survey_seconds): return "Chart Morrow first to locate the drifting wreck."
+	if not is_finite(distance) or distance < 0 or distance > SALVAGE_REACH: return "Approach within 10 m of the wreck."
+	if state.energy < SALVAGE_ENERGY: return "Need 20 energy to secure the shroud."
+	return ""
+
+func salvage(distance: float) -> String:
+	var error: String = salvage_reason(distance)
+	if not error.is_empty(): return error
+	state.energy -= SALVAGE_ENERGY
+	state.shroud_unlocked = true
+	note("phase_shroud","Recovered a phase shroud from a drifting wreck. It blunts orbital pulses at a continuous energy cost.")
+	return ""
+
+func toggle_shroud() -> String:
+	if not state.shroud_unlocked: return "Recover the phase shroud first."
+	if state.flight_mode != "orbit": return "Engage the phase shroud in orbit."
+	if not state.shroud_on and state.energy < 2: return "Need 2 energy to engage the shroud."
+	state.shroud_on = not state.shroud_on
+	return ""
+
+func repair_reason(threat_distance: float) -> String:
+	if state.hull >= 100: return "Hull is sound."
+	if state.flight_mode == "orbit" and (not is_finite(threat_distance) or threat_distance < 0): return "Ship location unavailable."
+	if state.flight_mode == "orbit" and threat_distance < HAZARD_WARNING: return "Clear the pulse field before repair."
+	if state.time-int(state.last_repair_at) < REPAIR_COOLDOWN: return "Repair cradle cooling down."
+	if state.energy < REPAIR_ENERGY: return "Need 30 energy for field repairs."
+	return ""
+
+func repair(threat_distance: float) -> String:
+	var error: String = repair_reason(threat_distance)
+	if not error.is_empty(): return error
+	state.energy -= REPAIR_ENERGY
+	state.hull = minf(100,float(state.hull)+REPAIR_HULL)
+	state.last_repair_at = state.time
+	note("first_repair","Used the field cradle to repair the scout's hull.")
+	return ""
 
 func survey_reason() -> String:
 	if state.survey_ticks >= int(Geography.definition().survey_seconds): return "Morrow's orbital chart is complete."
@@ -34,6 +83,7 @@ func change_flight_mode(mode: String) -> bool:
 		state.position = [0.0,8.0,35.0]
 		note("first_orbit","Beyond the clouds — reached Morrow orbit under your own power.")
 	else:
+		state.shroud_on = false
 		state.position = [0.0,32.0,12.0]
 		state.landings += 1
 		note("first_return","Homeward — returned to Morrow with the expedition intact.")
@@ -85,7 +135,7 @@ func act(action: String, target: String, distance: float) -> String:
 			note("seed_bed","Established lantern pods in the prepared bed.")
 	return ""
 
-func tick() -> void:
+func tick(threat_distance: float = INF) -> String:
 	state.time += 1
 	state.energy = minf(100.0,float(state.energy)+1.5)
 	if state.survey_active and state.flight_mode == "orbit":
@@ -109,6 +159,27 @@ func tick() -> void:
 			if state.buyer_remaining == 0:
 				state.route = false
 				note("contract_complete","Completed the nursery's six-unit order. Deliveries stopped; no unlimited buyer demand.")
+	if state.shroud_on:
+		if state.energy >= 2: state.energy -= 2
+		else: state.shroud_on = false
+	if state.flight_mode != "orbit" or not is_finite(threat_distance) or threat_distance >= HAZARD_WARNING:
+		state.threat_clock = 0
+		return ""
+	state.threat_clock += 1
+	if state.threat_clock < 6: return ""
+	state.threat_clock = 0
+	if threat_distance >= HAZARD_RADIUS: return "warning"
+	state.hull = maxf(0,float(state.hull)-(5 if state.shroud_on else 18))
+	note("first_pulse","The orbital wreck's defense field struck the scout. The pulse repeats while inside its core.")
+	if state.hull > 0: return "pulse"
+	state.tow_count += 1
+	state.hull = 35.0
+	state.energy = minf(float(state.energy),15.0)
+	state.shroud_on = false
+	state.threat_clock = 0
+	state.position = [0.0,8.0,35.0]
+	note("emergency_tow_%d" % state.tow_count,"Scout disabled by the orbital field. Emergency tow returned it to a safe holding position; hull and energy were lost.")
+	return "tow"
 
 func sell() -> String:
 	if state.produce < 1: return "No cultivated pods ready. The mature bed produces one every 12 seconds."
@@ -145,10 +216,18 @@ func load_from(path: String) -> Error:
 		value.flight_mode = "surface"
 		value.landings = 0
 	if value.get("version") == 2:
-		value.version = VERSION
+		value.version = 3
 		value.planet_id = "morrow"
 		value.survey_ticks = 0
 		value.survey_active = false
+	if value.get("version") == 3:
+		value.version = VERSION
+		value.hull = 100.0
+		value.shroud_unlocked = false
+		value.shroud_on = false
+		value.threat_clock = 0
+		value.tow_count = 0
+		value.last_repair_at = -REPAIR_COOLDOWN
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -158,11 +237,14 @@ func load_from(path: String) -> Error:
 	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3: return ERR_INVALID_DATA
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.energy < 0 or value.energy > 100 or value.time < 0 or value.marks < 0: return ERR_INVALID_DATA
+	if value.hull <= 0 or value.hull > 100 or value.threat_clock < 0 or value.threat_clock >= 6 or value.tow_count < 0: return ERR_INVALID_DATA
+	if value.last_repair_at > value.time or value.last_repair_at < -REPAIR_COOLDOWN: return ERR_INVALID_DATA
+	if value.shroud_on and not value.shroud_unlocked: return ERR_INVALID_DATA
 	if value.flight_mode not in ["surface","orbit"] or value.landings < 0: return ERR_INVALID_DATA
 	if value.planet_id != "morrow" or value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition().survey_seconds): return ERR_INVALID_DATA
 	if value.survey_ticks == int(Geography.definition().survey_seconds) and value.survey_active: return ERR_INVALID_DATA
 	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition().survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
-	if value.position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 64: return ERR_INVALID_DATA
+	if value.position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
 	for coordinate: Variant in value.position:
 		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)) or absf(float(coordinate)) > 100: return ERR_INVALID_DATA
 	for target: Variant in value.scanned:

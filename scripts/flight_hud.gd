@@ -24,6 +24,12 @@ var subject: Label
 var explanation: Label
 var flight_readout: Label
 var energy_bar: ProgressBar
+var hull_bar: ProgressBar
+var hull_label: Label
+var energy_label: Label
+var danger_label: Label
+var shroud_button: Button
+var repair_button: Button
 var progress_bar: ProgressBar
 var pause_button: Button
 var departure_button: Button
@@ -118,11 +124,25 @@ func _build() -> void:
 		toolbar.append(button)
 	quick_cargo = button_at("0 / 2",Rect2(1138,777,126,46),"cargo",Art.CARGO,"cargo")
 	quick_cargo.tooltip_text = "Onboard sample cradles · full inventory [I]"
-	label_at("EXPEDITION SHIP",Rect2(1296,670,250,24),13,Art.GOLD)
-	flight_readout = label_at("",Rect2(1296,700,250,40),13)
+	label_at("EXPEDITION SHIP",Rect2(1296,670,150,24),13,Art.GOLD)
+	shroud_button = button_at("SHROUD",Rect2(1448,665,106,29),"shroud",Art.COMMS)
+	shroud_button.tooltip_text = "Recover the shroud from the orbital wreck, then toggle it here. Active shielding drains 2 energy per second."
+	flight_readout = label_at("",Rect2(1296,700,250,23),13)
+	hull_label = label_at("",Rect2(1296,722,121,17),11,Art.CARGO)
+	energy_label = label_at("",Rect2(1429,722,125,17),11,Art.GOLD)
+	hull_bar = ProgressBar.new()
+	hull_bar.position = Vector2(1296,744)
+	hull_bar.size = Vector2(121,10)
+	hull_bar.max_value = 100
+	hull_bar.show_percentage = false
+	hull_bar.tooltip_text = "Hull condition · clear hazards and use field repair"
+	Art.meter(hull_bar,Art.CARGO)
+	hull_bar.add_theme_font_size_override("font_size",1)
+	add_child(hull_bar)
+	hull_bar.size.y = 10
 	energy_bar = ProgressBar.new()
-	energy_bar.position = Vector2(1296,744)
-	energy_bar.size = Vector2(258,10)
+	energy_bar.position = Vector2(1429,744)
+	energy_bar.size = Vector2(125,10)
 	energy_bar.show_percentage = false
 	energy_bar.tooltip_text = "Reactor energy · inspection [K]"
 	Art.meter(energy_bar,Art.GOLD)
@@ -139,7 +159,11 @@ func _build() -> void:
 	lower.button_down.connect(func() -> void: altitude_requested.emit(-1))
 	lower.button_up.connect(func() -> void: altitude_requested.emit(0))
 	button_at("■",Rect2(1515,765,39,33),"stop",Art.NAV).tooltip_text = "Stop · Escape / Numpad 5"
-	departure_button = button_at("Leave atmosphere",Rect2(1296,805,258,32),"departure",Art.NAV)
+	departure_button = button_at("Leave atmosphere",Rect2(1296,805,156,32),"departure",Art.NAV)
+	departure_button.add_theme_font_size_override("font_size",12)
+	repair_button = button_at("Repair",Rect2(1459,805,95,32),"repair",Art.CARGO)
+	danger_label = label_at("",Rect2(940,582,590,34),18,Art.CARGO)
+	danger_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	# Target feedback stays compact and readable below the world, beside tools.
 	housing(Rect2(384,750,533,103))
 	subject = label_at("",Rect2(406,762,380,25),17)

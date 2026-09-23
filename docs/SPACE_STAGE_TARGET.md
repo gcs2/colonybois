@@ -22,8 +22,8 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Arrows/numpad, mouse-only alternatives, remapping | Additive action bindings and on-screen ascent/descent/stop; remapping UI missing | Left-handed input playtest; saved bindings; no mandatory F/WASD |
 | Surface altitude, orbit, planetary return | Same Morrow state survives surface/orbit round trip; tests in test_flight.gd | Natural-feeling transitions, more than one visitable world; native input review |
 | System/galaxy navigation, range, fog, wormholes, core | Existing strategic graph/fog; field flight is still isolated | Unified ship/location/state and traversable range/access/endgame mechanics |
-| Health, energy, repair, recharge, damage, defeat/recovery | Energy exists; field danger/health/defeat absent | Actual damage and costs, readable bars/warnings, fair recoverable failure |
-| Weapons, targeting, upgrades, cooldowns, combat | Missing in personal flight | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
+| Health, energy, repair, recharge, damage, defeat/recovery | Energy plus a local pulse hazard, persistent hull, repair and emergency tow exist in Morrow orbit; broader danger/recovery absent | Actual damage and costs, readable bars/warnings, fair recoverable failure |
+| Weapons, targeting, upgrades, cooldowns, combat | One acquired phase shroud; weapons, hostile AI and combat missing in personal flight | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
 | Allied fleet recruitment, commands, losses | Missing | Persistent fleet ships, ally consequences, usable flight combat |
 | Hostile empires, wars, raids, defense, conquest | Strategic relations only | AI decisions, attacks, territorial outcomes and diplomacy consequences |
 | Contact, expressive aliens, government/philosophy | Three authored faction rules; static UI | Animated representatives, coherent reasons, distinct actions/abilities |
@@ -36,14 +36,14 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Uplift/monolith, tribal/civilization worlds | Missing | Civilizations advance and enter living diplomacy |
 | Planet destruction and extreme tools | Missing | Persistent outcomes and reactions; exhaustive special-tool inventory |
 | Discoveries, artifacts, rare collections, story | Six strategic discoveries; short local journal | Distinct discovery gameplay, useful rewards, ancestor campaign encounters |
-| Missions, timed dangers, ecological crises | Planting intro rejected; no replacement mission system yet | Variety without compulsory repeated errands; threats can be understood and prevented |
+| Missions, timed dangers, ecological crises | Planting intro rejected; one optional charted wreck encounter offers a reward and danger, no mission variety yet | Variety without compulsory repeated errands; threats can be understood and prevented |
 | Badges, ranks, alternate unlocks, philosophies | Three strategic ranks; field milestones only log entries | Full progression inventory, meaningful alternate paths, audiovisual achievement delivery |
 | Chronicle, decisions, losses, alliances, annihilation | Strategic history plus isolated local journal | One persistent structured timeline covering actual gameplay events |
 | Sandbox, cheats, story unlocks | Strategic sandbox cheats exist | Same flight systems usable in sandbox; deliberate story rewards without withholding basics |
 | Human solar-system colonization | Not implemented | Selectable playable human scenario, coherent resources/locations and progression |
 | Ship/building/creature editors, user content | Previously deferred; absent | Explicit scope decision for editors; do not silently count as parity |
 | Galactic Adventures extension | Not assumed to be base Space Stage | Clarify expansion scope; do not claim expansion parity |
-| Professional HUD, icons, radar, tutorial arrows | First compact flight HUD and pointer; still placeholder visual design | Reviewed visual system and native readability at supported window sizes |
+| Professional HUD, icons, radar, tutorial arrows | First compact flight HUD, pointer, hull/energy/warning instruments; still placeholder visual design | Reviewed visual system and native readability at supported window sizes |
 | Lifelike animation and responsive ship FX | Three bounded procedural grazers; scout banks/pitches | Art-reviewed creature rigs, ship effects, encounters and achievement animation |
 | Full SFX coverage, music, spoken guidance | 20 original flight/UI WAVs, adaptive thrust, candidate music, Windows scratch speech/captions and mixer; professional performances and full-game coverage still missing | Event coverage audit, mixed tracks, subtitles, volume controls, licensed masters |
 | Saves, performance, regression, fun | Tests cover existing bounded mechanics | Cross-view deterministic state, migrations, full sessions and clean-PC profiles |
