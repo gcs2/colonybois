@@ -41,7 +41,7 @@ Licensed recordings can replace speech by adding `assets/audio/voice/{id}.wav`; 
 | ID | Script |
 | --- | --- |
 | survey | Captain, that relay is still transmitting. Click it and we'll approach for a scan. |
-| ascend | The signal leads off-world. Scroll up to climb, or select Leave atmosphere. |
+| ascend | The signal leads off-world. Pull the view back to ascend, or select Leave atmosphere. |
 | orbit | We're clear of the atmosphere. Click Morrow when you're ready to descend. |
 | return | Back in the basin. Your surveys are secure. You're free to explore. |
 | preview | Flight systems ready. Let's see what's beyond those clouds. |

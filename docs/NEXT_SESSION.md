@@ -1,5 +1,12 @@
 # Resume here
 
+## Latest steering and flight checkpoint
+
+The user requires broad, deep, distinct content for every major component of the game. This instruction is **independent of the attached screenshot**. Read [CONTENT_CORPUS.md](CONTENT_CORPUS.md); presentation-only progress is insufficient. After validating/backing up the current camera/effects work, the next content milestone is a data-driven equipment/content ledger tied to actual commands, acquisition and meaningful uses. Keep the full feature-family objective intact.
+
+[FLIGHT_CAMERA_EFFECTS.md](FLIGHT_CAMERA_EFFECTS.md) records the new wider camera, ordinary-wheel zoom, cancellable zoom ascent, distant scenery and capped engine/tool particles. Ctrl-wheel retains altitude control. Effects are cosmetic; strategic integration and complete planet surfaces remain unfinished. The sections below preserve earlier checkpoints; the latest behavior is specified here.
+
+
 ## Latest implementation: composed flight instruments
 
 Read [FLIGHT_HUD_REVIEW.md](FLIGHT_HUD_REVIEW.md). The first composed HUD slice now exists: original shaded tool icons and instrument housings, live clickable local navigation, category palettes, quick cargo, adjacent ship energy/equipment and explicit target states. Category browsing is live and preserves equipment; expanded inspection still pauses. Full globe atlas remains intact. 332 assertions plus UI checks pass, including 19 new HUD integration checks. This is a candidate engine implementation, not art approval. Next: native-input/readability review, dedicated character/trade layouts and richer motion; approved audio acquisition, ship/planet assets and shared sector state remain outstanding. The earlier instruction below to begin this slice is historical context.
@@ -37,7 +44,7 @@ The user explicitly reiterated the AAA quality directive. Current ship, HUD and 
 
 ## Current flight checkpoint
 
-Choose **Morrow expedition — surface to orbit** from Play.cmd. Click a subject to approach and operate the selected tool; click terrain to move. Arrows / numpad 8,4,2,6 / WASD fly. Home, Page Up, numpad 9 or +, and E ascend; End, Page Down, numpad 3 or minus, and Q descend. Numpad 5 or 0, Escape, or Stop cancels. Wheel changes altitude; Ctrl-wheel zooms. Right-drag rotates the camera. On-screen flight controls support mouse-only play.
+Choose **Morrow expedition — surface to orbit** from Play.cmd. Click a subject to approach and operate the selected tool; click terrain to move. Arrows / numpad 8,4,2,6 / WASD fly. Home, Page Up, numpad 9 or +, and E ascend; End, Page Down, numpad 3 or minus, and Q descend. Numpad 5 or 0, Escape, or Stop cancels. Wheel zooms; Ctrl-wheel changes altitude. Another outward scroll at the surface limit begins ascent; scrolling in cancels it. Right-drag rotates the camera. On-screen flight controls support mouse-only play.
 
 The opening now points to scanning an old relay and leaving the atmosphere; planting is optional. Ascending past 58 local meters enters orbital flight. Click Morrow or Return to Morrow to approach and reenter the same surface. This is a local reference-frame transition, not seamless planetary scale. The orbital globe's surface marker is attached to its rotating transform.
 
@@ -56,6 +63,6 @@ Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates 
 
 ## Verification and backup
 
-Latest code verification: 332 assertions plus UI checks (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 19 flight HUD, 18 audio, 34 planet map). Tests are in tools/Test.ps1. The forensic checkpoint was documentation-only; the subsequent HUD implementation adds the 19 interaction checks. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. Use build/current.txt for the latest completed package; the earlier atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
+Current code verification: 353 assertions plus UI checks. Camera/effects adds 21 presentation assertions, including manual input overriding approach/ascent. Tests are in tools/Test.ps1. The forensic checkpoint was documentation-only; the subsequent HUD implementation adds the 19 interaction checks. Captures in ignored artifacts demonstrate rendering, not fun or native input quality. Use build/current.txt for the latest completed package; the earlier atlas code checkpoint is cfc102086376adf20b2eb1509c30cc53c5a9d5a1, pushed and remote-verified.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.

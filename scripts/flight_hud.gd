@@ -91,7 +91,8 @@ func _build() -> void:
 	add_child(navigation)
 	button_at("Atlas",Rect2(250,678,91,45),"atlas",Art.NAV)
 	button_at("Contact",Rect2(250,730,91,45),"contact",Art.COMMS)
-	label_at("M  /  GLOBE",Rect2(251,791,89,18),11,Art.MUTED)
+	button_at("−",Rect2(250,789,42,39),"zoom_out",Art.NAV).tooltip_text = "Pull back · at surface limit, ascend to orbit"
+	button_at("+",Rect2(299,789,42,39),"zoom_in",Art.NAV).tooltip_text = "Move camera closer"
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	housing(Rect2(938,655,642,198))
 	tool_title = label_at("",Rect2(961,669,320,27),18)

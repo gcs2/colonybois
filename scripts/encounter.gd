@@ -11,6 +11,11 @@ const Instruments = preload("res://scripts/flight_interface.gd")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const FlightHUD = preload("res://scripts/flight_hud.gd")
+const FlightEffects = preload("res://scripts/flight_effects.gd")
+const SURFACE_ZOOM_MIN := 12.0
+const SURFACE_ZOOM_MAX := 110.0
+const ORBIT_ZOOM_MIN := 18.0
+const ORBIT_ZOOM_MAX := 320.0
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
 const COLORS: Array[Color] = Instruments.TOOL_COLORS
@@ -38,6 +43,14 @@ var tick_clock: float = 0.0
 var yaw: float = 0.0
 var pitch: float = 0.72
 var distance: float = 29.0
+var camera_distance_target: float = 29.0
+var zoom_ascent: bool = false
+var arrival_fade: float = 0.0
+var transition_veil: ColorRect
+var transition_caption: Label
+var ship_locator: Label
+var planet_locator: Label
+var effects := FlightEffects.new()
 var velocity := Vector3.ZERO
 var paused: bool = false
 var camera_focus := Vector3.ZERO
@@ -117,6 +130,8 @@ func _ready() -> void:
 			child.reparent(surface_root)
 	orbit = OrbitalScene.new()
 	add_child(orbit)
+	add_child(effects)
+	effects.setup(ship)
 	var nav_mesh := TorusMesh.new()
 	nav_mesh.inner_radius = 0.6
 	nav_mesh.outer_radius = 0.72
@@ -201,14 +216,20 @@ func _make_world() -> void:
 	add_child(camera)
 	camera.current = true
 	camera.fov = 52
-	camera.far = 230
+	camera.far = 900
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for x: int in range(-50,50):
-		for z: int in range(-50,50):
+	# Distant scenery shares the height function, with coarse cells outside the basin.
+	# Playable travel/interaction bounds stay unchanged; this is not new explorable land.
+	var coordinates: Array[float] = []
+	for v: int in range(-1250,-50,60): coordinates.append(float(v))
+	for v: int in range(-50,51): coordinates.append(float(v))
+	for v: int in range(110,1251,60): coordinates.append(float(v))
+	for xi: int in range(coordinates.size()-1):
+		for zi: int in range(coordinates.size()-1):
 			for offset: Vector2 in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
-				var px: float = x+offset.x
-				var pz: float = z+offset.y
+				var px: float = lerpf(coordinates[xi],coordinates[xi+1],offset.x)
+				var pz: float = lerpf(coordinates[zi],coordinates[zi+1],offset.y)
 				var h: float = terrain_height(px,pz)
 				var blend: float = clampf((sin(px*0.16+pz*0.05)+cos(pz*0.21))*0.25+0.5,0,1)
 				var color: Color = Color("666979").lerp(Color("b98e83"),blend).lerp(Color("ddba99"),smoothstep(1.0,4.0,h))
@@ -390,6 +411,17 @@ func _make_ui() -> void:
 	theme.default_font = font
 	theme.default_font_size = 16
 	root.theme = theme
+	transition_veil = ColorRect.new()
+	transition_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	transition_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	transition_veil.color = Color(0.03,0.04,0.07,0)
+	root.add_child(transition_veil)
+	transition_caption = _label("",22,Instruments.PAPER)
+	transition_caption.position = Vector2(510,350)
+	transition_caption.size = Vector2(580,60)
+	transition_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	transition_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(transition_caption)
 	hud = FlightHUD.new()
 	root.add_child(hud)
 	location_label = hud.location_label
@@ -407,7 +439,11 @@ func _make_ui() -> void:
 	hud.action_requested.connect(_hud_action)
 	hud.tool_requested.connect(_select_tool)
 	hud.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
-	hud.altitude_requested.connect(func(direction: float) -> void: vertical_button = direction; altitude_order = -1)
+	hud.altitude_requested.connect(func(direction: float) -> void:
+		if paused or _inspection_open(): return
+		if direction != 0: _cancel_orders()
+		vertical_button = direction
+		altitude_order = -1)
 	hud.navigation.set_terrain(terrain_height)
 	hud.navigation.destination_requested.connect(_chart_navigate)
 	hud.navigation.target_requested.connect(_command_target)
@@ -429,6 +465,13 @@ func _make_ui() -> void:
 	root.add_child(guide_caption)
 	guide_arrow = _label("▼",28,Color("ffe0a8"))
 	root.add_child(guide_arrow)
+	ship_locator = _label("◇  SHIP",12,Instruments.GOLD)
+	planet_locator = _label("MORROW",13,Instruments.PAPER)
+	for locator: Label in [ship_locator,planet_locator]:
+		locator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		locator.add_theme_color_override("font_outline_color",Color("151322"))
+		locator.add_theme_constant_override("outline_size",4)
+		root.add_child(locator)
 	for id: String in targets:
 		var label: Label = _label(TITLES[id],13,Color("e3e9de"))
 		label.add_theme_color_override("font_outline_color",Color("191724"))
@@ -469,7 +512,8 @@ func _physics_process(delta: float) -> void:
 		landing = false
 		held = false
 		progress = 0
-		if input_direction.y != 0: altitude_order = -1
+		altitude_order = -1
+		zoom_ascent = false
 	if navigating:
 		if approach_subject: destination = _target_position()+Vector3(0,5,5)
 		var offset: Vector3 = destination-ship.position
@@ -533,6 +577,7 @@ func _process(delta: float) -> void:
 			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
 	_update_visuals()
 	_operate(delta)
+	_update_flight_effects(delta)
 	ui_clock += delta
 	if ui_clock > 0.1:
 		ui_clock = 0
@@ -544,13 +589,54 @@ func _process(delta: float) -> void:
 	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
 
 func _update_camera(delta: float) -> void:
-	camera_focus = camera_focus.lerp(ship.position+Vector3(0,-1,0),minf(1,delta*5))
+	distance = lerpf(distance,camera_distance_target,minf(1,delta*8))
+	var focus: Vector3 = ship.position+Vector3(0,-1,0)
+	if model.state.flight_mode == "orbit":
+		var overview: float = smoothstep(65,190,distance)
+		focus = focus.lerp((ship.position+orbit.planet.position)*0.5,overview)
+	camera_focus = camera_focus.lerp(focus,minf(1,delta*5))
 	var offset := Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.position = camera_focus+offset
+	if model.state.flight_mode == "surface": camera.position.y = maxf(camera.position.y,terrain_height(camera.position.x,camera.position.z)+1.5)
+	else:
+		var away: Vector3 = camera.position-orbit.planet.position
+		if away.length() < 20: camera.position = orbit.planet.position+away.normalized()*20
 	camera.look_at(camera_focus)
+
+func _zoom_camera(steps: float) -> void:
+	if paused or _inspection_open(): return
+	var orbital: bool = model.state.flight_mode == "orbit"
+	if steps < 0 and zoom_ascent: _cancel_orders()
+	if not orbital and steps > 0 and camera_distance_target >= SURFACE_ZOOM_MAX-0.1:
+		if not zoom_ascent:
+			_departure()
+			zoom_ascent = true
+			_toast("Ascending to orbit · scroll in or Stop to cancel")
+		return
+	var minimum: float = ORBIT_ZOOM_MIN if orbital else SURFACE_ZOOM_MIN
+	var maximum: float = ORBIT_ZOOM_MAX if orbital else SURFACE_ZOOM_MAX
+	camera_distance_target = clampf(camera_distance_target*pow(1.18,steps),minimum,maximum)
+	if orbital and camera_distance_target >= ORBIT_ZOOM_MAX and steps > 0:
+		_toast("Morrow orbit overview · other systems are not connected yet")
+
+func _update_flight_effects(delta: float) -> void:
+	var stopped: bool = paused or _inspection_open()
+	var orbital: bool = model.state.flight_mode == "orbit"
+	effects.update(delta,velocity.length(),stopped,orbital,terrain_height(ship.position.x,ship.position.z),tool,beam.visible,_target_position(),progress)
+	if not stopped: arrival_fade = maxf(0,arrival_fade-delta*1.8)
+	var outbound: float = 0
+	if not orbital and velocity.y > 0.1: outbound = smoothstep(53,58,ship.position.y)
+	if orbital and landing: outbound = 1-smoothstep(1,9,ship.position.distance_to(destination))
+	transition_veil.color.a = maxf(arrival_fade,outbound)
+	transition_caption.text = "MORROW / ORBIT" if orbital else "MORROW / ATMOSPHERE"
+	transition_caption.modulate.a = transition_veil.color.a
 
 func _update_visuals() -> void:
 	var orbital: bool = model.state.flight_mode == "orbit"
+	ship_locator.visible = distance > 85 and not _inspection_open() and not camera.is_position_behind(ship.position)
+	ship_locator.position = camera.unproject_position(ship.position)+Vector2(10,10)
+	planet_locator.visible = orbital and distance > 150 and not _inspection_open() and not camera.is_position_behind(orbit.planet.position)
+	planet_locator.position = camera.unproject_position(orbit.planet.position)+Vector2(-25,-28)
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
 	guide_arrow.visible = not paused and not _inspection_open()
@@ -600,6 +686,8 @@ func _hud_action(action: String) -> void:
 		"use":
 			if not paused and not _inspection_open(): _activate_selected()
 		"stop": _stop()
+		"zoom_in": _zoom_camera(-1)
+		"zoom_out": _zoom_camera(1)
 		"cargo", "systems", "contact", "journal", "controls", "audio":
 			_toggle_drawer(action)
 		_:
@@ -651,6 +739,7 @@ func _operate(delta: float) -> void:
 		progress = 0
 		operation_feedback = "COMPLETE" if error.is_empty() else "FAILED"
 		operation_feedback_until = elapsed+3
+		if error.is_empty(): effects.confirm(end,tool)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and not event.echo:
@@ -677,11 +766,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
 			var sign_y: float = 1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1
-			if event.ctrl_pressed: distance = clampf(distance-sign_y*3,12,65)
+			if not event.ctrl_pressed: _zoom_camera(-sign_y)
 			else:
-				navigating = false
-				approach_subject = false
-				altitude_order = clampf((ship.position.y if altitude_order < 0 else altitude_order)+sign_y*6,3,65)
+				var target_altitude: float = ship.position.y if altitude_order < 0 else altitude_order
+				_cancel_orders()
+				altitude_order = clampf(target_altitude+sign_y*6,3,65)
 		if event.button_index == MOUSE_BUTTON_LEFT: _pick(event.position)
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		yaw -= event.relative.x*0.006
@@ -741,6 +830,8 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	zoom_ascent = false
+	effects.reset()
 	operation_feedback = ""
 	navigating = false
 	approach_subject = false
@@ -782,6 +873,7 @@ func _change_flight_mode(mode: String) -> void:
 	_cancel_orders()
 	_restore_ship()
 	_apply_flight_mode()
+	arrival_fade = 1.0
 	audio.play("arrival")
 	_toast("Morrow orbit reached" if mode == "orbit" else "Atmospheric entry complete")
 	_save(false)
@@ -797,7 +889,9 @@ func _apply_flight_mode() -> void:
 	if not orbital: orbit.environment.environment = null
 	for button: Button in toolbar: button.disabled = orbital
 	use_button.disabled = orbital
-	distance = 43 if orbital else 29
+	distance = 85 if orbital else 55
+	camera_distance_target = distance
+	effects.reset()
 	camera_focus = ship.position
 	_update_camera(1)
 
@@ -899,7 +993,7 @@ func _update_guidance() -> void:
 		line = "Back in the basin. Your surveys are secure. You're free to explore."
 	elif "relay" in model.state.scanned:
 		id = "ascend"
-		line = "The signal leads off-world. Scroll up to climb, or select Leave atmosphere."
+		line = "The signal leads off-world. Pull the view back to ascend, or select Leave atmosphere."
 	if heard_guides.has(id): return
 	heard_guides[id] = true
 	guide_caption.text = line
@@ -947,7 +1041,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: altitude · Ctrl + wheel: camera zoom\nRight drag: rotate camera\n1–4: tools · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Escape / Stop button\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during that ascent to cancel\nRight drag: rotate camera\n1–4: tools · F: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
