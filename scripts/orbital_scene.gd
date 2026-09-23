@@ -1,19 +1,23 @@
 extends Node3D
 ## Local orbital space shares the expedition state; no second economy or scene tick.
 const Globe = preload("res://scripts/planet_globe.gd")
-const WRECK_POSITION := Vector3(32,8,32)
+const Encounter = preload("res://scripts/encounter_state.gd")
+const WRECK_POSITION := Encounter.WRECK_POSITION
 var planet := Globe.new()
 var environment: WorldEnvironment
 var wreck := Node3D.new()
 var field_ring: MeshInstance3D
 var pulse_core: MeshInstance3D
 var phase: float = 0.0
+var guardian := Node3D.new()
+var guardian_eye: MeshInstance3D
 const APPROACH := Vector3(0,8,8)
 
 func _ready() -> void:
 	planet.position = Vector3(-14,-8,-14)
 	add_child(planet)
 	_build_wreck()
+	_build_guardian()
 	var stars := MultiMesh.new()
 	stars.transform_format = MultiMesh.TRANSFORM_3D
 	var star := SphereMesh.new()
@@ -51,6 +55,8 @@ func advance(delta: float) -> void:
 	wreck.rotation.y += delta*0.18
 	field_ring.scale = Vector3.ONE*(1+sin(phase*TAU/6)*0.025)
 	pulse_core.scale = Vector3.ONE*(0.94+sin(phase*TAU/6)*0.16)
+	guardian.rotation.y = sin(phase*0.7)*0.3
+	guardian.position.y = Encounter.GUARDIAN_HOME.y+sin(phase*1.4)*0.35
 
 func _material(color: Color) -> StandardMaterial3D:
 	var result := StandardMaterial3D.new()
@@ -92,3 +98,29 @@ func _build_wreck() -> void:
 	field_ring.material_override = _material(Color("81639e"))
 	field_ring.position = WRECK_POSITION
 	add_child(field_ring)
+
+func _build_guardian() -> void:
+	guardian.position = Encounter.GUARDIAN_HOME
+	add_child(guardian)
+	var shell := SphereMesh.new()
+	shell.radius = 1
+	shell.height = 2
+	var body := MeshInstance3D.new()
+	body.mesh = shell
+	body.scale = Vector3(2.1,0.65,1.55)
+	body.material_override = _material(Color("b2a39d"))
+	guardian.add_child(body)
+	for side: float in [-1.0,1.0]:
+		var wing := MeshInstance3D.new()
+		wing.mesh = shell
+		wing.scale = Vector3(1.45,0.18,0.68)
+		wing.position = Vector3(side*1.8,-0.15,0.3)
+		wing.rotation.z = side*0.15
+		wing.material_override = _material(Color("786d82"))
+		guardian.add_child(wing)
+	guardian_eye = MeshInstance3D.new()
+	guardian_eye.mesh = shell
+	guardian_eye.scale = Vector3(0.43,0.38,0.2)
+	guardian_eye.position = Vector3(0,0.25,-1.5)
+	guardian_eye.material_override = _material(Color("f0ae77"))
+	guardian.add_child(guardian_eye)

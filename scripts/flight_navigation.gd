@@ -16,6 +16,10 @@ var destination := Vector2.ZERO
 var planet_at := Vector2.ZERO
 var wreck_at := Vector2.ZERO
 var wreck_known: bool = false
+var guardian_at := Vector2.ZERO
+var guardian_known: bool = false
+var guardian_disabled: bool = false
+var guardian_alert: int = 0
 var locked: bool = false
 const FIELD_RADIUS := 40.0
 
@@ -51,7 +55,10 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 		if locked or not chart_rect().has_point(event.position): return
 		if orbital:
-			if wreck_known and event.position.distance_to(project(wreck_at)) < 15: target_requested.emit("wreck")
+			var wreck_gap: float = event.position.distance_to(project(wreck_at)) if wreck_known else INF
+			var guardian_gap: float = event.position.distance_to(project(guardian_at)) if guardian_known else INF
+			if guardian_gap < 13 and guardian_gap < wreck_gap: target_requested.emit("guardian")
+			elif wreck_gap < 15: target_requested.emit("wreck")
 			elif event.position.distance_to(project(planet_at)) < 22: landing_requested.emit()
 			else: destination_requested.emit(unproject(event.position))
 			return
@@ -75,6 +82,11 @@ func _draw() -> void:
 			draw_arc(wreck,19.0/90.0*rect.size.x*0.5,0,TAU,48,Color("a975c4",0.7),1.5,true)
 			draw_circle(wreck,4,Color("d7abe8"))
 			draw_string(ThemeDB.fallback_font,wreck+Vector2(6,-5),"!",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("edb9db"))
+		if guardian_known:
+			var skiff: Vector2 = project(guardian_at)
+			var skiff_color := Color("818793") if guardian_disabled else (Color("ef897f") if guardian_alert >= 3 else Color("eab77e"))
+			draw_arc(skiff,7,0,TAU,24,skiff_color,2,true)
+			draw_circle(skiff,3,skiff_color)
 	for i: int in range(1,4):
 		var x: float = rect.position.x+rect.size.x*i/4
 		var y: float = rect.position.y+rect.size.y*i/4

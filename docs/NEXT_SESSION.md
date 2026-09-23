@@ -1,5 +1,10 @@
 # Resume here
 
+## Latest steering and combat checkpoint
+
+The user rejects the Windows guide voice, clunky zoom/ineffective descent, and current planet presentation. These corrections and a reusable planet-generation pipeline take priority over additional combat content. The unfinished combat work is now validated: one arc lance and warning/chase/disengage custodian, nonlethal disable, persisted state, version 4-to-5 migration. 440 assertions plus UI checks pass, including 23 combat checks. Geometry and firing sound remain placeholders. No native playtest or artistic approval is implied. The current packaged build predates this source checkpoint. See ORBITAL_COMBAT.md.
+
+
 ## Latest checkpoint: orbital danger and acquired ship defense
 
 [ORBITAL_THREAT.md](ORBITAL_THREAT.md) documents the new charted wreck, telegraphed pulse field, persistent hull, emergency tow, repair and one recovered phase shroud. Chart/contact/world click issues actual ship travel and a timed salvage action; retreat and cancellation matter. Version 3 field saves migrate to version 4. HUD now shows hull beside energy and a clickable shroud/repair control. The 3D wreck and ring are prototype geometry; the previous sound bank is still unapproved. Existing field and strategic worlds remain separate.

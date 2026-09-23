@@ -13,6 +13,7 @@ var navigation := Navigation.new()
 var toolbar: Array[Button] = []
 var category_buttons: Dictionary = {}
 var active_group: String = "Survey"
+var orbital_mode: bool = false
 var selected_tool: String = "scan"
 var tool_title: Label
 var tool_spec: Label
@@ -28,8 +29,10 @@ var hull_bar: ProgressBar
 var hull_label: Label
 var energy_label: Label
 var danger_label: Label
+var guardian_warning: Label
 var shroud_button: Button
 var repair_button: Button
+var weapon_button: Button
 var progress_bar: ProgressBar
 var pause_button: Button
 var departure_button: Button
@@ -122,6 +125,11 @@ func _build() -> void:
 		shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(shortcut)
 		toolbar.append(button)
+	weapon_button = button_at("Arc lance",Rect2(963,766,164,69),"weapon",Art.CARGO,"lance")
+	weapon_button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	weapon_button.add_theme_constant_override("icon_max_width",41)
+	weapon_button.tooltip_text = "Disable the custodian skiff · 24 m reach · 10 energy · 2 s recovery"
+	weapon_button.visible = false
 	quick_cargo = button_at("0 / 2",Rect2(1138,777,126,46),"cargo",Art.CARGO,"cargo")
 	quick_cargo.tooltip_text = "Onboard sample cradles · full inventory [I]"
 	label_at("EXPEDITION SHIP",Rect2(1296,670,150,24),13,Art.GOLD)
@@ -164,6 +172,8 @@ func _build() -> void:
 	repair_button = button_at("Repair",Rect2(1459,805,95,32),"repair",Art.CARGO)
 	danger_label = label_at("",Rect2(940,582,590,34),18,Art.CARGO)
 	danger_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	guardian_warning = label_at("",Rect2(940,552,590,27),16,Art.CARGO)
+	guardian_warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	# Target feedback stays compact and readable below the world, beside tools.
 	housing(Rect2(384,750,533,103))
 	subject = label_at("",Rect2(406,762,380,25),17)
@@ -198,7 +208,7 @@ func show_group(group: String) -> void:
 	active_group = group
 	var slot: int = 0
 	for i: int in range(IDS.size()):
-		toolbar[i].visible = IDS[i] in GROUPS[group]
+		toolbar[i].visible = not orbital_mode and IDS[i] in GROUPS[group]
 		if toolbar[i].visible:
 			toolbar[i].position.x = 963+slot*80
 			slot += 1
@@ -215,3 +225,13 @@ func select_tool(id: String) -> void:
 		toolbar[i].add_theme_constant_override("icon_max_width",42)
 	tool_title.text = Equipment.title(id)
 	tool_spec.text = Equipment.summary(id)
+
+func set_orbital_mode(enabled: bool) -> void:
+	orbital_mode = enabled
+	for button: Button in category_buttons.values(): button.visible = not enabled
+	weapon_button.visible = enabled
+	if enabled:
+		for button: Button in toolbar: button.visible = false
+		tool_title.text = "Arc lance"
+		tool_spec.text = "24 m reach · 10 energy · 2 s recovery"
+	else: select_tool(selected_tool)
