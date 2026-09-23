@@ -4,6 +4,7 @@ signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
 const Sound = preload("res://scripts/audio_feedback.gd")
+const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
 const COLORS: Array[Color] = [Color("9ae5d3"),Color("ddd0f1"),Color("edb46c"),Color("ace6a0")]
@@ -15,7 +16,7 @@ var targets: Dictionary = {}
 var grown_plants: Array[Node3D] = []
 var wild_plants: Array[Node3D] = []
 var grazers: Array[Node3D] = []
-var grazer_bases: Array[Vector3] = []
+var grazer_motion: Array[RefCounted] = []
 var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
 var ring: MeshInstance3D
@@ -117,8 +118,16 @@ func _asset(id: String, at: Vector3, size: float = 1.0) -> Node3D:
 func _make_world() -> void:
 	var world_env := WorldEnvironment.new()
 	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color("283d51")
+	env.background_mode = Environment.BG_SKY
+	var sky_material := ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color("192d48")
+	sky_material.sky_horizon_color = Color("a3a4b9")
+	sky_material.ground_bottom_color = Color("544959")
+	sky_material.ground_horizon_color = Color("a3a4b9")
+	sky_material.sky_curve = 0.25
+	var sky := Sky.new()
+	sky.sky_material = sky_material
+	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("d4d5e9")
 	env.ambient_light_energy = 0.35
@@ -177,7 +186,11 @@ func _make_world() -> void:
 	var pool := SphereMesh.new()
 	pool.radius = 1
 	pool.height = 2
-	var water: MeshInstance3D = _mesh(pool,Vector3(-23,-0.6,0),_mat(Color("487b87")))
+	var water_shader := Shader.new()
+	water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){float ripple=sin(wp.x*1.8+TIME*0.7)*sin(wp.z*2.0-TIME*0.5); ALBEDO=mix(vec3(0.15,0.34,0.39),vec3(0.30,0.52,0.53),ripple*0.5+0.5); ROUGHNESS=0.32; METALLIC=0.15;}"
+	var water_material := ShaderMaterial.new()
+	water_material.shader = water_shader
+	var water: MeshInstance3D = _mesh(pool,Vector3(-23,-0.6,0),water_material)
 	water.scale = Vector3(6.0,0.1,12.0)
 	_make_ground_cover(rng)
 	for i: int in range(16):
@@ -195,7 +208,9 @@ func _make_world() -> void:
 	for i: int in range(3):
 		var at := Vector3(-9+i*3,6+i*0.4,-3-i*1.2)
 		grazers.append(_asset("grazer",at,0.8 if i == 0 else 0.5))
-		grazer_bases.append(at)
+		var motion := GrazerMotion.new()
+		motion.configure(grazers.back(),i)
+		grazer_motion.append(motion)
 	targets.grazer = grazers[0]
 	var bed := Node3D.new()
 	bed.position = Vector3(8,terrain_height(8,-4),-4)
@@ -421,6 +436,10 @@ func _process(delta: float) -> void:
 				if popup.visible: _show_popup(popup_kind)
 			if int(model.state.time)%30 == 0 and "--field-capture" not in OS.get_cmdline_user_args(): _save(false)
 	_update_camera(delta)
+	if not paused:
+		for motion: RefCounted in grazer_motion:
+			motion.advance(delta,ship.position)
+			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
 	_update_visuals()
 	_operate(delta)
 	ui_clock += delta
@@ -439,12 +458,6 @@ func _update_camera(delta: float) -> void:
 	camera.look_at(camera_focus)
 
 func _update_visuals() -> void:
-	for i: int in range(grazers.size()):
-		var at: Vector3 = grazer_bases[i]
-		grazers[i].position = at+Vector3(sin(elapsed*0.28+i)*1.8,sin(elapsed*1.5+i)*0.35,cos(elapsed*0.25+i)*1.2)
-		var face: Vector3 = ship.position-grazers[i].position
-		grazers[i].rotation.y = lerp_angle(grazers[i].rotation.y,atan2(-face.x,-face.z),0.025)
-		grazers[i].rotation.z = sin(elapsed*1.3+i)*0.055
 	for i: int in range(wild_plants.size()):
 		wild_plants[i].scale = Vector3.ONE*(0.9 if i == 0 else (0.7 if i < int(model.state.native_stock) else 0.3))
 		wild_plants[i].rotation.z = sin(elapsed*1.1+i)*0.035
@@ -481,7 +494,9 @@ func _operate(delta: float) -> void:
 		latched = true
 		progress = 0
 		return
-	if progress == 0: audio.play(tool)
+	if progress == 0:
+		audio.play(tool)
+		for motion: RefCounted in grazer_motion: motion.react(tool,_target_position())
 	progress += delta/float(Model.ACTION_SECONDS[tool])
 	var end: Vector3 = _target_position()
 	beam.visible = true
@@ -560,6 +575,7 @@ func _refresh_ui() -> void:
 	else: objective.text = "The relay has answered.\nContact Vell about your harvest."
 	var gap: float = ship.position.distance_to(_target_position())
 	subject.text = "%s   /   %.0f m   /   %s" % [TITLES[selected],gap,tool.capitalize()]
+	if selected == "grazer": subject.text += "   ·   "+grazer_motion[0].mode.capitalize()
 	var error: String = model.reason(tool,selected,gap)
 	explanation.text = "Hold F to "+tool+". Release to cancel." if error.is_empty() else error
 	progress_bar.value = progress

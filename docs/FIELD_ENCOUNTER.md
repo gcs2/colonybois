@@ -14,7 +14,9 @@ WASD moves the scout relative to the camera. Q/E lowers/raises altitude. Right-d
 4. A mature bed produces one cultivated pod every 12 simulation seconds, storing up to eight. Contact Vell to sell a pod for 18 Marks or agree recurring deliveries. This local nursery wants six pods total; automatic deliveries retain one local pod and stop after fulfilling the order.
 5. Inspect the journal, save, leave and revisit. Ecology, inventory, order progress, Marks, history and ship position persist.
 
-The visible wild plants shrink as samples are taken; the last native pod is protected. This is a bounded ecological constraint, not a full simulated food web. Floating grazers turn toward the scout and bob; individual tendril rigs, feeding AI, and ecology-driven population change are later art/behavior work. Fins/stems/tendrils are double-sided thin mesh surfaces in this candidate kit.
+The visible wild plants shrink as samples are taken; the last native pod is protected. This is a bounded ecological constraint, not a full simulated food web. The user endorsed the initial asset direction, then requested more lifelike animation and a larger interconnected species catalog.
+
+The animation pass gives each grazer independent blinking/gaze, fin hinges, a breathing bell, flexible trailing tendrils and foraging/curious/startled visual states. Close approach and collecting/warming tools cause retreat; scans encourage curiosity; animals settle after a disturbance. Movement is smoothly bounded. Three visible creatures use a small procedural pose hierarchy and GPU tendril deformation; they do not run a population simulation. The GLB retains named articulation groups, but does not contain a skinned skeleton or baked animation clips. Future walking/climbing species will need proper joint rigs and contact-aware motion. Fins/stems/tendrils are double-sided thin surfaces in this candidate kit. The environment now has a gradient sky and moving water highlights.
 
 ## State and scope
 
@@ -49,7 +51,9 @@ This writes four disposable actual-engine captures under `artifacts/field_0.png`
 
 ## Verification and remaining gates
 
-38 encounter assertions cover invalid/out-of-range commands, partial operation cancellation, exactly-once tool completion, seed conservation, protected native reserve, thermal cost, growth, finite deliveries, storage bounds, deterministic continuation, malformed saves, picking, button operation, visible ecology, contact/journal and return to the exact suspended campaign. The previous 178 simulation assertions and UI checks also pass.
+46 encounter assertions cover invalid/out-of-range commands, partial operation cancellation, exactly-once tool completion, seed conservation, protected native reserve, thermal cost, growth, finite deliveries, storage bounds, deterministic continuation, malformed saves, picking, button operation, visible ecology, contact/journal and return to the exact suspended campaign. Eight of these check exported articulation nodes, curiosity, startle/curl, recovery, movement bounds, independent materials, blinking and zero-time updates. The previous 178 simulation assertions and UI checks also pass.
+
+`tools/CaptureFauna.gd` renders 120 actual-engine frames of curiosity followed by a thermal-tool startle under `artifacts/fauna_motion/`. The optional local `artifacts/bell-grazer-motion.gif` assembles those frames for review; it is not a generated concept animation. Camera tracking in that motion study is staged for readability. The character's actual behavior controller drives the poses.
 
 Rendered checks caught and corrected ground winding, thin-mesh culling, excessive unmerged surfaces and a cropped advisor portrait. A short RTX 5070 Ti Laptop/OpenGL sample at the 60 FPS cap reported p50/p95 frame intervals of 16.67 ms; the final close-view sample reported 513 draw calls and 293,684 primitives. These are frame intervals including the cap, not isolated GPU cost or a clean hardware benchmark. Background workload was uncontrolled; no minimum-spec claim.
 

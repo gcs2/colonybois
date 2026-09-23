@@ -15,6 +15,8 @@ Read in order:
 
 **Implemented checkpoint, 2026-09-23:** Morrow Basin now provides an isolated playable ship/tool encounter from the opening menu. Read `docs/FIELD_ENCOUNTER.md` for controls, saves, actual scope, mesh sources and verification. The four GLB candidates are reproducibly authored from `tools/AuthorEncounter.gd` with the brief/palette in `data/encounter_art.json`. Human art approval remains open.
 
+The user positively endorsed the initial assets. A subsequent animation pass adds independent eyes/fins, breathing, flexible tendrils and bounded foraging/curiosity/startle behavior, plus water/sky improvements. Final refinement and input/fun review remain open. The latest requested expansion is a broad flora/fauna collection with habitat suitability, feeding relationships and useful ecological synergies; build this in aggregate and prove a small food web before mass-producing species.
+
 **Next action:** play this encounter before expanding it. Check flight/camera feel, tool selection and cancellation, scan information, before/after ecology, finite nursery deliveries and save/return. Native computer-use access timed out before input, so that gate is not complete. Improve the observed experience and review the candidate silhouettes/materials before creating additional worlds. A first-person flight feasibility test and a full DCC asset refinement pass remain unstarted.
 
 The following describes the broader production phase; do not restart the already implemented encounter from scratch:

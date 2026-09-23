@@ -26,7 +26,9 @@ func merge_materials(asset: Node3D) -> void:
 	# Author separate parts, then batch static geometry into one surface per palette material.
 	var groups: Dictionary = {}
 	for child: Node in asset.get_children():
-		if not child is MeshInstance3D: continue
+		if not child is MeshInstance3D:
+			if child is Node3D: merge_materials(child)
+			continue
 		var mat: StandardMaterial3D = child.material_override
 		var key: String = mat.albedo_color.to_html()+str(mat.emission_enabled)+str(mat.cull_mode)
 		if not groups.has(key):
@@ -34,13 +36,21 @@ func merge_materials(asset: Node3D) -> void:
 			surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 			groups[key] = {"surface":surface,"material":mat}
 		groups[key].surface.append_from(child.mesh,0,child.transform)
-	for child: Node in asset.get_children(): child.free()
+	for child: Node in asset.get_children():
+		if child is MeshInstance3D: child.free()
 	for key: String in groups:
 		var node := MeshInstance3D.new()
 		node.name = "Palette_"+key
 		node.mesh = groups[key].surface.commit()
 		node.material_override = groups[key].material
 		asset.add_child(node)
+
+func group(parent: Node3D, id: String, at: Vector3 = Vector3.ZERO) -> Node3D:
+	var node := Node3D.new()
+	node.name = id
+	node.position = at
+	parent.add_child(node)
+	return node
 
 func material(key: String, glow: bool = false) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
@@ -114,19 +124,30 @@ func make_asset(id: String) -> Node3D:
 				var leaf: MeshInstance3D = ellipsoid(root,"Basal leaf",Vector3(cos(theta)*0.6,0.24,sin(theta)*0.6),Vector3(0.32,0.16,0.9),"plant")
 				leaf.rotation.y = -theta+PI/2
 		"grazer":
-			ellipsoid(root,"Bell",Vector3.ZERO,Vector3(1.6,1.1,1.2),"fauna")
-			ellipsoid(root,"Underside",Vector3(0,-0.72,0),Vector3(1.1,0.35,0.83),"plant")
+			var body: Node3D = group(root,"Body")
+			ellipsoid(body,"Bell",Vector3.ZERO,Vector3(1.6,1.1,1.2),"fauna")
+			ellipsoid(body,"Underside",Vector3(0,-0.72,0),Vector3(1.1,0.35,0.83),"plant")
 			for i: int in range(3):
 				var x: float = (i-1)*0.7
-				ellipsoid(root,"Eye socket",Vector3(x,0.1,-1),Vector3(0.37,0.39,0.25),"shell")
-				ellipsoid(root,"Eye",Vector3(x,0.1,-1.2),Vector3(0.22,0.27,0.15),"glass")
-				ellipsoid(root,"Catchlight",Vector3(x-0.06,0.2,-1.33),Vector3(0.065,0.07,0.035),"light",true)
+				var eye: Node3D = group(body,"Eye_%d" % i,Vector3(x,0.1,-1))
+				ellipsoid(eye,"Eye socket",Vector3.ZERO,Vector3(0.37,0.39,0.25),"shell")
+				var gaze: Node3D = group(eye,"Gaze_%d" % i)
+				ellipsoid(gaze,"Eye",Vector3(0,0,-0.2),Vector3(0.22,0.27,0.15),"glass")
+				ellipsoid(gaze,"Catchlight",Vector3(-0.06,0.1,-0.33),Vector3(0.065,0.07,0.035),"light",true)
+			var tendrils: Node3D = group(body,"Tendrils")
 			for i: int in range(6):
 				var a: float = i*TAU/6
 				var direction := Vector3(cos(a),0,sin(a))
-				tube(root,"Feeding tendril",[direction*0.75+Vector3(0,-0.65,0),direction+Vector3(0,-1.4,0),direction*0.8+Vector3(0,-2.2,0),direction*1.3+Vector3(0,-2.8,0),direction*1.6+Vector3(0,-2.5,0)],[0.2,0.15,0.11,0.075,0.005],"fauna")
+				var points: Array[Vector3] = []
+				var radii: Array[float] = []
+				for j: int in range(13):
+					var t: float = j/12.0
+					points.append(direction*(0.75+0.3*sin(t*PI)+0.7*t*t)+Vector3(0,-0.65-t*2.2+0.35*pow(t,5),0))
+					radii.append(0.19*pow(1.0-t,0.7)+0.005)
+				tube(tendrils,"Feeding tendril",points,radii,"fauna",8)
 			for side: float in [-1.0,1.0]:
-				var fin: MeshInstance3D = ellipsoid(root,"Fin",Vector3(side*1.55,0,0.2),Vector3(0.8,0.12,0.8),"plant")
+				var hinge: Node3D = group(body,"FinLeft" if side < 0 else "FinRight",Vector3(side*1.15,0,0.2))
+				var fin: MeshInstance3D = ellipsoid(hinge,"Fin",Vector3(side*0.4,0,0),Vector3(0.8,0.12,0.8),"plant")
 				fin.rotation.z = side*0.25
 		"relay":
 			for side: float in [-1.0,1.0]:

@@ -112,6 +112,26 @@ func run() -> void:
 	check(scene.popup.visible and scene.popup_body.get_child_count() >= 5,"Contact exposes actual order terms")
 	scene._show_popup("journal")
 	check(scene.popup.visible,"Journal renders committed history")
+	var motion: RefCounted = scene.grazer_motion[0]
+	check(motion.eyes.size() == 3 and is_instance_valid(motion.fin_left),"Export retains independent eye and fin pivots")
+	var at: Vector3 = motion.actor.position
+	motion.alarm = 0
+	motion.advance(0.1,at+Vector3(0,0,7))
+	check(motion.mode == "curious","Grazer notices a nearby scout")
+	motion.react("warm",motion.actor.position)
+	motion.advance(0.1,at+Vector3(0,0,7))
+	check(motion.mode == "startled" and motion.curl > 0,"Thermal tool causes recoil and tendril curl")
+	for i: int in range(360): motion.advance(1.0/60.0,Vector3(60,20,60))
+	check(motion.mode == "foraging","Grazer settles after disturbance expires")
+	check(motion.actor.position.distance_to(at) < 25,"Ambient movement stays bounded")
+	check(motion.tendril_material != scene.grazer_motion[1].tendril_material,"Characters have independent animation uniforms")
+	motion.blink_start = motion.age
+	motion.next_blink = motion.age+5
+	motion.advance(0.1,Vector3(60,20,60))
+	check(motion.eyes[0].scale.y < 0.3,"Blink closes an independent eye")
+	var frozen_age: float = motion.age
+	motion.advance(0,Vector3.ZERO)
+	check(motion.age == frozen_age,"Zero-time update does not advance animation")
 	scene.free()
 	var main: Node3D = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
