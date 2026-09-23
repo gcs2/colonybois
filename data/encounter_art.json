@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "status": "original dimensional mesh candidates; human art approval pending",
+  "units": "meters; Y up; scout forward -Z",
+  "source": "tools/AuthorEncounter.gd",
+  "output": "assets/encounter/*.glb",
+  "palette": {"shell":"ebdcc0", "glass":"193d53", "trim":"d99557", "plant":"555478", "light":"9de5c5", "fauna":"de9b89"},
+  "assets": [
+    {"id":"scout", "size":[3.8,1.4,4.2], "brief":"Small ivory survey craft, split swept manta fins, dark inset canopy, copper equipment collars, two teal thruster sockets. Asymmetric scanner on starboard. No weapons in this candidate.", "pivot":"hull center", "states":["hover","bank","scan","sample","warm","seed"], "collision":"simplified flight envelope", "budget_triangles":6000},
+    {"id":"pod", "size":[2.6,4.8,2.6], "brief":"Three arching plum stems cradle luminous ribbed seed bladders. Low folded basal leaves, copper tips. Distinct silhouette at flight distance.", "pivot":"ground", "states":["sway","stock available","sample removed"], "collision":"interaction sphere only", "budget_triangles":5000},
+    {"id":"grazer", "size":[4.5,4.8,3.4], "brief":"Buoyant peach bell, recessed underside, three dark eyes with tiny highlights, six tapering curled feeding tendrils and small side fins. Curious and slightly unsettling, not a humanoid.", "pivot":"bell center", "states":["float","curious turn","blink","scan flutter"], "collision":"interaction sphere only", "budget_triangles":7000},
+    {"id":"relay", "size":[3.5,6.0,2.5], "brief":"An incomplete split stone arch containing a dormant copper coil. A single luminous seam activates when the bed blooms; no readable ancestor recording.", "pivot":"ground", "states":["dormant","responding"], "collision":"flight exclusion cylinder", "budget_triangles":3000}
+  ],
+  "review": {"distances_m":[10,25,50], "requirements":["distinct silhouettes","no copied species","readable sample beam","visible before and after ecology","sound mute","rebuild from spec"]}
+}

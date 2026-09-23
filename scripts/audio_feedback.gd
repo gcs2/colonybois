@@ -12,7 +12,7 @@ func _ready() -> void:
 		voice.volume_db = -19
 		add_child(voice)
 		voices.append(voice)
-	for name: String in ["tap","build","launch","arrival","error"]:
+	for name: String in ["tap","build","launch","arrival","error","scan","collect","warm","seed"]:
 		cues[name] = _synthesize(name)
 
 func _exit_tree() -> void:
@@ -30,6 +30,10 @@ func play(name: String) -> void:
 
 func _synthesize(name: String) -> AudioStreamWAV:
 	var duration: float = 0.08 if name == "tap" else (0.85 if name == "launch" else 0.38)
+	if name == "scan": duration = 1.3
+	elif name == "collect": duration = 1.0
+	elif name == "warm": duration = 2.8
+	elif name == "seed": duration = 0.9
 	var rate: int = 22050
 	var bytes := PackedByteArray()
 	bytes.resize(int(duration*rate)*2)
@@ -43,6 +47,10 @@ func _synthesize(name: String) -> AudioStreamWAV:
 		elif name == "launch": frequency = 75+150*u*u
 		elif name == "arrival": frequency = [440.0,554.37,659.25][mini(2,int(u*3))]
 		elif name == "error": frequency = 170-65*u
+		elif name == "scan": frequency = 360+80*sin(u*TAU*3)
+		elif name == "collect": frequency = 180+380*u*u
+		elif name == "warm": frequency = 80+50*u
+		elif name == "seed": frequency = [660.0,550.0,440.0][mini(2,int(u*3))]
 		var envelope: float = minf(1.0,t/0.008)*pow(1.0-u,2.0)
 		var wave: float = sin(TAU*frequency*t)*0.65+sin(TAU*frequency*2*t)*0.18
 		if name == "launch" or name == "build": wave += rng.randf_range(-0.15,0.15)

@@ -13,6 +13,12 @@ Read in order:
 
 ## Exact next task
 
+**Implemented checkpoint, 2026-09-23:** Morrow Basin now provides an isolated playable ship/tool encounter from the opening menu. Read `docs/FIELD_ENCOUNTER.md` for controls, saves, actual scope, mesh sources and verification. The four GLB candidates are reproducibly authored from `tools/AuthorEncounter.gd` with the brief/palette in `data/encounter_art.json`. Human art approval remains open.
+
+**Next action:** play this encounter before expanding it. Check flight/camera feel, tool selection and cancellation, scan information, before/after ecology, finite nursery deliveries and save/return. Native computer-use access timed out before input, so that gate is not complete. Improve the observed experience and review the candidate silhouettes/materials before creating additional worlds. A first-person flight feasibility test and a full DCC asset refinement pass remain unstarted.
+
+The following describes the broader production phase; do not restart the already implemented encounter from scratch:
+
 Run a bounded technical/art discovery phase without replacing the working game. Specify one scout ship and one distinctive planetary expedition scene, including movement, scanning, sample collection/deployment, one visible environmental response and audio. Prove that personally visiting and experimenting is enjoyable before widening the management layer. Keep the isolated first-person flight/renderer feasibility test from FLIGHT_TECH_ASSESSMENT.md bounded; cockpit combat is not a prerequisite for the planet interaction slice. Create the scout/environment concepts and authored model pipeline for in-engine review.
 
 Then prove home base plus two complementary worlds, about six provisional goods, two short production chains, finite demand and automatic delivery. One living ancestor encounter and one alien partner should make exploration matter. Timeline events must record actual validated outcomes.

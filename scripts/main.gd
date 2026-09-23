@@ -111,6 +111,7 @@ func _ready() -> void:
 		DirAccess.make_dir_recursive_absolute("res://artifacts")
 	_toast("Welcome, Captain. Your colony is already running. Try adding habitat along a road.")
 	if not capture_mode and not smoke_mode and not "--script" in OS.get_cmdline_args(): _show_mode_menu()
+	if "--field" in OS.get_cmdline_user_args(): call_deferred("_open_field")
 
 func _process(delta: float) -> void:
 	clock_accumulator += delta * speed
@@ -519,11 +520,16 @@ func _show_mode_menu() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mode_menu.add_child(shade)
 	var panel: PanelContainer = _panel(mode_menu,460,70,1140,825)
+	var menu_scroll := ScrollContainer.new()
+	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(menu_scroll)
 	var content := VBoxContainer.new()
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation",9)
-	panel.add_child(content)
+	menu_scroll.add_child(content)
 	_text(content,"F R O N T I E R   W O R L D S",30,WHITE)
 	_text(content,"A settlement. A signal. A sky you haven't mapped.",19,MINT)
+	_button("NEW · Morrow Basin — fly, sample, grow",_open_field,content)
 	_text(content,"URBAN TUTORIAL · FIRST CAMPAIGN SLICE",12,MINT)
 	_text(content,"An existing city, a broken crossing, two repair agreements. Govern one district; keep the consequences as you explore.",16)
 	_button("New urban tutorial",_start_mode.bind("urban",false),content)
@@ -545,6 +551,22 @@ func _close_mode_menu() -> void:
 		mode_menu.queue_free()
 	mode_menu = null
 	_set_speed(menu_speed)
+
+func _open_field() -> void:
+	# Detach, rather than free, the current session. Returning restores its exact state.
+	var root: Window = get_tree().root
+	var field: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	field.suspended_session = self
+	field.leave.connect(func() -> void:
+		field.suspended_session = null
+		root.remove_child(field)
+		field.queue_free()
+		root.add_child(self)
+		camera.make_current()
+		get_tree().auto_accept_quit = true
+	)
+	root.remove_child(self)
+	root.add_child(field)
 
 func _start_mode(mode: String, restore: bool) -> void:
 	overlay = "natural"

@@ -6,6 +6,8 @@ An early 3D colony-and-galaxy systems demo. Windows desktop; **Godot 4.7.2 stabl
 
 ## Play
 
+**New playable slice:** choose **NEW · Morrow Basin — fly, sample, grow** at the top of the menu. Fly a survey scout, scan and collect living pods, warm and seed a bed, watch it bloom, then sell the cultivated harvest or automate a finite order. WASD flies; right-drag orbits; wheel zooms; 1–4 selects tools; hold F or click **Operate**. The field has separate saves and returns to your existing game. See [field encounter controls, scope and art pipeline](docs/FIELD_ENCOUNTER.md). This is a candidate interaction/art prototype; native fun review is still needed.
+
 Double-click **Play.cmd**, then choose **Urban tutorial**, **Expedition** or **Sandbox** in the opening menu. The launcher prefers the latest completed build recorded in `build/current.txt`, then older local builds, then the source project. Builds now use timestamped directories under `build/versions/` so they do not replace an executable in use. Keep the `.pck` beside the executable. Close an older game window yourself when you are finished with that session; it does not update live.
 
 On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.ps1` to download the pinned engine from its official GitHub release. Alternatively, import `project.godot` in Godot 4.7.2 and press F6/F5. Use the editor or the engine with `--path .` when testing source changes; rebuild before using an existing executable.
