@@ -1,0 +1,5 @@
+{
+  "morrow": {"name":"Custodian skiff","role":"Exclusion patrol","hull":66,"chase":4,"damage":10,"windup":0,"radius":0,"bounty":"","quantity":0,"color":"b2a39d"},
+  "s1p0": {"name":"Rake cutter","role":"Independent raider","hull":88,"chase":6,"damage":18,"windup":2,"radius":6,"bounty":"alloy","quantity":2,"color":"ab6559"},
+  "s2p0": {"name":"Watchbell sentry","role":"Abandoned defense machine","hull":110,"chase":0,"damage":28,"windup":3,"radius":10,"bounty":"glass","quantity":2,"color":"829b99"}
+}

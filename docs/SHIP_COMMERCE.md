@@ -14,6 +14,8 @@ Example checked from a fresh campaign: load eight home alloys, sell at Kestrel I
 
 ## Progression pilot
 
+Later combat integration adds Defender and the paid focused emitter, with Explorer 2 as an alternative unlock. See [ORBITAL_ENCOUNTERS.md](ORBITAL_ENCOUNTERS.md). Hold/drive behavior below remains unchanged.
+
 Definitions live in `data/space_commerce.json`. Explorer measures distinct visited systems at thresholds 2/3/5/8/12. Merchant measures distinct origin/destination/commodity deliveries at 1/3/6/12/24. Repeating the same delivery does not increase that count; local resale never qualifies. These are **scenario adaptations**, not retail Spore thresholds or an assertion that its full badge semantics are reproduced. See SPORE_BADGE_PARITY.md for reference research and remaining families.
 
 The expanded hold costs 120 Marks, requires Merchant 1 **or** Explorer 2, and increases freight capacity to 16. The extended drive costs 160 Marks, requires Explorer 1 **or** Merchant 2, and increases travel range from three to five links. Longer trips retain their full energy cost. Unlocks only permit purchases. Purchased equipment changes actual command limits and cannot be bought twice. Higher badge tiers currently provide recognition; further rewards remain unimplemented. Master ranks are not yet integrated with these badges.

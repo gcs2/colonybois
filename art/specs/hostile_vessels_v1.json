@@ -1,0 +1,8 @@
+{
+  "status":"Authored procedural candidates, not final approved art",
+  "source":"scripts/hostile_vessel.gd",
+  "direction":"Original creepy-cute miniature vessels; readable silhouettes without borrowed faction designs. Rough ceramic shells, recessed dark machinery, small warm signal lights.",
+  "rake_cutter":{"span_m":5.8,"length_m":7.0,"silhouette":"narrow armored back, two long forward claws, negative-space open jaw","motion":"paired claw vanes flex gently; twin rear exhaust sockets","palette":["ab6559","263741","d8d0b5","f6bc78"]},
+  "watchbell":{"span_m":6.2,"height_m":3.8,"silhouette":"broad flattened bell, heavy center eye suspended underneath, three antenna fins","motion":"small independent antenna articulation; anchored firing platform","palette":["829b99","263741","d8d0b5","f6bc78"]},
+  "acceptance":["distinct at orbital gameplay distance","eye changes warning state","three-dimensional aim volume matches damage radius","meshes remain bounded; no per-part simulation","review in-engine before final art approval"]
+}

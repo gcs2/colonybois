@@ -3,7 +3,7 @@ extends RefCounted
 const Geography = preload("res://scripts/planet_geography.gd")
 const Field = preload("res://scripts/encounter_state.gd")
 var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/space_commerce.json"))
-var state: Dictionary = {"cargo":[],"markets":{},"flows":[],"badges":{"explorer":0,"merchant":0},"upgrades":[]}
+var state: Dictionary = {"cargo":[],"markets":{},"flows":[],"badges":{"explorer":0,"merchant":0,"defender":0},"upgrades":[]}
 
 func capacity() -> int:
 	return 16 if "hold" in state.upgrades else 8
@@ -123,6 +123,11 @@ func export_alloy(game: RefCounted, port: String, at: Vector3, amount: int = 1) 
 
 func progress(game: RefCounted, badge: String) -> int:
 	if badge == "merchant": return state.flows.size()
+	if badge == "defender":
+		var cleared: int = 1 if game.field.has_guardian() and game.field.state.guardian_disabled else 0
+		for id: String in game.worlds:
+			if not Field.Encounters.profile(id).is_empty() and game.worlds[id].guardian_disabled: cleared += 1
+		return cleared
 	var count: int = 0
 	for system: Dictionary in game.sector.state.systems:
 		if system.visited: count += 1
@@ -156,6 +161,7 @@ func buy_upgrade(game: RefCounted, port: String, at: Vector3, id: String) -> Str
 	if not blocked.is_empty(): return blocked
 	game.field.marks -= float(catalog.upgrades[id].price)
 	state.upgrades.append(id)
+	game.field.installed_upgrades = state.upgrades
 	game.field.note("upgrade_"+id,"Installed "+str(catalog.upgrades[id].name)+".")
 	game.diplomacy.record(game,"equipment","Installed "+str(catalog.upgrades[id].name)+".","",{"upgrade":id,"price":catalog.upgrades[id].price})
 	return ""
@@ -163,7 +169,9 @@ func buy_upgrade(game: RefCounted, port: String, at: Vector3, id: String) -> Str
 func restore(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["cargo","markets","flows","badges","upgrades"]): return ERR_INVALID_DATA
 	if not source.cargo is Array or not source.markets is Dictionary or not source.flows is Array or not source.badges is Dictionary or not source.upgrades is Array: return ERR_INVALID_DATA
-	if source.upgrades.size() > 2 or source.badges.size() != 2 or source.cargo.size() > 16 or source.markets.size() > 24 or source.flows.size() > 1728: return ERR_INVALID_DATA
+	source = source.duplicate(true)
+	if source.badges.size() == 2 and source.badges.has_all(["explorer","merchant"]): source.badges.defender = 0
+	if source.upgrades.size() > catalog.upgrades.size() or source.badges.size() != catalog.badges.size() or source.cargo.size() > 16 or source.markets.size() > 24 or source.flows.size() > 1728: return ERR_INVALID_DATA
 	var seen: Array = []
 	for id: Variant in source.upgrades:
 		if not id is String or not catalog.upgrades.has(id) or id in seen: return ERR_INVALID_DATA

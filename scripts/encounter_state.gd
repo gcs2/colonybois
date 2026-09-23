@@ -1,6 +1,8 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 6
+const VERSION := 7
+const Encounters = preload("res://scripts/orbital_encounters.gd")
+var installed_upgrades: Array = []
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const TARGETS := ["pod", "grazer", "bed", "relay"]
@@ -66,6 +68,15 @@ func local_services() -> Dictionary:
 func has_wreck() -> bool:
 	return state.planet_id == "morrow"
 
+func enemy_profile() -> Dictionary:
+	return Encounters.profile(state.planet_id)
+
+func has_guardian() -> bool:
+	return not enemy_profile().is_empty()
+
+func lance_damage() -> float:
+	return 33.0 if "emitter" in installed_upgrades else LANCE_DAMAGE
+
 func recharge_price(id: String) -> int:
 	if not services().has(id): return -1
 	if state.planet_id == state.homeworld_id: return 0
@@ -118,17 +129,18 @@ func use_energy_pack() -> String:
 	return ""
 
 
-static func fresh() -> Dictionary:
+static func fresh(planet: String = "morrow") -> Dictionary:
 	return {"version":VERSION, "time":0, "scanned":[], "samples":0, "native_stock":3,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
 		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
-		"planet_id":"morrow", "survey_ticks":0, "survey_active":false,
+		"planet_id":planet, "survey_ticks":0, "survey_active":false,
 		"hull":100.0, "shroud_unlocked":false, "shroud_on":false,
 		"threat_clock":0, "tow_count":0, "last_repair_at":-REPAIR_COOLDOWN,
 		"guardian_x":GUARDIAN_HOME.x, "guardian_z":GUARDIAN_HOME.z,
-		"guardian_hull":66.0, "guardian_alert":0, "guardian_ready_at":0,
+		"guardian_hull":Encounters.hull(planet), "guardian_alert":0, "guardian_ready_at":0,
 		"guardian_disabled":false, "guardian_shots":0,
+		"guardian_aim":[0.0,8.0,0.0], "guardian_fire_at":0, "guardian_salvaged":false,
 		"weapon_ready_at":0, "weapon_shots":0, "homeworld_id":"morrow",
 		"energy_packs":0, "pack_ready_at":0, "service_stock":{"basin_port":4,"orbit_tender":2}}
 
@@ -136,7 +148,7 @@ func guardian_position() -> Vector3:
 	return Vector3(float(state.guardian_x),GUARDIAN_HOME.y,float(state.guardian_z))
 
 func lance_reason(ship_at: Vector3) -> String:
-	if not has_wreck(): return "No orbital target here."
+	if not has_guardian(): return "No orbital target here."
 	if state.flight_mode != "orbit": return "Arc lance operates in orbit."
 	if state.guardian_disabled: return "Custodian disabled. Its hull is intact."
 	if not ship_at.is_finite(): return "Ship position unavailable."
@@ -151,32 +163,51 @@ func fire_lance(ship_at: Vector3) -> String:
 	state.energy -= LANCE_ENERGY
 	state.weapon_ready_at = state.time+LANCE_COOLDOWN
 	state.weapon_shots += 1
-	state.guardian_hull = maxf(0,float(state.guardian_hull)-LANCE_DAMAGE)
+	state.guardian_hull = maxf(0,float(state.guardian_hull)-lance_damage())
 	if state.guardian_hull == 0:
 		state.guardian_disabled = true
 		state.guardian_alert = 0
-		note("guardian_disabled","Arc lance disabled the custodian skiff without destroying it. Its old exclusion order fell silent; ownership of the wreck remains unknown.")
+		state.guardian_fire_at = 0
+		note("guardian_disabled","Arc lance disabled the custodian skiff without destroying it. Its old exclusion order fell silent; ownership of the wreck remains unknown." if has_wreck() else enemy_profile().name+" neutralized. Its cargo can be recovered.")
 	return ""
 
 func guardian_step(ship_at: Vector3) -> String:
-	if not has_wreck(): return ""
+	if not has_guardian(): return ""
 	# Called once after tick(), with the actual ship position. No scene nodes or RNG.
 	if not ship_at.is_finite(): return ""
 	if state.flight_mode != "orbit" or state.guardian_disabled:
 		state.guardian_alert = 0
+		state.guardian_fire_at = 0
 		return ""
 	var current: Vector3 = guardian_position()
 	var intruding: bool = ship_at.distance_to(WRECK_POSITION) < GUARDIAN_ALERT_RANGE
 	if intruding:
 		state.guardian_alert = mini(3,int(state.guardian_alert)+1)
 		if state.guardian_alert >= 3 and current.distance_to(ship_at) > 14:
-			current = current.move_toward(Vector3(ship_at.x,GUARDIAN_HOME.y,ship_at.z),4.0)
+			current = current.move_toward(Vector3(ship_at.x,GUARDIAN_HOME.y,ship_at.z),float(enemy_profile().chase))
 			current = GUARDIAN_HOME+((current-GUARDIAN_HOME).limit_length(22))
 	else:
 		state.guardian_alert = 0
+		state.guardian_fire_at = 0
 		current = current.move_toward(GUARDIAN_HOME,4.0)
 	state.guardian_x = current.x
 	state.guardian_z = current.z
+	if int(enemy_profile().windup) > 0:
+		if state.guardian_fire_at > 0:
+			if state.time < state.guardian_fire_at: return ""
+			state.guardian_fire_at = 0
+			state.guardian_ready_at = state.time+4
+			state.guardian_shots += 1
+			var aim := Vector3(state.guardian_aim[0],state.guardian_aim[1],state.guardian_aim[2])
+			if ship_at.distance_to(aim) > float(enemy_profile().radius): return "guardian_miss"
+			state.hull = maxf(0,float(state.hull)-float(enemy_profile().damage)*(0.3 if state.shroud_on else 1.0))
+			if state.hull > 0: return "guardian_hit"
+			_emergency_tow(); return "tow"
+		if intruding and state.guardian_alert >= 3 and current.distance_to(ship_at) <= GUARDIAN_FIRE_RANGE and state.time >= state.guardian_ready_at:
+			state.guardian_aim = [ship_at.x,ship_at.y,ship_at.z]
+			state.guardian_fire_at = state.time+int(enemy_profile().windup)
+			return "guardian_aim"
+		return ""
 	if not intruding or state.guardian_alert < 3 or current.distance_to(ship_at) > GUARDIAN_FIRE_RANGE or state.time < state.guardian_ready_at: return ""
 	state.guardian_ready_at = state.time+4
 	state.guardian_shots += 1
@@ -193,6 +224,7 @@ func _emergency_tow() -> void:
 	state.shroud_on = false
 	state.threat_clock = 0
 	state.guardian_alert = 0
+	state.guardian_fire_at = 0
 	state.position = [0.0,8.0,35.0]
 	note("emergency_tow_%d" % state.tow_count,"Scout disabled in %s orbit. Emergency tow returned it to a safe holding position; hull and energy were lost." % definition().name)
 
@@ -255,6 +287,8 @@ func change_flight_mode(mode: String) -> bool:
 	if mode == "surface" and definition().sites.is_empty(): return false
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
 	state.flight_mode = mode
+	state.guardian_alert = 0
+	state.guardian_fire_at = 0
 	if mode == "orbit":
 		state.position = [0.0,8.0,35.0]
 		note("first_orbit","Beyond the clouds — reached %s orbit under your own power." % definition().name)
@@ -416,11 +450,17 @@ func restore_snapshot(source: Variant) -> Error:
 		value.weapon_ready_at = 0
 		value.weapon_shots = 0
 	if value.get("version") == 5:
-		value.version = VERSION
+		value.version = 6
 		value.homeworld_id = "morrow"
 		value.energy_packs = 0
 		value.pack_ready_at = 0
 		value.service_stock = {"basin_port":4,"orbit_tender":2}
+	if value.get("version") == 6:
+		value.version = VERSION
+		value.guardian_aim = [0.0,8.0,0.0]
+		value.guardian_fire_at = 0
+		value.guardian_salvaged = false
+		if value.planet_id != "morrow" and not value.guardian_disabled: value.guardian_hull = Encounters.hull(value.planet_id)
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -441,7 +481,12 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.hull <= 0 or value.hull > 100 or value.threat_clock < 0 or value.threat_clock >= 6 or value.tow_count < 0: return ERR_INVALID_DATA
 	if value.last_repair_at > value.time or value.last_repair_at < -REPAIR_COOLDOWN: return ERR_INVALID_DATA
 	if value.shroud_on and not value.shroud_unlocked: return ERR_INVALID_DATA
-	if value.guardian_hull < 0 or value.guardian_hull > 66 or value.guardian_alert < 0 or value.guardian_alert > 3: return ERR_INVALID_DATA
+	if value.guardian_hull < 0 or value.guardian_hull > Encounters.hull(value.planet_id) or value.guardian_alert < 0 or value.guardian_alert > 3: return ERR_INVALID_DATA
+	if value.guardian_fire_at < 0 or value.guardian_fire_at > value.time+3 or (value.guardian_disabled and value.guardian_fire_at > 0): return ERR_INVALID_DATA
+	if value.guardian_salvaged and not value.guardian_disabled: return ERR_INVALID_DATA
+	if value.guardian_aim.size() != 3: return ERR_INVALID_DATA
+	for coordinate: Variant in value.guardian_aim:
+		if not (coordinate is int or coordinate is float) or not is_finite(float(coordinate)) or absf(float(coordinate)) > 100: return ERR_INVALID_DATA
 	if not is_finite(float(value.guardian_x)) or not is_finite(float(value.guardian_z)): return ERR_INVALID_DATA
 	if Vector2(float(value.guardian_x)-GUARDIAN_HOME.x,float(value.guardian_z)-GUARDIAN_HOME.z).length() > 22.01: return ERR_INVALID_DATA
 	if value.guardian_ready_at < 0 or value.guardian_ready_at > value.time+4 or value.weapon_ready_at < 0 or value.weapon_ready_at > value.time+LANCE_COOLDOWN: return ERR_INVALID_DATA

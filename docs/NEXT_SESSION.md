@@ -1,6 +1,14 @@
 # Resume here
 
-## Physical freight contracts — latest checkpoint
+## Multi-world orbital threats — latest checkpoint
+
+Read [ORBITAL_ENCOUNTERS.md](ORBITAL_ENCOUNTERS.md). Nacre I now has a pursuing Rake cutter and Kestrel I an anchored Watchbell sentry. Both telegraph fixed 3D strike volumes that can be evaded horizontally or vertically. Mouse weapon orders use the shared hull/energy/cooldown system. Defeats persist, reward a distinct-contact Defender badge and leave one-time physical cargo salvage. Defender 1 or Explorer 2 unlocks a 180-Mark emitter that changes actual damage from 22 to 33. Snapshots v7 migrate current and inactive planets; chronicle includes actual neutralizations, salvage and tows. Two authored mesh candidates and warning/resolution FX are integrated, but art/audio remain provisional.
+
+Validation: 847 assertions plus UI checks; 45 new encounter checks cover real mouse combat, evasion, recovery, cargo/progression and migrations. Gameplay/model captures reviewed at 1080p. Next prioritize V06 player scout specification → authored mesh/materials/sockets → in-engine near/far/flight review, alongside full reference inventory and native playtesting. Multiple combat entities, fleet/war breadth, full weapon/progression corpus and presentation acceptance remain open. Earlier checkpoints below are history.
+
+Playable package: **build/versions/20260923-151135/FrontierWorlds.exe** via Play.cmd; exported-pack startup smoke passed. This checkpoint is implementation evidence, not final art or native playtest acceptance.
+
+## Physical freight contracts — previous checkpoint
 
 Read [EXPEDITION_FREIGHT.md](EXPEDITION_FREIGHT.md). Communications → Colony administration → Freight contracts charters one carrier per completed outpost for 80 Marks. Four-unit consignments preserve a chosen reserve, prepay distance-based transport, travel over charted routes and sell against actual arrival demand/prices. Unsold goods return and cannot overflow storage. Foreign contracts require trade; non-aggression permits transit through embargo but not selling. Pause/recall retain cargo. The sector chart shows booked routes and carrier progress. Snapshot v6, ledger/chronicle integration and distinct Merchant flow counting persist the entire loop.
 

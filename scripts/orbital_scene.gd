@@ -12,6 +12,8 @@ var pulse_core: MeshInstance3D
 var phase: float = 0.0
 var guardian := Node3D.new()
 var guardian_eye: MeshInstance3D
+var hostile_visual: Node3D
+var aim_marker := Node3D.new()
 const APPROACH := Vector3(0,8,8)
 
 func _ready() -> void:
@@ -20,6 +22,7 @@ func _ready() -> void:
 	add_child(planet)
 	_build_wreck()
 	_build_guardian()
+	_build_aim_marker()
 	var stars := MultiMesh.new()
 	stars.transform_format = MultiMesh.TRANSFORM_3D
 	var star := SphereMesh.new()
@@ -60,6 +63,7 @@ func advance(delta: float) -> void:
 	pulse_core.scale = Vector3.ONE*(0.94+sin(phase*TAU/6)*0.16)
 	guardian.rotation.y = sin(phase*0.7)*0.3
 	guardian.position.y = Encounter.GUARDIAN_HOME.y+sin(phase*1.4)*0.35
+	if hostile_visual != null: hostile_visual.advance(delta)
 
 func _material(color: Color) -> StandardMaterial3D:
 	var result := StandardMaterial3D.new()
@@ -105,6 +109,13 @@ func _build_wreck() -> void:
 func _build_guardian() -> void:
 	guardian.position = Encounter.GUARDIAN_HOME
 	add_child(guardian)
+	var profile: Dictionary = Encounter.Encounters.profile(planet_definition.get("id","morrow"))
+	if not profile.is_empty() and planet_definition.get("id","morrow") != "morrow":
+		hostile_visual = preload("res://scripts/hostile_vessel.gd").new()
+		guardian.add_child(hostile_visual)
+		hostile_visual.build(profile)
+		guardian_eye = hostile_visual.eye
+		return
 	var shell := SphereMesh.new()
 	shell.radius = 1
 	shell.height = 2
@@ -127,3 +138,21 @@ func _build_guardian() -> void:
 	guardian_eye.position = Vector3(0,0.25,-1.5)
 	guardian_eye.material_override = _material(Color("f0ae77"))
 	guardian.add_child(guardian_eye)
+
+func _build_aim_marker() -> void:
+	add_child(aim_marker)
+	for axis: Vector3 in [Vector3.ZERO,Vector3(PI/2,0,0),Vector3(0,0,PI/2)]:
+		var line := MeshInstance3D.new(); var ring := TorusMesh.new()
+		ring.inner_radius = 0.98; ring.outer_radius = 1.0; ring.rings = 48; ring.ring_segments = 4
+		line.mesh = ring; line.rotation = axis; line.material_override = _material(Color("f1a465"))
+		aim_marker.add_child(line)
+	aim_marker.hide()
+
+func show_aim(model: RefCounted, flash: float = 0.0) -> void:
+	aim_marker.visible = (model.state.guardian_fire_at > 0 and not model.state.guardian_disabled) or flash > 0
+	if not aim_marker.visible: return
+	var at: Array = model.state.guardian_aim
+	aim_marker.position = Vector3(at[0],at[1],at[2])
+	aim_marker.scale = Vector3.ONE*float(model.enemy_profile().radius)*(1.0+(0.35-flash)*0.6 if flash > 0 else 1.0)
+	for child: MeshInstance3D in aim_marker.get_children():
+		child.material_override.albedo_color = Color("fff1bf") if flash > 0 else Color("f1a465")

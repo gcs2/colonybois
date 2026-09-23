@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 6
+const VERSION := 7
 const Freight = preload("res://scripts/expedition_freight.gd")
 var freight := Freight.new()
 const Colonies = preload("res://scripts/expedition_colonies.gd")
@@ -13,7 +13,7 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
-const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock"]
+const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
 var sector := Sector.new()
@@ -103,7 +103,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -120,8 +120,12 @@ func restore_snapshot(source: Variant) -> Error:
 	if source.version >= 2 and not source.has("worlds"): return ERR_INVALID_DATA
 	var saved_worlds: Variant = source.get("worlds",{})
 	if not saved_worlds is Dictionary or saved_worlds.size() > 23: return ERR_INVALID_DATA
+	saved_worlds = saved_worlds.duplicate(true)
 	for id: Variant in saved_worlds:
 		if not id is String or Geography.definition(id).is_empty() or id == candidate_field.state.planet_id or not saved_worlds[id] is Dictionary: return ERR_INVALID_DATA
+		if source.version < 7:
+			saved_worlds[id].merge({"guardian_aim":[0.0,8.0,0.0],"guardian_fire_at":0,"guardian_salvaged":false})
+			if id != "morrow" and not saved_worlds[id].get("guardian_disabled",false): saved_worlds[id].guardian_hull = Field.Encounters.hull(id)
 		if saved_worlds[id].size() != LOCAL_KEYS.size(): return ERR_INVALID_DATA
 		var probe: Dictionary = Field.fresh()
 		probe.planet_id = id
@@ -155,6 +159,7 @@ func restore_snapshot(source: Variant) -> Error:
 	sector_clock = source.sector_clock
 	worlds = saved_worlds.duplicate(true)
 	commerce = candidate_commerce
+	field.installed_upgrades = commerce.state.upgrades
 	colonies = candidate_colonies
 	freight = candidate_freight
 	diplomacy = candidate_diplomacy
@@ -163,6 +168,7 @@ func restore_snapshot(source: Variant) -> Error:
 	return OK
 
 func configure_flagship() -> void:
+	field.installed_upgrades = commerce.state.upgrades
 	sector.state.flagship = {"personal":true,"planet":field.state.planet_id,"system":system_of(field.state.planet_id),"target_planet":"","destination":"","route":[],"remaining":0,"duration":0}
 
 static func system_of(id: String) -> String:
@@ -225,7 +231,7 @@ func advance_travel() -> void:
 	worlds[departing] = {}
 	for key: String in LOCAL_KEYS: worlds[departing][key] = field.state[key]
 	var target: String = ship.target_planet
-	var next_world: Dictionary = worlds.get(target,Field.fresh())
+	var next_world: Dictionary = worlds.get(target,Field.fresh(target))
 	for key: String in LOCAL_KEYS: field.state[key] = next_world[key]
 	worlds.erase(target)
 	field.state.planet_id = target
@@ -251,3 +257,23 @@ func advance_worlds() -> void:
 		local.bind_account(sector.state)
 		local.tick_ecology()
 		for key: String in LOCAL_KEYS: worlds[id][key] = local.state[key]
+
+func fire_weapon(at: Vector3) -> String:
+	var error: String = field.fire_lance(at)
+	if error.is_empty() and field.state.guardian_disabled:
+		diplomacy.record(self,"combat",field.enemy_profile().name+" neutralized at "+field.definition().name+".","",{"planet":field.state.planet_id,"enemy":field.enemy_profile().name,"nonlethal":field.has_wreck()},0,"defeat:"+field.state.planet_id)
+		commerce.update_badges(self)
+	return error
+
+func salvage_enemy(at: Vector3) -> String:
+	if traveling() or field.state.flight_mode != "orbit" or not field.has_guardian() or field.has_wreck(): return "No recoverable enemy cargo here."
+	if not field.state.guardian_disabled: return "Neutralize the hostile ship first."
+	if field.state.guardian_salvaged: return "Cargo already recovered."
+	if not at.is_finite() or at.distance_to(field.guardian_position()) > 10: return "Approach within 10 m to recover cargo."
+	var profile: Dictionary = field.enemy_profile()
+	if commerce.used_space(self)+int(profile.quantity) > commerce.capacity(): return "Reserve two cargo spaces for salvage."
+	commerce.add_cargo(profile.bounty,int(profile.quantity),field.state.planet_id)
+	field.state.guardian_salvaged = true
+	field.note("enemy_salvage","Recovered %d %s from %s." % [profile.quantity,commerce.catalog.goods[profile.bounty].name,profile.name])
+	diplomacy.record(self,"combat","Recovered cargo from "+str(profile.name)+".","",{"planet":field.state.planet_id,"item":profile.bounty,"quantity":profile.quantity})
+	return ""

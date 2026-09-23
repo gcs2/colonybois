@@ -132,7 +132,7 @@ func run() -> void:
 	scene = root.get_node("ExpeditionFlight")
 	scene.set_process(false); scene.set_physics_process(false)
 	check(scene.model.state.planet_id == "s1p0" and scene.orbit.planet.planet_definition.id == "s1p0","Arrival rebuilds the actual orbital globe for the destination")
-	check(not scene.orbit.wreck.visible and not scene.orbit.guardian.visible,"Morrow's authored enemy and wreck are not duplicated on other planets")
+	check(not scene.orbit.wreck.visible and scene.orbit.guardian.visible and scene.model.enemy_profile().name == "Rake cutter" and scene.orbit.hostile_visual != null,"Nacre has its own hostile vessel rather than Morrow's wreck/custodian")
 	scene._begin_landing()
 	for i: int in range(2000):
 		if scene.model.state.flight_mode == "surface": break

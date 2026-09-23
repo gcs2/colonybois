@@ -21,6 +21,7 @@ var chronicle_filter: String = "all"
 var chronicle_page: int = 0
 const OutpostVisual = preload("res://scripts/outpost_visual.gd")
 var kit_mode: bool = false
+var enemy_flash: float = 0.0
 var deploy_order: bool = false
 var deployment_site := Vector2.ZERO
 var outpost_visual: Node3D
@@ -624,7 +625,7 @@ func _physics_process(delta: float) -> void:
 			var away_from_guardian: Vector3 = ship.position-model.guardian_position()
 			away_from_guardian.y = 0
 			if away_from_guardian.is_zero_approx(): away_from_guardian = Vector3.RIGHT
-			destination = model.guardian_position()+away_from_guardian.normalized()*(Model.LANCE_RANGE-3)
+			destination = model.guardian_position()+away_from_guardian.normalized()*(8 if model.state.guardian_disabled and not model.has_wreck() else Model.LANCE_RANGE-3)
 		var offset: Vector3 = destination-ship.position
 		move = FlightControls.arrival_velocity(offset,speed)
 		if offset.length() < 0.65:
@@ -690,14 +691,22 @@ func _process(delta: float) -> void:
 				return
 			if sector_map.visible: sector_map.refresh()
 			var attack: String = model.guardian_step(ship.position) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
+			if not model.has_wreck() and attack in ["guardian_hit","guardian_miss","tow"]:
+				enemy_flash = 0.35
+				audio.play("scan_complete")
+			if attack == "guardian_aim":
+				_toast("Incoming strike · move outside the marked volume")
+				audio.play("target_lock")
+			elif attack == "guardian_miss": _toast("Strike evaded")
 			if pulse == "tow" or attack == "tow":
 				_cancel_orders()
 				_restore_ship()
 				arrival_fade = 0.8
 				_toast("Emergency tow · return to a dock or use an energy pack")
+				if campaign != null: campaign.diplomacy.record(campaign,"combat","Flagship disabled; emergency tow recovered it with damaged hull and depleted energy.","",{"planet":model.state.planet_id,"tow":model.state.tow_count},0,"tow:"+str(model.state.tow_count))
 				audio.play("error")
 			elif pulse == "pulse" or attack == "guardian_hit":
-				_toast("Incoming fire · retreat, shield or disable the custodian" if attack == "guardian_hit" else "Defense pulse hit · leave the core or engage the shield")
+				_toast("Incoming fire · move, shield or neutralize the attacker" if attack == "guardian_hit" else "Defense pulse hit · leave the core or engage the shield")
 				audio.play("error")
 			if model.state.history.size() != old_count:
 				if pulse not in ["pulse","tow"] and attack not in ["guardian_hit","tow"]:
@@ -716,7 +725,9 @@ func _process(delta: float) -> void:
 	_operate(delta)
 	_operate_salvage(delta)
 	_operate_attack()
-	if not paused and not _inspection_open(): weapon_flash = maxf(0,weapon_flash-delta)
+	if not paused and not _inspection_open():
+		weapon_flash = maxf(0,weapon_flash-delta)
+		enemy_flash = maxf(0,enemy_flash-delta)
 	_update_flight_effects(delta)
 	ui_clock += delta
 	if ui_clock > 0.1:
@@ -777,6 +788,12 @@ func _update_flight_effects(delta: float) -> void:
 
 func _update_visuals() -> void:
 	_update_outpost_visual()
+	orbit.show_aim(model,enemy_flash)
+	if orbit.hostile_visual != null: orbit.hostile_visual.disabled = model.state.guardian_disabled
+	orbit.guardian.rotation.z = 0.35 if model.state.guardian_disabled else 0.0
+	if model.state.guardian_alert > 0 and not model.state.guardian_disabled:
+		var facing: Vector3 = ship.position-model.guardian_position()
+		if Vector2(facing.x,facing.z).length() > 0.1: orbit.guardian.rotation.y = atan2(-facing.x,-facing.z)
 	var orbital: bool = model.state.flight_mode == "orbit"
 	orbit.guardian.position.x = model.state.guardian_x
 	orbit.guardian.position.z = model.state.guardian_z
@@ -792,8 +809,8 @@ func _update_visuals() -> void:
 	planet_locator.position = camera.unproject_position(orbit.planet.position)+Vector2(-25,-28)
 	wreck_label.visible = model.has_wreck() and orbital and not _inspection_open() and not camera.is_position_behind(OrbitalScene.WRECK_POSITION)
 	wreck_label.position = camera.unproject_position(OrbitalScene.WRECK_POSITION)+Vector2(12,-18)
-	guardian_label.visible = model.has_wreck() and orbital and (model.state.survey_ticks >= int(model.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
-	guardian_label.text = "◇  CUSTODIAN · DISABLED" if model.state.guardian_disabled else "◇  CUSTODIAN · WARNING" if model.state.guardian_alert > 0 else "◇  CUSTODIAN SKIFF"
+	guardian_label.visible = model.has_guardian() and orbital and (model.state.survey_ticks >= int(model.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
+	guardian_label.text = (model.enemy_profile().name.to_upper()+ (" · DISABLED" if model.state.guardian_disabled else " · WARNING" if model.state.guardian_alert > 0 else "")) if model.has_guardian() else ""
 	guardian_label.position = camera.unproject_position(model.guardian_position())+Vector2(10,-22)
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
@@ -862,7 +879,7 @@ func _hud_action(action: String) -> void:
 				elif model.state.flight_mode == "orbit":
 					if landing: _stop()
 					elif orbital_target == "guardian":
-						if weapon_selected: _command_guardian()
+						if weapon_selected or model.state.guardian_disabled: _command_guardian()
 						else: _select_weapon()
 					else: _command_wreck()
 				else: _activate_selected()
@@ -930,26 +947,33 @@ func _select_weapon() -> void:
 	audio.play("ui_confirm")
 
 func _target_guardian() -> void:
-	if not model.has_wreck(): return
+	if not model.has_guardian(): return
 	if paused or _inspection_open(): return
 	orbital_target = "guardian"
-	if weapon_selected: _command_guardian()
+	if weapon_selected or model.state.guardian_disabled: _command_guardian()
 	else: _toast("Select the weapon first, then click the skiff to attack")
 
 func _command_guardian() -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
 	orbital_target = "guardian"
-	if model.state.guardian_disabled: _toast("Custodian disabled · no reason to fire again"); return
+	if model.state.guardian_disabled and (model.has_wreck() or model.state.guardian_salvaged): _toast("Contact cleared · no remaining cargo"); return
 	if attack_order: _stop(); return
-	if model.state.energy < Model.LANCE_ENERGY: _toast("Need 10 energy to fire the arc lance"); audio.play("error"); return
+	if not model.state.guardian_disabled and model.state.energy < Model.LANCE_ENERGY: _toast("Need 10 energy to fire the arc lance"); audio.play("error"); return
 	_cancel_orders()
-	if ship.position.distance_to(model.guardian_position()) > Model.LANCE_RANGE:
+	if ship.position.distance_to(model.guardian_position()) > (10 if model.state.guardian_disabled else Model.LANCE_RANGE):
 		_navigate(model.guardian_position())
 	attack_order = true
 	audio.play("target_lock")
 
 func _operate_attack() -> void:
 	if not attack_order or paused or _inspection_open() or navigating or model.state.flight_mode != "orbit": return
+	if model.state.guardian_disabled and not model.has_wreck() and campaign != null:
+		var recovered: String = campaign.salvage_enemy(ship.position)
+		_cancel_orders()
+		_toast(recovered if not recovered.is_empty() else "Salvage secured in cargo")
+		audio.play("error" if not recovered.is_empty() else "cargo")
+		if recovered.is_empty(): _save(false)
+		return
 	var error: String = model.lance_reason(ship.position)
 	if error == "Arc lance recharging.": return
 	if error == "Close within 24 m to fire.":
@@ -962,7 +986,8 @@ func _operate_attack() -> void:
 		audio.play("error")
 		return
 	var at: Vector3 = model.guardian_position()
-	model.fire_lance(ship.position)
+	if campaign != null: campaign.fire_weapon(ship.position)
+	else: model.fire_lance(ship.position)
 	weapon_flash = 0.17
 	weapon_beam.position = (ship.position+at)*0.5
 	var axis: Vector3 = (at-ship.position).normalized()
@@ -972,8 +997,10 @@ func _operate_attack() -> void:
 	audio.play("scan_complete")
 	if model.state.guardian_disabled:
 		_cancel_orders()
-		_toast("Custodian disabled · it remains intact")
-	else: _toast("Arc lance hit · custodian %d / 66" % model.state.guardian_hull)
+		_toast("Custodian disabled · it remains intact" if model.has_wreck() else "Hostile neutralized · click its wreck to recover cargo")
+		audio.play("achievement")
+		_save(false)
+	else: _toast("Arc lance hit · %s %d / %d" % [model.enemy_profile().name,model.state.guardian_hull,model.enemy_profile().hull])
 
 func _operate_salvage(delta: float) -> void:
 	if not salvage_order or paused or _inspection_open() or model.state.flight_mode != "orbit": return
@@ -1114,7 +1141,7 @@ func _pick(screen: Vector2) -> void:
 	if model.state.flight_mode == "orbit":
 		var wreck_gap: float = camera.unproject_position(OrbitalScene.WRECK_POSITION).distance_to(screen) if not camera.is_position_behind(OrbitalScene.WRECK_POSITION) else INF
 		var guardian_gap: float = camera.unproject_position(model.guardian_position()).distance_to(screen) if not camera.is_position_behind(model.guardian_position()) else INF
-		if model.has_wreck() and guardian_gap < 37 and guardian_gap < wreck_gap:
+		if model.has_guardian() and guardian_gap < 37 and (not model.has_wreck() or guardian_gap < wreck_gap):
 			_target_guardian()
 			return
 		if model.has_wreck() and wreck_gap < 33:
@@ -1239,7 +1266,7 @@ func _change_flight_mode(mode: String) -> void:
 func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	var orbital: bool = model.state.flight_mode == "orbit"
 	orbit.wreck.visible = model.has_wreck()
-	orbit.guardian.visible = model.has_wreck()
+	orbit.guardian.visible = model.has_guardian()
 	orbit.field_ring.visible = model.has_wreck()
 	surface_root.visible = not orbital
 	orbit.visible = orbital
@@ -1296,6 +1323,8 @@ func _refresh_ui() -> void:
 	var field_distance: float = _wreck_distance()
 	hud.danger_label.text = "PULSE CORE · %d m · NEXT IN %d s" % [field_distance,6-int(s.threat_clock)] if orbital and field_distance < Model.HAZARD_RADIUS else ("PULSE FIELD · %d m · KEEP CLEAR" % field_distance if orbital and field_distance < Model.HAZARD_WARNING else "")
 	hud.guardian_warning.text = "CUSTODIAN LOCKING · %d s" % [3-int(s.guardian_alert)] if orbital and s.guardian_alert > 0 and s.guardian_alert < 3 else ("CUSTODIAN FIRING · %d s TO NEXT SHOT" % maxi(0,int(s.guardian_ready_at)-int(s.time)) if orbital and s.guardian_alert >= 3 and not s.guardian_disabled else "")
+	if orbital and model.has_guardian() and not model.has_wreck() and not s.guardian_disabled:
+		hud.guardian_warning.text = ("STRIKE IN %d s · MOVE OUTSIDE THE MARKER" % maxi(0,int(s.guardian_fire_at)-int(s.time))) if s.guardian_fire_at > 0 else (model.enemy_profile().name.to_upper()+" · HOSTILE CONTACT" if s.guardian_alert > 0 else "")
 	hud.refresh_items(model,paused or _inspection_open())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
@@ -1342,11 +1371,18 @@ func _refresh_ui() -> void:
 			explanation.text = "Routing around the planet" if not landing_waypoints.is_empty() else "On final approach · Stop or steer to cancel"
 			use_button.text = "Cancel"
 			use_button.disabled = paused or _inspection_open()
-		elif orbital_target == "guardian" and not s.guardian_disabled:
+		elif orbital_target == "guardian" and model.has_guardian() and s.guardian_disabled and not model.has_wreck():
+			subject.text = model.enemy_profile().name+" / wreck"
+			hud.action_state.text = "CLEARED" if s.guardian_salvaged else "SALVAGE"
+			explanation.text = "Cargo recovered." if s.guardian_salvaged else "Click to recover two freight units."
+			use_button.text = "Cancel" if attack_order else "Recover"
+			use_button.disabled = paused or _inspection_open() or s.guardian_salvaged
+			use_button.tooltip_text = "Approach the wreck and load its goods into available cargo space."
+		elif orbital_target == "guardian" and model.has_guardian() and not s.guardian_disabled:
 			var skiff_gap: float = ship.position.distance_to(skiff_at)
-			subject.text = "Custodian skiff  /  %.0f m" % skiff_gap
+			subject.text = "%s / %.0f m" % [model.enemy_profile().name,skiff_gap]
 			hud.action_state.text = "APPROACHING" if navigating and attack_order else ("FIRING" if attack_order else "TARGETED")
-			explanation.text = "Hull %d/66 · 10 energy/shot · 2 s" % s.guardian_hull
+			explanation.text = "Hull %d/%d · %d damage · 10 energy/shot" % [s.guardian_hull,model.enemy_profile().hull,model.lance_damage()]
 			use_button.text = "Cancel" if attack_order else ("Fire" if weapon_selected else "Equip")
 			use_button.disabled = paused or _inspection_open() or (weapon_selected and s.energy < Model.LANCE_ENERGY and not attack_order)
 			use_button.tooltip_text = "Click to approach and fire the selected weapon." if weapon_selected else "Select the energy weapon first, then click the skiff to fire."
@@ -1385,11 +1421,13 @@ func _refresh_ui() -> void:
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
 	if not orbital and rendered_planet != "morrow": objective.text = model.definition().name+" · survey local life or return to orbit"
-	if orbital and not model.has_wreck():
+	if orbital and not model.has_wreck() and orbital_target != "guardian":
 		objective.text = "Chart this world, dock for services, or choose your next destination."
 		subject.text = model.definition().name+" / orbit"
 		explanation.text = "Press M for planetary survey or G for the sector chart."
 		use_button.disabled = true
+	if orbital and not model.has_wreck() and orbital_target == "guardian" and model.has_guardian():
+		objective.text = "Recover cargo or continue exploring." if s.guardian_disabled else "Hostile contact · dodge the marked strike or retreat."
 	departure_button.disabled = paused or _inspection_open() or (orbital and model.definition().sites.is_empty())
 	departure_button.text = ("Cancel approach" if landing else "Descend") if orbital else "Leave atmosphere"
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
@@ -1738,7 +1776,7 @@ func _build_systems_panel() -> void:
 	var repair: Button = _button("Field repair · 30 energy",_inventory_action.bind("repair","systems"),popup_body)
 	repair.disabled = paused or not model.repair_reason(_wreck_distance()).is_empty()
 	repair.tooltip_text = model.repair_reason(_wreck_distance())
-	_panel_copy("ARC LANCE  installed · 24 m · 10 energy/shot · 2 s recovery. Disables the orbital custodian without destroying it. Custodian hull: %d / 66." % model.state.guardian_hull)
+	_panel_copy("ARC LANCE  installed · %d damage · 24 m · 10 energy/shot · 2 s recovery. Select it, then click a hostile ship." % model.lance_damage())
 	for i: int in range(TOOLS.size()):
 		var id: String = TOOLS[i]
 		var button: Button = _button(Equipment.title(id),_inspect_system.bind(id),modules)
