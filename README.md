@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Surface combat:** Nacre I and Kestrel I have hostile flyers and sentries. Select the defense laser, or buy a seeker/bomb bay at a dock; click targets/ground to fire, move out of marked strikes, and click wrecks separately for cargo. [Controls, limits and verification](docs/SURFACE_COMBAT.md).
+
 **Repair supplies:** buy basic/full repair packs through dock services → Supplies, then click an owned item in Inventory / I or its hotbar category. Packs have real stock, costs, a shared three-slot locker and a 20-second repair cooldown. [Behavior and verification](docs/REPAIR_SUPPLIES.md).
 
 **Ship progression:** dock services → Upgrades → Hull / Reactor now offers four purchased capacity tiers per family, with badge and prior-installation requirements. New capacity starts empty; home recharge is free and energy never regenerates. See [ship capacity behavior and verification](docs/SHIP_CAPACITY.md).

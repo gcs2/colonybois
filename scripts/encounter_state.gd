@@ -288,7 +288,8 @@ func _emergency_tow() -> void:
 	state.guardian_alert = 0
 	state.guardian_fire_at = 0
 	state.position = [0.0,8.0,35.0]
-	note("emergency_tow_%d" % state.tow_count,"Scout disabled in %s orbit. Emergency tow returned it to a safe holding position; hull and energy were lost." % definition().name)
+	if state.flight_mode == "surface": state.position = [0.0,5.0,12.0]
+	note("emergency_tow_%d" % state.tow_count,"Scout disabled at %s. Emergency tow returned it to a safe holding position; hull and energy were lost." % definition().name)
 
 func salvage_reason(distance: float) -> String:
 	if not has_wreck(): return "No orbital target here."

@@ -1,6 +1,14 @@
 # Resume here
 
-## Carried repair supplies — latest checkpoint
+## Surface weapons and defenses — latest checkpoint
+
+Read [SURFACE_COMBAT.md](SURFACE_COMBAT.md). Nacre I and Kestrel I now have one bounded pursuing flyer and two fixed defenses each. The starting surface laser, paid seeker missile and paid ground bomb have distinct target/cost/range/timing rules. Mouse orders approach before firing; Stop/manual steering cancel. Telegraphed 3D strikes reward altitude evasion. Separate wreck clicks recover finite cargo; persistent kills contribute to Defender and chronicle. Shared-clock projectiles resolve even after ascent. Snapshot v10 preserves the combat model and migrates earlier campaigns without free victories.
+
+Validation: full suite passes with 989 assertions plus UI checks; 37 new combat checks also passed after final placement/outline corrections. Actual warning/impact renders inspected at 1080p/1440p. Model kit and reused audio remain provisional; native playtest/balance and AAA presentation are still open. Next: allied fleet assistance connected to existing alliances, persistent records and loss consequences, alongside further weapon-family breadth and planet manipulation. No empire conquest or complete combat parity is claimed.
+
+Playable: **build/versions/20260923-163238/FrontierWorlds.exe** through Play.cmd. Exported-pack encounter startup smoke passed.
+
+## Carried repair supplies — previous checkpoint
 
 Read [REPAIR_SUPPLIES.md](REPAIR_SUPPLIES.md). Basic and full-hull repair packs now have finite paid shop stock, a shared three-slot locker, Explorer/Defender eligibility for full repair and a shared 20-second cooldown. Real inventory/hotbar icons consume owned items; full repair respects purchased hull. Campaign service commands also close the energy/recharge embargo bypass and record transactions/recovery in the chronicle. Session v9 / field v8 preserve stocks and migrate older campaigns without free carried packs or restored resources.
 

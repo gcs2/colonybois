@@ -39,6 +39,14 @@ const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const FlightHUD = preload("res://scripts/flight_hud.gd")
 const FlightEffects = preload("res://scripts/flight_effects.gd")
+const SurfaceCombat = preload("res://scripts/surface_combat.gd")
+const SurfaceVisual = preload("res://scripts/surface_combat_visual.gd")
+var surface_combat_visual: Node3D
+var surface_weapon: String = ""
+var surface_selected: String = ""
+var surface_aim := Vector3.ZERO
+var surface_order: bool = false
+var surface_salvage_order: bool = false
 const SURFACE_ZOOM_MIN := 12.0
 const SURFACE_ZOOM_MAX := 110.0
 const ORBIT_ZOOM_MIN := 18.0
@@ -198,11 +206,15 @@ func _ready() -> void:
 	orbit.planet_definition = model.definition()
 	add_child(orbit)
 	_build_service_ports()
+	if campaign != null:
+		surface_combat_visual = SurfaceVisual.new()
+		surface_root.add_child(surface_combat_visual)
+		surface_combat_visual.setup(model.state.planet_id)
 	var lance_mesh := CylinderMesh.new()
 	lance_mesh.top_radius = 0.07
 	lance_mesh.bottom_radius = 0.13
 	lance_mesh.height = 1
-	weapon_beam = _mesh(lance_mesh,Vector3.ZERO,_mat(Color("f3b48a"),true),orbit)
+	weapon_beam = _mesh(lance_mesh,Vector3.ZERO,_mat(Color("f3b48a"),true),self)
 	weapon_beam.visible = false
 	add_child(effects)
 	effects.setup(ship)
@@ -339,8 +351,14 @@ func _make_world() -> void:
 		var r: float = rng.randf_range(24,47)
 		var at := Vector3(cos(a)*r,0,sin(a)*r)
 		at.y = terrain_height(at.x,at.z)-0.4
+		var rock_size := Vector3(rng.randf_range(1,3.8),rng.randf_range(1,5),rng.randf_range(1,2.7))
+		var overlaps_defense: bool = false
+		for id: String in SurfaceCombat.profiles(rendered_planet):
+			var site: Vector3 = SurfaceCombat.home(rendered_planet,id)
+			if Vector2(at.x,at.z).distance_to(Vector2(site.x,site.z)) < 6: overlaps_defense = true
+		if overlaps_defense: continue
 		var rock: MeshInstance3D = _mesh(rock_mesh,at,rock_mat)
-		rock.scale = Vector3(rng.randf_range(1,3.8),rng.randf_range(1,5),rng.randf_range(1,2.7))
+		rock.scale = rock_size
 		rock.rotation.y = a
 	# Shallow pools and sparse reed clusters frame the playable subjects.
 	var pool := SphereMesh.new()
@@ -625,6 +643,7 @@ func _physics_process(delta: float) -> void:
 		salvage_order = false
 		salvage_progress = 0
 		attack_order = false
+		surface_order = false
 		service_order = ""
 	if navigating:
 		if approach_subject: destination = _target_position()+Vector3(0,1,1).normalized()*Equipment.reach(tool)*0.55
@@ -698,6 +717,11 @@ func _process(delta: float) -> void:
 				return
 			if sector_map.visible: sector_map.refresh()
 			var attack: String = model.guardian_step(ship.position) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
+			if campaign != null and model.state.flight_mode == "surface":
+				var ground_event: String = campaign.combat.step(campaign,ship.position)
+				if ground_event == "tow": attack = "tow"
+				elif ground_event == "hit": _toast("Surface defenses hit · move clear of their aim"); audio.play("error")
+				elif ground_event == "aim": audio.play("target_lock")
 			if not model.has_wreck() and attack in ["guardian_hit","guardian_miss","tow"]:
 				enemy_flash = 0.35
 				audio.play("scan_complete")
@@ -732,6 +756,8 @@ func _process(delta: float) -> void:
 	_operate(delta)
 	_operate_salvage(delta)
 	_operate_attack()
+	_operate_surface_attack()
+	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
 	if not paused and not _inspection_open():
 		weapon_flash = maxf(0,weapon_flash-delta)
 		enemy_flash = maxf(0,enemy_flash-delta)
@@ -808,7 +834,7 @@ func _update_visuals() -> void:
 	var guardian_ink: StandardMaterial3D = orbit.guardian_eye.material_override
 	guardian_ink.albedo_color = Color("6d727c") if model.state.guardian_disabled else (Color("f17e77") if model.state.guardian_alert >= 3 else Color("f0ae77"))
 	guardian_ink.emission = guardian_ink.albedo_color
-	weapon_beam.visible = orbital and weapon_flash > 0 and not _inspection_open()
+	weapon_beam.visible = weapon_flash > 0 and not _inspection_open()
 	shroud_ring.visible = model.state.shroud_on
 	shroud_ring.rotation.y = elapsed*0.3
 	ship_locator.visible = distance > 85 and not _inspection_open() and not camera.is_position_behind(ship.position)
@@ -822,7 +848,7 @@ func _update_visuals() -> void:
 	guardian_label.position = camera.unproject_position(model.guardian_position())+Vector2(10,-22)
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
-	guide_arrow.visible = not paused and not _inspection_open()
+	guide_arrow.visible = not paused and not _inspection_open() and surface_weapon.is_empty()
 	if orbital:
 		guide_arrow.position = Vector2(1400,615)
 		ring.visible = false
@@ -864,6 +890,7 @@ func _hud_action(action: String) -> void:
 		var id: String = action.trim_prefix("item:")
 		if not hud.Palette.unavailable(id,model).is_empty(): return
 		if id == "lance": _select_weapon()
+		elif SurfaceCombat.data().weapons.has(id): _select_surface_weapon(id)
 		elif id == "pack": _hud_action("pack")
 		elif Model.repair_items().has(id): _hud_action(id)
 		else: _select_tool(id)
@@ -885,6 +912,9 @@ func _hud_action(action: String) -> void:
 		"use":
 			if not paused and not _inspection_open():
 				if kit_mode or deploy_order: _stop()
+				elif model.state.flight_mode == "surface" and not surface_weapon.is_empty():
+					if surface_order: _stop()
+					else: _order_surface_attack(surface_selected,surface_aim)
 				elif model.state.flight_mode == "orbit":
 					if landing: _stop()
 					elif orbital_target == "guardian":
@@ -958,6 +988,7 @@ func _command_wreck() -> void:
 func _select_weapon() -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
 	_cancel_orders()
+	surface_weapon = ""
 	weapon_selected = true
 	hud.select_tool("lance")
 	audio.play("ui_confirm")
@@ -1018,6 +1049,93 @@ func _operate_attack() -> void:
 		audio.play("achievement")
 		_save(false)
 	else: _toast("Arc lance hit · %s %d / %d" % [model.enemy_profile().name,model.state.guardian_hull,model.enemy_profile().hull])
+
+func _select_surface_weapon(id: String) -> void:
+	if paused or _inspection_open() or model.state.flight_mode != "surface" or campaign == null: return
+	if not SurfaceCombat.installed(model,id): return
+	_cancel_orders(); surface_weapon = id; weapon_selected = false
+	hud.select_tool(id); audio.play("ui_confirm")
+
+func _order_surface_attack(target: String, point: Vector3) -> void:
+	if paused or _inspection_open() or campaign == null: return
+	_cancel_orders(); surface_selected = target; surface_aim = point
+	var local: Dictionary = campaign.combat.world(model.state.planet_id)
+	var salvage: bool = local.units.has(target) and local.units[target].hull <= 0
+	if not salvage:
+		if surface_weapon.is_empty(): return
+		var reason: String = campaign.combat.reason(campaign,surface_weapon,target,point,ship.position)
+		if reason not in ["","Approach within weapon range.","Weapon cooling down."]: _toast(reason); return
+	surface_order = true
+	surface_salvage_order = salvage
+	audio.play("target_lock")
+	_approach_surface_target()
+
+func _approach_surface_target() -> void:
+	var local: Dictionary = campaign.combat.world(model.state.planet_id)
+	var salvage: bool = local.units.has(surface_selected) and local.units[surface_selected].hull <= 0
+	var at: Vector3 = SurfaceCombat.position(local.units[surface_selected].at) if local.units.has(surface_selected) else surface_aim
+	var reach: float = 9 if salvage else float(SurfaceCombat.data().weapons[surface_weapon].range)
+	if ship.position.distance_to(at) <= reach*0.9:
+		navigating = false; return
+	var away: Vector3 = (ship.position-at).normalized()
+	if away.is_zero_approx(): away = Vector3.BACK
+	destination = at+away*reach*0.75
+	destination.y = maxf(destination.y,terrain_height(destination.x,destination.z)+4)
+	navigating = true
+
+func _operate_surface_attack() -> void:
+	if not surface_order or paused or _inspection_open() or campaign == null or model.state.flight_mode != "surface": return
+	var selected_unit: Dictionary = campaign.combat.world(model.state.planet_id).units.get(surface_selected,{})
+	if not selected_unit.is_empty() and selected_unit.hull <= 0 and not surface_salvage_order:
+		_cancel_orders(); _toast("Target disabled · click the wreck for salvage"); return
+	_approach_surface_target()
+	if navigating: return
+	var local: Dictionary = campaign.combat.world(model.state.planet_id)
+	if local.units.has(surface_selected) and local.units[surface_selected].hull <= 0:
+		var recovered: String = campaign.combat.salvage(campaign,surface_selected,ship.position)
+		_cancel_orders(); _toast(recovered if not recovered.is_empty() else "Salvage loaded")
+		if recovered.is_empty(): audio.play("cargo"); _save(false)
+		return
+	var error: String = campaign.combat.fire(campaign,surface_weapon,surface_selected,surface_aim,ship.position)
+	if error == "Weapon cooling down.": return
+	if not error.is_empty(): _cancel_orders(); _toast(error); audio.play("error"); return
+	if surface_weapon == "surface_laser":
+		var origin: Vector3 = _ship_socket("WeaponEmitter")
+		var end: Vector3 = SurfaceCombat.position(local.units[surface_selected].at)
+		var axis: Vector3 = (end-origin).normalized()
+		var side: Vector3 = axis.cross(Vector3.FORWARD).normalized()
+		if side.length() < 0.1: side = axis.cross(Vector3.RIGHT).normalized()
+		weapon_beam.position = (origin+end)*0.5
+		weapon_beam.basis = Basis(side,axis*origin.distance_to(end),side.cross(axis))
+		weapon_flash = 0.2
+	audio.play("scan_complete")
+	if surface_weapon == "ground_bomb" or (local.units.has(surface_selected) and local.units[surface_selected].hull <= 0):
+		_cancel_orders()
+		_toast("Bomb away" if surface_weapon == "ground_bomb" else "Target disabled · click the wreck for salvage")
+
+func _refresh_surface_combat_ui() -> void:
+	if campaign == null or model.state.flight_mode != "surface": return
+	var local: Dictionary = campaign.combat.world(model.state.planet_id)
+	var incoming: int = 0
+	for unit: Dictionary in local.units.values():
+		if unit.fire_at > model.state.time: incoming += 1
+	hud.guardian_warning.text = "%d INCOMING · MOVE CLEAR OF THE MARKERS" % incoming if incoming > 0 else ""
+	if surface_weapon.is_empty() and surface_selected.is_empty(): return
+	objective.text = "Hostile surface contacts · engage or withdraw."
+	var spec: Dictionary = SurfaceCombat.data().weapons.get(surface_weapon,{})
+	if local.units.has(surface_selected):
+		var unit: Dictionary = local.units[surface_selected]
+		subject.text = SurfaceCombat.profiles(model.state.planet_id)[surface_selected].name
+		explanation.text = "Hull %d / %d" % [unit.hull,SurfaceCombat.profiles(model.state.planet_id)[surface_selected].hull] if unit.hull > 0 else "Cargo recovered" if unit.salvaged else "Click wreck to recover cargo"
+	else:
+		subject.text = spec.get("name","Surface combat")
+		explanation.text = "Click the ground to aim" if surface_weapon == "ground_bomb" else "Click a hostile target"
+	hud.action_state.text = "APPROACHING" if surface_order and navigating else "FIRING" if surface_order else "READY"
+	use_button.text = "Cancel" if surface_order else "Use"
+	use_button.disabled = paused or _inspection_open() or surface_weapon.is_empty() or (surface_selected.is_empty() and not surface_order)
+	use_button.tooltip_text = spec.get("role","Select a weapon, then click a hostile contact.")
+	for id: String in SurfaceCombat.data().weapons:
+		if campaign.combat.state.ready > model.state.time: hud.count_labels[id].text = "%ds" % (campaign.combat.state.ready-model.state.time)
 
 func _operate_salvage(delta: float) -> void:
 	if not salvage_order or paused or _inspection_open() or model.state.flight_mode != "orbit": return
@@ -1173,6 +1291,24 @@ func _pick(screen: Vector2) -> void:
 		var at: Variant = plane.intersects_ray(from,ray)
 		if at is Vector3: _navigate(at)
 		return
+	if campaign != null:
+		var closest_enemy: float = 32
+		var enemy: String = ""
+		var local: Dictionary = campaign.combat.world(model.state.planet_id)
+		for id: String in local.units:
+			var at: Vector3 = SurfaceCombat.position(local.units[id].at)
+			if camera.is_position_behind(at): continue
+			var gap: float = camera.unproject_position(at).distance_to(screen)
+			if gap < closest_enemy: closest_enemy = gap; enemy = id
+		if not enemy.is_empty():
+			surface_selected = enemy
+			if not surface_weapon.is_empty() or local.units[enemy].hull <= 0: _order_surface_attack(enemy,SurfaceCombat.position(local.units[enemy].at))
+			else: _toast("Hostile surface contact · select a weapon to engage")
+			return
+		if surface_weapon == "ground_bomb":
+			var point: Variant = _surface_point(screen)
+			if point is Vector2: _order_surface_attack("",Vector3(point.x,terrain_height(point.x,point.y),point.y))
+			return
 	var closest: float = 48
 	var picked: String = ""
 	for id: String in targets:
@@ -1216,6 +1352,8 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	surface_order = false
+	surface_salvage_order = false
 	kit_mode = false
 	deploy_order = false
 	service_order = ""
@@ -1317,6 +1455,8 @@ func _select_tool(value: String) -> void:
 	if model.state.flight_mode == "orbit" and hud != null and hud.orbital_mode: return
 	_cancel_orders()
 	tool = value
+	surface_weapon = ""
+	surface_selected = ""
 	progress = 0
 	held = false
 	latched = false
@@ -1460,6 +1600,7 @@ func _refresh_ui() -> void:
 		use_button.disabled = paused or _inspection_open()
 		use_button.tooltip_text = "Cancel deployment and keep the colony kit aboard."
 		progress_bar.value = 0
+	_refresh_surface_combat_ui()
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:

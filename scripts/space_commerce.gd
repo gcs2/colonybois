@@ -127,7 +127,7 @@ func progress(game: RefCounted, badge: String) -> int:
 		var cleared: int = 1 if game.field.has_guardian() and game.field.state.guardian_disabled else 0
 		for id: String in game.worlds:
 			if not Field.Encounters.profile(id).is_empty() and game.worlds[id].guardian_disabled: cleared += 1
-		return cleared
+		return cleared+game.combat.cleared()
 	var count: int = 0
 	for system: Dictionary in game.sector.state.systems:
 		if system.visited: count += 1

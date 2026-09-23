@@ -1,0 +1,19 @@
+{
+  "weapons": {
+    "surface_laser":{"name":"Surveyor defense laser","energy":5,"damage":16,"range":26,"cooldown":1,"delay":0,"radius":0,"upgrade":"","role":"Precise beam; select a hostile ground or flying target."},
+    "seeker":{"name":"Seeker missile","energy":14,"damage":45,"range":40,"cooldown":4,"delay":2,"radius":0,"upgrade":"seeker","role":"Homing projectile for flying targets; two seconds to impact."},
+    "ground_bomb":{"name":"Ground bomb","energy":18,"damage":50,"range":42,"cooldown":4,"delay":2,"radius":7,"upgrade":"ground_bomb","role":"Click ground to mark a seven-metre blast; ground targets only."}
+  },
+  "worlds": {
+    "s1p0": {
+      "watcher":{"name":"Rime watcher","kind":"air","at":[22,-16],"hull":64,"damage":16,"range":32,"radius":4,"windup":2,"color":"92b3b8","goods":"glass"},
+      "sentry_a":{"name":"Buried sentry","kind":"ground","at":[19,-21],"hull":80,"damage":18,"range":28,"radius":5,"windup":3,"color":"768797","goods":"alloy"},
+      "sentry_b":{"name":"Buried sentry","kind":"ground","at":[27,-21],"hull":80,"damage":18,"range":28,"radius":5,"windup":3,"color":"768797","goods":"alloy"}
+    },
+    "s2p0": {
+      "watcher":{"name":"Glasswing patrol","kind":"air","at":[-22,-16],"hull":80,"damage":20,"range":34,"radius":4,"windup":2,"color":"c69c82","goods":"glass"},
+      "sentry_a":{"name":"Salt sentry","kind":"ground","at":[-19,-21],"hull":96,"damage":20,"range":30,"radius":5,"windup":3,"color":"ba886d","goods":"alloy"},
+      "sentry_b":{"name":"Salt sentry","kind":"ground","at":[-27,-21],"hull":96,"damage":20,"range":30,"radius":5,"windup":3,"color":"ba886d","goods":"alloy"}
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status":"Original modular prototype kit; not final art acceptance",
+  "units":{"air":"Rake-derived articulated recovery drone, 70 percent orbital model scale","ground":"Three-legged buried sentry: broad flat cap, amber targeting eye, dark structural struts"},
+  "materials":"Matte environment-colored shell, dark inset, amber eye; no ornate copper HUD treatment",
+  "feedback":"Selected target gets a concise hull/wreck label. Transparent 3D aim volumes exactly match enemy hit radius. Bomb ground footprint uses the actual 7 m blast radius.",
+  "caps":{"visible_units":3,"aim_volumes":3,"player_projectiles":2,"bomb_markers":2,"impact_meshes":4},
+  "source":"scripts/surface_combat_visual.gd with scripts/hostile_vessel.gd",
+  "review":"Render from actual flight camera near/normal/far; inspect ship-sized silhouette, targeting and terrain contact before claiming visual approval."
+}
