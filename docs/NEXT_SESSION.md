@@ -1,5 +1,15 @@
 # Resume here
 
+## Latest steering: deeper Spore GUI forensics
+
+The user explicitly requests a substantially deeper investigation of Spore's actual GUI. Study gameplay screenshots and interaction sequences, not only manual labels; compare composition, tool palettes, cargo, targeting, planetary radar, zoom transitions, diplomacy, trade, feedback and sound timing with our current build. Avoid interpreting recolored rectangular panels as the finished direction. Distinguish observed frames, documented mechanics and our inferences. Audio cannot be judged through browser controls alone. This research now takes priority before further interface redesign.
+
+## Planetary atlas checkpoint
+
+**M / Planet atlas** opens a rotatable whole-globe map. Drag to rotate, wheel to zoom; geography and survey-coverage layers share the orbital globe's seeded material and fixed basin coordinates. A ship marker uses the current local/orbital direction. The one available destination commands actual approach/landing, not teleportation. Orbital imaging costs 20 energy and takes 12 simulation seconds in orbit; it pauses during inspection or surface visits, survives save/load, and records one chronicle milestone. It reveals geography, not ground species/resources. Version 1/2 field saves migrate to version 3.
+
+Only Morrow Basin is landable. The globe is a shared procedural geographic scaffold, not a fully traversable surface or a finished planetary art asset. System/galaxy map integration, multiple landing regions and resource/political layers remain open. Existing local terrain detail is still authored separately from global geometry. Current validation: **313 assertions plus UI checks**, including 34 planet-map checks. Atlas captures in artifacts/flight_ui_atlas_*.png are rendered evidence, not native input review.
+
 **Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. Latest user feedback likes the orbital concept's overall appearance, but requests a colorful interface rather than all ice blue, real inventory and ship subsystems, and an entire-planet map. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) specifies these interactions and dependencies. The first colorful instrument/cargo/equipment pass is implemented; the entire-planet map and deeper subsystem mechanics remain pending. Prioritize this presentation/interaction pass before adding unrelated content.
 
 ## Interface checkpoint

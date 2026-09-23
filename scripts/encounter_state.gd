@@ -1,6 +1,7 @@
 extends RefCounted
 ## Independent encounter snapshot. No changes to campaign economy or save slots.
-const VERSION := 2
+const VERSION := 3
+const Geography = preload("res://scripts/planet_geography.gd")
 const ACTION_SECONDS := {"scan":1.3, "collect":1.5, "warm":3.0, "seed":1.2}
 const TARGETS := ["pod", "grazer", "bed", "relay"]
 var state: Dictionary = fresh()
@@ -9,7 +10,22 @@ static func fresh() -> Dictionary:
 	return {"version":VERSION, "time":0, "scanned":[], "samples":0, "native_stock":3,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
-		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0}
+		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
+		"planet_id":"morrow", "survey_ticks":0, "survey_active":false}
+
+func survey_reason() -> String:
+	if state.survey_ticks >= int(Geography.definition().survey_seconds): return "Morrow's orbital chart is complete."
+	if state.survey_active: return "Orbital survey already commissioned."
+	if state.flight_mode != "orbit": return "Reach orbit to chart the planet."
+	if state.energy < float(Geography.definition().survey_energy): return "Need 20 energy to initiate orbital survey."
+	return ""
+
+func start_survey() -> String:
+	var error: String = survey_reason()
+	if not error.is_empty(): return error
+	state.energy -= float(Geography.definition().survey_energy)
+	state.survey_active = true
+	return ""
 
 func change_flight_mode(mode: String) -> bool:
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
@@ -75,6 +91,11 @@ func act(action: String, target: String, distance: float) -> String:
 func tick() -> void:
 	state.time += 1
 	state.energy = minf(100.0,float(state.energy)+1.5)
+	if state.survey_active and state.flight_mode == "orbit":
+		state.survey_ticks += 1
+		if state.survey_ticks >= int(Geography.definition().survey_seconds):
+			state.survey_active = false
+			note("orbital_chart","Charted Morrow from orbit. Continental geography resolved; ground resources and life remain to be surveyed.")
 	if state.seeded and state.growth < 1.0:
 		state.growth = minf(1.0,float(state.growth)+0.05)
 		if state.growth >= 1.0: note("bloom","The bed bloomed. The old relay answered with light; its purpose remains unknown.")
@@ -123,9 +144,14 @@ func load_from(path: String) -> Error:
 	if not value is Dictionary: return ERR_INVALID_DATA
 	# Additive migration preserves the original field save and its optional ecology.
 	if value.get("version") == 1:
-		value.version = VERSION
+		value.version = 2
 		value.flight_mode = "surface"
 		value.landings = 0
+	if value.get("version") == 2:
+		value.version = VERSION
+		value.planet_id = "morrow"
+		value.survey_ticks = 0
+		value.survey_active = false
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -136,6 +162,9 @@ func load_from(path: String) -> Error:
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.energy < 0 or value.energy > 100 or value.time < 0 or value.marks < 0: return ERR_INVALID_DATA
 	if value.flight_mode not in ["surface","orbit"] or value.landings < 0: return ERR_INVALID_DATA
+	if value.planet_id != "morrow" or value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition().survey_seconds): return ERR_INVALID_DATA
+	if value.survey_ticks == int(Geography.definition().survey_seconds) and value.survey_active: return ERR_INVALID_DATA
+	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition().survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
 	if value.position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 64: return ERR_INVALID_DATA
 	for coordinate: Variant in value.position:
 		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)) or absf(float(coordinate)) > 100: return ERR_INVALID_DATA

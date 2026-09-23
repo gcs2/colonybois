@@ -8,6 +8,8 @@ const FlightControls = preload("res://scripts/flight_controls.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
+const PlanetMap = preload("res://scripts/planet_map.gd")
+const Geography = preload("res://scripts/planet_geography.gd")
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
 const COLORS: Array[Color] = Instruments.TOOL_COLORS
@@ -82,6 +84,7 @@ var inspected_system: String = "scan"
 var cargo_quantity: Label
 var system_energy: ProgressBar
 var system_buttons: Dictionary = {}
+var planet_map: PanelContainer
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -451,9 +454,10 @@ func _make_ui() -> void:
 	progress_bar.max_value = 1
 	Instruments.meter(progress_bar,COLORS[0])
 	footer.add_child(progress_bar)
-	var nav: VBoxContainer = _panel(root,Rect2(1235,765,340,110))
+	var nav: VBoxContainer = _panel(root,Rect2(1235,714,340,162))
 	departure_button = _button("Leave atmosphere",_departure,nav)
 	Instruments.instrument(departure_button,"systems",Instruments.NAV)
+	Instruments.instrument(_button("Planet atlas  [M]",_toggle_planet_map,nav,"ui_open"),"scan",Instruments.NAV)
 	status = _label("",18,Color("ffe0a8"))
 	status.position = Vector2(435,655)
 	status.size = Vector2(730,58)
@@ -487,10 +491,16 @@ func _make_ui() -> void:
 	popup_body.add_theme_constant_override("separation",12)
 	popup_scroll.add_child(popup_body)
 	popup.visible = false
+	planet_map = PlanetMap.new()
+	root.add_child(planet_map)
+	planet_map.close_requested.connect(func() -> void: planet_map.hide(); audio.play("ui_close"))
+	planet_map.travel_requested.connect(_map_travel)
+	planet_map.survey_requested.connect(_map_survey)
+	planet_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
 	_select_tool("scan")
 
 func _physics_process(delta: float) -> void:
-	if paused or popup.visible: velocity = Vector3.ZERO; return
+	if paused or _inspection_open(): velocity = Vector3.ZERO; return
 	var input_direction: Vector3 = FlightControls.direction()
 	if Input.is_action_pressed("flight_brake"): _cancel_orders(); input_direction = Vector3.ZERO
 	var orbital: bool = model.state.flight_mode == "orbit"
@@ -541,12 +551,12 @@ func _physics_process(delta: float) -> void:
 	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
 
 func _process(delta: float) -> void:
-	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or popup.visible)
-	if not paused and not popup.visible: caption_time -= delta
+	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or _inspection_open())
+	if not paused and not _inspection_open(): caption_time -= delta
 	guide_caption.visible = caption_time > 0
 	frame_samples.append(delta*1000)
 	if frame_samples.size() > 600: frame_samples.pop_front()
-	if not paused and not popup.visible:
+	if not paused and not _inspection_open():
 		elapsed += delta
 		tick_clock += delta
 		while tick_clock >= 1:
@@ -559,8 +569,8 @@ func _process(delta: float) -> void:
 				if popup.visible: _show_popup(popup_kind)
 			if int(model.state.time)%30 == 0 and "--field-capture" not in OS.get_cmdline_user_args(): _save(false)
 	_update_camera(delta)
-	if not paused and not popup.visible and model.state.flight_mode == "orbit": orbit.advance(delta)
-	if not paused and not popup.visible and model.state.flight_mode == "surface":
+	if not paused and not _inspection_open() and model.state.flight_mode == "orbit": orbit.advance(delta)
+	if not paused and not _inspection_open() and model.state.flight_mode == "surface":
 		for motion: RefCounted in grazer_motion:
 			motion.advance(delta,ship.position)
 			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
@@ -586,9 +596,9 @@ func _update_visuals() -> void:
 	var orbital: bool = model.state.flight_mode == "orbit"
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
-	guide_arrow.visible = not paused and not popup.visible
+	guide_arrow.visible = not paused and not _inspection_open()
 	if orbital:
-		guide_arrow.position = Vector2(1390,724)
+		guide_arrow.position = Vector2(1390,674)
 		ring.visible = false
 		for label: Label in labels.values(): label.visible = false
 		return
@@ -597,7 +607,7 @@ func _update_visuals() -> void:
 		var projected: Vector2 = camera.unproject_position(_target_position("relay"))
 		guide_arrow.position = Vector2(clampf(projected.x-14,350,1180),clampf(projected.y-72,130,610))-Vector2(0,sin(elapsed*4)*5)
 		guide_arrow.visible = guide_arrow.visible and not camera.is_position_behind(_target_position("relay"))
-	else: guide_arrow.position = Vector2(1390,724+sin(elapsed*4)*4)
+	else: guide_arrow.position = Vector2(1390,674+sin(elapsed*4)*4)
 	for i: int in range(wild_plants.size()):
 		wild_plants[i].scale = Vector3.ONE*(0.9 if i == 0 else (0.7 if i < int(model.state.native_stock) else 0.3))
 		wild_plants[i].rotation.z = sin(elapsed*1.1+i)*0.035
@@ -614,7 +624,7 @@ func _update_visuals() -> void:
 		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
 		var label: Label = labels[id]
 		label.position = camera.unproject_position(at)-Vector2(label.size.x/2,20)
-		label.visible = not camera.is_position_behind(at) and not popup.visible and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
+		label.visible = not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
 		label.modulate.a = 1.0 if id == selected else 0.65
 
 func _target_position(id: String = "") -> Vector3:
@@ -624,7 +634,7 @@ func _target_position(id: String = "") -> Vector3:
 
 func _operate(delta: float) -> void:
 	beam.visible = false
-	if paused or popup.visible or model.state.flight_mode == "orbit" or not held or latched:
+	if paused or _inspection_open() or model.state.flight_mode == "orbit" or not held or latched:
 		progress = 0
 		return
 	var error: String = model.reason(tool,selected,ship.position.distance_to(_target_position()))
@@ -660,6 +670,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not held: latched = false
 		if not event.pressed: return
 		match event.physical_keycode:
+			KEY_M: _toggle_planet_map()
 			KEY_I: _toggle_drawer("cargo")
 			KEY_K: _toggle_drawer("systems")
 			KEY_1: _select_tool("scan")
@@ -670,10 +681,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_cancel_orders()
 				selected = Model.TARGETS[(Model.TARGETS.find(selected)+1)%4]
 			KEY_SPACE: _toggle_pause()
-			KEY_ESCAPE: popup.visible = false; _stop()
+			KEY_ESCAPE: popup.visible = false; planet_map.hide(); _stop()
 			KEY_F5: _save()
 			KEY_F9: _load()
-	if popup.visible or paused: return
+	if _inspection_open() or paused: return
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
 			var sign_y: float = 1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1
@@ -688,7 +699,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		pitch = clampf(pitch+event.relative.y*0.004,0.2,1.3)
 
 func _pick(screen: Vector2) -> void:
-	if paused or popup.visible: return
+	if paused or _inspection_open(): return
 	if model.state.flight_mode == "orbit":
 		var ray: Vector3 = camera.project_ray_normal(screen)
 		var from: Vector3 = camera.project_ray_origin(screen)
@@ -762,7 +773,7 @@ func _toggle_pause() -> void:
 	audio.suspend_voice(paused)
 
 func _departure() -> void:
-	if paused or popup.visible: return
+	if paused or _inspection_open(): return
 	if model.state.flight_mode == "orbit": _begin_landing(); return
 	_cancel_orders()
 	altitude_order = 63
@@ -839,7 +850,7 @@ func _refresh_ui() -> void:
 	_update_guidance()
 
 func _update_guidance() -> void:
-	if elapsed < 1 or paused or popup.visible: return
+	if elapsed < 1 or paused or _inspection_open(): return
 	var id: String = "survey"
 	var line: String = "Captain, that relay is still transmitting. Click it and we'll approach for a scan."
 	if model.state.flight_mode == "orbit":
@@ -863,6 +874,7 @@ func _toast(text: String) -> void:
 
 func _show_popup(kind: String) -> void:
 	_cancel_orders()
+	planet_map.hide()
 	popup_kind = kind
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
 	popup.visible = true
@@ -928,6 +940,35 @@ func _show_popup(kind: String) -> void:
 		popup_body.add_child(copy)
 		_button("Sell one cultivated pod",func() -> void: _trade(false),popup_body)
 		_button("Stop recurring deliveries" if model.state.route else "Agree recurring deliveries",func() -> void: _trade(true),popup_body)
+
+func _inspection_open() -> bool:
+	return popup.visible or (planet_map != null and planet_map.visible)
+
+func _toggle_planet_map() -> void:
+	if planet_map.visible:
+		planet_map.hide()
+		audio.play("ui_close")
+		return
+	_cancel_orders()
+	popup.hide()
+	var location: Vector3 = Geography.site_direction()
+	if model.state.flight_mode == "orbit":
+		location = orbit.planet.basis.inverse()*(ship.position-orbit.planet.position)
+	planet_map.present(model.state,location,paused,model.survey_reason())
+
+func _map_travel(site_id: String) -> void:
+	if site_id != "morrow_basin" or paused: return
+	planet_map.hide()
+	if model.state.flight_mode == "orbit": _begin_landing()
+	else: _navigate(Vector3(0,8,12))
+
+func _map_survey() -> void:
+	if paused: return
+	var reason: String = model.start_survey()
+	if not reason.is_empty(): _toast(reason); audio.play("error"); return
+	planet_map.hide()
+	_toast("Orbital survey underway · 12 seconds")
+	audio.play("target_lock")
 
 func _toggle_drawer(kind: String) -> void:
 	if popup.visible and popup_kind == kind:
@@ -1067,6 +1108,9 @@ func _load() -> void:
 		held = false
 		tick_clock = 0
 		if popup.visible: _show_popup(popup_kind)
+		if planet_map.visible:
+			planet_map.hide()
+			_toggle_planet_map()
 	_toast("Field progress restored." if error == OK else "Could not load field progress: "+error_string(error))
 	audio.play("saved" if error == OK else "error")
 
