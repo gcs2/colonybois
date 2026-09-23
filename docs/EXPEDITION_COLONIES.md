@@ -26,4 +26,4 @@ Independent service markets now replenish one unit of local producer stock and o
 
 `test_expedition_colonies.gd` covers cost/capacity validation, physical travel and survey, protected sites, actual mouse picking and flight approach, cancellation, staged/off-screen construction, deterministic save/load, operating costs, specialization, storage, cargo conservation, old-save migration and replenishment timing. `review_colonies.gd` renders construction and administration at 1080p. These checks establish behavior and layout, not enjoyable pacing, native control feel or final art quality.
 
-Next: persistent automated cargo routes using these physical warehouses, actual route/access constraints and finite destination demand; retain optional manual trading. Continue broader parity and bounded presentation work alongside that integration.
+Follow-up implemented: [physical freight contracts](EXPEDITION_FREIGHT.md) use these warehouses, route/access constraints and finite destination demand. Manual trading remains available. Broad colony planning/defense parity and final art remain incomplete.

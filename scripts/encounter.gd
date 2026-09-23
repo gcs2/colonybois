@@ -1492,7 +1492,7 @@ func _show_popup(kind: String) -> void:
 	if kind == "menu": menu_return = false
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
-	popup.size = Vector2(555,660 if kind in ["service","contact"] and campaign != null else 595)
+	popup.size = Vector2(555,660 if kind in ["service","contact","freight"] and campaign != null else 595)
 	if kind == "contact" and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
@@ -1501,7 +1501,7 @@ func _show_popup(kind: String) -> void:
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
-	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"
+	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -1516,6 +1516,13 @@ func _show_popup(kind: String) -> void:
 		_button("Controls",_menu_page.bind("controls"),popup_body)
 		_button("Audio settings",_menu_page.bind("audio"),popup_body)
 		_button("Return to title",_exit_encounter,popup_body)
+	elif kind == "freight" and campaign != null:
+		var panel := preload("res://scripts/freight_panel.gd").new()
+		panel.campaign = campaign
+		panel.source = selected_colony
+		panel.locked = paused
+		panel.committed.connect(func() -> void: audio.play("ui_confirm"); _save(false); _refresh_ui())
+		popup_body.add_child(panel)
 	elif kind == "cargo":
 		_build_cargo_panel()
 	elif kind == "systems":
@@ -2266,6 +2273,9 @@ func _install_export(item: String) -> void:
 	_show_popup("colonies")
 
 func _build_colonies_panel() -> void:
+	var freight_button: Button = _button("Freight contracts",_show_popup.bind("freight"),popup_body)
+	Instruments.instrument(freight_button,"cargo",Instruments.CARGO)
+	freight_button.tooltip_text = "Charter carriers, protect a warehouse reserve and manage automatic sales."
 	if campaign.colonies.state.outposts.is_empty():
 		_panel_copy("No expedition outposts yet. Load a colony kit at your home dock, survey an unclaimed world, descend and deploy it from Inventory.",Instruments.PAPER)
 		return

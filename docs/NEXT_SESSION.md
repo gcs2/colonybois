@@ -1,5 +1,11 @@
 # Resume here
 
+## Physical freight contracts — latest checkpoint
+
+Read [EXPEDITION_FREIGHT.md](EXPEDITION_FREIGHT.md). Communications → Colony administration → Freight contracts charters one carrier per completed outpost for 80 Marks. Four-unit consignments preserve a chosen reserve, prepay distance-based transport, travel over charted routes and sell against actual arrival demand/prices. Unsold goods return and cannot overflow storage. Foreign contracts require trade; non-aggression permits transit through embargo but not selling. Pause/recall retain cargo. The sector chart shows booked routes and carrier progress. Snapshot v6, ledger/chronicle integration and distinct Merchant flow counting persist the entire loop.
+
+Validation: 802 assertions plus UI checks; 49 freight checks include conservation, demand, costs, borders, recall continuity, actual UI commands and atomic saves. Current playable: **build/versions/20260923-144855/FrontierWorlds.exe** via Play.cmd; exported-pack startup smoke passed. In-engine 1080p contract/status/chart review completed. Freighter 3D art, native controls/balance and final presentation remain open. Next broaden spaceship encounters and combat/progression beyond Morrow, alongside bounded authored scout/art work; avoid turning the next phase into deeper economic administration. Full Space Stage inventory/parity, Sol, fleets and story remain unfulfilled.
+
 ## Carried colony kits and export outposts — latest checkpoint
 
 Read [EXPEDITION_COLONIES.md](EXPEDITION_COLONIES.md). Paid kits occupy four cargo spaces, require an orbital survey, and deploy at a mouse-selected clear surface footprint after the ship arrives. Stop/steer cancels without consuming the kit. Construction advances through cargo/frame/shell stages over 18 colony days, including while off-screen. The finished hub has no invented city population. Paid alloy/water/glass facilities have environment yields, operating costs and capped physical warehouses; collection transfers real stock to the ship. Snapshot v5 preserves all of this. Independent market supply/demand now has bounded time-based replenishment.

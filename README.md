@@ -30,6 +30,8 @@ On a fresh checkout, run `powershell -ExecutionPolicy Bypass -File tools/Setup.p
 
 **Personal colonies:** at a home dock, buy a colony kit in **Upgrades** (300 Marks, 100 materials, 80 supplies; four cargo spaces). Survey Nacre I or Kestrel I from orbit, descend, then select the kit in **Inventory** and click clear ground. The ship delivers it and construction takes nine active minutes. Commission an export facility through Communications → Colony administration; collect its real output at the local dock's **Warehouse**. [Colony behavior, costs and remaining work](docs/EXPEDITION_COLONIES.md).
 
+**Automatic freight:** open **Communications → Colony administration → Freight contracts**. Charter a carrier for 80 Marks, choose a visited destination, commodity and reserve. Shipments take real warehouse goods, prepay transport and sell against arrival demand. Foreign contracts need trade agreements; border closures and storage limits can hold cargo. Pause/recall preserve it. Orange markers on the sector chart show carrier progress. [Exact costs, controls and limits](docs/EXPEDITION_FREIGHT.md).
+
 ## First expedition
 
 For the new city opening, choose **New urban tutorial** instead:
@@ -120,7 +122,7 @@ Read the [current story treatment](docs/STORY_CURRENT.md) and [complete project 
 
 - **Implemented:** colony toy; connected multi-world loop; a small playable pass over core MVP systems, with procedural meshes and a procedural planet shader.
 - **Still needs playtesting:** whether the colony economy and diplomacy stay interesting for 30–60 minutes. Automated verification does not prove fun or balance.
-- **Simplified:** roads have connectivity and commute-distance penalties, not traffic; planets have fixed sites; supply aggregates food/water/logistics; AI factions evaluate lightweight authored rules and do not build competing empires. Government bonuses currently affect trade terms. Trade is an aggregate flow, without visible freighter units.
+- **Simplified:** roads have connectivity and commute-distance penalties, not traffic; planets have fixed sites; supply aggregates food/water/logistics; AI factions evaluate lightweight authored rules and do not build competing empires. Government bonuses currently affect trade terms. Legacy strategic trade is an aggregate flow. Personal expedition freight now has persistent four-unit consignments and chart markers; 3D freighter units remain missing.
 - **Deferred:** tactical fleet battles, war/conquest, ship construction, full planetary terrain editing, deeper political simulation, large sectors, final art/audio, accessibility pass and public release packaging.
 
 The local build uses the complete portable Godot engine plus a resource pack. It is runnable but larger than a normal release export. Save schema 3 accepts version 1/2 snapshots and preserves their existing colonies. `-- --playtest` runs with isolated `review_` save slots. See `docs/ROADMAP.md` for gates before adding systems and `docs/ARCHITECTURE.md` for extension points.

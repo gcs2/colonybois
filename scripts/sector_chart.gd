@@ -37,6 +37,19 @@ class StarGraph extends Control:
 			draw_circle(at,7,ink)
 			if system.id == selected_id: draw_arc(at,15,0,TAU,32,Color("e4e9ed"),2,true)
 			draw_string(font,at+Vector2(16,5),system.name if system.visited or system.get("charted",false) else "Uncharted",HORIZONTAL_ALIGNMENT_LEFT,-1,17,ink)
+		for source: String in campaign.freight.state.routes:
+			var freight: Dictionary = campaign.freight.state.routes[source]
+			if freight.phase == "waiting" or freight.path.is_empty(): continue
+			var tint := Color("eba66d")
+			for i: int in range(freight.path.size()-1):
+				draw_dashed_line(point(campaign.sector.system_by_id(freight.path[i])),point(campaign.sector.system_by_id(freight.path[i+1])),tint.darkened(0.25),2,7,true)
+			var fraction: float = 1.0-float(freight.remaining)/maxi(1,freight.duration)
+			var at: Vector2 = point(campaign.sector.system_by_id(freight.path[0]))
+			if freight.path.size() > 1:
+				var phase: float = fraction*(freight.path.size()-1)
+				var leg: int = mini(int(phase),freight.path.size()-2)
+				at = point(campaign.sector.system_by_id(freight.path[leg])).lerp(point(campaign.sector.system_by_id(freight.path[leg+1])),phase-leg)
+			draw_rect(Rect2(at-Vector2(5,5),Vector2(10,10)),tint)
 		var ship: Dictionary = campaign.sector.state.flagship
 		if campaign.traveling():
 			var fraction: float = 1.0-float(ship.remaining)/maxf(1,ship.duration)
@@ -118,7 +131,7 @@ func _ready() -> void:
 	progress.show_percentage = false
 	UI.meter(progress,UI.GOLD)
 	side.add_child(progress)
-	column.add_child(label("Select a star, then an orbital destination. Gold: your system · mint: explored · gray: uncharted signal",14))
+	column.add_child(label("Select a star, then an orbital destination. Gold: your system · mint: explored · gray: uncharted · orange: freight",14))
 	hide()
 
 func present(session: RefCounted) -> void:
