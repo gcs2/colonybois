@@ -1,6 +1,6 @@
 # Flight interface: color, interaction and navigation
 
-23 September 2026. **Specification, not implemented behavior.** The user liked the new orbital concept but explicitly requested a more colorful UI, inventory, ship subsystems and a whole-planet map. Preserve readable negative space while increasing useful interaction. Keep original creepy-cute character; avoid generic icy military instruments.
+23 September 2026. **Target specification with a partial implementation.** Colored vector tool icons, warm panels, actual inventory with separate onboard/surface storage, and an equipment inspection/selection panel are now implemented. Cargo / I and Systems / K pause the entire local encounter while open. Planet map, power routing, upgrades and the full HUD composition below remain unfinished. The user liked the new orbital concept but explicitly requested a more colorful UI, inventory, ship subsystems and a whole-planet map. Preserve readable negative space while increasing useful interaction. Keep original creepy-cute character; avoid generic icy military instruments.
 
 ## Visual language
 

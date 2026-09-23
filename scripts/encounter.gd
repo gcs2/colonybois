@@ -7,9 +7,10 @@ const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
+const Instruments = preload("res://scripts/flight_interface.gd")
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
 const TOOLS: Array[String] = ["scan","collect","warm","seed"]
-const COLORS: Array[Color] = [Color("9ae5d3"),Color("ddd0f1"),Color("edb46c"),Color("ace6a0")]
+const COLORS: Array[Color] = Instruments.TOOL_COLORS
 var model := Model.new()
 var save_path: String = "user://field_encounter.json"
 var ship: Node3D
@@ -76,6 +77,11 @@ var heard_guides: Dictionary = {}
 var guide_caption: Label
 var caption_time: float = 0.0
 var previewing_audio: bool = false
+var cargo_location: String = "ship"
+var inspected_system: String = "scan"
+var cargo_quantity: Label
+var system_energy: ProgressBar
+var system_buttons: Dictionary = {}
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -320,10 +326,9 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 func _style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.corner_radius_top_left = 5
-	style.corner_radius_top_right = 5
-	style.corner_radius_bottom_left = 5
-	style.corner_radius_bottom_right = 5
+	style.set_corner_radius_all(16)
+	style.set_border_width_all(1)
+	style.border_color = Color("65556e")
 	style.content_margin_left = 20
 	style.content_margin_right = 20
 	style.content_margin_top = 16
@@ -343,9 +348,7 @@ func _button(text: String, callback: Callable, parent: Control, cue: String = "u
 	button.text = text
 	button.custom_minimum_size.y = 42
 	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_stylebox_override("normal",_style(Color("273a48")))
-	button.add_theme_stylebox_override("hover",_style(Color("3e5962")))
-	button.add_theme_stylebox_override("pressed",_style(Color("416b64")))
+	Instruments.instrument(button,"",Instruments.NAV)
 	button.mouse_entered.connect(func() -> void:
 		if not button.disabled: audio.play("ui_hover")
 	)
@@ -360,7 +363,7 @@ func _panel(parent: Control, rect: Rect2) -> VBoxContainer:
 	var panel := PanelContainer.new()
 	panel.position = rect.position
 	panel.size = rect.size
-	panel.add_theme_stylebox_override("panel",_style(Color(0.045,0.08,0.115,0.92)))
+	panel.add_theme_stylebox_override("panel",_style(Color(0.095,0.075,0.13,0.94)))
 	parent.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation",10)
@@ -383,20 +386,26 @@ func _make_ui() -> void:
 	var top: VBoxContainer = _panel(root,Rect2(24,24,365,105))
 	location_label = _label("MORROW / SURFACE",22)
 	top.add_child(location_label)
-	stats = _label("",14,Color("a2bacb"))
+	stats = _label("",14,Instruments.MUTED)
 	top.add_child(stats)
 	var right := HBoxContainer.new()
-	right.position = Vector2(950,24)
+	right.position = Vector2(715,24)
 	right.add_theme_constant_override("separation",6)
 	root.add_child(right)
-	_button("Comms",_show_popup.bind("contact"),right,"ui_open")
-	_button("Log",_show_popup.bind("journal"),right,"ui_open")
+	var cargo_button: Button = _button("Cargo",_show_popup.bind("cargo"),right,"ui_open")
+	Instruments.instrument(cargo_button,"cargo",Instruments.CARGO)
+	cargo_button.tooltip_text = "Inventory [I] · onboard samples and remote storage"
+	var systems_button: Button = _button("Systems",_show_popup.bind("systems"),right,"ui_open")
+	Instruments.instrument(systems_button,"systems",Instruments.GOLD)
+	systems_button.tooltip_text = "Ship equipment [K] · inspect and select a tool"
+	Instruments.instrument(_button("Comms",_show_popup.bind("contact"),right,"ui_open"),"comms",Instruments.COMMS)
+	Instruments.instrument(_button("Log",_show_popup.bind("journal"),right,"ui_open"),"log",Instruments.NAV)
 	_button("Controls",_show_popup.bind("controls"),right,"ui_open")
 	_button("Audio",_show_popup.bind("audio"),right,"ui_open")
 	pause_button = _button("Pause",_toggle_pause,right)
 	_button("Menu",_exit_encounter,right)
 	var card: VBoxContainer = _panel(root,Rect2(24,145,320,110))
-	card.add_child(_label("FLIGHT ASSIST",12,Color("82b7c9")))
+	card.add_child(_label("FLIGHT ASSIST",12,Instruments.GOLD))
 	objective = _label("",17)
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	objective.custom_minimum_size.x = 280
@@ -408,6 +417,7 @@ func _make_ui() -> void:
 	energy_bar.custom_minimum_size.y = 8
 	energy_bar.show_percentage = false
 	energy_bar.tooltip_text = "Ship energy"
+	Instruments.meter(energy_bar,Instruments.GOLD)
 	instruments.add_child(energy_bar)
 	var flight_row := HBoxContainer.new()
 	instruments.add_child(flight_row)
@@ -425,21 +435,25 @@ func _make_ui() -> void:
 	for i: int in range(TOOLS.size()):
 		var names: Array[String] = ["Scan","Tractor","Thermal","Deploy"]
 		var button: Button = _button(str(i+1)+"  "+names[i],_select_tool.bind(TOOLS[i]),tools_row,"")
-		button.tooltip_text = "Click a target to approach and use this tool."
+		button.tooltip_text = Instruments.TOOL_HINTS[TOOLS[i]]
+		button.custom_minimum_size.y = 54
+		Instruments.instrument(button,TOOLS[i],COLORS[i])
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		toolbar.append(button)
 	use_button = _button("Use",_activate_selected,tools_row)
 	subject = _label("",17)
 	footer.add_child(subject)
-	explanation = _label("",13,Color("a2bacb"))
+	explanation = _label("",13,Instruments.MUTED)
 	footer.add_child(explanation)
 	progress_bar = ProgressBar.new()
 	progress_bar.custom_minimum_size.y = 4
 	progress_bar.show_percentage = false
 	progress_bar.max_value = 1
+	Instruments.meter(progress_bar,COLORS[0])
 	footer.add_child(progress_bar)
 	var nav: VBoxContainer = _panel(root,Rect2(1235,765,340,110))
 	departure_button = _button("Leave atmosphere",_departure,nav)
+	Instruments.instrument(departure_button,"systems",Instruments.NAV)
 	status = _label("",18,Color("ffe0a8"))
 	status.position = Vector2(435,655)
 	status.size = Vector2(730,58)
@@ -461,13 +475,17 @@ func _make_ui() -> void:
 		labels[id] = label
 		root.add_child(label)
 	popup = PanelContainer.new()
-	popup.position = Vector2(1045,100)
-	popup.size = Vector2(530,560)
-	popup.add_theme_stylebox_override("panel",_style(Color("111f2b")))
+	popup.position = Vector2(1020,100)
+	popup.size = Vector2(555,595)
+	popup.add_theme_stylebox_override("panel",_style(Instruments.INK))
 	root.add_child(popup)
+	var popup_scroll := ScrollContainer.new()
+	popup_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	popup.add_child(popup_scroll)
 	popup_body = VBoxContainer.new()
+	popup_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	popup_body.add_theme_constant_override("separation",12)
-	popup.add_child(popup_body)
+	popup_scroll.add_child(popup_body)
 	popup.visible = false
 	_select_tool("scan")
 
@@ -524,11 +542,11 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or popup.visible)
-	if not paused: caption_time -= delta
+	if not paused and not popup.visible: caption_time -= delta
 	guide_caption.visible = caption_time > 0
 	frame_samples.append(delta*1000)
 	if frame_samples.size() > 600: frame_samples.pop_front()
-	if not paused:
+	if not paused and not popup.visible:
 		elapsed += delta
 		tick_clock += delta
 		while tick_clock >= 1:
@@ -541,8 +559,8 @@ func _process(delta: float) -> void:
 				if popup.visible: _show_popup(popup_kind)
 			if int(model.state.time)%30 == 0 and "--field-capture" not in OS.get_cmdline_user_args(): _save(false)
 	_update_camera(delta)
-	if not paused and model.state.flight_mode == "orbit": orbit.advance(delta)
-	if not paused and model.state.flight_mode == "surface":
+	if not paused and not popup.visible and model.state.flight_mode == "orbit": orbit.advance(delta)
+	if not paused and not popup.visible and model.state.flight_mode == "surface":
 		for motion: RefCounted in grazer_motion:
 			motion.advance(delta,ship.position)
 			motion.actor.position.y = maxf(motion.actor.position.y,terrain_height(motion.actor.position.x,motion.actor.position.z)+3.0)
@@ -642,6 +660,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not held: latched = false
 		if not event.pressed: return
 		match event.physical_keycode:
+			KEY_I: _toggle_drawer("cargo")
+			KEY_K: _toggle_drawer("systems")
 			KEY_1: _select_tool("scan")
 			KEY_2: _select_tool("collect")
 			KEY_3: _select_tool("warm")
@@ -787,18 +807,15 @@ func _select_tool(value: String) -> void:
 	beam_material.albedo_color = COLORS[index]
 	beam_material.emission = COLORS[index]
 	for i: int in range(toolbar.size()):
-		toolbar[i].modulate = COLORS[i] if i == index else Color("a1aaae")
-		var style: StyleBoxFlat = _style(Color("1c3d49") if i == index else Color("172630"))
-		style.border_width_bottom = 3 if i == index else 0
-		style.border_color = COLORS[i]
-		toolbar[i].add_theme_stylebox_override("normal",style)
+		Instruments.instrument(toolbar[i],TOOLS[i],COLORS[i],i == index)
+	Instruments.meter(progress_bar,COLORS[index])
 	audio.play("equip_"+value)
 
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
-	stats.text = "%d Marks   /   Cargo %d   /   %d surveys" % [s.marks,s.samples+s.produce,s.scanned.size()]
+	stats.text = "%d Marks   ·   Cradle %d/2   ·   %d surveys" % [s.marks,s.samples,s.scanned.size()]
 	energy_bar.value = s.energy
 	flight_readout.text = "%s  %.0f m   /   %.0f m/s\nENERGY  %d / 100" % ["Y" if orbital else "ALT",ship.position.y,velocity.length(),s.energy]
 	pause_button.text = "Resume" if paused else "Pause"
@@ -851,11 +868,17 @@ func _show_popup(kind: String) -> void:
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
-	var title: Label = _label("AUDIO MIX" if kind == "audio" else ("FLIGHT CONTROLS" if kind == "controls" else ("EXPEDITION LOG" if kind == "journal" else "VELL / TRADE")),22)
+	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE"}
+	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	_button("×",func() -> void: popup.visible = false; audio.save_settings(),header,"ui_close")
-	if kind == "audio":
+	popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
+	if kind == "cargo":
+		_build_cargo_panel()
+	elif kind == "systems":
+		_build_systems_panel()
+	elif kind == "audio":
 		for channel: String in ["sfx","music","voice"]:
 			popup_body.add_child(_label({"sfx":"Effects and interface","music":"Music","voice":"Guide voice"}[channel],17))
 			var slider := HSlider.new()
@@ -905,8 +928,113 @@ func _show_popup(kind: String) -> void:
 		popup_body.add_child(copy)
 		_button("Sell one cultivated pod",func() -> void: _trade(false),popup_body)
 		_button("Stop recurring deliveries" if model.state.route else "Agree recurring deliveries",func() -> void: _trade(true),popup_body)
-	var hint: Label = _label("Isolated field save · campaign resources are untouched",12,Color("9fcbbf"))
-	popup_body.add_child(hint)
+
+func _toggle_drawer(kind: String) -> void:
+	if popup.visible and popup_kind == kind:
+		popup.visible = false
+		audio.play("ui_close")
+	else:
+		audio.play("ui_open")
+		_show_popup(kind)
+
+func _panel_copy(text: String, tint: Color = Instruments.MUTED) -> Label:
+	var copy: Label = _label(text,15,tint)
+	copy.custom_minimum_size.x = 460
+	copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	popup_body.add_child(copy)
+	return copy
+
+func _cargo_tab(location: String) -> void:
+	cargo_location = location
+	_show_popup("cargo")
+
+func _build_cargo_panel() -> void:
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation",8)
+	popup_body.add_child(tabs)
+	for location: String in ["ship","surface"]:
+		var tab: Button = _button("Onboard" if location == "ship" else "Surface store",_cargo_tab.bind(location),tabs)
+		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
+	var onboard: bool = cargo_location == "ship"
+	var amount: int = model.state.samples if onboard else model.state.produce
+	var capacity: int = 2 if onboard else 8
+	cargo_quantity = _label("%d / %d  %s" % [amount,capacity,"SAMPLE CRADLES" if onboard else "SURFACE STORAGE UNITS"],17,Instruments.CARGO)
+	popup_body.add_child(cargo_quantity)
+	var slots := GridContainer.new()
+	slots.columns = 4
+	slots.add_theme_constant_override("h_separation",8)
+	slots.add_theme_constant_override("v_separation",8)
+	popup_body.add_child(slots)
+	for index: int in range(capacity):
+		var slot := PanelContainer.new()
+		slot.custom_minimum_size = Vector2(110,76)
+		slot.add_theme_stylebox_override("panel",Instruments.box(Instruments.CARGO,index < amount))
+		slots.add_child(slot)
+		if index < amount:
+			var pod := TextureRect.new()
+			pod.texture = Instruments.icon("pod")
+			pod.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			pod.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			pod.modulate = Instruments.CARGO if onboard else COLORS[0]
+			pod.tooltip_text = "Living wild seed · Morrow Basin" if onboard else "Cultivated pod · Morrow surface bed"
+			slot.add_child(pod)
+		else:
+			var empty: Label = _label("EMPTY",11,Instruments.MUTED)
+			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			slot.add_child(empty)
+	popup_body.add_child(_label("LANTERN POD  /  "+("LIVING SPECIMEN" if onboard else "CULTIVATED PRODUCE"),16,COLORS[0]))
+	if onboard:
+		_panel_copy("Origin: wild lantern pods, Morrow Basin. Each living seed occupies one cradle. Surface harvests are stored separately.")
+		var equip: Button = _button("Equip deployer",_equip_from_panel.bind("seed"),popup_body,"")
+		equip.disabled = amount == 0
+		equip.tooltip_text = "Collect a scanned wild pod first." if amount == 0 else Instruments.TOOL_HINTS.seed
+		Instruments.instrument(equip,"seed",COLORS[3])
+		_panel_copy("No specimens aboard. Scan a pod, then use the tractor." if amount == 0 else "Deployment needs a prepared bed. Selecting the tool does not consume the specimen.")
+	else:
+		_panel_copy("Location: Morrow surface bed. This stock is not aboard your ship. Mature beds produce one unit every 12 seconds, up to eight stored units.")
+		_panel_copy("Nursery demand: %d remaining · 18 Marks per unit\nStanding deliveries: %s" % [model.state.buyer_remaining,"active; one unit reserved" if model.state.route else "off"])
+		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("contact"),popup_body,"ui_open"),"comms",Instruments.COMMS)
+
+func _inspect_system(id: String) -> void:
+	inspected_system = id
+	_show_popup("systems")
+
+func _build_systems_panel() -> void:
+	popup_body.add_child(_label("REACTOR  ·  %d / 100 ENERGY" % model.state.energy,17,Instruments.GOLD))
+	system_energy = ProgressBar.new()
+	system_energy.custom_minimum_size.y = 10
+	system_energy.show_percentage = false
+	system_energy.value = model.state.energy
+	Instruments.meter(system_energy,Instruments.GOLD)
+	popup_body.add_child(system_energy)
+	_panel_copy("Recharge: 1.5 energy / second while simulation runs. Equipment inspection pauses flight and the simulation.")
+	var modules := GridContainer.new()
+	modules.columns = 2
+	modules.add_theme_constant_override("h_separation",8)
+	modules.add_theme_constant_override("v_separation",8)
+	popup_body.add_child(modules)
+	system_buttons.clear()
+	for i: int in range(TOOLS.size()):
+		var id: String = TOOLS[i]
+		var button: Button = _button(Instruments.TOOL_NAMES[id],_inspect_system.bind(id),modules)
+		button.custom_minimum_size = Vector2(232,62)
+		button.add_theme_font_size_override("font_size",14)
+		button.tooltip_text = Instruments.TOOL_HINTS[id]
+		Instruments.instrument(button,id,COLORS[i],inspected_system == id)
+		system_buttons[id] = button
+	var index: int = TOOLS.find(inspected_system)
+	popup_body.add_child(_label(Instruments.TOOL_NAMES[inspected_system].to_upper(),18,COLORS[index]))
+	_panel_copy(Instruments.TOOL_HINTS[inspected_system],Instruments.PAPER)
+	_panel_copy("Cycle: %.1f seconds · installed\n%s" % [Model.ACTION_SECONDS[inspected_system],"Currently selected in your hotbar." if tool == inspected_system else "Available to select in your hotbar."])
+	var select: Button = _button("Select tool & return to flight",_equip_from_panel.bind(inspected_system),popup_body,"")
+	Instruments.instrument(select,inspected_system,COLORS[index],true)
+
+func _equip_from_panel(id: String) -> void:
+	if id not in TOOLS: return
+	_select_tool(id)
+	popup.visible = false
+	_toast(Instruments.TOOL_NAMES[id]+" selected")
 
 func _preview_tools() -> void:
 	if previewing_audio: return

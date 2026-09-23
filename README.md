@@ -1,6 +1,8 @@
 # Frontier Worlds
 
-[Current task board](docs/TASK_BOARD.md) tracks active work, dependencies, prototype gaps and deferred features. [Flight interface specification](docs/FLIGHT_INTERFACE.md) records the latest colorful HUD, cargo, subsystem and whole-planet map requirements; these remain production work rather than implemented features.
+[Current task board](docs/TASK_BOARD.md) tracks active work, dependencies, prototype gaps and deferred features. [Flight interface specification](docs/FLIGHT_INTERFACE.md) records the latest colorful HUD, cargo, subsystem and whole-planet map requirements. The first colored instruments and cargo/equipment panels are implemented; broader requirements remain in production.
+
+**New flight panels:** **Cargo / I** shows onboard specimens separately from surface stock. **Systems / K** inspects tool range, cycle, energy use and selects equipment into the hotbar. Inspection pauses the local simulation; Esc closes it. Gold energy, mint survey, apricot tractor and violet deployer instruments replace the uniform blue palette. These panels still use the isolated field state; planetary maps and deeper ship systems remain pending.
 
 **Current direction:** exploration of living alien worlds, useful interplanetary supply chains, expressive diplomacy and the ancestors' mystery. Cities support the space game. Later first-person ship combat is planned, with an early bounded feasibility test. See [Space-first direction](docs/SPACE_FIRST_DIRECTION.md), [flight stack assessment](docs/FLIGHT_TECH_ASSESSMENT.md), [diplomacy and history](docs/DIPLOMACY_AND_CHRONICLE.md), and [next session](docs/NEXT_SESSION.md). These plans extend the prototype; they are not all implemented.
 

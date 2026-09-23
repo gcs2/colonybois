@@ -76,6 +76,41 @@ func run() -> void:
 	scene._show_popup("controls")
 	check(scene.popup.visible and scene.popup_body.get_child_count() >= 3,"Controls help is accessible from the HUD")
 	scene.popup.visible = false
+	# Cargo reflects storage location; opening drawers must not run hidden production.
+	scene.model.state.samples = 1
+	scene.model.state.produce = 4
+	scene._refresh_ui()
+	check("Cradle 1/2" in scene.stats.text,"HUD does not count remote produce as onboard cargo")
+	scene._show_popup("cargo")
+	check("1 / 2" in scene.cargo_quantity.text,"Onboard inventory reflects real cradle occupancy")
+	var time_before: int = scene.model.state.time
+	var stock_before: int = scene.model.state.produce
+	scene._process(2)
+	check(scene.model.state.time == time_before and scene.model.state.produce == stock_before,"Inventory inspection pauses economic time")
+	scene._cargo_tab("surface")
+	check("4 / 8" in scene.cargo_quantity.text,"Remote store uses its own quantity and capacity")
+	scene._toggle_drawer("systems")
+	check(scene.popup_kind == "systems" and scene.system_energy.value == scene.model.state.energy,"Systems display actual reactor energy")
+	scene.system_buttons.warm.pressed.emit()
+	check(scene.inspected_system == "warm" and scene.popup.visible,"Module selection inspects equipment without unexpectedly closing the drawer")
+	var energy_before: float = scene.model.state.energy
+	scene._equip_from_panel("warm")
+	check(scene.tool == "warm" and not scene.popup.visible,"Equipping from systems returns to flight with the chosen tool")
+	check(scene.model.state.energy == energy_before and scene.model.state.samples == 1,"Equipment selection alone consumes no resources")
+	scene._process(1.1)
+	check(scene.model.state.time > time_before,"Closing inventory resumes economic time")
+	var shortcut := InputEventKey.new()
+	shortcut.physical_keycode = KEY_I
+	shortcut.pressed = true
+	scene._unhandled_input(shortcut)
+	check(scene.popup.visible and scene.popup_kind == "cargo","I opens inventory without interfering with flight bindings")
+	scene._unhandled_input(shortcut)
+	check(not scene.popup.visible,"Repeated inventory shortcut closes its drawer")
+	scene._toggle_pause()
+	scene._show_popup("systems")
+	scene._toggle_drawer("systems")
+	check(scene.paused,"Closing inspection preserves an explicit player pause")
+	scene._toggle_pause()
 	# Migration is exercised with a complete original snapshot, not a made-up stub.
 	var old: Dictionary = Model.fresh()
 	old.version = 1

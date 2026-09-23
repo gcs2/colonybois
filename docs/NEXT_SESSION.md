@@ -1,6 +1,12 @@
 # Resume here
 
-**Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. Latest user feedback likes the orbital concept's overall appearance, but requests a colorful interface rather than all ice blue, real inventory and ship subsystems, and an entire-planet map. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) specifies these interactions and dependencies. These are not yet implemented in the game. Prioritize this presentation/interaction pass before adding unrelated content.
+**Live task visibility:** keep [TASK_BOARD.md](TASK_BOARD.md) updated at each checkpoint. Latest user feedback likes the orbital concept's overall appearance, but requests a colorful interface rather than all ice blue, real inventory and ship subsystems, and an entire-planet map. [FLIGHT_INTERFACE.md](FLIGHT_INTERFACE.md) specifies these interactions and dependencies. The first colorful instrument/cargo/equipment pass is implemented; the entire-planet map and deeper subsystem mechanics remain pending. Prioritize this presentation/interaction pass before adding unrelated content.
+
+## Interface checkpoint
+
+Cargo / **I** shows two real onboard sample cradles and separate eight-unit surface storage, with quantities, origin and a deployer action. Systems / **K** inspects installed tools, reach, cycle and energy cost, and selects a tool back into flight. Inventory does not fabricate items or count surface produce aboard. All inspection drawers pause both movement and economic time; closing preserves an explicit player pause. Four original vector tool icons use mint, apricot, honey and violet; energy is gold on warm plum housings. These are implemented UI improvements, not final art approval. Full power routing, upgrades, hull/damage and planetary cartography are still missing.
+
+Validation: **279 assertions plus UI checks** pass (flight now 37). `tests/review_flight_interface.gd` renders isolated review captures under ignored `artifacts/flight_ui_*.png`; reviewed 1440×810 and 1280×720 layouts. No native player-input/fun approval is implied.
 
 ## Active goal: spaceship adventure and Space Stage feature breadth
 
@@ -35,6 +41,6 @@ Read [AUDIO_PRODUCTION.md](AUDIO_PRODUCTION.md). Twenty original WAV candidates 
 
 ## Verification and backup
 
-Current verification: 267 assertions plus UI checks pass (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 25 flight, 18 audio). Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence and legacy migration. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures (ignored runtime output); they demonstrate rendering, not fun or native input quality.
+Current verification: 279 assertions plus UI checks pass (92 baseline, 43 urban, 19 landing, 24 city, 46 encounter, 37 flight, 18 audio). Tests are in tools/Test.ps1. Flight tests cover click-only approach and scan, right-hand bindings, altitude beyond the previous cap, ascent/return, brake/pause, persistence, legacy migration and the interface behaviors above. Existing encounter tests still cover optional ecology and animation. Captures are in user://flight_captures and artifacts/flight_ui_*.png (ignored runtime output); they demonstrate rendering, not fun or native input quality.
 
 Build with tools/Build.ps1; smoke the resulting pack. Keep each validated milestone in a small commit, push and compare the remote hash. Play.cmd uses build/current.txt and does not live-update an already open game. Previous user-data and downloads/builds remain outside Git.
