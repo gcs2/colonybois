@@ -45,6 +45,8 @@ Status meanings: **In progress** = current work; **Next** = ordered near-term qu
 
 ## How progress is reported
 
+The user's status check-in is an ongoing reporting requirement, not a request for a competing tracker. [Goal and check-in contract](GOAL_AND_CHECKINS.md) records the positive objective, milestone discipline and reusable reporting fields. The active goal remains in place. Keep this board authoritative; use detailed task decompositions only as supporting breakdowns.
+
 Each checkpoint should identify changed task IDs, actual shipped behavior, validation, remaining gaps and remote commit. Update this board in the same commit as the implementation. Concepts, specifications, code, packaged builds and user-approved results are separate stages. Do not turn a row green solely because a test passed or a concept looks attractive.
 
 ## Tracked post-MVP resource direction
