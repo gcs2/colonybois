@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 7
+const VERSION := 8
 const Encounters = preload("res://scripts/orbital_encounters.gd")
 var installed_upgrades: Array = []
 const Geography = preload("res://scripts/planet_geography.gd")
@@ -24,6 +24,8 @@ const LANCE_COOLDOWN := 2
 const PACK_ENERGY := 50.0
 const PACK_CAPACITY := 3
 const PACK_COOLDOWN := 8
+const REPAIR_PACK_CAPACITY := 3
+static var repair_catalog: Dictionary = {}
 static var service_catalog: Dictionary = {}
 static var upgrade_catalog: Dictionary = {}
 var state: Dictionary = fresh()
@@ -53,6 +55,17 @@ static func service_position(id: String) -> Vector3:
 	var at: Array = services()[id].position
 	return Vector3(at[0],at[1],at[2])
 
+static func repair_items() -> Dictionary:
+	if repair_catalog.is_empty(): repair_catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/repair_supplies.json"))
+	return repair_catalog.duplicate(true)
+
+static func initial_repair_stock() -> Dictionary:
+	var result: Dictionary = {}
+	for id: String in services():
+		result[id] = {}
+		for item: String in repair_items(): result[id][item] = int(services()[id].repair_stock[item])
+	return result
+
 func definition() -> Dictionary:
 	return Geography.definition(state.planet_id)
 
@@ -64,6 +77,7 @@ func local_services() -> Dictionary:
 			result[id].name = definition().name + (" landing port" if id == "basin_port" else " service tender")
 			result[id].marks_per_energy = 0.6 if definition().archetype == "frozen" else 0.9
 			result[id].pack_price = 32 if definition().archetype == "frozen" else 44
+			result[id].repair_prices = {"repair_pack":80,"mega_repair_pack":300} if definition().archetype == "frozen" else {"repair_pack":105,"mega_repair_pack":360}
 	return result
 
 func has_wreck() -> bool:
@@ -137,6 +151,44 @@ func use_energy_pack() -> String:
 	note("first_energy_pack","Consumed a reserve pack to restore ship energy away from a recharge dock.")
 	return ""
 
+func repair_pack_count() -> int:
+	return int(state.repair_packs.repair_pack)+int(state.repair_packs.mega_repair_pack)
+
+func repair_purchase_reason(id: String, at: Vector3, item: String) -> String:
+	if not services().has(id) or not repair_items().has(item): return "Unknown repair supply."
+	var port: Dictionary = local_services()[id]
+	if state.planet_id != port.planet or state.flight_mode != port.mode: return "Travel to %s first." % port.name
+	if not at.is_finite() or at.distance_to(service_position(id)) > float(port.reach): return "Approach %s to dock." % port.name
+	if repair_pack_count() >= REPAIR_PACK_CAPACITY: return "Repair locker full (3)."
+	if state.repair_stock[id][item] <= 0: return "This repair supply is sold out."
+	if marks < int(port.repair_prices[item]): return "Need %d Marks." % int(port.repair_prices[item])
+	return ""
+
+func buy_repair_pack(id: String, at: Vector3, item: String) -> String:
+	var error: String = repair_purchase_reason(id,at,item)
+	if not error.is_empty(): return error
+	marks -= int(local_services()[id].repair_prices[item])
+	state.repair_stock[id][item] -= 1
+	state.repair_packs[item] += 1
+	return ""
+
+func repair_pack_reason(item: String) -> String:
+	if not repair_items().has(item): return "Unknown repair supply."
+	if state.repair_packs[item] <= 0: return "No %s aboard. Buy one at a dock." % str(repair_items()[item].name).to_lower()
+	if state.hull >= max_capacity("hull"): return "Hull is sound."
+	if state.time-int(state.last_repair_at) < REPAIR_COOLDOWN: return "Repair system cooling down · %d s." % (REPAIR_COOLDOWN-state.time+int(state.last_repair_at))
+	return ""
+
+func use_repair_pack(item: String) -> String:
+	var error: String = repair_pack_reason(item)
+	if not error.is_empty(): return error
+	var supply: Dictionary = repair_items()[item]
+	state.repair_packs[item] -= 1
+	state.hull = max_capacity("hull") if supply.full else minf(max_capacity("hull"),float(state.hull)+float(supply.hull))
+	state.last_repair_at = state.time
+	note("first_"+item,"Used a %s from the repair locker." % str(supply.name).to_lower())
+	return ""
+
 
 static func fresh(planet: String = "morrow") -> Dictionary:
 	return {"version":VERSION, "time":0, "scanned":[], "samples":0, "native_stock":3,
@@ -151,7 +203,8 @@ static func fresh(planet: String = "morrow") -> Dictionary:
 		"guardian_disabled":false, "guardian_shots":0,
 		"guardian_aim":[0.0,8.0,0.0], "guardian_fire_at":0, "guardian_salvaged":false,
 		"weapon_ready_at":0, "weapon_shots":0, "homeworld_id":"morrow",
-		"energy_packs":0, "pack_ready_at":0, "service_stock":{"basin_port":4,"orbit_tender":2}}
+		"energy_packs":0, "pack_ready_at":0, "service_stock":{"basin_port":4,"orbit_tender":2},
+		"repair_packs":{"repair_pack":0,"mega_repair_pack":0},"repair_stock":initial_repair_stock()}
 
 func guardian_position() -> Vector3:
 	return Vector3(float(state.guardian_x),GUARDIAN_HOME.y,float(state.guardian_z))
@@ -465,11 +518,15 @@ func restore_snapshot(source: Variant) -> Error:
 		value.pack_ready_at = 0
 		value.service_stock = {"basin_port":4,"orbit_tender":2}
 	if value.get("version") == 6:
-		value.version = VERSION
+		value.version = 7
 		value.guardian_aim = [0.0,8.0,0.0]
 		value.guardian_fire_at = 0
 		value.guardian_salvaged = false
 		if value.planet_id != "morrow" and not value.guardian_disabled: value.guardian_hull = Encounters.hull(value.planet_id)
+	if value.get("version") == 7:
+		value.version = VERSION
+		value.repair_packs = {"repair_pack":0,"mega_repair_pack":0}
+		value.repair_stock = initial_repair_stock()
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -480,6 +537,21 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.homeworld_id.is_empty() or value.homeworld_id.length() > 64: return ERR_INVALID_DATA
 	if value.energy_packs < 0 or value.energy_packs > PACK_CAPACITY or value.pack_ready_at < 0 or value.pack_ready_at > value.time+PACK_COOLDOWN: return ERR_INVALID_DATA
+	if value.repair_packs.size() != repair_items().size() or value.repair_stock.size() != services().size(): return ERR_INVALID_DATA
+	var repair_total: int = 0
+	for item: String in repair_items():
+		var count: Variant = value.repair_packs.get(item)
+		if not (count is int or count is float) or not is_finite(float(count)) or count != floorf(count) or count < 0 or count > REPAIR_PACK_CAPACITY: return ERR_INVALID_DATA
+		repair_total += int(count)
+		value.repair_packs[item] = int(count)
+	if repair_total > REPAIR_PACK_CAPACITY: return ERR_INVALID_DATA
+	for id: String in services():
+		var stock: Variant = value.repair_stock.get(id)
+		if not stock is Dictionary or stock.size() != repair_items().size(): return ERR_INVALID_DATA
+		for item: String in repair_items():
+			var count: Variant = stock.get(item)
+			if not (count is int or count is float) or not is_finite(float(count)) or count != floorf(count) or count < 0 or count > int(services()[id].repair_stock[item]): return ERR_INVALID_DATA
+			stock[item] = int(count)
 	if value.service_stock.size() != services().size(): return ERR_INVALID_DATA
 	for id: String in services():
 		if not value.service_stock.has(id): return ERR_INVALID_DATA

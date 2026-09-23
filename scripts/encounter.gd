@@ -865,6 +865,7 @@ func _hud_action(action: String) -> void:
 		if not hud.Palette.unavailable(id,model).is_empty(): return
 		if id == "lance": _select_weapon()
 		elif id == "pack": _hud_action("pack")
+		elif Model.repair_items().has(id): _hud_action(id)
 		else: _select_tool(id)
 		_refresh_ui()
 		return
@@ -898,6 +899,13 @@ func _hud_action(action: String) -> void:
 			var error: String = model.use_energy_pack()
 			_toast(error if not error.is_empty() else "Energy pack consumed · energy %d / %d" % [model.state.energy,model.max_capacity("energy")])
 			audio.play("error" if not error.is_empty() else "cargo")
+		"repair_pack", "mega_repair_pack":
+			if paused or _inspection_open(): return
+			var hull_before: float = model.state.hull
+			var error: String = campaign.use_repair_pack(action) if campaign != null else model.use_repair_pack(action)
+			_toast(error if not error.is_empty() else "%s · restored %d hull" % [Model.repair_items()[action].name,model.state.hull-hull_before])
+			audio.play("error" if not error.is_empty() else "cargo")
+			if error.is_empty(): _save(false)
 		"shroud":
 			if paused or _inspection_open(): return
 			var error: String = model.toggle_shroud()
@@ -1712,7 +1720,8 @@ func _build_cargo_panel() -> void:
 		for lot: Dictionary in campaign.commerce.state.cargo:
 			_panel_copy("%s × %d\nOrigin: %s" % [campaign.commerce.catalog.goods[lot.item].name,lot.quantity,Geography.definition(lot.origin).name],Instruments.PAPER)
 		if campaign.commerce.used_space(campaign) == 0: _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
-		_panel_copy("Specimens and reserve energy packs use separate compartments.")
+		_panel_copy("Specimens and ship supplies use separate compartments.")
+	if onboard: _build_supply_inventory()
 	var amount: int = model.state.samples if onboard else model.state.produce
 	var capacity: int = 2 if onboard else 8
 	cargo_quantity = _label("%d / %d  %s" % [amount,capacity,"SAMPLE CRADLES" if onboard else "SURFACE STORAGE UNITS"],17,Instruments.CARGO)
@@ -1741,12 +1750,6 @@ func _build_cargo_panel() -> void:
 			slot.add_child(empty)
 	popup_body.add_child(_label("LANTERN POD  /  "+("LIVING SPECIMEN" if onboard else "CULTIVATED PRODUCE"),16,COLORS[0]))
 	if onboard:
-		_panel_copy("ENERGY PACKS  %d / 3 · +50 energy each · consumable equipment storage" % model.state.energy_packs,Instruments.GOLD)
-		var pack: Button = _button("Energy pack × %d   ·   Use +50 energy" % model.state.energy_packs,_inventory_action.bind("pack","cargo"),popup_body)
-		pack.icon = preload("res://assets/ui/flight/energy_pack.svg")
-		pack.add_theme_constant_override("icon_max_width",38)
-		pack.tooltip_text = model.pack_reason() if not model.pack_reason().is_empty() else "Consumes one pack. Excess energy is lost. Cooldown: 8 seconds."
-		pack.disabled = not model.pack_reason().is_empty() or paused
 		_panel_copy("Living lantern-pod specimens. Each living seed occupies one cradle. Surface harvests are stored separately.")
 		var equip: Button = _button("Equip deployer",_equip_from_panel.bind("seed"),popup_body,"")
 		equip.disabled = amount == 0
@@ -1757,6 +1760,19 @@ func _build_cargo_panel() -> void:
 		_panel_copy("Location: this planet’s surface bed. This stock is not aboard your ship. Mature beds produce one unit every 12 seconds, up to eight stored units.")
 		_panel_copy("Nursery demand: %d remaining · 18 Marks per unit\nStanding deliveries: %s" % [model.state.buyer_remaining,"active; one unit reserved" if model.state.route else "off"])
 		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("nursery"),popup_body,"ui_open"),"comms",Instruments.COMMS)
+
+func _build_supply_inventory() -> void:
+	_panel_copy("SHIP SUPPLIES · energy %d / 3 · repair %d / 3" % [model.state.energy_packs,model.repair_pack_count()],Instruments.GOLD)
+	for id: String in ["pack","repair_pack","mega_repair_pack"]:
+		var entry: Dictionary = hud.Palette.entry(id)
+		var count: int = model.state.energy_packs if id == "pack" else model.state.repair_packs[id]
+		var reason: String = hud.Palette.unavailable(id,model)
+		var item: Button = _button("%s × %d" % [entry.title,count],_inventory_action.bind(id,"cargo"),popup_body)
+		item.icon = Instruments.icon(entry.icon)
+		item.add_theme_constant_override("icon_max_width",38)
+		item.set_meta("supply_id",id)
+		item.tooltip_text = Instruments.tooltip(entry.hint+("\n"+reason if not reason.is_empty() else ""))
+		item.disabled = paused or not reason.is_empty()
 
 func _inspect_system(id: String) -> void:
 	inspected_system = id
@@ -1964,31 +1980,55 @@ func _build_service_panel() -> void:
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
 		for page: String in ["market","upgrades","energy","warehouse"]:
-			var tab: Button = _button(page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
+			var tab: Button = _button("Supplies" if page == "energy" else page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
 			tab.disabled = dock_page == page
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
 		if dock_page == "warehouse": _build_warehouse_panel(); return
-	_panel_copy("ENERGY  %d / %d     RESERVE PACKS  %d / 3
-BALANCE  %d Marks" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs,model.marks],Instruments.GOLD)
+	_panel_copy("ENERGY  %d / %d · PACKS  %d / 3" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
 	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
-	var reason: String = model.service_reason(selected_service,ship.position)
+	var reason: String = _dock_service_reason("recharge")
 	charge.disabled = paused or not reason.is_empty()
 	charge.tooltip_text = reason
 	var pack: Button = _button("Buy energy pack · %d Marks" % int(port.pack_price),_service_action.bind(true),popup_body)
-	reason = model.service_reason(selected_service,ship.position,true)
+	pack.icon = Instruments.icon("energy_pack")
+	pack.add_theme_constant_override("icon_max_width",38)
+	reason = _dock_service_reason("pack")
 	pack.disabled = paused or not reason.is_empty()
 	pack.tooltip_text = reason
-	_panel_copy("Pack restores 50 energy. %d remaining in this shop.
-Only consume what you need; excess energy is lost.
-
-Homeworld recharge is free. Portable packs are purchased supplies." % model.state.service_stock[selected_service])
+	_panel_copy("+50 energy · %d in stock · excess energy is lost." % model.state.service_stock[selected_service])
+	_panel_copy("REPAIR LOCKER  %d / 3 · shared 20 s repair cooldown" % model.repair_pack_count(),Color("a5e4c2"))
+	for id: String in Model.repair_items():
+		var item: Dictionary = Model.repair_items()[id]
+		var button: Button = _button("%s · %d Marks" % [item.name,port.repair_prices[id]],_repair_purchase.bind(id),popup_body)
+		button.icon = Instruments.icon(id)
+		button.add_theme_constant_override("icon_max_width",38)
+		button.set_meta("purchase_supply",id)
+		var blocked: String = _dock_service_reason(id)
+		button.disabled = paused or not blocked.is_empty()
+		button.tooltip_text = Instruments.tooltip(item.description+("\n"+blocked if not blocked.is_empty() else ""))
+		_panel_copy("%d in stock · %s" % [model.state.repair_stock[selected_service][id],item.description])
+		if not blocked.is_empty(): _panel_copy(blocked)
 	_button("Undock",func() -> void: popup.hide(); audio.play("ui_close"),popup_body)
+
+func _dock_service_reason(action: String) -> String:
+	if campaign != null: return campaign.service_reason(selected_service,ship.position,action)
+	return model.service_reason(selected_service,ship.position,action == "pack") if action in ["recharge","pack"] else model.repair_purchase_reason(selected_service,ship.position,action)
+
+func _repair_purchase(item: String) -> void:
+	if paused: return
+	var error: String = campaign.purchase_service(selected_service,ship.position,item) if campaign != null else model.buy_repair_pack(selected_service,ship.position,item)
+	_toast(error if not error.is_empty() else "Loaded "+str(Model.repair_items()[item].name))
+	audio.play("error" if not error.is_empty() else "cargo")
+	if error.is_empty(): _save(false)
+	_show_popup("service")
 
 func _service_action(purchase_pack: bool) -> void:
 	if paused: return
-	var error: String = model.buy_energy_pack(selected_service,ship.position) if purchase_pack else model.recharge(selected_service,ship.position)
+	var error: String
+	if campaign != null: error = campaign.purchase_service(selected_service,ship.position,"pack" if purchase_pack else "recharge")
+	else: error = model.buy_energy_pack(selected_service,ship.position) if purchase_pack else model.recharge(selected_service,ship.position)
 	_toast(error if not error.is_empty() else ("Reserve energy pack loaded" if purchase_pack else "Recharge complete · %d energy" % model.max_capacity("energy")))
 	audio.play("error" if not error.is_empty() else "cargo")
 	if error.is_empty(): _save(false)

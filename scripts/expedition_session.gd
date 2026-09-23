@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 8
+const VERSION := 9
 const Freight = preload("res://scripts/expedition_freight.gd")
 var freight := Freight.new()
 const Colonies = preload("res://scripts/expedition_colonies.gd")
@@ -13,7 +13,7 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
-const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged"]
+const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
 var sector := Sector.new()
@@ -103,7 +103,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -130,6 +130,7 @@ func restore_snapshot(source: Variant) -> Error:
 		if source.version < 7:
 			saved_worlds[id].merge({"guardian_aim":[0.0,8.0,0.0],"guardian_fire_at":0,"guardian_salvaged":false})
 			if id != "morrow" and not saved_worlds[id].get("guardian_disabled",false): saved_worlds[id].guardian_hull = Field.Encounters.hull(id)
+		if source.version < 9 and not saved_worlds[id].has("repair_stock"): saved_worlds[id].repair_stock = Field.initial_repair_stock()
 		if saved_worlds[id].size() != LOCAL_KEYS.size(): return ERR_INVALID_DATA
 		var probe: Dictionary = Field.fresh()
 		probe.planet_id = id
@@ -172,6 +173,41 @@ func restore_snapshot(source: Variant) -> Error:
 func configure_flagship() -> void:
 	field.installed_upgrades = commerce.state.upgrades
 	sector.state.flagship = {"personal":true,"planet":field.state.planet_id,"system":system_of(field.state.planet_id),"target_planet":"","destination":"","route":[],"remaining":0,"duration":0}
+
+func service_reason(port: String, at: Vector3, action: String) -> String:
+	var blocked: String = commerce.access(self,port,at)
+	if not blocked.is_empty(): return blocked
+	if action in ["recharge","pack"]: return field.service_reason(port,at,action == "pack")
+	var items: Dictionary = Field.repair_items()
+	if not items.has(action): return "Unknown service."
+	var requirements: Dictionary = items[action].requires
+	var eligible: bool = requirements.is_empty()
+	for badge: String in requirements:
+		if int(commerce.state.badges[badge]) >= int(requirements[badge]): eligible = true
+	if not eligible:
+		var alternatives: PackedStringArray = []
+		for badge: String in requirements: alternatives.append("%s %d" % [commerce.catalog.badges[badge].name,requirements[badge]])
+		return "Requires "+" or ".join(alternatives)+"."
+	return field.repair_purchase_reason(port,at,action)
+
+func purchase_service(port: String, at: Vector3, action: String) -> String:
+	var blocked: String = service_reason(port,at,action)
+	if not blocked.is_empty(): return blocked
+	var balance: float = field.marks
+	var error: String
+	if action == "recharge": error = field.recharge(port,at)
+	elif action == "pack": error = field.buy_energy_pack(port,at)
+	else: error = field.buy_repair_pack(port,at,action)
+	if not error.is_empty(): return error
+	var title: String = "Recharge" if action == "recharge" else "Energy pack" if action == "pack" else Field.repair_items()[action].name
+	diplomacy.record(self,"equipment","%s · %d Marks at %s." % [title,balance-field.marks,field.local_services()[port].name],"",{"service":action,"cost":balance-field.marks,"port":port,"planet":field.state.planet_id})
+	return ""
+
+func use_repair_pack(item: String) -> String:
+	var hull_before: float = field.state.hull
+	var error: String = field.use_repair_pack(item)
+	if error.is_empty(): diplomacy.record(self,"equipment","Used %s · restored %d hull." % [Field.repair_items()[item].name,field.state.hull-hull_before],"",{"item":item,"restored":field.state.hull-hull_before})
+	return error
 
 static func system_of(id: String) -> String:
 	return "s0" if id == "morrow" else id.get_slice("p",0)

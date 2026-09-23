@@ -1,0 +1,4 @@
+{
+  "repair_pack": {"name":"Repair pack","hull":75,"full":false,"description":"Restores up to 75 hull without reactor energy.","requires":{}},
+  "mega_repair_pack": {"name":"Full repair pack","hull":0,"full":true,"description":"Restores all missing hull. Shares the repair cooldown and three-slot repair locker.","requires":{"explorer":2,"defender":2}}
+}

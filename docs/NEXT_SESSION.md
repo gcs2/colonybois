@@ -1,5 +1,13 @@
 # Resume here
 
+## Carried repair supplies — latest checkpoint
+
+Read [REPAIR_SUPPLIES.md](REPAIR_SUPPLIES.md). Basic and full-hull repair packs now have finite paid shop stock, a shared three-slot locker, Explorer/Defender eligibility for full repair and a shared 20-second cooldown. Real inventory/hotbar icons consume owned items; full repair respects purchased hull. Campaign service commands also close the energy/recharge embargo bypass and record transactions/recovery in the chronicle. Session v9 / field v8 preserve stocks and migrate older campaigns without free carried packs or restored resources.
+
+Validation: 952 assertions plus UI checks, with 46 repair-supply checks; actual 1080p/1440p shop, inventory and palette captures inspected. Presentation/native feel and balance remain open. Next: distinct weapon roles and surface targets, then fleet help and world-scale manipulation. The research inventory remains open; broad parity and enrichment gates have not passed.
+
+Playable: **build/versions/20260923-160800/FrontierWorlds.exe** through Play.cmd. Exported-pack encounter startup smoke passed.
+
 ## Purchased ship capacities — latest checkpoint
 
 Read [SHIP_CAPACITY.md](SHIP_CAPACITY.md). Four hull and four reactor tiers now expand maximum capacity through paid, badge-gated purchases with prior-installation requirements. The ship keeps its existing reserves during installation. Packs, repairs, travel, local recharge prices, HUD and systems use the same authoritative capacity. Snapshot v8 validates ownership before loading expanded reserves and preserves legacy scarcity. Shops separate equipment/hull/reactor families.

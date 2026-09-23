@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Repair supplies:** buy basic/full repair packs through dock services → Supplies, then click an owned item in Inventory / I or its hotbar category. Packs have real stock, costs, a shared three-slot locker and a 20-second repair cooldown. [Behavior and verification](docs/REPAIR_SUPPLIES.md).
+
 **Ship progression:** dock services → Upgrades → Hull / Reactor now offers four purchased capacity tiers per family, with badge and prior-installation requirements. New capacity starts empty; home recharge is free and energy never regenerates. See [ship capacity behavior and verification](docs/SHIP_CAPACITY.md).
 
 Flight correction: **Escape** opens the game menu; **I** opens Inventory, where an owned energy pack can be used. Energy never regenerates passively. Homeworld recharge is free through local services; select Weapon before clicking a hostile target. The current cockpit artwork is rejected and remains temporary; see [interface correction contract](docs/SPORE_INTERFACE_CONTRACT.md).

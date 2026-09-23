@@ -311,6 +311,7 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 		item_buttons[id].tooltip_text = hint
 		count_labels[id].text = Palette.count(id,model.state)
 		var ready_at: float = float(model.state.pack_ready_at) if id == "pack" else (float(model.state.weapon_ready_at) if id == "lance" else 0.0)
+		if Palette.Model.repair_items().has(id): ready_at = float(model.state.last_repair_at)+Palette.Model.REPAIR_COOLDOWN
 		if ready_at > model.state.time:
 			count_labels[id].text += " · %ds" % int(ceil(ready_at-model.state.time))
 			item_buttons[id].tooltip_text += "\nReady in %d s." % int(ceil(ready_at-model.state.time))

@@ -10,7 +10,7 @@ const GROUPS := {
 	"Main tools": ["scan", "collect"],
 	"Environment": ["warm", "seed"],
 	"Weapons": ["lance"],
-	"Inventory": ["pack"],
+	"Inventory": ["pack","repair_pack","mega_repair_pack"],
 }
 
 static func entry(id: String) -> Dictionary:
@@ -28,6 +28,10 @@ static func entry(id: String) -> Dictionary:
 			"tint":Color("f3c567"), "kind":"consumable", "view":"both",
 			"summary":"Use one owned pack · restores %d energy" % Model.PACK_ENERGY,
 			"hint":"Inventory item. Use one pack to restore %d energy. Excess is lost. Buy packs through local ship services; %d s cooldown." % [Model.PACK_ENERGY,Model.PACK_COOLDOWN]}
+	if Model.repair_items().has(id):
+		var supply: Dictionary = Model.repair_items()[id]
+		return {"id":id,"title":supply.name,"icon":id,"tint":Color("a5e4c2"),"kind":"consumable","view":"both",
+			"summary":supply.description,"hint":"%s Consumes one owned pack, no energy. Shared repair cooldown: %d seconds. Three repair packs fit in the locker." % [supply.description,Model.REPAIR_COOLDOWN]}
 	return {}
 
 static func unavailable(id: String, model: RefCounted) -> String:
@@ -36,9 +40,11 @@ static func unavailable(id: String, model: RefCounted) -> String:
 	if item.view != "both" and item.view != model.state.flight_mode:
 		return "Available in orbit" if item.view == "orbit" else "Enter the atmosphere to use this tool"
 	if id == "pack": return model.pack_reason()
+	if Model.repair_items().has(id): return model.repair_pack_reason(id)
 	return ""
 
 static func count(id: String, state: Dictionary) -> String:
 	if id == "pack": return "× %d" % state.energy_packs
+	if Model.repair_items().has(id): return "× %d" % state.repair_packs[id]
 	if id == "seed": return "× %d" % state.samples
 	return ""

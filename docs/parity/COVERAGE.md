@@ -54,7 +54,7 @@ Reference behavior underpinning these boundaries: [Spore research](../SPORE_SPAC
 
 ## Next implementation target
 
-The subsequent [ship capacity checkpoint](../SHIP_CAPACITY.md) implements purchased hull/energy tiers, prior-installation requirements, expanded service quotes and durable ownership. The manifests above retain their stated implementation-comparison commit. Continue **ship survival and equipment progression** with repair consumables selected from inventory, finite shop stock and meaningful costs. Preserve no passive energy regeneration and free home recharge. A player should choose a stronger ship, pay for it and use it on a longer or riskier expedition.
+Subsequent [ship capacity](../SHIP_CAPACITY.md) and [repair supply](../REPAIR_SUPPLIES.md) checkpoints implement purchased hull/energy tiers, prior-installation requirements, expanded service quotes, finite repair stock and inventory/hotbar consumption. The manifests above retain their stated implementation-comparison commit. Continue with **distinct weapon roles and surface combat**, preserving the shared ship, meaningful energy/repair costs and persistent outcomes. No passive energy regeneration; home recharge stays free.
 
 After that, implement distinct weapon roles and surface targets, then allied fleet help and world-scale manipulation. Keep the native HUD/flight/audio review gates active. This order is scheduling, not permission to omit any reference family or postpone baseline breadth into the enrichment epic.
 
