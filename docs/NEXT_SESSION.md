@@ -6,14 +6,14 @@ The user shifted the main focus to discovering distinctive living worlds, their 
 
 Read in order:
 
-1. `docs/SPACE_FIRST_DIRECTION.md` — current priorities, three-world loop, ecology constraints and art pilot.
+1. `docs/SPACE_FIRST_DIRECTION.md` and `docs/SPORE_SPACE_STAGE_RESEARCH.md` — current priorities and the personal ship/tool interactions that must support the richer worlds and trade. The user endorsed those richer ideas; preserve them.
 2. `docs/FLIGHT_TECH_ASSESSMENT.md` — Godot recommendation, renderer comparison, local flight scenes and early test.
 3. `docs/DIPLOMACY_AND_CHRONICLE.md` — contact UI, real trade offers and structured persistent history.
 4. `docs/ART_PRODUCTION_PLAN.md` — retain spec/concept/model/review pipeline; city asset order is deferred.
 
 ## Exact next task
 
-Run a bounded technical/art discovery phase without replacing the working game. Specify one scout ship and one distinctive planetary expedition scene. Build a tiny isolated first-person flight controller test (motion cues, collision, one weapon, simple targets; then a few wingmates) and compare Compatibility with Forward+ under fixed settings. Create the scout/environment concepts and authored model pipeline for in-engine review. Full combat development follows the exploration/trade loop; this early test retires technical risk.
+Run a bounded technical/art discovery phase without replacing the working game. Specify one scout ship and one distinctive planetary expedition scene, including movement, scanning, sample collection/deployment, one visible environmental response and audio. Prove that personally visiting and experimenting is enjoyable before widening the management layer. Keep the isolated first-person flight/renderer feasibility test from FLIGHT_TECH_ASSESSMENT.md bounded; cockpit combat is not a prerequisite for the planet interaction slice. Create the scout/environment concepts and authored model pipeline for in-engine review.
 
 Then prove home base plus two complementary worlds, about six provisional goods, two short production chains, finite demand and automatic delivery. One living ancestor encounter and one alien partner should make exploration matter. Timeline events must record actual validated outcomes.
 
@@ -21,7 +21,7 @@ Do not resume HAB-01, municipal wealth-tier simulation or mayor development as t
 
 Suggested continuation prompt:
 
-> Resume from docs/NEXT_SESSION.md and SPACE_FIRST_DIRECTION.md. Start the bounded scout-flight feasibility test and authored expedition art pilot, preserving the working game. Use FLIGHT_TECH_ASSESSMENT.md for renderer/physics checks and the existing spec-to-model pipeline. Keep exploration, useful worlds, automated supply chains, expressive diplomacy and the ancestors' mystery as the main game. Checkpoint tested work to GitHub.
+> Resume from docs/NEXT_SESSION.md, SPACE_FIRST_DIRECTION.md and SPORE_SPACE_STAGE_RESEARCH.md. Start the bounded personal ship/tool encounter and authored expedition art pilot, preserving the working game. Keep first-person flight feasibility checks small. Preserve richer worlds, trade, diplomacy and history while making it fun to fly close, collect, experiment and revisit. Use the spec-to-model pipeline and checkpoint tested work to GitHub.
 
 ## Playable stopping point
 
