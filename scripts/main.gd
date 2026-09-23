@@ -557,11 +557,13 @@ func _open_field() -> void:
 	# Detach, rather than free, the current session. Returning restores its exact state.
 	var root: Window = get_tree().root
 	var field: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	field.name = "ExpeditionFlight"
 	field.suspended_session = self
 	field.leave.connect(func() -> void:
-		field.suspended_session = null
-		root.remove_child(field)
-		field.queue_free()
+		var active: Node = root.get_node("ExpeditionFlight")
+		active.suspended_session = null
+		root.remove_child(active)
+		active.queue_free()
 		root.add_child(self)
 		camera.make_current()
 		get_tree().auto_accept_quit = true

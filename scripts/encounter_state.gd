@@ -50,14 +50,30 @@ static func service_position(id: String) -> Vector3:
 	var at: Array = services()[id].position
 	return Vector3(at[0],at[1],at[2])
 
+func definition() -> Dictionary:
+	return Geography.definition(state.planet_id)
+
+func local_services() -> Dictionary:
+	var result: Dictionary = services()
+	if state.planet_id != "morrow":
+		for id: String in result:
+			result[id].planet = state.planet_id
+			result[id].name = definition().name + (" landing port" if id == "basin_port" else " service tender")
+			result[id].marks_per_energy = 0.6 if definition().archetype == "frozen" else 0.9
+			result[id].pack_price = 32 if definition().archetype == "frozen" else 44
+	return result
+
+func has_wreck() -> bool:
+	return state.planet_id == "morrow"
+
 func recharge_price(id: String) -> int:
 	if not services().has(id): return -1
 	if state.planet_id == state.homeworld_id: return 0
-	return int(ceil((100.0-float(state.energy))*float(services()[id].marks_per_energy)))
+	return int(ceil((100.0-float(state.energy))*float(local_services()[id].marks_per_energy)))
 
 func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> String:
 	if not services().has(id): return "Unknown service provider."
-	var port: Dictionary = services()[id]
+	var port: Dictionary = local_services()[id]
 	if state.planet_id != port.planet or state.flight_mode != port.mode: return "Travel to %s first." % port.name
 	if not at.is_finite() or at.distance_to(service_position(id)) > float(port.reach): return "Approach %s to dock." % port.name
 	if purchase_pack:
@@ -81,7 +97,7 @@ func recharge(id: String, at: Vector3) -> String:
 func buy_energy_pack(id: String, at: Vector3) -> String:
 	var error: String = service_reason(id,at,true)
 	if not error.is_empty(): return error
-	marks -= int(services()[id].pack_price)
+	marks -= int(local_services()[id].pack_price)
 	state.service_stock[id] -= 1
 	state.energy_packs += 1
 	return ""
@@ -120,6 +136,7 @@ func guardian_position() -> Vector3:
 	return Vector3(float(state.guardian_x),GUARDIAN_HOME.y,float(state.guardian_z))
 
 func lance_reason(ship_at: Vector3) -> String:
+	if not has_wreck(): return "No orbital target here."
 	if state.flight_mode != "orbit": return "Arc lance operates in orbit."
 	if state.guardian_disabled: return "Custodian disabled. Its hull is intact."
 	if not ship_at.is_finite(): return "Ship position unavailable."
@@ -142,6 +159,7 @@ func fire_lance(ship_at: Vector3) -> String:
 	return ""
 
 func guardian_step(ship_at: Vector3) -> String:
+	if not has_wreck(): return ""
 	# Called once after tick(), with the actual ship position. No scene nodes or RNG.
 	if not ship_at.is_finite(): return ""
 	if state.flight_mode != "orbit" or state.guardian_disabled:
@@ -176,12 +194,13 @@ func _emergency_tow() -> void:
 	state.threat_clock = 0
 	state.guardian_alert = 0
 	state.position = [0.0,8.0,35.0]
-	note("emergency_tow_%d" % state.tow_count,"Scout disabled in Morrow orbit. Emergency tow returned it to a safe holding position; hull and energy were lost.")
+	note("emergency_tow_%d" % state.tow_count,"Scout disabled in %s orbit. Emergency tow returned it to a safe holding position; hull and energy were lost." % definition().name)
 
 func salvage_reason(distance: float) -> String:
+	if not has_wreck(): return "No orbital target here."
 	if state.flight_mode != "orbit": return "Reach orbit to investigate the wreck."
 	if state.shroud_unlocked: return "The phase shroud has already been recovered."
-	if state.survey_ticks < int(Geography.definition().survey_seconds): return "Chart Morrow first to locate the drifting wreck."
+	if state.survey_ticks < int(definition().survey_seconds): return "Chart Morrow first to locate the drifting wreck."
 	if not is_finite(distance) or distance < 0 or distance > SALVAGE_REACH: return "Approach within 10 m of the wreck."
 	if state.energy < SALVAGE_ENERGY: return "Need 20 energy to secure the shroud."
 	return ""
@@ -219,33 +238,35 @@ func repair(threat_distance: float) -> String:
 	return ""
 
 func survey_reason() -> String:
-	if state.survey_ticks >= int(Geography.definition().survey_seconds): return "Morrow's orbital chart is complete."
+	if state.survey_ticks >= int(definition().survey_seconds): return "This planet's orbital chart is complete."
 	if state.survey_active: return "Orbital survey already commissioned."
 	if state.flight_mode != "orbit": return "Reach orbit to chart the planet."
-	if state.energy < float(Geography.definition().survey_energy): return "Need 20 energy to initiate orbital survey."
+	if state.energy < float(definition().survey_energy): return "Need 20 energy to initiate orbital survey."
 	return ""
 
 func start_survey() -> String:
 	var error: String = survey_reason()
 	if not error.is_empty(): return error
-	state.energy -= float(Geography.definition().survey_energy)
+	state.energy -= float(definition().survey_energy)
 	state.survey_active = true
 	return ""
 
 func change_flight_mode(mode: String) -> bool:
+	if mode == "surface" and definition().sites.is_empty(): return false
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
 	state.flight_mode = mode
 	if mode == "orbit":
 		state.position = [0.0,8.0,35.0]
-		note("first_orbit","Beyond the clouds — reached Morrow orbit under your own power.")
+		note("first_orbit","Beyond the clouds — reached %s orbit under your own power." % definition().name)
 	else:
 		state.shroud_on = false
 		state.position = [0.0,32.0,12.0]
 		state.landings += 1
-		note("first_return","Homeward — returned to Morrow with the expedition intact.")
+		note("first_return","Returned to %s with the expedition intact." % definition().name)
 	return true
 
 func note(id: String, text: String) -> void:
+	if state.planet_id != "morrow": id = state.planet_id+":"+id
 	for entry: Dictionary in state.history:
 		if entry.id == id: return
 	state.history.append({"id":id, "time":state.time, "text":text})
@@ -295,9 +316,27 @@ func tick(threat_distance: float = INF) -> String:
 	state.time += 1
 	if state.survey_active and state.flight_mode == "orbit":
 		state.survey_ticks += 1
-		if state.survey_ticks >= int(Geography.definition().survey_seconds):
+		if state.survey_ticks >= int(definition().survey_seconds):
 			state.survey_active = false
-			note("orbital_chart","Charted Morrow from orbit. Continental geography resolved; ground resources and life remain to be surveyed.")
+			note("orbital_chart","Charted %s from orbit. Continental geography resolved; ground resources and life remain to be surveyed." % definition().name)
+	tick_ecology()
+	if state.shroud_on:
+		if state.energy >= 2: state.energy -= 2
+		else: state.shroud_on = false
+	if not has_wreck() or state.flight_mode != "orbit" or not is_finite(threat_distance) or threat_distance >= HAZARD_WARNING:
+		state.threat_clock = 0
+		return ""
+	state.threat_clock += 1
+	if state.threat_clock < 6: return ""
+	state.threat_clock = 0
+	if threat_distance >= HAZARD_RADIUS: return "warning"
+	state.hull = maxf(0,float(state.hull)-(5 if state.shroud_on else 18))
+	note("first_pulse","The orbital wreck's defense field struck the scout. The pulse repeats while inside its core.")
+	if state.hull > 0: return "pulse"
+	_emergency_tow()
+	return "tow"
+
+func tick_ecology() -> void:
 	if state.seeded and state.growth < 1.0:
 		state.growth = minf(1.0,float(state.growth)+0.05)
 		if state.growth >= 1.0: note("bloom","The bed bloomed. The old relay answered with light; its purpose remains unknown.")
@@ -314,21 +353,6 @@ func tick(threat_distance: float = INF) -> String:
 			if state.buyer_remaining == 0:
 				state.route = false
 				note("contract_complete","Completed the nursery's six-unit order. Deliveries stopped; no unlimited buyer demand.")
-	if state.shroud_on:
-		if state.energy >= 2: state.energy -= 2
-		else: state.shroud_on = false
-	if state.flight_mode != "orbit" or not is_finite(threat_distance) or threat_distance >= HAZARD_WARNING:
-		state.threat_clock = 0
-		return ""
-	state.threat_clock += 1
-	if state.threat_clock < 6: return ""
-	state.threat_clock = 0
-	if threat_distance >= HAZARD_RADIUS: return "warning"
-	state.hull = maxf(0,float(state.hull)-(5 if state.shroud_on else 18))
-	note("first_pulse","The orbital wreck's defense field struck the scout. The pulse repeats while inside its core.")
-	if state.hull > 0: return "pulse"
-	_emergency_tow()
-	return "tow"
 
 func sell() -> String:
 	if state.produce < 1: return "No cultivated pods ready. The mature bed produces one every 12 seconds."
@@ -423,9 +447,11 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.guardian_ready_at < 0 or value.guardian_ready_at > value.time+4 or value.weapon_ready_at < 0 or value.weapon_ready_at > value.time+LANCE_COOLDOWN: return ERR_INVALID_DATA
 	if value.guardian_shots < 0 or value.weapon_shots < 0 or value.guardian_disabled != (value.guardian_hull == 0): return ERR_INVALID_DATA
 	if value.flight_mode not in ["surface","orbit"] or value.landings < 0: return ERR_INVALID_DATA
-	if value.planet_id != "morrow" or value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition().survey_seconds): return ERR_INVALID_DATA
-	if value.survey_ticks == int(Geography.definition().survey_seconds) and value.survey_active: return ERR_INVALID_DATA
-	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition().survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
+	if Geography.definition(value.planet_id).is_empty(): return ERR_INVALID_DATA
+	if value.flight_mode == "surface" and Geography.definition(value.planet_id).sites.is_empty(): return ERR_INVALID_DATA
+	if value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition(value.planet_id).survey_seconds): return ERR_INVALID_DATA
+	if value.survey_ticks == int(Geography.definition(value.planet_id).survey_seconds) and value.survey_active: return ERR_INVALID_DATA
+	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition(value.planet_id).survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
 	if value.position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
 	for coordinate: Variant in value.position:
 		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)) or absf(float(coordinate)) > 100: return ERR_INVALID_DATA

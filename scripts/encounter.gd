@@ -3,6 +3,11 @@ extends Node3D
 signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
+const SectorChart = preload("res://scripts/sector_chart.gd")
+var sector_map: PanelContainer
+var rendered_planet: String = "morrow"
+var world_definition: Dictionary = Geography.definition()
+var changing_planet: bool = false
 const Campaign = preload("res://scripts/expedition_session.gd")
 var campaign: RefCounted = null
 var persistence_blocked: bool = false
@@ -146,6 +151,8 @@ func _ready() -> void:
 				if not legacy_path.is_empty(): startup_error = campaign.import_legacy(legacy_path)
 			model = campaign.field
 	persistence_blocked = startup_error != OK
+	rendered_planet = model.state.planet_id
+	world_definition = model.definition()
 	FlightControls.install()
 	add_child(audio)
 	_make_world()
@@ -168,6 +175,7 @@ func _ready() -> void:
 		elif child is Node3D and child not in [surface_root,ship,camera] and not child is Light3D:
 			child.reparent(surface_root)
 	orbit = OrbitalScene.new()
+	orbit.planet_definition = model.definition()
 	add_child(orbit)
 	_build_service_ports()
 	var lance_mesh := CylinderMesh.new()
@@ -190,6 +198,7 @@ func _ready() -> void:
 	_update_camera(1.0)
 	_refresh_ui()
 	get_tree().auto_accept_quit = false
+	if campaign != null and campaign.traveling(): _toggle_sector_map()
 	if persistence_blocked:
 		paused = true
 		_toast("Save could not be restored. Saving disabled to protect your progress: "+error_string(startup_error))
@@ -205,8 +214,19 @@ func _notification(what: int) -> void:
 		get_tree().quit()
 
 func terrain_height(x: float, z: float) -> float:
+	var height: float = _terrain_base(x,z)
+	if world_definition.archetype != "temperate":
+		# Keep the usable mineral patch above its supporting ground on steeper worlds.
+		var basin: float = 1.0-smoothstep(4.4,6.5,Vector2(x-8,z+4).length())
+		height = lerpf(height,_terrain_base(8,-4),basin)
+	return height
+
+func _terrain_base(x: float, z: float) -> float:
 	var ridge: float = smoothstep(25.0,45.0,Vector2(x,z).length())
 	var pool: float = 2.0*exp(-pow((x+23)/6,2)-pow(z/12,2))
+	var climate: String = world_definition.archetype
+	if climate == "frozen": return 0.3+sin(x*0.07+1.3)*cos(z*0.09)*0.5+ridge*(5.5+cos(z*0.13)*2.0)-pool*0.3
+	if climate == "arid": return 0.6+sin(x*0.1+z*0.16)*0.8+ridge*(4.0+sin(x*0.12-z*0.18)*2.6)
 	return 0.25+sin(x*0.14)*cos(z*0.12)*0.65+ridge*(2.4+sin(x*0.28+z*0.19)*1.6)-pool
 
 func _mat(color: Color, emissive: bool = false) -> StandardMaterial3D:
@@ -238,7 +258,7 @@ func _make_world() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color("192d48")
+	sky_material.sky_top_color = Color("253d59") if world_definition.archetype == "frozen" else Color("543a37") if world_definition.archetype == "arid" else Color("192d48")
 	sky_material.sky_horizon_color = Color("a3a4b9")
 	sky_material.ground_bottom_color = Color("544959")
 	sky_material.ground_horizon_color = Color("a3a4b9")
@@ -282,6 +302,8 @@ func _make_world() -> void:
 				var h: float = terrain_height(px,pz)
 				var blend: float = clampf((sin(px*0.16+pz*0.05)+cos(pz*0.21))*0.25+0.5,0,1)
 				var color: Color = Color("666979").lerp(Color("b98e83"),blend).lerp(Color("ddba99"),smoothstep(1.0,4.0,h))
+				if world_definition.archetype == "frozen": color = Color("708f9b").lerp(Color("a9c2cf"),blend).lerp(Color("d1e0e3"),smoothstep(1,5,h))
+				elif world_definition.archetype == "arid": color = Color("735565").lerp(Color("ba8b64"),blend).lerp(Color("dac49c"),smoothstep(1,5,h))
 				surface.set_color(color)
 				surface.add_vertex(Vector3(px,h,pz))
 	surface.generate_normals()
@@ -291,7 +313,7 @@ func _make_world() -> void:
 	ground_material.shader = ground_shader
 	_mesh(surface.commit(),Vector3.ZERO,ground_material)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 739
+	rng.seed = 739 if rendered_planet == "morrow" else int(world_definition.geography_seed)
 	var rock_mesh := SphereMesh.new()
 	rock_mesh.radial_segments = 7
 	rock_mesh.rings = 3
@@ -316,6 +338,8 @@ func _make_world() -> void:
 	water_material.shader = water_shader
 	var water: MeshInstance3D = _mesh(pool,Vector3(-23,-0.6,0),water_material)
 	water.scale = Vector3(6.0,0.1,12.0)
+	water.visible = world_definition.archetype != "arid"
+	if world_definition.archetype == "frozen": water.material_override = _mat(Color("83b6c2"))
 	_make_ground_cover(rng)
 	for i: int in range(16):
 		var a: float = rng.randf()*TAU
@@ -388,7 +412,7 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	batch.use_colors = true
 	batch.mesh = leaf_surface.commit()
-	batch.instance_count = 520
+	batch.instance_count = 160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520
 	for i: int in range(batch.instance_count):
 		var center: Vector2 = [Vector2(-13,6),Vector2(-9,-4),Vector2(15,6),Vector2(18,-15),Vector2(-20,-13)][i%5]
 		var at: Vector2 = center+Vector2(rng.randfn(0,3.5),rng.randfn(0,3))
@@ -517,7 +541,7 @@ func _make_ui() -> void:
 	guide_arrow = _label("▼",28,Color("ffe0a8"))
 	root.add_child(guide_arrow)
 	ship_locator = _label("◇  SHIP",12,Instruments.GOLD)
-	planet_locator = _label("MORROW",13,Instruments.PAPER)
+	planet_locator = _label(model.definition().name.to_upper(),13,Instruments.PAPER)
 	wreck_label = _label("◇  DRIFTING WRECK · PULSE FIELD",13,Instruments.COMMS)
 	guardian_label = _label("◇  CUSTODIAN SKIFF",13,Instruments.CARGO)
 	for locator: Label in [ship_locator,planet_locator,wreck_label,guardian_label]:
@@ -551,15 +575,20 @@ func _make_ui() -> void:
 	popup.visible = false
 	popup.visibility_changed.connect(func() -> void: menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return))
 	planet_map = PlanetMap.new()
+	planet_map.definition = model.definition()
 	root.add_child(planet_map)
 	planet_map.close_requested.connect(func() -> void: planet_map.hide(); audio.play("ui_close"))
 	planet_map.travel_requested.connect(_map_travel)
 	planet_map.survey_requested.connect(_map_survey)
 	planet_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
+	sector_map = SectorChart.new()
+	root.add_child(sector_map)
+	sector_map.close_requested.connect(func() -> void: sector_map.hide(); audio.play("ui_close"))
+	sector_map.travel_requested.connect(_launch_journey)
 	_select_tool("scan")
 
 func _physics_process(delta: float) -> void:
-	if paused or _inspection_open(): velocity = Vector3.ZERO; return
+	if paused or _inspection_open() or (campaign != null and campaign.traveling()): velocity = Vector3.ZERO; return
 	var input_direction: Vector3 = FlightControls.direction()
 	if Input.is_action_pressed("flight_brake"): _cancel_orders(); input_direction = Vector3.ZERO
 	var orbital: bool = model.state.flight_mode == "orbit"
@@ -640,7 +669,7 @@ func _process(delta: float) -> void:
 	guide_caption.visible = caption_time > 0
 	frame_samples.append(delta*1000)
 	if frame_samples.size() > 600: frame_samples.pop_front()
-	if not paused and not _inspection_open():
+	if not paused and (not _inspection_open() or (campaign != null and campaign.traveling() and not popup.visible)):
 		elapsed += delta
 		tick_clock += delta
 		while tick_clock >= 1:
@@ -648,7 +677,11 @@ func _process(delta: float) -> void:
 			var old_count: int = model.state.history.size()
 			var distance: float = ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.state.flight_mode == "orbit" else INF
 			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
-			var attack: String = model.guardian_step(ship.position) if pulse != "tow" else ""
+			if model.state.planet_id != rendered_planet:
+				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
+				return
+			if sector_map.visible: sector_map.refresh()
+			var attack: String = model.guardian_step(ship.position) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
 			if pulse == "tow" or attack == "tow":
 				_cancel_orders()
 				_restore_ship()
@@ -719,7 +752,7 @@ func _zoom_camera(steps: float) -> void:
 			_begin_landing()
 			zoom_descent = true
 	elif orbital and camera_distance_target >= ORBIT_ZOOM_MAX and steps > 0:
-		_toast("Morrow orbit overview · other systems are not connected yet")
+		_toggle_sector_map()
 
 func _update_flight_effects(delta: float) -> void:
 	var stopped: bool = paused or _inspection_open()
@@ -730,7 +763,7 @@ func _update_flight_effects(delta: float) -> void:
 	if not orbital and velocity.y > 0.1: outbound = smoothstep(53,58,ship.position.y)
 	if orbital and landing and landing_waypoints.is_empty(): outbound = 1-smoothstep(1,9,ship.position.distance_to(destination))
 	transition_veil.color.a = maxf(arrival_fade,outbound)
-	transition_caption.text = "MORROW / ORBIT" if orbital else "MORROW / ATMOSPHERE"
+	transition_caption.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / ATMOSPHERE")
 	transition_caption.modulate.a = transition_veil.color.a
 
 func _update_visuals() -> void:
@@ -747,9 +780,9 @@ func _update_visuals() -> void:
 	ship_locator.position = camera.unproject_position(ship.position)+Vector2(10,10)
 	planet_locator.visible = orbital and distance > 150 and not _inspection_open() and not camera.is_position_behind(orbit.planet.position)
 	planet_locator.position = camera.unproject_position(orbit.planet.position)+Vector2(-25,-28)
-	wreck_label.visible = orbital and not _inspection_open() and not camera.is_position_behind(OrbitalScene.WRECK_POSITION)
+	wreck_label.visible = model.has_wreck() and orbital and not _inspection_open() and not camera.is_position_behind(OrbitalScene.WRECK_POSITION)
 	wreck_label.position = camera.unproject_position(OrbitalScene.WRECK_POSITION)+Vector2(12,-18)
-	guardian_label.visible = orbital and (model.state.survey_ticks >= int(Geography.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
+	guardian_label.visible = model.has_wreck() and orbital and (model.state.survey_ticks >= int(model.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
 	guardian_label.text = "◇  CUSTODIAN · DISABLED" if model.state.guardian_disabled else "◇  CUSTODIAN · WARNING" if model.state.guardian_alert > 0 else "◇  CUSTODIAN SKIFF"
 	guardian_label.position = camera.unproject_position(model.guardian_position())+Vector2(10,-22)
 	navigation_marker.visible = navigating
@@ -811,6 +844,7 @@ func _hud_action(action: String) -> void:
 		"save": _save()
 		"load": _load()
 		"atlas": _toggle_planet_map()
+		"sector": _toggle_sector_map()
 		"departure": _departure()
 		"use":
 			if not paused and not _inspection_open():
@@ -865,7 +899,7 @@ func _command_target(id: String) -> void:
 	_activate_selected()
 
 func _wreck_distance() -> float:
-	return ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.state.flight_mode == "orbit" else INF
+	return ship.position.distance_to(OrbitalScene.WRECK_POSITION) if model.has_wreck() and model.state.flight_mode == "orbit" else INF
 
 func _command_wreck() -> void:
 	if paused or _inspection_open(): return
@@ -885,6 +919,7 @@ func _select_weapon() -> void:
 	audio.play("ui_confirm")
 
 func _target_guardian() -> void:
+	if not model.has_wreck(): return
 	if paused or _inspection_open(): return
 	orbital_target = "guardian"
 	if weapon_selected: _command_guardian()
@@ -992,6 +1027,15 @@ func _operate(delta: float) -> void:
 		if error.is_empty(): effects.confirm(end,tool)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if sector_map != null and sector_map.visible and not popup.visible:
+		if event is InputEventKey and event.pressed and not event.echo:
+			match event.physical_keycode:
+				KEY_ESCAPE: _escape_menu()
+				KEY_G: _toggle_sector_map()
+				KEY_SPACE: _toggle_pause()
+				KEY_F5: _save()
+				KEY_F9: _load()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and popup.visible:
 		if event.physical_keycode == KEY_ESCAPE: _escape_menu()
 		elif popup_kind != "menu" and not menu_return:
@@ -1007,6 +1051,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not event.pressed: return
 		match event.physical_keycode:
 			KEY_M: _toggle_planet_map()
+			KEY_G: _toggle_sector_map()
 			KEY_I: _toggle_drawer("cargo")
 			KEY_K: _toggle_drawer("systems")
 			KEY_Y: _toggle_drawer("contact")
@@ -1048,10 +1093,10 @@ func _pick(screen: Vector2) -> void:
 	if model.state.flight_mode == "orbit":
 		var wreck_gap: float = camera.unproject_position(OrbitalScene.WRECK_POSITION).distance_to(screen) if not camera.is_position_behind(OrbitalScene.WRECK_POSITION) else INF
 		var guardian_gap: float = camera.unproject_position(model.guardian_position()).distance_to(screen) if not camera.is_position_behind(model.guardian_position()) else INF
-		if guardian_gap < 37 and guardian_gap < wreck_gap:
+		if model.has_wreck() and guardian_gap < 37 and guardian_gap < wreck_gap:
 			_target_guardian()
 			return
-		if wreck_gap < 33:
+		if model.has_wreck() and wreck_gap < 33:
 			_command_wreck()
 			return
 		var ray: Vector3 = camera.project_ray_normal(screen)
@@ -1149,12 +1194,13 @@ func _departure() -> void:
 	audio.play("departure")
 
 func _begin_landing() -> void:
+	if model.definition().sites.is_empty(): _toast("No playable landing region on this planet yet."); return
 	if paused or _inspection_open() or model.state.flight_mode != "orbit" or landing: return
 	var route: Array[Vector3] = FlightControls.landing_route(ship.position,OrbitalScene.APPROACH,orbit.planet.position)
 	_navigate(route.pop_front())
 	landing_waypoints = route
 	landing = true
-	_toast("Approaching Morrow Basin · Stop or steer to cancel")
+	_toast("Approaching "+str(model.definition().sites[0].name)+" · Stop or steer to cancel")
 	audio.play("entry")
 
 func _change_flight_mode(mode: String) -> void:
@@ -1164,11 +1210,14 @@ func _change_flight_mode(mode: String) -> void:
 	_apply_flight_mode(true)
 	arrival_fade = 1.0
 	audio.play("arrival")
-	_toast("Morrow orbit reached" if mode == "orbit" else "Atmospheric entry complete")
+	_toast(model.definition().name+" orbit reached" if mode == "orbit" else "Atmospheric entry complete")
 	_save(false)
 
 func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	var orbital: bool = model.state.flight_mode == "orbit"
+	orbit.wreck.visible = model.has_wreck()
+	orbit.guardian.visible = model.has_wreck()
+	orbit.field_ring.visible = model.has_wreck()
 	surface_root.visible = not orbital
 	orbit.visible = orbital
 	# Only one WorldEnvironment is active; hidden nodes still register environments.
@@ -1213,7 +1262,7 @@ func _select_tool(value: String) -> void:
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
-	location_label.text = "MORROW / ORBIT" if orbital else "MORROW / SURFACE"
+	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
 	energy_bar.value = s.energy
 	hud.hull_bar.value = s.hull
@@ -1234,7 +1283,7 @@ func _refresh_ui() -> void:
 	hud.navigation.heading = -ship.rotation.y
 	hud.navigation.planet_at = Vector2(orbit.planet.position.x,orbit.planet.position.z)
 	hud.navigation.wreck_at = Vector2(OrbitalScene.WRECK_POSITION.x,OrbitalScene.WRECK_POSITION.z)
-	hud.navigation.wreck_known = s.survey_ticks >= int(Geography.definition().survey_seconds)
+	hud.navigation.wreck_known = model.has_wreck() and s.survey_ticks >= int(model.definition().survey_seconds)
 	var skiff_at: Vector3 = model.guardian_position()
 	hud.navigation.guardian_at = Vector2(skiff_at.x,skiff_at.z)
 	hud.navigation.guardian_known = hud.navigation.wreck_known or s.guardian_alert > 0
@@ -1249,7 +1298,7 @@ func _refresh_ui() -> void:
 	hud.navigation.queue_redraw()
 	departure_button.text = ("Cancel approach" if landing else "Return to Morrow") if orbital else "Leave atmosphere"
 	if orbital:
-		if s.survey_ticks < int(Geography.definition().survey_seconds): objective.text = "Chart Morrow from Planet map to locate orbital signals."
+		if s.survey_ticks < int(model.definition().survey_seconds): objective.text = "Chart Morrow from Planet map to locate orbital signals."
 		elif not s.guardian_disabled and not s.shroud_unlocked: objective.text = "A custodian guards the wreck. Disable it or risk a fast salvage."
 		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its shield."
 		else: objective.text = "Shield recovered. Explore, repair or return to Morrow."
@@ -1306,6 +1355,15 @@ func _refresh_ui() -> void:
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
+	if not orbital and rendered_planet != "morrow": objective.text = model.definition().name+" · survey local life or return to orbit"
+	if orbital and not model.has_wreck():
+		objective.text = "Chart this world, dock for services, or choose your next destination."
+		subject.text = model.definition().name+" / orbit"
+		explanation.text = "Press M for planetary survey or G for the sector chart."
+		use_button.disabled = true
+	departure_button.disabled = paused or _inspection_open() or (orbital and model.definition().sites.is_empty())
+	departure_button.text = ("Cancel approach" if landing else "Descend") if orbital else "Leave atmosphere"
+	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1321,11 +1379,14 @@ func _short_reason(reason: String) -> String:
 	return reason
 
 func _update_guidance() -> void:
+	if rendered_planet != "morrow":
+		guide_arrow.hide()
+		return
 	if elapsed < 1 or paused or _inspection_open(): return
 	var id: String = "survey"
 	var line: String = "Captain, that relay is still transmitting. Click it and we'll approach for a scan."
 	if model.state.flight_mode == "orbit":
-		if model.state.survey_ticks < int(Geography.definition().survey_seconds):
+		if model.state.survey_ticks < int(model.definition().survey_seconds):
 			id = "orbit"
 			line = "We're clear of the atmosphere. Chart Morrow in Planet map to locate signals."
 		elif not model.state.guardian_disabled and model.state.guardian_alert > 0:
@@ -1360,6 +1421,9 @@ func _escape_menu() -> void:
 	if popup.visible:
 		if menu_return and popup_kind != "menu": _show_popup("menu")
 		else: _close_popup()
+	elif sector_map != null and sector_map.visible:
+		if campaign != null and campaign.traveling(): _show_popup("menu")
+		else: sector_map.hide()
 	elif planet_map.visible:
 		planet_map.hide()
 	else:
@@ -1432,7 +1496,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: sector chart · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
@@ -1469,22 +1533,24 @@ func _show_popup(kind: String) -> void:
 		_button("Stop recurring deliveries" if model.state.route else "Agree recurring deliveries",func() -> void: _trade(true),popup_body)
 
 func _inspection_open() -> bool:
-	return popup.visible or (planet_map != null and planet_map.visible)
+	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible)
 
 func _toggle_planet_map() -> void:
+	if campaign != null and campaign.traveling(): return
+	if sector_map != null: sector_map.hide()
 	if planet_map.visible:
 		planet_map.hide()
 		audio.play("ui_close")
 		return
 	_cancel_orders()
 	popup.hide()
-	var location: Vector3 = Geography.site_direction()
+	var location: Vector3 = Geography.site_direction(model.state.planet_id)
 	if model.state.flight_mode == "orbit":
 		location = orbit.planet.basis.inverse()*(ship.position-orbit.planet.position)
 	planet_map.present(model.state,location,paused,model.survey_reason())
 
 func _map_travel(site_id: String) -> void:
-	if site_id != "morrow_basin" or paused: return
+	if model.definition().sites.is_empty() or site_id != model.definition().sites[0].id or paused: return
 	planet_map.hide()
 	if model.state.flight_mode == "orbit": _begin_landing()
 	else: _navigate(Vector3(0,8,12))
@@ -1545,7 +1611,7 @@ func _build_cargo_panel() -> void:
 			pod.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			pod.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			pod.modulate = Instruments.CARGO if onboard else COLORS[0]
-			pod.tooltip_text = "Living wild seed · Morrow Basin" if onboard else "Cultivated pod · Morrow surface bed"
+			pod.tooltip_text = "Living wild seed · onboard" if onboard else "Cultivated pod · local surface stock"
 			slot.add_child(pod)
 		else:
 			var empty: Label = _label("EMPTY",11,Instruments.MUTED)
@@ -1559,14 +1625,14 @@ func _build_cargo_panel() -> void:
 		pack.add_theme_constant_override("icon_max_width",38)
 		pack.tooltip_text = model.pack_reason() if not model.pack_reason().is_empty() else "Consumes one pack. Excess energy is lost. Cooldown: 8 seconds."
 		pack.disabled = not model.pack_reason().is_empty() or paused
-		_panel_copy("Origin: wild lantern pods, Morrow Basin. Each living seed occupies one cradle. Surface harvests are stored separately.")
+		_panel_copy("Living lantern-pod specimens. Each living seed occupies one cradle. Surface harvests are stored separately.")
 		var equip: Button = _button("Equip deployer",_equip_from_panel.bind("seed"),popup_body,"")
 		equip.disabled = amount == 0
 		equip.tooltip_text = "Collect a scanned wild pod first." if amount == 0 else Equipment.hint("seed")
 		Instruments.instrument(equip,"seed",COLORS[3])
 		_panel_copy("No specimens aboard. Scan a pod, then use the tractor." if amount == 0 else "Deployment needs a prepared bed. Selecting the tool does not consume the specimen.")
 	else:
-		_panel_copy("Location: Morrow surface bed. This stock is not aboard your ship. Mature beds produce one unit every 12 seconds, up to eight stored units.")
+		_panel_copy("Location: this planet’s surface bed. This stock is not aboard your ship. Mature beds produce one unit every 12 seconds, up to eight stored units.")
 		_panel_copy("Nursery demand: %d remaining · 18 Marks per unit\nStanding deliveries: %s" % [model.state.buyer_remaining,"active; one unit reserved" if model.state.route else "off"])
 		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("contact"),popup_body,"ui_open"),"comms",Instruments.COMMS)
 
@@ -1651,12 +1717,18 @@ func _load() -> void:
 	var error: Error = campaign.load_from(_campaign_path(false)) if campaign != null else model.load_from(save_path)
 	if error == OK:
 		persistence_blocked = false
+		if model.state.planet_id != rendered_planet:
+			call_deferred("_reload_destination")
+			return
 		_cancel_orders()
 		_restore_ship()
 		_apply_flight_mode()
 		progress = 0
 		held = false
 		tick_clock = 0
+		if campaign != null:
+			if campaign.traveling(): sector_map.present(campaign)
+			else: sector_map.hide()
 		if popup.visible: _show_popup(popup_kind)
 		if planet_map.visible:
 			planet_map.hide()
@@ -1722,8 +1794,8 @@ func _capture(delta: float) -> void:
 		get_tree().quit()
 
 func _build_service_ports() -> void:
-	for id: String in Model.services():
-		var port: Dictionary = Model.services()[id]
+	for id: String in model.local_services():
+		var port: Dictionary = model.local_services()[id]
 		var parent: Node3D = orbit if port.mode == "orbit" else surface_root
 		var at: Vector3 = Model.service_position(id)
 		var pad := MeshInstance3D.new()
@@ -1737,7 +1809,7 @@ func _build_service_ports() -> void:
 		pad.material_override = _mat(Color("82d9c0"),true)
 		parent.add_child(pad)
 		var label := Label3D.new()
-		label.text = "RECHARGE / HOME PORT" if id == "basin_port" else "GUILD SERVICE TENDER"
+		label.text = "HOME PORT" if model.state.planet_id == model.state.homeworld_id and id == "basin_port" else "SHIP SERVICES"
 		label.position = at+Vector3(0,2,0)
 		label.font_size = 24
 		label.pixel_size = 0.015
@@ -1746,20 +1818,20 @@ func _build_service_ports() -> void:
 		parent.add_child(label)
 
 func _approach_service(id: String) -> void:
-	if paused or _inspection_open() or not Model.services().has(id): return
-	if Model.services()[id].mode != model.state.flight_mode: return
+	if paused or _inspection_open() or not model.local_services().has(id): return
+	if model.local_services()[id].mode != model.state.flight_mode: return
 	selected_service = id
-	if ship.position.distance_to(Model.service_position(id)) <= float(Model.services()[id].reach):
+	if ship.position.distance_to(Model.service_position(id)) <= float(model.local_services()[id].reach):
 		_show_popup("service")
 		return
 	var route: Array[Vector3] = FlightControls.landing_route(ship.position,Model.service_position(id),orbit.planet.position) if model.state.flight_mode == "orbit" else [Model.service_position(id)]
 	_navigate(route.pop_front())
 	service_waypoints = route
 	service_order = id
-	_toast("Approaching "+str(Model.services()[id].name))
+	_toast("Approaching "+str(model.local_services()[id].name))
 
 func _build_service_panel() -> void:
-	var port: Dictionary = Model.services()[selected_service]
+	var port: Dictionary = model.local_services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
 	_panel_copy("ENERGY  %d / 100     RESERVE PACKS  %d / 3
 BALANCE  %d Marks" % [model.state.energy,model.state.energy_packs,model.marks],Instruments.GOLD)
@@ -1785,3 +1857,42 @@ func _service_action(purchase_pack: bool) -> void:
 	audio.play("error" if not error.is_empty() else "cargo")
 	if error.is_empty(): _save(false)
 	_show_popup("service")
+
+func _toggle_sector_map() -> void:
+	if campaign == null: _toast("Sector navigation requires a flight campaign."); return
+	if sector_map.visible:
+		if not campaign.traveling(): sector_map.hide()
+		return
+	_cancel_orders()
+	popup.hide()
+	planet_map.hide()
+	sector_map.present(campaign)
+	audio.play("ui_open")
+
+func _launch_journey(id: String) -> void:
+	if paused: _toast("Resume flight before departing."); return
+	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
+	var error: String = campaign.begin_travel(id)
+	if not error.is_empty(): _toast(error); audio.play("error"); return
+	_cancel_orders()
+	sector_map.refresh()
+	audio.play("departure")
+	_save(false)
+
+func _reload_destination() -> void:
+	var parent: Node = get_parent()
+	var next: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	next.name = name
+	next.campaign = campaign
+	next.suspended_session = suspended_session
+	next.paused = paused
+	for connection: Dictionary in leave.get_connections(): next.leave.connect(connection.callable)
+	var path: String = save_path
+	suspended_session = null
+	parent.remove_child(self)
+	parent.add_child(next)
+	next.save_path = path
+	next.arrival_fade = 1.0
+	next._save(false)
+	if campaign.traveling(): next._toggle_sector_map()
+	queue_free()

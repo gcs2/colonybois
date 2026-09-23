@@ -1,12 +1,16 @@
 # Resume here
 
+## Personal travel — latest checkpoint
+
+Read [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md). G or the sector navigation button opens revealed stars and planet destinations. The personal flagship now owns paid/timed travel across all 24 orbital destinations. Morrow, frozen Nacre I and arid Kestrel I support descent; others explicitly remain orbital-only. Hull, energy, equipment, packs and specimens travel together; inactive planets retain changes and continue aggregate production. Snapshot v2 migrates v1, saves transit and preserves per-world stock. The local chart stays surface-only. Next connect commodity cargo/markets, encountered-faction contact and badge-gated shop upgrades. The reused assets, neutral map and sound bank remain provisional/rejected; this is not full parity or visual approval.
+
 ## Shared expedition integration — latest checkpoint
 
 Read [EXPEDITION_SESSION.md](EXPEDITION_SESSION.md). Morrow flight now owns the sector and field models in one campaign container, using one treasury, a persisted 30-second colony-day cadence and an atomic combined save. Original field JSON migrates without overwriting it or granting new Marks/energy. Pause and inspection stop both clocks. Other worlds remain unvisitable; old standalone strategic modes are intentionally not silently merged. Next connect authoritative personal travel and separate per-world local state. Earlier presentation sections below remain open acceptance feedback.
 
 Latest meta-direction: keep the active Space Stage goal and TASK_BOARD.md. [GOAL_AND_CHECKINS.md](GOAL_AND_CHECKINS.md) provides positive goal wording and the check-in contract. The parity status/TSV are preliminary research, not a competing queue. Advance the connected expedition milestone alongside bounded presentation work; do not organize the whole project around the latest criticism. No game code changed in this planning checkpoint.
 
-Current playable package: **build/versions/20260923-130227** through Play.cmd. Exported-pack flight smoke passed; 565 assertions plus UI checks pass, including 28 new shared-session checks.
+Current playable package: **build/versions/20260923-132749** through Play.cmd. Exported-pack flight smoke passed; 610 assertions plus UI checks pass, including 28 shared-session and 45 interstellar checks. Engine-rendered sector and pilot-surface states were inspected at 1080p; native player/fun review remains open.
 
 ## Latest review: icon styling and typography rejected
 

@@ -1,6 +1,6 @@
 # Shared expedition session — first integration checkpoint
 
-23 September 2026. Task I01 is in progress; the multi-world loop is not complete.
+23 September 2026. Historical first integration checkpoint. [The travel checkpoint](INTERSTELLAR_FLIGHT.md) supersedes the Morrow-only limitations below. Task I01 remains in progress; trade/progression/contact integration is not complete.
 
 The Morrow flight entry now owns an `ExpeditionSession` containing the sector simulation and the local encounter model. They share one treasury: purchases and field sales directly change the sector account, and colony income reaches the ship's displayed Marks. The local model has no second Marks balance when bound to a campaign. Fractional colony income is retained; the HUD displays whole Marks.
 

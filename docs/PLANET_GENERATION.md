@@ -1,5 +1,7 @@
 # Visitable planet production pipeline
 
+Latest travel checkpoint: [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md) adds 24 orbital destinations and three connected landing regions. Earlier single-world limitations below are historical; strategic climate-project visuals and broader surface/content generation remain unfinished.
+
 ## Implemented checkpoint — 23 September 2026
 
 `planet_generator.gd` generates spherical elevation, latitude/elevation-dependent temperature, humidity, six biome classifications and cloud density from a versioned recipe. `planet_archetypes.json` supplies temperate, frozen and arid climate/palette rules. Morrow has a fixed seed and a land constraint beneath its existing basin coordinate. Sampling is independent of frame rate, camera and gameplay RNG.

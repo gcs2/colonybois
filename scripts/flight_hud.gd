@@ -11,6 +11,7 @@ const Palette = preload("res://scripts/flight_palette.gd")
 var IDS: Array[String] = Equipment.ids()
 var GROUPS: Dictionary = Palette.GROUPS.duplicate(true)
 var navigation := Navigation.new()
+var sector_button: Button
 var chart_heading: Label
 var chart_backing: ColorRect
 var navigation_backing: ColorRect
@@ -92,7 +93,7 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 func _build() -> void:
 	# Neutral readability backing until the reference-led art kit is reviewed.
 	# The rejected cockpit illustration is deliberately not a production asset.
-	for rect: Rect2 in [Rect2(26,626,250,225),Rect2(282,712,142,139),Rect2(452,724,286,133),Rect2(760,686,542,58),Rect2(760,744,542,117),Rect2(1312,661,264,200)]:
+	for rect: Rect2 in [Rect2(26,24,620,67),Rect2(1000,24,576,44),Rect2(26,574,398,56),Rect2(26,626,250,225),Rect2(282,646,142,205),Rect2(452,724,286,133),Rect2(760,686,542,58),Rect2(760,744,542,117),Rect2(1312,661,264,200)]:
 		var backing := ColorRect.new()
 		backing.position = rect.position
 		backing.size = rect.size
@@ -100,7 +101,7 @@ func _build() -> void:
 		backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(backing)
 		if rect.position == Vector2(760,744): palette_backing = backing
-		if rect.position.x == 26: chart_backing = backing
+		if rect.position == Vector2(26,626): chart_backing = backing
 		if rect.position.x == 282: navigation_backing = backing
 	stats = label_at("",Rect2(1010,31,550,25),16,Art.GOLD)
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -118,6 +119,7 @@ func _build() -> void:
 	navigation_actions[-1].tooltip_text = "Zoom out · at surface limit, ascend to orbit"
 	navigation_actions.append(symbol_at("zoom_in",Rect2(354,781,58,58),"zoom_in","Zoom in",Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom in · move camera closer"
+	sector_button = symbol_at("systems",Rect2(354,647,58,58),"sector","Sector chart · select a star and orbital destination [G]",Art.GOLD)
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	tool_title = label_at("",Rect2(772,634,516,26),18)
 	tool_spec = label_at("",Rect2(772,661,516,25),12,Art.MUTED)
@@ -320,6 +322,7 @@ func set_orbital_mode(enabled: bool) -> void:
 	chart_heading.visible = not enabled
 	chart_backing.visible = not enabled
 	navigation_backing.position.x = 26 if enabled else 282
+	sector_button.position.x = 98 if enabled else 354
 	var positions := [287,354,287,354]
 	for i: int in range(navigation_actions.size()):
 		navigation_actions[i].position.x = positions[i]-(256 if enabled else 0)

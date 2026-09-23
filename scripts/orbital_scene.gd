@@ -4,6 +4,7 @@ const Globe = preload("res://scripts/planet_globe.gd")
 const Encounter = preload("res://scripts/encounter_state.gd")
 const WRECK_POSITION := Encounter.WRECK_POSITION
 var planet := Globe.new()
+var planet_definition: Dictionary = {}
 var environment: WorldEnvironment
 var wreck := Node3D.new()
 var field_ring: MeshInstance3D
@@ -14,6 +15,7 @@ var guardian_eye: MeshInstance3D
 const APPROACH := Vector3(0,8,8)
 
 func _ready() -> void:
+	planet.planet_definition = planet_definition
 	planet.position = Vector3(-14,-8,-14)
 	add_child(planet)
 	_build_wreck()

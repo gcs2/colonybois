@@ -25,10 +25,10 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | --- | --- | --- |
 | Mouse-first tools and movement | Click target approaches/uses; terrain click moves in Morrow | Native playtest of targeting, cancellation and accessibility in every flight scene |
 | Arrows/numpad, mouse-only alternatives, remapping | Additive action bindings and on-screen ascent/descent/stop; remapping UI missing | Left-handed input playtest; saved bindings; no mandatory F/WASD |
-| Surface altitude, orbit, planetary return | Same Morrow state survives surface/orbit round trip; tests in test_flight.gd | Natural-feeling transitions, more than one visitable world; native input review |
-| System/galaxy navigation, range, fog, wormholes, core | Existing strategic graph/fog; field flight is still isolated | Unified ship/location/state and traversable range/access/endgame mechanics |
+| Surface altitude, orbit, planetary return | Morrow, Nacre I and Kestrel I support surface/orbit round trips with persistent per-world state; interstellar tests cover both new approaches | Natural-feeling transitions, more than one visitable world; native input review |
+| System/galaxy navigation, range, fog, wormholes, core | Shared personal flagship now travels to 24 orbital destinations through revealed routes, with energy costs, timing, range and border checks; wormholes/core remain missing | Unified ship/location/state and traversable range/access/endgame mechanics |
 | Health, energy, repair, recharge, damage, defeat/recovery | Energy plus a local pulse hazard, persistent hull, repair and emergency tow exist in Morrow orbit; broader danger/recovery absent | Actual damage and costs, readable bars/warnings, fair recoverable failure |
-| Weapons, targeting, upgrades, cooldowns, combat | One acquired phase shroud, an arc lance and a warning/chase/disengage custodian exist in isolated Morrow flight; broader weapon/enemy/fleet systems missing | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
+| Weapons, targeting, upgrades, cooldowns, combat | One acquired phase shroud, an arc lance and a warning/chase/disengage custodian exist in the Morrow encounter; broader weapon/enemy/fleet systems missing | Functional weapon catalog and enemy encounters; meaningful tests and playtests |
 | Allied fleet recruitment, commands, losses | Missing | Persistent fleet ships, ally consequences, usable flight combat |
 | Hostile empires, wars, raids, defense, conquest | Strategic relations only | AI decisions, attacks, territorial outcomes and diplomacy consequences |
 | Contact, expressive aliens, government/philosophy | Three authored faction rules; static UI | Animated representatives, coherent reasons, distinct actions/abilities |
@@ -43,7 +43,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Discoveries, artifacts, rare collections, story | Six strategic discoveries; short local journal | Distinct discovery gameplay, useful rewards, ancestor campaign encounters |
 | Missions, timed dangers, ecological crises | Planting intro rejected; one optional charted wreck encounter offers a reward and danger, no mission variety yet | Variety without compulsory repeated errands; threats can be understood and prevented |
 | Badges, ranks, alternate unlocks, philosophies | Three strategic ranks; field milestones only log entries | Full progression inventory, meaningful alternate paths, audiovisual achievement delivery |
-| Chronicle, decisions, losses, alliances, annihilation | Strategic history plus isolated local journal | One persistent structured timeline covering actual gameplay events |
+| Chronicle, decisions, losses, alliances, annihilation | Shared campaign contains sector history and world-scoped personal discoveries/travel events; the unified chronicle presentation remains incomplete | One persistent structured timeline covering actual gameplay events |
 | Sandbox, cheats, story unlocks | Strategic sandbox cheats exist | Same flight systems usable in sandbox; deliberate story rewards without withholding basics |
 | Human solar-system colonization | Not implemented | Selectable playable human scenario, coherent resources/locations and progression |
 | Ship/building/creature editors, user content | Previously deferred; absent | Explicit scope decision for editors; do not silently count as parity |

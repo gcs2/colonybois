@@ -333,7 +333,7 @@ func tick() -> void:
 	state.ledger["closing"] = state.credits
 	state.ledger["net"] = float(state.credits)-opening
 	state.ledger["adjustment"] = state.ledger.net-(state.ledger.tax+state.ledger.exports-state.ledger.crime_loss-state.ledger.upkeep-state.ledger.sponsor)
-	_tick_travel()
+	if not state.flagship.get("personal",false): _tick_travel()
 	if int(state.tick) % 30 == 0: _tick_factions()
 	_check_milestones()
 	changed.emit()
@@ -362,6 +362,7 @@ func route_between(start: String, end: String, known_only: bool = false) -> Arra
 	return []
 
 func _travel(sid: String) -> String:
+	if state.flagship.get("personal",false): return "Choose the destination through personal ship navigation."
 	var flagship: Dictionary = state.flagship
 	if not str(flagship.destination).is_empty(): return "Flagship is already traveling."
 	if sid == flagship.system: return "Flagship is already here."

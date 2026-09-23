@@ -7,6 +7,7 @@ signal ui_cue(cue: String)
 const Globe = preload("res://scripts/planet_globe.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const UI = preload("res://scripts/flight_interface.gd")
+var definition: Dictionary = Geography.definition()
 var globe: Node3D
 var camera: Camera3D
 var viewport: SubViewport
@@ -55,7 +56,7 @@ func _ready() -> void:
 	add_child(column)
 	var header := HBoxContainer.new()
 	column.add_child(header)
-	var title: Label = text_label("MORROW  /  PLANETARY ATLAS",24)
+	var title: Label = text_label(definition.name.to_upper()+"  /  PLANETARY ATLAS",24)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	header.add_child(text_label("INSPECTION PAUSED",12,UI.GOLD))
@@ -84,6 +85,7 @@ func _ready() -> void:
 	viewport.add_child(world)
 	globe = Globe.new()
 	globe.radius = 3
+	globe.planet_definition = definition
 	world.add_child(globe)
 	var env_node := WorldEnvironment.new()
 	var env := Environment.new()
@@ -112,7 +114,7 @@ func _ready() -> void:
 	ink.albedo_color = UI.GOLD
 	ship_marker.material_override = ink
 	globe.add_child(ship_marker)
-	site_caption = text_label("●  MORROW BASIN",13,Color("a4f0bc"))
+	site_caption = text_label("●  "+site_name().to_upper(),13,Color("a4f0bc"))
 	preview.add_child(site_caption)
 	ship_caption = text_label("▲  SHIP",12,UI.GOLD)
 	preview.add_child(ship_caption)
@@ -135,12 +137,12 @@ func _ready() -> void:
 	sidebar.add_child(progress_bar)
 	survey_button = button("Chart from orbit · 20 energy",func() -> void: survey_requested.emit(),sidebar,UI.GOLD)
 	sidebar.add_child(text_label("KNOWN LANDING SITES",12,UI.MUTED))
-	site_button = button("Morrow Basin   /   15.95° N · 0.00° E",focus_site,sidebar,Color("86cf9a"))
+	site_button = button(site_name(),focus_site,sidebar,Color("86cf9a"))
 	report = text_label("",15,UI.MUTED)
 	report.custom_minimum_size.x = 480
 	report.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(report)
-	travel_button = button("",func() -> void: travel_requested.emit("morrow_basin"),sidebar,Color("86cf9a"))
+	travel_button = button("",func() -> void: travel_requested.emit(str(definition.sites[0].id)) if not definition.sites.is_empty() else close_requested.emit(),sidebar,Color("86cf9a"))
 	var legend: Label = text_label("Dark grid: uncharted\nViolet: orbital geography · green: local site chart\nOrbital imaging does not identify ground resources.",13,UI.MUTED)
 	legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	legend.custom_minimum_size.x = 480
@@ -149,12 +151,13 @@ func _ready() -> void:
 		dragging = false
 		viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED
 	)
+	site_button.disabled = definition.sites.is_empty()
 	set_layer(false)
 	hide()
 
 func present(state: Dictionary, ship_direction: Vector3, player_paused: bool, reason: String) -> void:
 	snapshot = state.duplicate(true)
-	chart_progress = float(state.survey_ticks)/float(Geography.definition().survey_seconds)
+	chart_progress = float(state.survey_ticks)/float(definition.survey_seconds)
 	globe.chart(chart_progress,chart_layer)
 	progress_bar.value = chart_progress*100
 	progress_label.text = "ORBITAL CHART  /  %d%%" % int(chart_progress*100)
@@ -162,10 +165,10 @@ func present(state: Dictionary, ship_direction: Vector3, player_paused: bool, re
 	survey_button.disabled = not reason.is_empty() or player_paused
 	survey_button.tooltip_text = "Resume the game first." if player_paused else (reason if not reason.is_empty() else "20 energy · 12 seconds in orbit. Closes the atlas so the survey can run.")
 	survey_button.text = "Orbital chart complete" if chart_progress >= 1 else ("Survey commissioned" if state.survey_active else "Chart from orbit · 20 energy")
-	travel_button.text = "Approach & land at Morrow Basin" if state.flight_mode == "orbit" else "Fly to basin landing beacon"
-	travel_button.disabled = player_paused
+	travel_button.text = "Approach & land at "+site_name() if state.flight_mode == "orbit" else "Fly to basin landing beacon"
+	travel_button.disabled = player_paused or definition.sites.is_empty()
 	travel_button.tooltip_text = "Resume flight first." if player_paused else "Closes the atlas and begins travel; no instant teleport."
-	report.text = "MORROW BASIN  /  VISITED\n%d of 4 local subjects catalogued.\n\nOne accessible surface site. Other regions have no cleared landing sites yet." % state.scanned.size()
+	report.text = (site_name()+"\n%d of 4 local subjects catalogued." % state.scanned.size()) if not definition.sites.is_empty() else "Orbital exploration available. This planet has no playable landing region in this build."
 	ship_marker.position = ship_direction.normalized()*3.23
 	focus_site()
 	show()
@@ -175,8 +178,12 @@ func set_layer(survey: bool) -> void:
 	if globe != null: globe.chart(chart_progress,survey)
 	for i: int in range(layer_buttons.size()): UI.instrument(layer_buttons[i],"",UI.NAV,(i == 1) == survey)
 
+func site_name() -> String:
+	return "No landing site" if definition.sites.is_empty() else str(definition.sites[0].name)
+
 func focus_site() -> void:
-	globe.rotation = Vector3(deg_to_rad(Geography.definition().sites[0].latitude),0,0)
+	if definition.sites.is_empty(): return
+	globe.rotation = Vector3(deg_to_rad(definition.sites[0].latitude),-deg_to_rad(definition.sites[0].longitude),0)
 	ui_cue.emit("target_lock")
 
 func _map_input(event: InputEvent) -> void:
@@ -200,7 +207,7 @@ func marker_visible(marker: Node3D) -> bool:
 	return normal.dot((camera.global_position-marker.global_position).normalized()) > 0.02
 
 func pick_site(at: Vector2) -> bool:
-	if not marker_visible(globe.site_marker): return false
+	if definition.sites.is_empty() or not marker_visible(globe.site_marker): return false
 	var projected: Vector2 = camera.unproject_position(globe.site_marker.global_position)
 	if projected.distance_to(at) > 30: return false
 	focus_site()
@@ -208,7 +215,7 @@ func pick_site(at: Vector2) -> bool:
 
 func _process(_delta: float) -> void:
 	if not visible or camera == null: return
-	site_caption.visible = marker_visible(globe.site_marker)
+	site_caption.visible = not definition.sites.is_empty() and marker_visible(globe.site_marker)
 	site_caption.position = camera.unproject_position(globe.site_marker.global_position)+Vector2(12,8)
 	ship_caption.visible = marker_visible(ship_marker)
 	ship_caption.position = camera.unproject_position(ship_marker.global_position)+Vector2(12,-24)
