@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Planet manipulation:** survey a foreign world, buy climate equipment or finite supplies at a dock, then select an Environment icon and click the globe or terrain. Independent temperature/atmosphere pulses alter appearance, outpost output, utilities, growth capacity and diplomatic relations. Climate is still unstabilized. [Rules, verification and remaining work](docs/PLANET_CLIMATE.md).
+
 **Allied fleet:** establish an alliance, earn a badge tier and request an escort through Communications → Fleet while in allied orbit. Escorts follow, assist your attacks and retain damage/losses. Use the HUD fleet icon for orders and dock services → Fleet for paid repairs. [Rules, limitations and verification](docs/ALLIED_FLEET.md).
 
 **Surface combat:** Nacre I and Kestrel I have hostile flyers and sentries. Select the defense laser, or buy a seeker/bomb bay at a dock; click targets/ground to fire, move out of marked strikes, and click wrecks separately for cargo. [Controls, limits and verification](docs/SURFACE_COMBAT.md).

@@ -3,18 +3,22 @@ extends RefCounted
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const Model = preload("res://scripts/encounter_state.gd")
 const Combat = preload("res://scripts/surface_combat.gd")
+const Climate = preload("res://scripts/planet_climate.gd")
 const PAGE_SIZE := 18
 const CATEGORY_ICONS := {"Main tools":"category_tools", "Environment":"category_life", "Weapons":"category_weapons", "Inventory":"inventory"}
 static func slot_rect(slot: int) -> Rect2:
 	return Rect2(766+(slot%9)*59,748+(slot/9)*56,56,54)
 const GROUPS := {
 	"Main tools": ["scan", "collect"],
-	"Environment": ["warm", "seed"],
+	"Environment": ["heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","heat_charge","cool_charge","atmosphere_charge","vacuum_charge","warm", "seed"],
 	"Weapons": ["lance","surface_laser","seeker","ground_bomb"],
 	"Inventory": ["pack","repair_pack","mega_repair_pack"],
 }
 
 static func entry(id: String) -> Dictionary:
+	if Climate.data().tools.has(id):
+		var spec: Dictionary = Climate.data().tools[id]
+		return {"id":id,"title":spec.name,"icon":id,"tint":Color(spec.color),"kind":"tool","view":"both","summary":"%+d global %s · eight-second pulse" % [spec.delta,spec.axis],"hint":"%+d global %s over eight seconds. %s Click the planet or terrain. Unstabilized climate drifts toward native conditions." % [spec.delta,spec.axis,"Consumes one owned unit." if spec.charge else "%d energy per pulse." % spec.energy]}
 	if Combat.data().weapons.has(id):
 		var spec: Dictionary = Combat.data().weapons[id]
 		return {"id":id,"title":spec.name,"icon":id,"tint":Color("eba66d"),"kind":"tool","view":"surface",
@@ -45,6 +49,7 @@ static func unavailable(id: String, model: RefCounted) -> String:
 	if item.view != "both" and item.view != model.state.flight_mode:
 		return "Available in orbit" if item.view == "orbit" else "Enter the atmosphere to use this tool"
 	if Combat.data().weapons.has(id) and not Combat.installed(model,id): return "Purchase this weapon at a dock."
+	if Climate.data().tools.has(id): return "Requires the shared campaign." if model.planetary == null else model.planetary.available(model,id)
 	if id == "pack": return model.pack_reason()
 	if Model.repair_items().has(id): return model.repair_pack_reason(id)
 	return ""

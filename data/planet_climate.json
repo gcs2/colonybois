@@ -1,0 +1,13 @@
+{
+  "baselines":{"temperate":[50,50],"frozen":[15,35],"arid":[80,25]},
+  "tools":{
+    "heat_ray":{"name":"Heat ray","axis":"temperature","delta":10,"energy":25,"price":0,"color":"efac77","charge":false},
+    "cool_ray":{"name":"Refrigeration ray","axis":"temperature","delta":-10,"energy":25,"price":0,"color":"91cadf","charge":false},
+    "cloud_accumulator":{"name":"Cloud accumulator","axis":"atmosphere","delta":10,"energy":20,"price":0,"color":"c5ddba","charge":false},
+    "cloud_vacuum":{"name":"Cloud vacuum","axis":"atmosphere","delta":-10,"energy":20,"price":0,"color":"c4b2df","charge":false},
+    "heat_charge":{"name":"Thermal catalyst","axis":"temperature","delta":10,"energy":0,"price":65,"color":"efac77","charge":true},
+    "cool_charge":{"name":"Cooling catalyst","axis":"temperature","delta":-10,"energy":0,"price":65,"color":"91cadf","charge":true},
+    "atmosphere_charge":{"name":"Atmosphere generator","axis":"atmosphere","delta":10,"energy":0,"price":60,"color":"c5ddba","charge":true},
+    "vacuum_charge":{"name":"Atmosphere reducer","axis":"atmosphere","delta":-10,"energy":0,"price":60,"color":"c4b2df","charge":true}
+  }
+}

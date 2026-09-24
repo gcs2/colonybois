@@ -10,6 +10,10 @@
     "merchant":{"name":"Merchant","levels":[1,3,6,12,24],"description":"Complete distinct commodity deliveries between different worlds. Each origin, destination and commodity combination counts once."}
   },
   "upgrades": {
+    "heat_ray":{"name":"Heat ray","price":250,"description":"Raises global temperature by 10 over eight seconds. 25 energy per pulse. Does not stabilize an ecosystem.","requires":{"explorer":2,"merchant":2}},
+    "cool_ray":{"name":"Refrigeration ray","price":250,"description":"Lowers global temperature by 10 over eight seconds. 25 energy per pulse.","requires":{"explorer":2,"merchant":2}},
+    "cloud_accumulator":{"name":"Cloud accumulator","price":230,"description":"Raises global atmosphere by 10 over eight seconds. 20 energy per pulse.","requires":{"explorer":2,"merchant":2}},
+    "cloud_vacuum":{"name":"Cloud vacuum","price":230,"description":"Lowers global atmosphere by 10 over eight seconds. 20 energy per pulse.","requires":{"explorer":2,"merchant":2}},
     "seeker":{"name":"Seeker missile launcher","price":220,"description":"Homing missiles for flying surface targets. 45 damage, 14 energy, two-second flight, four-second cycle.","requires":{"defender":1,"explorer":2}},
     "ground_bomb":{"name":"Ground bomb bay","price":240,"description":"Delayed ground-area strike. 50 damage within 7 m, 18 energy, four-second cycle. Does not hit flyers.","requires":{"defender":1,"merchant":2}},
     "hold":{"name":"Expanded cargo hold","price":120,"description":"Raises commodity capacity from 8 to 16 units. Specimen cradles and energy packs have separate storage.","requires":{"merchant":1,"explorer":2}},

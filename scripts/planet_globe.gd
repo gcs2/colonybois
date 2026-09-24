@@ -25,6 +25,10 @@ func _ready() -> void:
 	surface.mesh = sphere
 	material.shader = preload("res://assets/shaders/morrow_globe.gdshader")
 	material.set_shader_parameter("surface_map",maps.albedo)
+	material.set_shader_parameter("substrate_map",maps.substrate)
+	material.set_shader_parameter("ice_color",generator.palette.ice)
+	material.set_shader_parameter("wet_color",generator.palette.forest)
+	material.set_shader_parameter("dry_color",generator.palette.dryland)
 	material.set_shader_parameter("condition_map",maps.conditions)
 	material.set_shader_parameter("normal_map",maps.normals)
 	material.set_shader_parameter("recovered_map",maps.albedo)
@@ -66,6 +70,15 @@ func _ready() -> void:
 
 func advance(delta: float) -> void:
 	clouds.rotation.y += delta*0.005
+
+func set_climate(values: Dictionary, base: Vector2, active: bool) -> void:
+	material.set_shader_parameter("climate_active",active)
+	var scale: float = 0.6 if planet_definition.archetype == "arid" else 1.12
+	material.set_shader_parameter("temperature_delta",(float(values.temperature)-base.x)*scale)
+	material.set_shader_parameter("moisture_delta",(float(values.atmosphere)-base.y)*0.015)
+	var density: float = clampf(float(values.atmosphere)/maxf(1,base.y),0,2)
+	clouds.material_override.set_shader_parameter("density",density)
+	atmosphere.material_override.set_shader_parameter("density",density)
 
 
 func chart(progress: float, layer: bool) -> void:

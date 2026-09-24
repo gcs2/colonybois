@@ -14,6 +14,7 @@ func setup(catalog: Dictionary) -> void:
 	for id: String in catalog:
 		var spec: Dictionary = catalog[id]
 		var actor := Node3D.new(); add_child(actor); actors[id] = actor
+		actor.visible = false
 		var shell: Material = kit.ink(spec.color)
 		var inset: Material = kit.ink("253944")
 		var eye: Material = kit.ink("c7f3c5",true)

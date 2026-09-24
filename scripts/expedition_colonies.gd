@@ -99,9 +99,13 @@ func install(game: RefCounted, id: String, item: String) -> String:
 	game.diplomacy.record(game,"colonies","Commissioned "+str(game.commerce.catalog.goods[item].name)+" production.","",{"planet":id,"item":item,"cost":60})
 	return ""
 
-static func yield_for(planet: String, item: String) -> int:
+static func yield_for(planet: String, item: String, game: RefCounted = null) -> int:
 	var climate: String = Geography.definition(planet).archetype
-	return 2 if (climate == "frozen" and item in ["water","alloy"]) or (climate == "arid" and item == "glass") else 1
+	var output: int = 2 if (climate == "frozen" and item in ["water","alloy"]) or (climate == "arid" and item == "glass") else 1
+	if game != null and game.climate.state.worlds.has(planet):
+		var tier: int = game.climate.score(game.climate.world(planet))
+		return 0 if tier == 0 else output+maxi(0,tier-1)
+	return output
 
 func tick(game: RefCounted) -> void:
 	for id: String in state.outposts:
@@ -116,9 +120,11 @@ func tick(game: RefCounted) -> void:
 		if item.is_empty(): outpost.status = "Hub ready · choose an export facility"; continue
 		var count: int = 0
 		for amount: int in outpost.stock.values(): count += amount
-		var output: int = yield_for(id,item)
+		var output: int = yield_for(id,item,game)
+		if output == 0: outpost.status = "Production suspended · T0 climate"; continue
 		var colony: Dictionary = game.sector.state.colonies[id]
 		var upkeep: float = 2.0 if Geography.definition(id).archetype == "frozen" else 1.0
+		if game.climate.state.worlds.has(id): upkeep *= float(game.climate.effects(id).power_factor)
 		if count+output > STORAGE: outpost.status = "Warehouse full · collect cargo"; continue
 		if game.field.marks < upkeep or colony.supplies < 0.5: outpost.status = "Paused · needs operating Marks and local supplies"; continue
 		outpost.status = "Producing %d %s / 2 colony days" % [output,game.commerce.catalog.goods[item].name]

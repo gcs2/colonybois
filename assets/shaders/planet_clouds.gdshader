@@ -1,6 +1,7 @@
 shader_type spatial;
 render_mode depth_draw_never, cull_back;
 uniform sampler2D condition_map : filter_linear_mipmap, repeat_enable;
+uniform float density = 1.0;
 varying vec3 local_position;
 void vertex(){local_position=VERTEX;}
 void fragment(){
@@ -10,5 +11,5 @@ void fragment(){
     ALBEDO=vec3(0.87,0.93,0.91);
     ROUGHNESS=1.0;
     SPECULAR=0.0;
-    ALPHA=cloud*0.42;
+    ALPHA=clamp(cloud*density,0.0,1.0)*0.42;
 }

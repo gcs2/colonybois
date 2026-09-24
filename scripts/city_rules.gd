@@ -58,6 +58,11 @@ static func grow(sim: RefCounted, pid: String) -> void:
 						if other.get("type","") != cell.type or int(other.get("level",-1)) != 0: valid = false
 				if valid and colony.materials >= float(sim.catalog.buildings[cell.type].cost)*candidate.x*candidate.y*0.5: size = candidate; break
 		var cost: float = float(sim.catalog.buildings[cell.type].cost)*size.x*size.y*0.5
+		if cell.type == "habitat" and sim.climate_effects.has(pid):
+			var population: float = float(colony.population)/float(colony.get("population_scale",1))
+			if population+12*size.x*size.y > sim.climate_effects[pid].population_cap:
+				colony.reasons[key] = "Growth limited by planetary climate capacity"
+				continue
 		if colony.materials < cost: continue
 		colony.materials -= cost
 		if int(cell.level) == 0:

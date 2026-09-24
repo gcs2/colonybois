@@ -3,6 +3,7 @@ extends RefCounted
 const VERSION := 8
 const Encounters = preload("res://scripts/orbital_encounters.gd")
 var installed_upgrades: Array = []
+var planetary: RefCounted
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const TARGETS := ["pod", "grazer", "bed", "relay"]

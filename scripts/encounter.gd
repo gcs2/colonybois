@@ -42,6 +42,12 @@ const FlightEffects = preload("res://scripts/flight_effects.gd")
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
 const SurfaceVisual = preload("res://scripts/surface_combat_visual.gd")
 const FleetVisual = preload("res://scripts/allied_fleet_visual.gd")
+const Climate = preload("res://scripts/planet_climate.gd")
+var climate_tool: String = ""
+var climate_chart: Control
+var climate_ring: MeshInstance3D
+var climate_signature: String = ""
+var ground_material: ShaderMaterial
 var fleet_visual: Node3D
 var fleet_strip: HBoxContainer
 var fleet_button: Button
@@ -212,6 +218,11 @@ func _ready() -> void:
 	add_child(orbit)
 	_build_service_ports()
 	if campaign != null:
+		campaign.climate.bind(campaign)
+		var pulse_mesh := TorusMesh.new(); pulse_mesh.inner_radius = 19.0; pulse_mesh.outer_radius = 19.16
+		pulse_mesh.rings = 64; pulse_mesh.ring_segments = 6
+		climate_ring = _mesh(pulse_mesh,orbit.planet.position,_mat(Color("d5dcab"),true),orbit)
+		climate_ring.visible = false
 		surface_combat_visual = SurfaceVisual.new()
 		surface_root.add_child(surface_combat_visual)
 		surface_combat_visual.setup(model.state.planet_id)
@@ -341,10 +352,8 @@ func _make_world() -> void:
 				surface.set_color(color)
 				surface.add_vertex(Vector3(px,h,pz))
 	surface.generate_normals()
-	var ground_shader := Shader.new()
-	ground_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=VERTEX;} float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);} void fragment(){float fleck=h(floor(wp.xz*9.0)); float band=sin(wp.x*2.0+sin(wp.z*0.7)*3.0)*0.5+0.5; ALBEDO=COLOR.rgb*(0.91+fleck*0.1+band*0.04); ROUGHNESS=0.95;}"
-	var ground_material := ShaderMaterial.new()
-	ground_material.shader = ground_shader
+	ground_material = ShaderMaterial.new()
+	ground_material.shader = preload("res://assets/shaders/expedition_ground.gdshader")
 	_mesh(surface.commit(),Vector3.ZERO,ground_material)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 739 if rendered_planet == "morrow" else int(world_definition.geography_seed)
@@ -582,6 +591,8 @@ func _make_ui() -> void:
 	guide_arrow = _label("▼",28,Color("ffe0a8"))
 	root.add_child(guide_arrow)
 	if campaign != null:
+		climate_chart = preload("res://scripts/climate_chart.gd").new()
+		climate_chart.position = Vector2(24,125); root.add_child(climate_chart); climate_chart.hide()
 		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(575,24)
 		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
 		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
@@ -882,7 +893,7 @@ func _update_visuals() -> void:
 	guardian_label.position = camera.unproject_position(model.guardian_position())+Vector2(10,-22)
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
-	guide_arrow.visible = not paused and not _inspection_open() and surface_weapon.is_empty()
+	guide_arrow.visible = not paused and not _inspection_open() and surface_weapon.is_empty() and climate_tool.is_empty()
 	if orbital:
 		guide_arrow.position = Vector2(1400,615)
 		ring.visible = false
@@ -924,6 +935,7 @@ func _hud_action(action: String) -> void:
 		var id: String = action.trim_prefix("item:")
 		if not hud.Palette.unavailable(id,model).is_empty(): return
 		if id == "lance": _select_weapon()
+		elif Climate.data().tools.has(id): _select_climate(id)
 		elif SurfaceCombat.data().weapons.has(id): _select_surface_weapon(id)
 		elif id == "pack": _hud_action("pack")
 		elif Model.repair_items().has(id): _hud_action(id)
@@ -945,7 +957,8 @@ func _hud_action(action: String) -> void:
 		"departure": _departure()
 		"use":
 			if not paused and not _inspection_open():
-				if kit_mode or deploy_order: _stop()
+				if not climate_tool.is_empty(): _apply_climate()
+				elif kit_mode or deploy_order: _stop()
 				elif model.state.flight_mode == "surface" and not surface_weapon.is_empty():
 					if surface_order: _stop()
 					else: _order_surface_attack(surface_selected,surface_aim)
@@ -1023,6 +1036,7 @@ func _select_weapon() -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "orbit": return
 	_cancel_orders()
 	surface_weapon = ""
+	climate_tool = ""
 	weapon_selected = true
 	hud.select_tool("lance")
 	audio.play("ui_confirm")
@@ -1088,6 +1102,7 @@ func _select_surface_weapon(id: String) -> void:
 	if paused or _inspection_open() or model.state.flight_mode != "surface" or campaign == null: return
 	if not SurfaceCombat.installed(model,id): return
 	_cancel_orders(); surface_weapon = id; weapon_selected = false
+	climate_tool = ""
 	hud.select_tool(id); audio.play("ui_confirm")
 
 func _order_surface_attack(target: String, point: Vector3) -> void:
@@ -1293,6 +1308,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	if not climate_tool.is_empty() and campaign != null:
+		if model.state.flight_mode == "surface":
+			if _surface_point(screen) is Vector2: _apply_climate()
+			return
+		var climate_ray: Vector3 = camera.project_ray_normal(screen)
+		var climate_from: Vector3 = camera.project_ray_origin(screen)
+		var near_planet: Vector3 = climate_from+climate_ray*maxf(0,(orbit.planet.position-climate_from).dot(climate_ray))
+		if near_planet.distance_to(orbit.planet.position) <= 19: _apply_climate(); return
 	if kit_mode and campaign != null and model.state.flight_mode == "surface":
 		var point: Variant = _surface_point(screen)
 		if point is Vector2: _order_deployment(point)
@@ -1467,6 +1490,7 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	if not orbital: orbit.environment.environment = null
 	for button: Button in toolbar: button.disabled = orbital
 	weapon_selected = false
+	climate_tool = ""
 	hud.select_tool(tool)
 	hud.set_orbital_mode(orbital)
 	if orbital: hud.show_group("Weapons")
@@ -1491,6 +1515,7 @@ func _select_tool(value: String) -> void:
 	tool = value
 	surface_weapon = ""
 	surface_selected = ""
+	climate_tool = ""
 	progress = 0
 	held = false
 	latched = false
@@ -1636,6 +1661,7 @@ func _refresh_ui() -> void:
 		progress_bar.value = 0
 	_refresh_surface_combat_ui()
 	_refresh_fleet_ui()
+	_refresh_climate_ui()
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1845,6 +1871,10 @@ func _toggle_planet_map() -> void:
 	if model.state.flight_mode == "orbit":
 		location = orbit.planet.basis.inverse()*(ship.position-orbit.planet.position)
 	planet_map.present(model.state,location,paused,model.survey_reason())
+	if campaign != null and model.state.survey_ticks >= model.definition().survey_seconds:
+		var conditions: Dictionary = campaign.climate.world(model.state.planet_id)
+		planet_map.report.text += "\nT%d climate · temperature %.0f · atmosphere %.0f" % [Climate.score(conditions),conditions.temperature,conditions.atmosphere]
+		if campaign.climate.state.worlds.has(model.state.planet_id): planet_map.report.text += "\nClimate growth capacity %d residents. Unstabilized climate drifts toward native conditions." % campaign.climate.effects(model.state.planet_id).population_cap
 
 func _map_travel(site_id: String) -> void:
 	if model.definition().sites.is_empty() or site_id != model.definition().sites[0].id or paused: return
@@ -1889,6 +1919,13 @@ func _build_cargo_panel() -> void:
 		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
 	var onboard: bool = cargo_location == "ship"
 	if onboard and campaign != null:
+		_panel_copy("TERRAFORMING LOCKER · %d / 6" % campaign.climate.units(),Instruments.GOLD)
+		for id: String in campaign.climate.state.charges:
+			var count: int = campaign.climate.state.charges[id]
+			if count == 0: continue
+			var item: Button = _button("%s × %d" % [Climate.data().tools[id].name,count],func() -> void: _close_popup(); _select_climate(id),popup_body)
+			item.icon = Instruments.icon(id); item.add_theme_constant_override("icon_max_width",32)
+			item.tooltip_text = "Select this owned unit, then click the planet or terrain to deploy."
 		_panel_copy("CARGO HOLD   %d / %d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.CARGO)
 		if campaign.colonies.reserved_space() > 0:
 			_panel_copy("COLONY KIT × 1 · occupies four cargo spaces",Instruments.GOLD)
@@ -2156,15 +2193,16 @@ func _build_service_panel() -> void:
 	_panel_copy(port.name,Instruments.PAPER)
 	if campaign != null:
 		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.GOLD)
-		var tabs := HBoxContainer.new()
+		var tabs := HFlowContainer.new()
 		popup_body.add_child(tabs)
-		for page: String in ["market","upgrades","energy","warehouse","fleet"]:
+		for page: String in ["market","upgrades","energy","warehouse","fleet","climate"]:
 			var tab: Button = _button("Supplies" if page == "energy" else page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
 			tab.disabled = dock_page == page
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
 		if dock_page == "warehouse": _build_warehouse_panel(); return
 		if dock_page == "fleet": _build_fleet_panel(); return
+		if dock_page == "climate": _build_climate_shop(); return
 	_panel_copy("ENERGY  %d / %d · PACKS  %d / 3" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
 	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
@@ -2441,6 +2479,79 @@ func _refresh_fleet_ui() -> void:
 		bar.value = campaign.fleet.state.ships[id].hull
 		bar.tooltip_text = "%s · %s\nHull %d / %d" % [campaign.fleet.catalog[id].name,campaign.sector.faction_by_id(id).name,bar.value,bar.max_value]
 
+func _select_climate(id: String) -> void:
+	if paused or _inspection_open() or campaign == null or not Climate.data().tools.has(id): return
+	if not campaign.climate.available(model,id).is_empty(): return
+	_cancel_orders(); climate_tool = id; surface_weapon = ""; surface_selected = ""; weapon_selected = false
+	hud.select_tool(id); audio.play("ui_confirm"); _refresh_ui()
+
+func _apply_climate() -> void:
+	if paused or _inspection_open() or campaign == null or climate_tool.is_empty(): return
+	var blocked: String = campaign.climate.start(campaign,climate_tool,ship.position)
+	_toast(blocked if not blocked.is_empty() else "Climate pulse deployed · eight seconds to settle")
+	audio.play("error" if not blocked.is_empty() else "scan_complete")
+	if blocked.is_empty(): _save(false)
+	_refresh_ui()
+
+func _refresh_climate_ui() -> void:
+	if campaign == null or climate_chart == null: return
+	var planet: String = model.state.planet_id
+	var local: Dictionary = campaign.climate.world(planet)
+	var active: bool = campaign.climate.state.worlds.has(planet)
+	var baseline: Vector2 = Climate.baseline(planet)
+	var signature: String = "%s:%.3f:%.3f:%s" % [planet,local.temperature,local.atmosphere,active]
+	if signature != climate_signature:
+		climate_signature = signature
+		orbit.planet.set_climate(local,baseline,active)
+		planet_map.globe.set_climate(local,baseline,active)
+		ground_material.set_shader_parameter("climate_active",active)
+		ground_material.set_shader_parameter("temperature",local.temperature)
+		ground_material.set_shader_parameter("pressure",local.atmosphere)
+		ground_material.set_shader_parameter("baseline_temperature",baseline.x)
+		ground_material.set_shader_parameter("frozen",world_definition.archetype == "frozen")
+		if active:
+			surface_environment_resource.fog_density = float(local.atmosphere)*0.00006
+			var sky: ProceduralSkyMaterial = surface_environment_resource.sky.sky_material
+			sky.sky_top_color = Color("07101e").lerp(Color("516e96"),float(local.atmosphere)/100)
+	climate_chart.visible = not _inspection_open() and (not climate_tool.is_empty() or not local.project.is_empty()) and model.state.survey_ticks >= model.definition().survey_seconds
+	climate_chart.present(local,Climate.score(local))
+	climate_ring.visible = not local.project.is_empty()
+	if climate_ring.visible:
+		climate_ring.rotation = Vector3(0.3,0,float(model.state.time)*0.2)
+		climate_ring.material_override.albedo_color = Color(Climate.data().tools[local.project.tool].color)
+		climate_ring.material_override.emission = climate_ring.material_override.albedo_color
+	for id: String in Climate.data().tools:
+		hud.count_labels[id].text = "× %d" % campaign.climate.state.charges[id] if Climate.data().tools[id].charge else ""
+	if climate_tool.is_empty(): return
+	var blocked: String = campaign.climate.reason(campaign,climate_tool,ship.position)
+	subject.text = "T%d climate · %s" % [Climate.score(local),model.definition().name]
+	explanation.text = blocked if not blocked.is_empty() else "Click planet or terrain · native climate changes can damage relations"
+	hud.action_state.text = "SETTLING" if not local.project.is_empty() else "TERRAFORM"
+	use_button.text = "Apply"; use_button.disabled = paused or _inspection_open() or not blocked.is_empty()
+	use_button.tooltip_text = blocked if not blocked.is_empty() else hud.Palette.entry(climate_tool).hint
+	objective.text = "Temperature %.0f · atmosphere %.0f · unstabilized" % [local.temperature,local.atmosphere]
+
+func _buy_climate(tool_id: String) -> void:
+	if paused or campaign == null: return
+	var blocked: String = campaign.climate.buy(campaign,selected_service,ship.position,tool_id)
+	_toast(blocked if not blocked.is_empty() else "Terraforming unit loaded")
+	audio.play("error" if not blocked.is_empty() else "cargo")
+	if blocked.is_empty(): _save(false)
+	_show_popup("service"); _refresh_ui()
+
+func _build_climate_shop() -> void:
+	_panel_copy("TERRAFORMING LOCKER · %d / 6" % campaign.climate.units(),Instruments.GOLD)
+	for id: String in campaign.climate.state.charges:
+		var spec: Dictionary = Climate.data().tools[id]
+		var blocked: String = campaign.climate.buy_reason(campaign,selected_service,ship.position,id)
+		var button: Button = _button("%s · %d Marks" % [spec.name,spec.price],_buy_climate.bind(id),popup_body)
+		button.icon = Instruments.icon(id); button.add_theme_constant_override("icon_max_width",32)
+		button.set_meta("climate_purchase",id)
+		button.disabled = paused or not blocked.is_empty()
+		button.tooltip_text = blocked if not blocked.is_empty() else hud.Palette.entry(id).hint
+		_panel_copy("%d in stock · owned %d · %+d %s" % [campaign.climate.stock(model.state.planet_id,selected_service,id),campaign.climate.state.charges[id],spec.delta,spec.axis])
+	_panel_copy("Units are consumed once. Permanent energy-powered versions are sold under Upgrades → Equipment. Unstabilized climate drifts toward native conditions.")
+
 func _fleet_action(id: String, action: String) -> void:
 	if paused or campaign == null: return
 	var blocked: String = campaign.fleet.command(campaign,id,action,ship.position)
@@ -2631,7 +2742,7 @@ func _build_colonies_panel() -> void:
 	_panel_copy("LOCAL RESERVES · %d materials · %d supplies\nInstalled: %s" % [colony.materials,colony.supplies,"none" if record.module.is_empty() else campaign.commerce.catalog.goods[record.module].name])
 	_panel_copy("Choose one export facility. Installation or replacement: 60 Marks, 20 local materials, 10 local supplies. Warehouse stock is retained.")
 	for item: String in ["alloy","water","glass"]:
-		var output: int = campaign.colonies.yield_for(selected_colony,item)
+		var output: int = campaign.colonies.yield_for(selected_colony,item,campaign)
 		var blocked: String = campaign.colonies.install_reason(campaign,selected_colony,item)
 		var button: Button = _button("%s · %d units / 2 days" % [campaign.commerce.catalog.goods[item].name,output],_install_export.bind(item),popup_body)
 		button.disabled = paused or not blocked.is_empty()

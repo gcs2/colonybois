@@ -1,6 +1,14 @@
 # Resume here
 
-## Allied escorts — latest checkpoint
+## Personal planet manipulation — latest checkpoint
+
+Read [PLANET_CLIMATE.md](PLANET_CLIMATE.md). Four purchased energy tools and four finite consumables now manipulate independent temperature/atmosphere axes through hotbar selection and planet/terrain clicks. Eight-second pulses continue off-screen; unstabilized climate drifts back. Climate affects globe/atlas/surface appearance, real colony utility demand, growth limits and export yield, plus known-owner/ecological grievances. Snapshot v12 preserves pulses, inventories and finite dock stock. Native geography and existing structures remain intact. The expanded hotbar has named hover help and actual row-relative shortcuts.
+
+Validation: full suite passed at **1,090 assertions plus UI checks**, followed by **54 climate checks** (six additional reverse-axis/boundary checks), bringing current coverage to **1,096 assertions plus UI checks**. Corrected thaw striping, initial unassigned escort visibility, verbose objective overflow, stale colony output readout and ships showing through the atlas. Actual 1080p/1440p climate, surface, atlas and dock renders reviewed. These do not establish native usability, balance or approved art/audio. Playable: **build/versions/20260923-172447/FrontierWorlds.exe** through Play.cmd; exported-pack encounter startup smoke passed.
+
+Next: connect actual specimen collection/deployment to ecological stabilization and visible capacity requirements, preserving spaceship exploration and avoiding a compulsory planting tutorial. Climate potential alone does not complete T01. Keep full tool breadth, civilization responses and presentation/native playtest gates open. Do not turn this into food-web catalog expansion or individual organism simulation. The previous checkpoints below are history.
+
+## Allied escorts — previous checkpoint
 
 Read [ALLIED_FLEET.md](ALLIED_FLEET.md). Alliances now supply one escort per nation, with scenario badge-based slots capped at three. Contact → Fleet handles local-orbit recruitment; the HUD roster shows real hull and opens orders. Escorts follow and assist the selected attack, take actual enemy aim-volume damage, preserve damage through travel/dismissal, and incur relationship loss and a paid/delayed replacement when destroyed. Dock fleet repair uses real proximity/prices/access. Alliance withdrawal or embargo recalls ships. Snapshot v11 validates fleet ownership, slots, hull, cooldowns and history; earlier campaigns gain no free ships.
 

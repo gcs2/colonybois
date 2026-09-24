@@ -50,7 +50,9 @@ func button(text: String, action: Callable, parent: Control, tint: Color = UI.NA
 func _ready() -> void:
 	position = Vector2(24,100)
 	size = Vector2(1552,592)
-	add_theme_stylebox_override("panel",UI.box(UI.NAV))
+	var backing: StyleBoxFlat = UI.box(UI.NAV)
+	backing.bg_color = UI.INK
+	add_theme_stylebox_override("panel",backing)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation",10)
 	add_child(column)

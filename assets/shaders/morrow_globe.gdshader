@@ -5,6 +5,13 @@ uniform sampler2D condition_map : filter_linear_mipmap, repeat_enable;
 uniform sampler2D normal_map : filter_linear_mipmap, repeat_enable;
 uniform sampler2D recovered_map : source_color, filter_linear_mipmap, repeat_enable;
 uniform float recovery : hint_range(0,1) = 0.0;
+uniform sampler2D substrate_map : source_color, filter_linear_mipmap, repeat_enable;
+uniform bool climate_active = false;
+uniform float temperature_delta = 0.0;
+uniform float moisture_delta = 0.0;
+uniform vec3 ice_color : source_color = vec3(0.85,0.9,0.9);
+uniform vec3 wet_color : source_color = vec3(0.3,0.5,0.4);
+uniform vec3 dry_color : source_color = vec3(0.6,0.4,0.3);
 uniform vec3 basin_direction = vec3(0,0.2747,0.9615);
 uniform bool map_fog = false;
 uniform float chart_fraction : hint_range(0,1) = 0.0;
@@ -19,6 +26,15 @@ void fragment(){
     vec2 coord=vec2(lon,1.0-lat);
     vec3 ground=mix(texture(surface_map,coord).rgb,texture(recovered_map,coord).rgb,recovery);
     vec4 conditions=texture(condition_map,coord);
+    if(climate_active){
+        float heat=conditions.b*160.0-80.0+temperature_delta;
+        vec3 bed=texture(substrate_map,coord).rgb;
+        float land=smoothstep(0.498,0.503,conditions.r);
+        bed=mix(bed,wet_color,land*clamp(moisture_delta*1.7,0.0,0.6));
+        bed=mix(bed,dry_color,land*clamp(-moisture_delta*1.5+max(heat-45.0,0.0)*0.015,0.0,0.7));
+        float ice=mix((1.0-smoothstep(-22.0,-5.0,heat))*0.95,1.0-smoothstep(-10.0,0.0,heat),land);
+        ground=mix(bed,ice_color,ice);
+    }
     float local_chart=smoothstep(0.991,0.997,dot(p,normalize(basin_direction)));
     float orbital_chart=chart_fraction >= 1.0 ? 1.0 : (chart_fraction <= 0.0 ? 0.0 : 1.0-smoothstep(chart_fraction-0.008,chart_fraction+0.008,lon));
     float known=max(local_chart,orbital_chart);

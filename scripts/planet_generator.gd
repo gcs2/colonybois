@@ -92,6 +92,7 @@ func maps(width: int = MAP_WIDTH) -> Dictionary:
 	var started: int = Time.get_ticks_msec()
 	var height: int = width/2
 	var albedo := Image.create(width,height,false,Image.FORMAT_RGB8)
+	var substrate := Image.create(width,height,false,Image.FORMAT_RGB8)
 	var conditions := Image.create(width,height,false,Image.FORMAT_RGBA8)
 	var elevations := Image.create(width,height,false,Image.FORMAT_RF)
 	for y: int in range(height):
@@ -100,6 +101,9 @@ func maps(width: int = MAP_WIDTH) -> Dictionary:
 			var longitude: float = (float(x)+0.5)/width*360.0-180.0
 			var cell: Dictionary = sample(direction(latitude,longitude))
 			albedo.set_pixel(x,y,surface_color(cell))
+			var thawed: Dictionary = cell.duplicate()
+			thawed.temperature_c = 45.0
+			substrate.set_pixel(x,y,surface_color(thawed))
 			elevations.set_pixel(x,y,Color(maxf(0,cell.elevation)*0.5,0,0))
 			conditions.set_pixel(x,y,Color(clampf(cell.elevation*0.5+0.5,0,1),cell.moisture,clampf((cell.temperature_c+80)/160,0,1),cell.clouds))
 	# Bake geographic relief into object-space normals, shared by every globe view.
@@ -121,8 +125,9 @@ func maps(width: int = MAP_WIDTH) -> Dictionary:
 			normals.set_pixel(x,y,Color(normal.x*0.5+0.5,normal.y*0.5+0.5,normal.z*0.5+0.5))
 	normals.generate_mipmaps()
 	albedo.generate_mipmaps()
+	substrate.generate_mipmaps()
 	conditions.generate_mipmaps()
-	var result := {"albedo":ImageTexture.create_from_image(albedo),"normals":ImageTexture.create_from_image(normals),"conditions":ImageTexture.create_from_image(conditions),"generation_ms":Time.get_ticks_msec()-started}
+	var result := {"albedo":ImageTexture.create_from_image(albedo),"substrate":ImageTexture.create_from_image(substrate),"normals":ImageTexture.create_from_image(normals),"conditions":ImageTexture.create_from_image(conditions),"generation_ms":Time.get_ticks_msec()-started}
 	# Bounded cache; active globes retain their textures when old entries are evicted.
 	if map_cache.size() >= 4: map_cache.erase(map_cache.keys()[0])
 	map_cache[key] = result

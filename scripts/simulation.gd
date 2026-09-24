@@ -13,6 +13,7 @@ const SAVE_VERSION: int = 3
 const SAVE_PATH: String = "user://frontier_save.fw"
 var catalog: Dictionary = {}
 var state: Dictionary = {}
+var climate_effects: Dictionary = {} # Derived from the personal campaign, never separately saved.
 var playtest: bool = "--playtest" in OS.get_cmdline_user_args()
 
 func _init() -> void:
@@ -222,6 +223,7 @@ func suitability(pid: String, x: int, z: int) -> float:
 			var distance: float = Vector2(x,z).distance_to(Vector2(p))
 			if cell.type == "industry" and distance < 5: value -= 0.14 * (1.0-distance/5.0)
 			if cell.type == "service" and distance < 5: value += 0.12
+	value += float(climate_effects.get(pid,{}).get("suitability_delta",0.0))
 	return clampf(value,0.0,1.0)
 
 func refresh_colony(pid: String) -> void:
@@ -234,6 +236,7 @@ func refresh_colony(pid: String) -> void:
 	var life_sites: Array[Vector2i] = [Vector2i(30,30)]
 	var env: String = state.planets[pid].environment
 	var factor: float = lerpf(float(catalog.environments[env].power_factor),1.0,float(state.planets[pid].terraform))
+	factor *= float(climate_effects.get(pid,{}).get("power_factor",1.0))
 	for k: String in colony.cells:
 		var cell: Dictionary = colony.cells[k]
 		var p: Vector2i = cell_position(k)
@@ -264,6 +267,7 @@ func refresh_colony(pid: String) -> void:
 		elif int(cell.get("damaged_until",0)) > state.tick: reason = "Fire damage: repair or wait until day %d" % cell.damaged_until
 		elif used > power: reason = "Growth limited by power"
 		elif colony.supplies < 5: reason = "Growth limited by supplies"
+		elif climate_effects.has(pid) and cell.type == "habitat" and population >= int(climate_effects[pid].population_cap): reason = "Growth limited by planetary climate capacity"
 		else:
 			var covered: bool = false
 			for site: Vector2i in life_sites:
