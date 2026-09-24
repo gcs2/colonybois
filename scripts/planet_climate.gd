@@ -93,6 +93,7 @@ func tick(game: RefCounted) -> void:
 			local[spec.axis] = lerpf(project.from,project.to,1.0-float(project.remaining)/DURATION)
 			local.drift_clock = 0
 			if project.remaining == 0:
+				game.recognition.climate_completed(planet,score(local))
 				game.diplomacy.record(game,"terraforming","Climate pulse settled on "+str(Geography.definition(planet).name)+".","",{"planet":planet,"temperature":local.temperature,"atmosphere":local.atmosphere,"tier":score(local)},0,"",planet)
 				local.project = {}
 		else:

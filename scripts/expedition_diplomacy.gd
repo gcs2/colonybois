@@ -111,6 +111,7 @@ func act(game: RefCounted, id: String, action: String) -> String:
 	var event_id: int = record(game,"diplomacy",summary,id,outcome,cause)
 	if action in ["trade","non_aggression","alliance"]: state.keys["pact:"+id+":"+action] = event_id
 	game.field.note("diplomacy_%d" % event_id,summary)
+	game.commerce.update_badges(game)
 	return ""
 
 func restore(value: Variant) -> Error:

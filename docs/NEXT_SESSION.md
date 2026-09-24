@@ -1,5 +1,15 @@
 # Resume here
 
+## Badges and master promotions — latest checkpoint
+
+Read [EXPEDITION_PROGRESSION.md](EXPEDITION_PROGRESSION.md). Ten five-tier families now recognize actual exploration, trade, combat, agreements, completed hubs, surveys, distinct species, ecosystems and climate improvements. Climate maxima prevent oscillation farming; durable agreement/ecosystem IDs prevent repeat awards. Cumulative points drive ten master-rank thresholds and an additional paid-drive eligibility path. Other new alternatives connect distinct activities to hold, hull, reactor and climate equipment. No free items or energy refill. Snapshot v14 preserves recognition, pins and notices with atomic migration/validation.
+
+The badge case provides tier stars, progress, selected-family explanation, pinning and real shop links. A bounded animated notice uses the existing achievement cue. Native feel, final art/audio, full reference badges/achievements, late-rank reachability and master-rank fleet capacity remain open. The extra Naturalist/Cartographer families do not replace baseline artifact or discovery duties.
+
+Validation: **1,262 assertions plus UI checks**, covered by the full-suite run through surface combat, corrected fleet/progression reruns, and the remaining regression suites. Final badge-to-shop sizing changes passed 51 progression, 50 HUD and 49 commerce checks. Actual case/reward/notice renders were inspected at 1080p and 1440p; fixed stale wide-panel bounds and recognition overlapping inspection views. Playable build: **build/versions/20260923-201614/FrontierWorlds.exe** through Play.cmd. Exported-pack flight startup smoke passed.
+
+Next: **T03 planet coloring and discovered tool rewards**, followed by the T02 terrain/stamp family. Connect exploration discoveries to usable personal tools, independent visible globe/surface channels, earned ownership and persistent restoration. Keep R01 source verification active. Don't enlarge ecology content or substitute these graphical tools for remaining civilization/war, fleet, story and progression requirements. Preserve native flight/HUD/audio review gates.
+
 ## System navigation — latest checkpoint
 
 Read [SYSTEM_NAVIGATION.md](SYSTEM_NAVIGATION.md). J or outward orbital zoom now opens the current star and its actual planetary destinations. Mouse destination clicks use the shared travel cost/timer; the marker, energy and progress read that same journey. Known stars in the sector offer View system, and scale controls support arrows/numpad. Real survey/knowledge gates, shared climate globes and surface-only local charts remain intact. Escape/menu guards immediately block departure; restored local travel returns to the correct view. Snapshot v13 is unchanged.

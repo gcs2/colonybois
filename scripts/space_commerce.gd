@@ -2,8 +2,14 @@ extends RefCounted
 ## Ship cargo, finite planetary markets and earned shop eligibility. No scene state.
 const Geography = preload("res://scripts/planet_geography.gd")
 const Field = preload("res://scripts/encounter_state.gd")
+const Recognition = preload("res://scripts/expedition_progression.gd")
 var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/space_commerce.json"))
 var state: Dictionary = {"cargo":[],"markets":{},"flows":[],"badges":{"explorer":0,"merchant":0,"defender":0},"upgrades":[]}
+
+func _init() -> void:
+	catalog.badges.merge(Recognition.catalog.badges.duplicate(true))
+	for id: String in catalog.badges:
+		if not state.badges.has(id): state.badges[id] = 0
 
 func capacity() -> int:
 	return 16 if "hold" in state.upgrades else 8
@@ -122,6 +128,7 @@ func export_alloy(game: RefCounted, port: String, at: Vector3, amount: int = 1) 
 	return ""
 
 func progress(game: RefCounted, badge: String) -> int:
+	if Recognition.catalog.badges.has(badge): return game.recognition.progress(game,badge)
 	if badge == "merchant": return state.flows.size()
 	if badge == "defender":
 		var cleared: int = 1 if game.field.has_guardian() and game.field.state.guardian_disabled else 0
@@ -134,18 +141,22 @@ func progress(game: RefCounted, badge: String) -> int:
 	return count
 
 func update_badges(game: RefCounted) -> void:
+	var previous_rank: int = Recognition.rank(state.badges)
 	for id: String in catalog.badges:
 		var level: int = 0
 		for threshold: float in catalog.badges[id].levels:
 			if progress(game,id) >= threshold: level += 1
 		if level > int(state.badges[id]):
+			for earned: int in range(int(state.badges[id])+1,level+1): game.recognition.award(game,id,earned)
 			state.badges[id] = level
 			game.field.note("badge_%s_%d" % [id,level],"%s %d earned · open Badges for progress and shop requirements." % [catalog.badges[id].name,level])
+	for earned: int in range(previous_rank+1,Recognition.rank(state.badges)+1): game.recognition.promotion(game,earned)
 
 func eligible(id: String) -> bool:
 	if not catalog.upgrades.has(id): return false
 	var prior: String = catalog.upgrades[id].get("prior", "")
 	if not prior.is_empty() and prior not in state.upgrades: return false
+	if catalog.upgrades[id].has("rank") and Recognition.rank(state.badges) >= int(catalog.upgrades[id].rank): return true
 	for badge: String in catalog.upgrades[id].requires:
 		if int(state.badges[badge]) >= int(catalog.upgrades[id].requires[badge]): return true
 	return false
@@ -171,11 +182,14 @@ func buy_upgrade(game: RefCounted, port: String, at: Vector3, id: String) -> Str
 	game.diplomacy.record(game,"equipment","Installed "+str(catalog.upgrades[id].name)+".","",{"upgrade":id,"price":catalog.upgrades[id].price})
 	return ""
 
-func restore(source: Variant) -> Error:
+func restore(source: Variant, legacy: bool = true) -> Error:
 	if not source is Dictionary or not source.has_all(["cargo","markets","flows","badges","upgrades"]): return ERR_INVALID_DATA
 	if not source.cargo is Array or not source.markets is Dictionary or not source.flows is Array or not source.badges is Dictionary or not source.upgrades is Array: return ERR_INVALID_DATA
 	source = source.duplicate(true)
-	if source.badges.size() == 2 and source.badges.has_all(["explorer","merchant"]): source.badges.defender = 0
+	if legacy and not source.badges.has("defender") and source.badges.has_all(["explorer","merchant"]): source.badges["defender"] = 0
+	if legacy:
+		for id: String in Recognition.catalog.badges:
+			if not source.badges.has(id): source.badges[id] = 0
 	if source.upgrades.size() > catalog.upgrades.size() or source.badges.size() != catalog.badges.size() or source.cargo.size() > 16 or source.markets.size() > 24 or source.flows.size() > 1728: return ERR_INVALID_DATA
 	var seen: Array = []
 	for id: Variant in source.upgrades:

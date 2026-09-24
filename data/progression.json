@@ -1,0 +1,14 @@
+{
+  "tier_points": [2,4,6,8,10],
+  "rank_points": [5,15,30,50,75,105,140,180,225,275],
+  "rank_names": ["Commander","Commodore","Admiral","The Celebrated","The Renowned","The Great","The Legendary","All Powerful","Ultimate Being","Omnipotent"],
+  "badges": {
+    "diplomat":{"name":"Diplomat","levels":[1,2,3,5,10],"description":"Form alliances with distinct civilizations. Re-signing an agreement never counts twice.","icon":"communicator"},
+    "trader":{"name":"Trade Envoy","levels":[1,2,3,5,10],"description":"Establish trade agreements with distinct civilizations.","icon":"cargo"},
+    "colonist":{"name":"Colonist","levels":[1,2,5,10,20],"description":"Complete new landing hubs. Kits under construction do not count.","icon":"badge_colonist"},
+    "surveyor":{"name":"Cartographer","levels":[1,3,6,12,24],"description":"Finish orbital surveys of distinct worlds.","icon":"planet_map"},
+    "naturalist":{"name":"Naturalist","levels":[3,6,9,12,18],"description":"Catalogue distinct species. Repeated scans and specimens do not count.","icon":"scan"},
+    "zoologist":{"name":"Zoologist","levels":[1,2,3,4,6],"description":"Complete new ecosystem tiers. Rebuilding a lost tier never awards it again.","icon":"seed"},
+    "terraformer":{"name":"Terra-Wrangler","levels":[1,2,4,8,16],"description":"Improve worlds above their native climate tier. Each world's highest achieved tier counts once.","icon":"heat_ray"}
+  }
+}

@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Badges and promotions:** click the rank readout or Escape → Badges. Ten accomplishment families now connect exploration, commerce, diplomacy, surveys, settlement and planet work to persistent recognition and paid upgrade eligibility. Select a family, pin progress or inspect its actual shop reward. Brief animated awards use the existing achievement cue. [Rules, tuning and remaining parity gaps](docs/EXPEDITION_PROGRESSION.md).
+
 **System navigation / J:** zoom outward from orbit to see the star and its actual planets. Hover for a quote and click a destination to spend energy and travel; mouse wheel/right-drag and arrows/numpad also work. Zoom farther out to the sector; Escape pauses an active journey for saving. The local terrain chart remains surface-only. [Controls, verified behavior and limits](docs/SYSTEM_NAVIGATION.md).
 
 **Specimen expeditions:** scan a visible lifeform, switch to the tractor and click to collect. Open Inventory → Specimens, choose a carried species and click a surface habitat to release it. Plants stabilize climate; complete food chains improve development. Introductions, habitat loss and chosen sites persist. [Controls, rules and limitations](docs/PLANET_BIOSPHERE.md).

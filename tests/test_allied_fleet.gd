@@ -27,7 +27,8 @@ func run() -> void:
 	var before: Dictionary = game.snapshot()
 	check(not game.fleet.command(game,"consortium","recruit",at).is_empty() and game.snapshot() == before,"Unknown/unallied nation cannot supply an escort")
 	ally(game)
-	check(not game.fleet.reason(game,"consortium","recruit").is_empty(),"Alliance alone does not create an unearned fleet slot")
+	var untraveled := Session.new(); ally(untraveled)
+	check(untraveled.fleet.capacity(untraveled) == 0,"Alliance alone does not create an unearned fleet slot; a visited second system earns Explorer normally")
 	game.commerce.state.badges.merchant = 1
 	check(game.fleet.capacity(game) == 1,"Peaceful trade progression unlocks fleet capacity")
 	game.field.change_flight_mode("surface") # This world has no surface: stay in orbit.
@@ -73,7 +74,9 @@ func run() -> void:
 	check(loaded.restore_snapshot(bad) != OK and loaded.snapshot() == before,"Invalid fleet hull cannot partially overwrite a campaign")
 	bad = before.duplicate(true); bad.sector.agreements.erase("consortium:alliance")
 	check(loaded.restore_snapshot(bad) != OK,"Active escort cannot be loaded without its alliance")
-	bad = before.duplicate(true); bad.commerce.badges = {"explorer":0,"merchant":0,"defender":0}
+	bad = before.duplicate(true)
+	for badge: String in bad.commerce.badges: bad.commerce.badges[badge] = 0
+	bad.recognition.queue.clear()
 	check(loaded.restore_snapshot(bad) != OK,"Saved active roster cannot exceed earned command capacity")
 	var old: Dictionary = Session.new().snapshot(); old.version = 10; old.erase("fleet")
 	check(loaded.restore_snapshot(old) == OK and loaded.fleet.active_ids().is_empty(),"Old campaigns migrate without free allied ships")

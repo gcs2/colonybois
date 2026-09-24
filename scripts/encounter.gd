@@ -6,6 +6,9 @@ const Model = preload("res://scripts/encounter_state.gd")
 const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
+var recognition_notice: PanelContainer
+var recognition_button: Button
+var upgrade_preview: String = ""
 var rendered_planet: String = "morrow"
 var world_definition: Dictionary = Geography.definition()
 var changing_planet: bool = false
@@ -662,6 +665,11 @@ func _make_ui() -> void:
 	system_map.sector_requested.connect(_toggle_sector_map)
 	system_map.travel_requested.connect(_launch_journey)
 	system_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
+	recognition_button = _button("",_show_popup.bind("badges"),root)
+	recognition_button.position = Vector2(1010,80); recognition_button.size = Vector2(550,38)
+	Instruments.instrument(recognition_button,"log",Instruments.GOLD)
+	recognition_notice = preload("res://scripts/recognition_notice.gd").new(); root.add_child(recognition_notice)
+	recognition_notice.opened.connect(func() -> void: _show_popup("badges"))
 	_select_tool("scan")
 
 func _physics_process(delta: float) -> void:
@@ -744,6 +752,11 @@ func _physics_process(delta: float) -> void:
 	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
 
 func _process(delta: float) -> void:
+	if campaign != null and recognition_notice != null:
+		var suspended: bool = paused or _inspection_open()
+		recognition_notice.advance(delta,suspended)
+		if not suspended and not recognition_notice.visible and not campaign.recognition.state.queue.is_empty():
+			recognition_notice.present(campaign.recognition.state.queue.pop_front(),campaign); audio.play("achievement")
 	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or _inspection_open())
 	if not paused and not _inspection_open(): caption_time -= delta
 	guide_caption.visible = caption_time > 0
@@ -1696,6 +1709,17 @@ func _refresh_ui() -> void:
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
 	if biosphere_view != null: biosphere_view.refresh_hud()
+	if recognition_button != null:
+		if _inspection_open() and recognition_notice != null: recognition_notice.hide()
+		recognition_button.visible = campaign != null and not popup.visible and not planet_map.visible and not system_map.visible and not sector_map.visible
+		if campaign != null:
+			var tiers: Dictionary = campaign.commerce.state.badges
+			recognition_button.text = campaign.Recognition.title(tiers)+" · %d points" % campaign.Recognition.points(tiers)
+			var pin: String = campaign.recognition.state.pinned
+			if not pin.is_empty():
+				var tier: int = tiers[pin]; var badge: Dictionary = campaign.commerce.catalog.badges[pin]
+				recognition_button.text += " · "+badge.name+" %d/%d" % [campaign.commerce.progress(campaign,pin),badge.levels[mini(tier,4)]]
+			recognition_button.tooltip_text = "Badges and master ranks · click to inspect progress and shop unlocks"
 	if system_map != null:
 		system_map.locked = paused or popup.visible
 		if system_map.visible: system_map.refresh()
@@ -1790,6 +1814,11 @@ func _inventory_action(action: String, panel: String) -> void:
 
 func _show_popup(kind: String) -> void:
 	_cancel_orders()
+	if recognition_notice != null: recognition_notice.hide()
+	if recognition_button != null: recognition_button.hide()
+	# Remove the wide case/contact content before requesting a narrower panel.
+	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
+	popup_body.update_minimum_size(); popup.get_child(0).update_minimum_size(); popup.update_minimum_size()
 	system_map.locked = true
 	planet_map.hide()
 	popup_kind = kind
@@ -1800,7 +1829,7 @@ func _show_popup(kind: String) -> void:
 	if kind == "contact" and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
-	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
+	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
@@ -2355,7 +2384,6 @@ func _launch_journey(id: String) -> void:
 
 func _commerce_action(action: String, item: String = "") -> void:
 	if paused or campaign == null: return
-	var previous_badges: Dictionary = campaign.commerce.state.badges.duplicate()
 	var error: String = ""
 	match action:
 		"buy", "sell": error = campaign.commerce.transact(campaign,selected_service,ship.position,item,trade_amount,action == "buy")
@@ -2364,9 +2392,6 @@ func _commerce_action(action: String, item: String = "") -> void:
 		"kit": error = campaign.colonies.buy_kit(campaign,selected_service,ship.position)
 		"collect": error = campaign.colonies.collect(campaign,selected_service,ship.position,item,trade_amount)
 	_toast(error if not error.is_empty() else "Cargo loaded" if action in ["export","kit","collect"] else "Upgrade installed" if action == "upgrade" else "Trade complete")
-	for id: String in previous_badges:
-		if campaign.commerce.state.badges[id] > previous_badges[id]:
-			_toast("%s %d earned · inspect Badges for shop unlocks" % [campaign.commerce.catalog.badges[id].name,campaign.commerce.state.badges[id]])
 	audio.play("error" if not error.is_empty() else "cargo")
 	if error.is_empty(): _save(false)
 	_show_popup("service")
@@ -2406,6 +2431,8 @@ func _upgrade_requirements(id: String) -> String:
 	for badge: String in campaign.commerce.catalog.upgrades[id].requires:
 		alternatives.append("%s %d" % [campaign.commerce.catalog.badges[badge].name,campaign.commerce.catalog.upgrades[id].requires[badge]])
 	var prior: String = campaign.commerce.catalog.upgrades[id].get("prior", "")
+	if campaign.commerce.catalog.upgrades[id].has("rank"):
+		alternatives.append(str(campaign.Recognition.catalog.rank_names[int(campaign.commerce.catalog.upgrades[id].rank)-1])+" rank")
 	var badges: String = " or ".join(alternatives)
 	return badges if prior.is_empty() else "(%s) + %s installed" % [badges,campaign.commerce.catalog.upgrades[prior].name]
 
@@ -2425,7 +2452,9 @@ func _build_upgrade_shop() -> void:
 		kit.tooltip_text = kit_reason
 	else:
 		_panel_copy("%s capacity: %d · installation preserves your current reserves." % ["Hull" if upgrade_family == "hull" else "Energy",model.max_capacity(upgrade_family)],Instruments.GOLD)
-	for id: String in campaign.commerce.catalog.upgrades:
+	var entries: Array = campaign.commerce.catalog.upgrades.keys()
+	if upgrade_preview in entries: entries.erase(upgrade_preview); entries.push_front(upgrade_preview)
+	for id: String in entries:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
 		if upgrade.get("family","ship") != upgrade_family: continue
 		_panel_copy(upgrade.name,Instruments.PAPER)
@@ -2442,23 +2471,12 @@ func _build_upgrade_shop() -> void:
 	_button("Undock",_close_popup,popup_body)
 
 func _build_badges_panel() -> void:
-	for id: String in campaign.commerce.catalog.badges:
-		var badge: Dictionary = campaign.commerce.catalog.badges[id]
-		var tier: int = campaign.commerce.state.badges[id]
-		var progress_count: int = campaign.commerce.progress(campaign,id)
-		_panel_copy("%s  %d / 5" % [badge.name,tier],Instruments.GOLD)
-		_panel_copy(badge.description)
-		var bar := ProgressBar.new()
-		bar.max_value = badge.levels[mini(tier,4)]
-		bar.value = progress_count
-		bar.custom_minimum_size.y = 14
-		bar.show_percentage = false
-		Instruments.meter(bar,Instruments.GOLD)
-		popup_body.add_child(bar)
-		_panel_copy("All tiers earned" if tier == 5 else "%d / %d toward tier %d" % [progress_count,bar.max_value,tier+1])
-	for id: String in campaign.commerce.catalog.upgrades:
-		_panel_copy("%s · %s\n%s" % [campaign.commerce.catalog.upgrades[id].name,"INSTALLED" if id in campaign.commerce.state.upgrades else "ELIGIBLE TO BUY" if campaign.commerce.eligible(id) else "LOCKED",_upgrade_requirements(id)],Instruments.PAPER)
-	_panel_copy("Badges unlock shop access. Equipment still costs Marks.")
+	var panel := preload("res://scripts/badge_case.gd").new(); panel.campaign = campaign
+	panel.pinned.connect(func() -> void: audio.play("ui_confirm"); _refresh_ui(); _save(false))
+	panel.shop_requested.connect(func(id: String) -> void:
+		upgrade_preview = id; upgrade_family = campaign.commerce.catalog.upgrades[id].get("family","ship")
+		dock_page = "upgrades"; _show_popup("service"))
+	popup_body.add_child(panel)
 
 func _contact_select(id: String) -> void:
 	contacted_faction = id

@@ -121,6 +121,7 @@ func act(game: RefCounted, id: String, action: String, at: Vector3, point: Vecto
 			state.completed.append(key)
 			game.field.note("ecosystem:"+key,"Ecosystem T%d established on %s." % [completed,game.field.definition().name])
 	game.climate.bind(game)
+	game.commerce.update_badges(game)
 	return ""
 func tick(game: RefCounted) -> void:
 	for planet: String in state.worlds:

@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 13
+const VERSION := 14
+const Recognition = preload("res://scripts/expedition_progression.gd")
+var recognition := Recognition.new()
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 var biosphere := Biosphere.new()
 const Climate = preload("res://scripts/planet_climate.gd")
@@ -81,6 +83,7 @@ func import_legacy(path: String) -> Error:
 	fleet = Fleet.new()
 	climate = Climate.new()
 	biosphere = Biosphere.new()
+	recognition = Recognition.new()
 	colonies = Colonies.new()
 	freight = Freight.new()
 	diplomacy = Diplomacy.new()
@@ -95,7 +98,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -121,7 +124,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -132,7 +135,9 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_field := Field.new()
 	# Validate owned equipment before hull/energy; a forged capacity cannot admit an overfilled ship.
 	var candidate_commerce := Commerce.new()
-	if source.version >= 3 and candidate_commerce.restore(source.get("commerce")) != OK: return ERR_INVALID_DATA
+	if source.version >= 3 and candidate_commerce.restore(source.get("commerce"),source.version < 14) != OK: return ERR_INVALID_DATA
+	var candidate_recognition := Recognition.new()
+	if source.version >= 14 and candidate_recognition.restore(source.get("recognition"),candidate_commerce.state.badges) != OK: return ERR_INVALID_DATA
 	candidate_field.installed_upgrades = candidate_commerce.state.upgrades
 	var field_data: Dictionary = source.field.duplicate(true)
 	if field_data.has("marks"): return ERR_INVALID_DATA
@@ -190,6 +195,7 @@ func restore_snapshot(source: Variant) -> Error:
 	sector_clock = source.sector_clock
 	worlds = saved_worlds.duplicate(true)
 	commerce = candidate_commerce
+	recognition = candidate_recognition
 	combat = candidate_combat
 	fleet = candidate_fleet
 	climate = candidate_climate

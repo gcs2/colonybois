@@ -118,7 +118,7 @@ func run() -> void:
 	scene._show_popup("cargo"); await process_frame
 	check(scene.popup_body.get_combined_minimum_size().x < 555,"Inventory remains within its supported panel width")
 	scene._show_popup("badges"); await process_frame
-	check(scene.popup_body.find_children("*","ProgressBar",true,false).size() == 3,"Badge case presents exploration, trade and defender progress")
+	check(scene.popup_body.find_children("*","ProgressBar",true,false).size() == scene.campaign.commerce.catalog.badges.size()+1,"Badge case presents every implemented family plus master-rank progress")
 	scene.dock_page = "upgrades"; scene._show_popup("service"); await process_frame
 	check(scene.popup_body.get_combined_minimum_size().x < 555,"Shop requirements wrap within the panel")
 	scene.free()
