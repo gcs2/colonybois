@@ -57,3 +57,7 @@ Our original adaptation should preserve expressive alien performance and context
 Run `tools/ReferenceCoverageReport.py` after evidence updates. It computes category totals and validates that positive verification flags have the required evidence fields. Frame resolution/legibility records remain independent in the source evidence register and asset index. No percentage is a fun score or game completion percentage.
 
 Next evidence priorities: recover adequately sized shop/contact captures; inspect exact purchase/use and failure sequences; record zoom/navigation continuity; audit first launch, alien reactions and badge/core cinematic sequences; obtain an honest listening path. Complete the reference/our-capture/target synthesis before expanding independent mocks.
+
+## Latest launch sampling checkpoint
+
+17/61 workflows visually sampled (27.9%); 3/61 readable (4.9%); no full interaction, presentation or listening passes. Three new sampled families come from a 352×262 launch recording: roughly R16 cinematic content, R24 full-height upper bound. They do not pass readability. See SPORE_LAUNCH_SEQUENCE_EVIDENCE.md. More screenshots do not establish timing, voice or comedy.

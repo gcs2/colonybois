@@ -4,7 +4,7 @@ Field Instruments is the approved direction, not blanket approval of new images.
 
 ## Delivery status
 
-- Generated candidates: `artifacts/field-instruments-review/01-surface-v1.png`, `03-orbit-v1.png`, `04-system-v1.png`, `05-galaxy-local-v1.png` and `23-motion-storyboard-v1.png`.
+- Generated candidates: `artifacts/field-instruments-review/01-surface-v1.png`, `03-orbit-v1.png`, `04-system-v1.png`, `05-galaxy-local-v1.png` `23-motion-storyboard-v1.png` and `10-contact-v2.png` (window/choices endorsed; face and dialogue rejected). `10-contact-v3-face.png` is an unapproved face experiment with the same obsolete dialogue.
 - Surface candidate needs correction: the local surface chart erroneously includes a parsec readout; remove it and any copied galaxy symbols. Preserve distinct surface distances and functional item counts. The heading belongs inside the expanded category tray, never as a floating selected-tool caption.
 - Motion candidate is a storyboard, not an implemented animation. Keep the controls compact in full-screen composition; don't let portrait-board proportions turn into a thick cockpit. Gauge startup must never imply passive energy regeneration or hide actual resource values.
 - Orbit candidate is a higher-detail art target, not a two-day guarantee. System candidate introduces a redundant lower-left system chart and an overly busy asteroid foreground; reduce this without removing world richness. Galaxy candidate has a significant geometric error: the selected 2.4 pc destination lies outside its pictured 3 pc ellipse. Do not use it as a geometric implementation specification. The latest icon-area increase is not represented in these candidates.

@@ -84,7 +84,7 @@
       "key": "scale_transition",
       "category": "navigation",
       "owner": "I01",
-      "title": "Surface ↔ system ↔ galaxy transitions",
+      "title": "Surface \u2194 system \u2194 galaxy transitions",
       "evidence_times": [
         7200,
         7210
@@ -464,7 +464,7 @@
       "key": "world_decoration",
       "category": "living_worlds",
       "owner": "L01",
-      "title": "Color/sculpt/decorative tools — reference only, excluded from delivery",
+      "title": "Color/sculpt/decorative tools \u2014 reference only, excluded from delivery",
       "evidence_times": [],
       "visual_sampled": false,
       "readable_evidence": false,
@@ -1140,7 +1140,7 @@
       "owner": "V01",
       "title": "Space-stage opening/first launch: staging, dialogue, humor and sound",
       "evidence_times": [],
-      "visual_sampled": false,
+      "visual_sampled": true,
       "readable_evidence": false,
       "interaction_verified": false,
       "presentation_reviewed": false,
@@ -1150,7 +1150,23 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Paused low-resolution samples only. Native352x262; cinematic image about176px high. No readable, interaction, motion or listening pass. Creator connection is reference-only, not implementation scope.",
+      "other_visual_evidence": [
+        {
+          "source": "https://www.youtube.com/watch?v=tPv31DJRST8",
+          "times": [
+            0,
+            5,
+            40,
+            45,
+            50,
+            55,
+            60,
+            65
+          ],
+          "record": "docs/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
+        }
+      ]
     },
     {
       "id": "RF055",
@@ -1159,7 +1175,7 @@
       "owner": "V01",
       "title": "First-use guidance, tutorial timing, voice and skip behavior",
       "evidence_times": [],
-      "visual_sampled": false,
+      "visual_sampled": true,
       "readable_evidence": false,
       "interaction_verified": false,
       "presentation_reviewed": false,
@@ -1169,7 +1185,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Paused low-resolution samples only. Native352x262; cinematic image about176px high. No readable, interaction, motion or listening pass. Creator connection is reference-only, not implementation scope.",
+      "other_visual_evidence": [
+        {
+          "source": "https://www.youtube.com/watch?v=tPv31DJRST8",
+          "times": [
+            70,
+            75,
+            80
+          ],
+          "record": "docs/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
+        }
+      ]
     },
     {
       "id": "RF056",
@@ -1276,7 +1303,7 @@
       "owner": "V01",
       "title": "Ship/building editor entry/exit and gameplay connection; delivery scope deferred",
       "evidence_times": [],
-      "visual_sampled": false,
+      "visual_sampled": true,
       "readable_evidence": false,
       "interaction_verified": false,
       "presentation_reviewed": false,
@@ -1286,7 +1313,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Paused low-resolution samples only. Native352x262; cinematic image about176px high. No readable, interaction, motion or listening pass. Creator connection is reference-only, not implementation scope.",
+      "other_visual_evidence": [
+        {
+          "source": "https://www.youtube.com/watch?v=tPv31DJRST8",
+          "times": [
+            15,
+            20,
+            25
+          ],
+          "record": "docs/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
+        }
+      ]
     }
   ]
 }

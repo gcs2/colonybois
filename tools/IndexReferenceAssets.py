@@ -38,7 +38,7 @@ for view in dataset['rows']:
             'resolution': dimensions,
             'approval': 'not implied by inclusion',
             'capture_build_commit': None,
-            'source_url': (dataset['video'] + '&t=' + str(view['sourceTime']) + 's') if kind == 'reference' and view.get('sourceTime') and '/video/' in path.as_posix() else None,
+            'source_url': (view.get('sourceVideo', dataset['video']) + '&t=' + str(view['sourceTime']) + 's') if kind == 'reference' and view.get('sourceTime') is not None and (view.get('sourceVideo') or '/video/' in path.as_posix()) else None,
             'context': view.get('sourceLabel') if kind == 'reference' else None,
         })
 result = {

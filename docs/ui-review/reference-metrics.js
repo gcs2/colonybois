@@ -5,8 +5,8 @@ const REFERENCE_METRICS = {
   "overall": {
     "denominator": 61,
     "visual_sampled": {
-      "count": 14,
-      "percent": 23.0
+      "count": 17,
+      "percent": 27.9
     },
     "readable_evidence": {
       "count": 3,
@@ -266,8 +266,8 @@ const REFERENCE_METRICS = {
       "owner": "V01",
       "denominator": 8,
       "visual_sampled": {
-        "count": 1,
-        "percent": 12.5
+        "count": 4,
+        "percent": 50.0
       },
       "readable_evidence": {
         "count": 0,

@@ -1,0 +1,26 @@
+[
+  {
+    "path": "artifacts/field-instruments-review/10-contact-v1.png",
+    "sha256": "2e4a3fcd59c72a1461a65726f5b380b12acd0c2442a4b87f269d0e3f13f7cd78",
+    "status": "candidate or rejected; see CONTACT_MOCK_PROMPTS.md",
+    "backup": "ignored local bitmap; hash is not an off-device image backup"
+  },
+  {
+    "path": "artifacts/field-instruments-review/10-contact-v2.png",
+    "sha256": "70f71c461c4de75632bb710e68957ab23cd7edfd48ae4015b261e9039c940b20",
+    "status": "candidate or rejected; see CONTACT_MOCK_PROMPTS.md",
+    "backup": "ignored local bitmap; hash is not an off-device image backup"
+  },
+  {
+    "path": "artifacts/field-instruments-review/10-contact-v3-face.png",
+    "sha256": "160940ad4bf089eb5b53141fe0b9f8d163f8399fdef8f4a34a58b5743843db3b",
+    "status": "candidate or rejected; see CONTACT_MOCK_PROMPTS.md",
+    "backup": "ignored local bitmap; hash is not an off-device image backup"
+  },
+  {
+    "path": "artifacts/field-instruments-review/10-contact-alien-exploration.png",
+    "sha256": "54ba781d292430e3080ed87e32e7362e802e7e6d39721a8159844b8125dfca5a",
+    "status": "candidate or rejected; see CONTACT_MOCK_PROMPTS.md",
+    "backup": "ignored local bitmap; hash is not an off-device image backup"
+  }
+]

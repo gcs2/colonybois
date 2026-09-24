@@ -1,6 +1,6 @@
 # Production task board
 
-**Research quality / experiential coverage (24 September):** [REFERENCE_COVERAGE_METRICS.md](REFERENCE_COVERAGE_METRICS.md), [experience report](parity/EXPERIENCE_REPORT.md), and [paired atlas](ui-review/references.html) now expose visual sampling, readable evidence, interaction verification and presentation review independently. Initial 14/61 workflows sampled is not game completion or exhaustive understanding. Source resolution uses effective gameplay pixels and human legibility, not full browser size. Cutscenes, character performance, humor, sound/music and return-of-control timing are required evidence. Listening remains unreviewed; character customization remains out of this pass. User wants ~40% greater icon artwork area within compact instruments.
+**Research quality / experiential coverage (24 September):** [REFERENCE_COVERAGE_METRICS.md](REFERENCE_COVERAGE_METRICS.md), [experience report](parity/EXPERIENCE_REPORT.md), and [paired atlas](ui-review/references.html) now expose visual sampling, readable evidence, interaction verification and presentation review independently. Current 17/61 workflows sampled (27.9%) is not game completion or exhaustive understanding. Source resolution uses effective gameplay pixels and human legibility, not full browser size. Cutscenes, character performance, humor, sound/music and return-of-control timing are required evidence. Listening remains unreviewed; character customization remains out of this pass. User wants ~40% greater icon artwork area within compact instruments.
 
 **Active goal and every-view review:** see [PRODUCTION_GOAL.md](PRODUCTION_GOAL.md) and [VIEW_MOCK_COVERAGE.md](VIEW_MOCK_COVERAGE.md). Field Instruments is selected; earlier “unselected” wording below is historical. Galaxy navigation is backed up as `aa0ff3bac4974261c3862ba84a749135652b4953` with matching remote hash; final 40/67/41 relevant checks, separate build `20260924-003147` and pack smoke passed. Read [GALAXY_NAVIGATION.md](GALAXY_NAVIGATION.md) for limitations. Do not count prompts as generated mocks, or candidates as approved/implemented UI. Next visual work covers every listed view/substate and extended Spore video evidence before implementation widens.
 
@@ -18,7 +18,11 @@ Status meanings: **In progress** = current work; **Next** = ordered near-term qu
 
 **General content requirement:** [CONTENT_CORPUS.md](CONTENT_CORPUS.md) tracks the user's instruction for broad, deep, distinct content in every major system. This is unrelated to the screenshot. A small framework and visual polish alone do not fulfill the goal.
 
+**Contact review:** user endorses window and interaction choices; rejects face and greeting joke. Preserve layout, use direct dialogue, no further authored jokes. [Performance specification](CONTACT_PERFORMANCE_SPEC.md) and [launch evidence](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) separate proposed acting from verified motion/audio. Face v3 remains unapproved; existing mock text is obsolete. Actual runtime greeting corrected in source; latest exported build unchanged.
+
 ## Immediate queue
+
+Character pipeline: [CHARACTER_ARCHETYPES.md](CHARACTER_ARCHETYPES.md) separates researched Spore philosophies from our individual personalities. User endorses first/third alien-sheet directions, finds middle too creepy; “harmonious” was visual feedback, not a faction assignment. Personality, motivation and acting spec precede further polished art. Large family merchant is the first proposed character; no new cast implementation or faction reclassification yet.
 
 | ID | Task | Status and current evidence | Gate |
 | --- | --- | --- | --- |

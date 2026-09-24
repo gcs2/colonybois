@@ -9,10 +9,10 @@ const REFERENCE_SET = {
     {
       "id": "surface",
       "title": "Surface exploration",
-      "coverage": "N01–N03",
+      "coverage": "N01\u2013N03",
       "sourceTime": 1800,
       "sourceImage": "../../artifacts/references/spore/manual-26.png",
-      "sourceLabel": "Manual pp. 46–47; video 30:00 inspected",
+      "sourceLabel": "Manual pp. 46\u201347; video 30:00 inspected",
       "current": "scout_surface_95.png",
       "target": "01-surface-v1.png",
       "observation": "Alien vegetation and creatures form a landscape. Ship tools stay anchored; local map and environmental information belong to the surface.",
@@ -31,7 +31,7 @@ const REFERENCE_SET = {
       "gap": "Thin wire warnings and separated target text lose contrast. Combat target mock and motion review pending.",
       "gate": "Telegraph, incoming direction, selected target and impact remain distinguishable over sand, snow and vegetation.",
       "sourceImage": "../../artifacts/references/spore/video/singularmix-combat-01h00m20s-full.png",
-      "sourceLabel": "Saved browser frame · gameplay ~486px high · legibility L1/3 · exact native resolution at capture unlogged; R unknown (upper bound 45/100). Layout reference only."
+      "sourceLabel": "Saved browser frame \u00b7 gameplay ~486px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 45/100). Layout reference only."
     },
     {
       "id": "orbit",
@@ -59,7 +59,7 @@ const REFERENCE_SET = {
       "gap": "Target candidate is visually rich but adds redundant lower-left system chart and busy foreground asteroids. Reduce those; larger tool art is still pending.",
       "gate": "Planet selection and travel are immediately understood at 1080p without a separate Jump form.",
       "sourceImage": "../../artifacts/references/spore/video/singularmix-system-02h00m09s-full.png",
-      "sourceLabel": "Saved browser frame · gameplay ~467px high · legibility L1/3 · exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "sourceLabel": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
     },
     {
       "id": "galaxy",
@@ -73,7 +73,7 @@ const REFERENCE_SET = {
       "gap": "Current map has excessive void and weak fog vocabulary. Mock geometry is WRONG: 2.4 pc lies outside a 3 pc ring; only its material/density mood is a candidate.",
       "gate": "Current, visited, detected and unknown states are legible; reach and validator agree at every camera angle.",
       "sourceImage": "../../artifacts/references/spore/video/singularmix-galaxy-01h59m59s-full.png",
-      "sourceLabel": "Saved browser frame · gameplay ~467px high · legibility L1/3 · exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "sourceLabel": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
     },
     {
       "id": "galaxy-overview",
@@ -91,7 +91,7 @@ const REFERENCE_SET = {
       "title": "Planet atlas and layers",
       "coverage": "N08",
       "sourceImage": "../../artifacts/references/spore/manual-27.png",
-      "sourceLabel": "Manual pp. 48–49; no matching atlas frame yet",
+      "sourceLabel": "Manual pp. 48\u201349; no matching atlas frame yet",
       "current": "navigation-fullscreen-planet-1920.png",
       "observation": "Manual supports planet/ecosystem information, but our separate full-screen atlas is a project addition.",
       "synthesis": "Full-screen globe with geographic layers, attached surveyed markers and explicit unknown data; preserve shared surface geography.",
@@ -105,11 +105,12 @@ const REFERENCE_SET = {
       "sourceTime": 7212,
       "current": "contact_consortium.png",
       "observation": "A substantial alien portrait, short greeting and grouped service/diplomatic actions define the contact screen.",
-      "synthesis": "Original expressive creature in a compact opening instrument; expand into a purposeful conversation layout with identity, mood and immediate choices.",
-      "gap": "Current layout is a large generic text inspector. Contact, agreements, fleet and conflict mocks remain pending.",
-      "gate": "Character, reason for contact and 2–4 immediate meaningful choices are understandable without scrolling.",
+      "synthesis": "A persistent original representative in a compact performance window, beside a short greeting and pictorial choices. Preserve the same actor when commerce drawers replace the choices.",
+      "gap": "User endorses window/interaction choices, rejects face and greeting joke. Pictured dialogue is obsolete; source now uses a direct introduction. Face-only v3 remains an unapproved experiment. Remote services still require dock access; relation pips require real data; performance/audio unverified.",
+      "gate": "Character, reason for contact and 2\u20134 immediate meaningful choices are understandable without scrolling.",
       "sourceImage": "../../artifacts/references/spore/video/singularmix-contact-02h00m12s-v2-full.png",
-      "sourceLabel": "Verified 1080p decoder · captured gameplay ~1440×810 · R75/100 · L3/3 for service labels, recharge quote and treasury · full HUD. Audio unreviewed."
+      "sourceLabel": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for service labels, recharge quote and treasury \u00b7 full HUD. Audio unreviewed.",
+      "target": "10-contact-v2.png"
     },
     {
       "id": "trade",
@@ -122,7 +123,7 @@ const REFERENCE_SET = {
       "gap": "Current commerce is text-heavy. Market target and empty/locked/affordability states remain pending.",
       "gate": "Understand what changes, total cost and why a transaction fails before confirming it.",
       "sourceImage": "../../artifacts/references/spore/video/singularmix-shop-02h00m23s-v2-full.png",
-      "sourceLabel": "Verified 1080p decoder · captured gameplay ~1440×810 · R75/100 · L3/3 for displayed cargo quantities/prices · full HUD. Exact purchases/lock causes not verified."
+      "sourceLabel": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for displayed cargo quantities/prices \u00b7 full HUD. Exact purchases/lock causes not verified."
     },
     {
       "id": "inventory",
@@ -130,7 +131,7 @@ const REFERENCE_SET = {
       "coverage": "P01",
       "sourceTime": 7223,
       "sourceImage": "../../artifacts/references/spore/video/singularmix-shop-02h00m23s-v2-full.png",
-      "sourceLabel": "Verified 1080p decoder · captured gameplay ~1440×810 · R75/100 · L3/3 for displayed cargo quantities/prices · full HUD. Exact purchases/lock causes not verified.",
+      "sourceLabel": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for displayed cargo quantities/prices \u00b7 full HUD. Exact purchases/lock causes not verified.",
       "current": "commerce_cargo.png",
       "observation": "Cargo stays visually distinct from the shop stock and selected commodity controls.",
       "synthesis": "Pictorial cargo/specimens/supplies, item-local counts and selected-item actions. Energy pack use belongs here; no passive recharge.",
@@ -140,7 +141,7 @@ const REFERENCE_SET = {
     {
       "id": "systems",
       "title": "Equipment and dock upgrades",
-      "coverage": "P02 / D02–D05",
+      "coverage": "P02 / D02\u2013D05",
       "sourceTime": 7215,
       "sourceImage": "../../artifacts/references/spore/manual-28.png",
       "sourceLabel": "Manual + inspected equipment grid",
@@ -155,7 +156,7 @@ const REFERENCE_SET = {
       "title": "Badges and recognition",
       "coverage": "R01",
       "sourceImage": "../../artifacts/references/spore/manual-28.png",
-      "sourceLabel": "Manual pp. 50–51; extended reward footage pending",
+      "sourceLabel": "Manual pp. 50\u201351; extended reward footage pending",
       "current": "progression_case_1080.png",
       "observation": "Manual describes progression and badge rewards; the newly inspected extended samples do not yet cover the reward sequence.",
       "synthesis": "Distinct large medallions, clear tier/progress, earned feedback and pictured newly eligible shop technology. Preserve Explorer feedback.",
@@ -198,7 +199,7 @@ const REFERENCE_SET = {
     {
       "id": "encounters",
       "title": "Signals, defense and terms",
-      "coverage": "E01–E03",
+      "coverage": "E01\u2013E03",
       "current": "territory-terms-1920.png",
       "observation": "Combat and communications are sampled; treaty/war/surrender and full signal sequences remain source gaps.",
       "synthesis": "Use character/action-focused decision panels with visible risk, commitment and persistent outcome.",
@@ -210,7 +211,7 @@ const REFERENCE_SET = {
       "title": "Retained ecosystem / climate",
       "coverage": "B01 / D06",
       "sourceImage": "../../artifacts/references/spore/manual-27.png",
-      "sourceLabel": "Manual pp. 48–49",
+      "sourceLabel": "Manual pp. 48\u201349",
       "current": "biosphere_ecosystem_1080.png",
       "observation": "Spore presents environment and life slots alongside the planet. Our excluded modification tools remain excluded.",
       "synthesis": "Keep existing inspection concise and optional; surface resources remain useful without returning to an ecology-led tutorial.",
@@ -220,7 +221,7 @@ const REFERENCE_SET = {
     {
       "id": "city",
       "title": "Retained city / ledger / services",
-      "coverage": "U01–U02",
+      "coverage": "U01\u2013U02",
       "sourceTime": 10800,
       "current": "09-city-ledger.png",
       "observation": "Spore's city editor illustrates a separate construction mode; SimCity-inspired ledger/services are our own additions.",
@@ -231,7 +232,7 @@ const REFERENCE_SET = {
     {
       "id": "application",
       "title": "Title, Escape, settings and saves",
-      "coverage": "A01–A04",
+      "coverage": "A01\u2013A04",
       "current": "navigation-fullscreen-menu-1920.png",
       "observation": "Extended pause/save/settings reference footage is still pending.",
       "synthesis": "Escape-only utilities, clear scenario/save identity, left-handed input support and reduced-motion setting.",
@@ -241,12 +242,25 @@ const REFERENCE_SET = {
     {
       "id": "motion",
       "title": "Boarding and shared interaction",
-      "coverage": "X01–X02",
+      "coverage": "X01\u2013X02",
       "target": "23-motion-storyboard-v1.png",
       "observation": "Physical assembly is our original selected direction; it is not a measured Spore or theme-park animation.",
       "synthesis": "Small instrument housings settle, catches engage, gauges wake, trays unfold and communicator shutters reveal a face.",
       "gap": "Storyboard only. Timings, sound, interruption, reduced motion and focus behavior are unimplemented.",
       "gate": "Immediate input, skippable boarding, fast reversible panels and no fake hull/energy gain during a gauge animation."
+    },
+    {
+      "id": "launch",
+      "title": "First launch and cinematic handoff",
+      "coverage": "RF054\u2013RF055 / X02",
+      "sourceVideo": "https://www.youtube.com/watch?v=tPv31DJRST8",
+      "sourceTime": 55,
+      "sourceImage": "../../artifacts/references/spore/launch/launch-055.png",
+      "sourceLabel": "PoketamaVideos \u00b7 native352\u00d7262 \u00b7 cinematic content about176px high \u00b7 approximateR16/100 \u00b7 L1 staging only \u00b7 sampled stills, no listening or continuous motion review.",
+      "observation": "City and raised-arm inhabitants precede ship selection; later samples show smoke, ship reveal against the sky, text confirmation, tutorial pointers and retained flight HUD.",
+      "synthesis": "Establish home, ship and possibility in an original skippable launch; then return to recognizable flight framing. Do not require a city tutorial or reproduce Spore dialogue.",
+      "gap": "First-launch actual/target sequence pending. Low-resolution source cannot establish exact timing, comic delivery, input causality or skip behavior. Need stronger continuous evidence.",
+      "gate": "An uncut staged scene with actual input/skip and immediate return to play; visual and listening review plus matching real campaign state."
     }
   ]
 };

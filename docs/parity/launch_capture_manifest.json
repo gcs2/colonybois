@@ -1,0 +1,465 @@
+{
+  "source": "https://www.youtube.com/watch?v=tPv31DJRST8",
+  "creator": "PoketamaVideos",
+  "title": "Spore - Beginning of Space",
+  "method": "Paused UI seeks and full browser screenshots, not a continuous motion or listening review. Source edit/speed and game version unverified.",
+  "frames": [
+    {
+      "tag": "launch-000",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 604,
+        "w": 811,
+        "x": 23.5,
+        "y": 68
+      },
+      "time": 0,
+      "file": "artifacts/references/spore/launch/launch-000.png",
+      "sha256": "2282100496196678384a72936f04fbc738170a64b4c91308a4104809f49a8e29",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-005",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 604,
+        "w": 811,
+        "x": 23.5,
+        "y": 68
+      },
+      "time": 5,
+      "file": "artifacts/references/spore/launch/launch-005.png",
+      "sha256": "abff115260ecf0f554099c0e393f9063a8a764b13eb32c85369fe37203c48948",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-010",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 604,
+        "w": 811,
+        "x": 23.5,
+        "y": -185
+      },
+      "time": 10,
+      "file": "artifacts/references/spore/launch/launch-010.png",
+      "sha256": "af35d6fcc2f5d0e8245846e8e023811e7692e890febad67a0a9343c51806a828",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": false,
+      "rejection_reason": "Partly clipped by browser scroll"
+    },
+    {
+      "tag": "launch-015",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 15,
+      "file": "artifacts/references/spore/launch/launch-015.png",
+      "sha256": "14cdfd42de38c76902ada02c2cb14bd7a6be87c7b0212e54554f94bcb7965a03",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-020",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 20,
+      "file": "artifacts/references/spore/launch/launch-020.png",
+      "sha256": "4588a9125840afadcb38702937d49b67635838be475e86e472ac62eb02c4b59f",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-025",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 25,
+      "file": "artifacts/references/spore/launch/launch-025.png",
+      "sha256": "bbc65ecb2353453b0e14b0b0ff6395afe0978a8ad5080a83d1d4164f9a10a974",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-030",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 30,
+      "file": "artifacts/references/spore/launch/launch-030.png",
+      "sha256": "c3c4432c383b72bb23d3a60b7a0fd5f207c4bbd835bd34a6b162fea719fe58dd",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-035",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 35,
+      "file": "artifacts/references/spore/launch/launch-035.png",
+      "sha256": "000d5c56e7faa206fb0667219f112b905830aed8162e3f2176a8224c7cb52c88",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": false,
+      "rejection_reason": "Black transition frame; no scene detail"
+    },
+    {
+      "tag": "launch-040",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 40,
+      "file": "artifacts/references/spore/launch/launch-040.png",
+      "sha256": "ae9ba8ee2719868e8b3d4e95184fbe316d7e6d968482c343e174bda3952467c0",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-045",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 45,
+      "file": "artifacts/references/spore/launch/launch-045.png",
+      "sha256": "06c2298970ac1634b962f4f216c18323cc5c3b350075c00644b7f7af0fec3c3b",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-050",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 50,
+      "file": "artifacts/references/spore/launch/launch-050.png",
+      "sha256": "620f58a741a0316037c292d414e3a867af6ff94f0ba4e98f8c557a4d0bfc6212",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-055",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 55,
+      "file": "artifacts/references/spore/launch/launch-055.png",
+      "sha256": "481680a4f62fddb6ebcbb95111c2e7de875f8863a8b5d4277a99c4553cfb63c7",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-060",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 60,
+      "file": "artifacts/references/spore/launch/launch-060.png",
+      "sha256": "41e4f8200d7163a7b5d0bf754ff2c79e9cce9695ef9caba4294aa9daeb5dbb6a",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-065",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 65,
+      "file": "artifacts/references/spore/launch/launch-065.png",
+      "sha256": "93061088d574f2bbcf8590509a9beb5d0c19761f585e36d7f91319c1f6129fcc",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-070",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 70,
+      "file": "artifacts/references/spore/launch/launch-070.png",
+      "sha256": "c60c9979c7d39fb99141669a7e657d1f67f1dd0ce7d2ebbf53bf19f18fca7be4",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-075",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 75,
+      "file": "artifacts/references/spore/launch/launch-075.png",
+      "sha256": "c31a9239e7b09e3a2f5b6fe567caf9ea0bb91fde84acd647116fd1c3205e1a51",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-080",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 80,
+      "file": "artifacts/references/spore/launch/launch-080.png",
+      "sha256": "2ec10492b387826b42dc773c90b68902c9ab5c78de5c419b116584aa6429099e",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-085",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 85,
+      "file": "artifacts/references/spore/launch/launch-085.png",
+      "sha256": "c54e16c5b19ae249f246ccb29309e4b08098254280759c17d16d6f288989b235",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    },
+    {
+      "tag": "launch-090",
+      "muted": true,
+      "native": [
+        352,
+        262
+      ],
+      "paused": true,
+      "rect": {
+        "h": 1440,
+        "w": 1935,
+        "x": 313,
+        "y": 0
+      },
+      "time": 90,
+      "file": "artifacts/references/spore/launch/launch-090.png",
+      "sha256": "90b8c7e939146cc9be932e6bcea7553781eda9cd38e9fb5b1c8a3eef321d6615",
+      "png_dimensions": [
+        65536,
+        4292542531
+      ],
+      "usable_staging": true,
+      "rejection_reason": null
+    }
+  ],
+  "quality_notice": "Native352x262. Cinematic letterbox reduces effective content to about176px high (approxR16); full-height gameplay at mostR24. L1-L2 only. No motion/audio pass."
+}

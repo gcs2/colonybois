@@ -277,6 +277,21 @@
       "context": null
     },
     {
+      "view": "contact",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/10-contact-v2.png",
+      "bytes": 1951027,
+      "sha256": "70f71c461c4de75632bb710e68957ab23cd7edfd48ae4015b261e9039c940b20",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
       "view": "trade",
       "kind": "reference",
       "path": "artifacts/references/spore/video/singularmix-shop-02h00m23s-v2-full.png",
@@ -539,6 +554,18 @@
       "capture_build_commit": null,
       "source_url": null,
       "context": null
+    },
+    {
+      "view": "launch",
+      "kind": "reference",
+      "path": "artifacts/references/spore/launch/launch-055.png",
+      "bytes": 77508,
+      "sha256": "481680a4f62fddb6ebcbb95111c2e7de875f8863a8b5d4277a99c4553cfb63c7",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=tPv31DJRST8&t=55s",
+      "context": "PoketamaVideos \u00b7 native352\u00d7262 \u00b7 cinematic content about176px high \u00b7 approximateR16/100 \u00b7 L1 staging only \u00b7 sampled stills, no listening or continuous motion review."
     }
   ],
   "missing_files": []

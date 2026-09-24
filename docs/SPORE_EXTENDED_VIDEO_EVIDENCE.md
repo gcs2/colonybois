@@ -84,3 +84,7 @@ Each PNG has a same-stem `.json` sidecar storing immediate paused time, native d
 The contact frame makes the greeting, Trade/Repair/Recharge/Missions/Diplomacy choices and the recharge price **450** readable. The treasury reads **12,811**. The shop frame makes cargo counts **8, 33, 13, 5** and displayed per-item prices **11,247; 349; 8,098; 975** readable, along with several equipment prices and inventory counters. Some very small or low-contrast details still require contextual inspection; a score of 3 does not certify every pixel or tooltip. These are observed values from this recording, not universal balance rules and not our Marks economy.
 
 Use the v2 contact/shop images in the paired board. Replacing those two v1 images raises the five-family set's mean legibility to **1.8/3** (galaxy 1, system 1, contact 3, shop 3, combat 1). The two improved frames alone score **3/3**. This improves visual evidence; it does not add new workflow coverage, establish transaction click causality, or provide any audio evidence. Galaxy/system/combat still need higher-detail references before fine HUD claims. Cutscenes, personality over a complete encounter and funny audio remain unassessed.
+
+## Separate launch source
+
+[SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.
