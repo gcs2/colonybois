@@ -2592,36 +2592,28 @@ func _build_upgrade_shop() -> void:
 		var tab: Button = _button({"ship":"Equipment","hull":"Hull","energy":"Reactor","support":"Support"}[family],func() -> void: upgrade_family = family; _show_popup("service"),families)
 		_shop_tab(tab,family == upgrade_family)
 		if not tab.disabled: tab.tooltip_text = "Compare installed equipment and available upgrades."
+	var shop := preload("res://scripts/upgrade_shop.gd").new()
+	shop.locked = paused
+	shop.selected_id = upgrade_preview
 	if upgrade_family == "ship":
-		var kit_reason: String = campaign.colonies.buy_reason(campaign,selected_service,ship.position)
-		_panel_copy("Colony landing kit · four cargo spaces",Instruments.PAPER)
-		_panel_copy("300 Marks · 100 local materials · 80 local supplies. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.")
-		var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
-		kit.disabled = paused or not kit_reason.is_empty()
-		kit.tooltip_text = kit_reason
-		if not kit_reason.is_empty(): _panel_copy(kit_reason)
-	elif upgrade_family == "support":
-		_panel_copy("Activate from the Weapons palette. Energy is spent once; cooldowns persist through travel and loading.")
-	else:
-		_panel_copy("%s capacity: %d · installation preserves your current reserves." % ["Hull" if upgrade_family == "hull" else "Energy",model.max_capacity(upgrade_family)],Instruments.GOLD)
-	var entries: Array = campaign.commerce.catalog.upgrades.keys()
-	if upgrade_preview in entries: entries.erase(upgrade_preview); entries.push_front(upgrade_preview)
-	for id: String in entries:
+		shop.offers.append({"id":"colony_kit","title":"Colony landing kit","price":300,"description":"Carries a new colony in four cargo spaces. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.","requirements":"Also costs 100 local materials and 80 local supplies.","reason":campaign.colonies.buy_reason(campaign,selected_service,ship.position),"owned":false,"action":"kit","icon":"badge_colonist"})
+	for id: String in campaign.commerce.catalog.upgrades:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
 		if upgrade.get("family","ship") != upgrade_family: continue
-		_panel_copy(upgrade.name,Instruments.PAPER)
-		_panel_copy(upgrade.description)
-		_panel_copy("Requires "+_upgrade_requirements(id),Instruments.GOLD)
-		var blocked: String = campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id)
-		var owned: bool = id in campaign.commerce.state.upgrades
-		var button: Button = _button("Installed" if owned else "Purchase · %d Marks" % upgrade.price,_commerce_action.bind("upgrade",id),popup_body)
-		button.set_meta("upgrade_id",id)
-		if Model.Support.catalog.has(id): Instruments.instrument(button,id,Color(Model.Support.catalog[id].color))
-		button.disabled = paused or not blocked.is_empty()
-		button.tooltip_text = blocked
-		if not blocked.is_empty() and not owned: _panel_copy(blocked)
-	_button("Badges",_show_popup.bind("badges"),popup_body)
-	_button("Undock",_close_popup,popup_body)
+		var symbol: String = id
+		if id.begins_with("hull_"): symbol = "defense"
+		elif id.begins_with("energy_"): symbol = "energy"
+		elif id.begins_with("drive"): symbol = "planet_map"
+		elif id == "emitter": symbol = "lance"
+		elif id == "hold": symbol = "cargo"
+		shop.offers.append({"id":id,"title":upgrade.name,"price":upgrade.price,"description":upgrade.description,"requirements":"Requires "+_upgrade_requirements(id),"reason":campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id),"owned":id in campaign.commerce.state.upgrades,"action":"upgrade","icon":symbol})
+	shop.selected.connect(func(id: String) -> void: upgrade_preview = id)
+	shop.purchase_requested.connect(_commerce_action)
+	popup_body.add_child(shop)
+	var navigation := HBoxContainer.new()
+	popup_body.add_child(navigation)
+	_button("Badges",_show_popup.bind("badges"),navigation)
+	_button("Undock",_close_popup,navigation)
 
 func _build_badges_panel() -> void:
 	var panel := preload("res://scripts/badge_case.gd").new(); panel.campaign = campaign

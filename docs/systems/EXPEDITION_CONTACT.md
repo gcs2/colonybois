@@ -1,5 +1,11 @@
 # Personal contact and persistent diplomatic consequences
 
+## Compact equipment catalogue — 24 September 2026
+
+Build `20260924-023446` replaces expanded upgrade paragraphs with a scrollable equipment list and one selected-item detail/purchase area. Selection persists through purchase refreshes and badge links; prices, badge requirements, installed state and refusal reasons use actual commerce data. The portrait and return controls remain visible. This does not add new content or reopen character modeling.
+
+Verification: contact presentation 70, commerce 49 and ship support 61 checks pass, including browsing without campaign mutation, stale-funds refusal, real upgrade installation/payment and retained selection. Updated 1080p/1440p colony-kit captures received independent static critique with no blocking clipping or legibility findings. Unselected entries still require selection or hover to compare price/availability; exhaustive visual review of every item and native input acceptance remain open. Earlier checkpoint evidence below is historical.
+
 ## Local shop continuity and concept portrait — 24 September 2026
 
 Communications now names the real local dock and distinguishes approach, in-range services and unavailable/embargoed ports. Clicking revalidates access; remote conversations do not teleport the ship or grant market rights. Providerless generated worlds safely refuse even direct recharge queries. Foreign full reactors say “Energy full,” rather than incorrectly claiming homeworld-free service because the quote was zero.

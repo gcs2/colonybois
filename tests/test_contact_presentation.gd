@@ -7,6 +7,10 @@ func check(value: bool, message: String) -> void:
 	checks += 1
 	if not value: failures += 1; printerr("FAIL: "+message)
 func _initialize() -> void: call_deferred("run")
+func catalogue(scene: Node) -> Node:
+	for child: Node in scene.popup_body.find_children("*","HBoxContainer",true,false):
+		if child.get_script() == preload("res://scripts/upgrade_shop.gd"): return child
+	return null
 func run() -> void:
 	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
 	scene.campaign = Session.new()
@@ -86,6 +90,32 @@ func run() -> void:
 			var labels: Array = []
 			for button: Node in scene.popup_body.find_children("*","Button",true,false): labels.append(button.text)
 			check("Energy full" in labels and not labels.any(func(label: String) -> bool: return "HOMEWORLD" in label),"Full energy at a foreign dock is not mislabeled free homeworld service")
+	scene.dock_page = "upgrades"
+	before = scene.campaign.snapshot()
+	for family: String in ["ship","hull","energy","support"]:
+		scene.upgrade_family = family; scene._show_popup("service")
+		var browser: Node = catalogue(scene)
+		check(browser != null and not browser.entries.is_empty(),"Catalogue exposes equipment family: "+family)
+		for id: String in browser.entries:
+			browser.entries[id].pressed.emit()
+			check(browser.purchase_button.get_meta("purchase_upgrade_id") == id and scene.upgrade_preview == id,"Selecting equipment updates its purchase target: "+id)
+	check(scene.campaign.snapshot() == before,"Browsing all equipment leaves the campaign untouched")
+	scene.upgrade_family = "ship"; scene.upgrade_preview = "hold"
+	scene.campaign.commerce.state.badges.merchant = 1
+	scene.campaign.field.marks = 1000
+	scene._show_popup("service")
+	var browser: Node = catalogue(scene)
+	check(browser.selected_id == "hold" and not browser.purchase_button.disabled,"Eligible equipment opens selected and purchasable")
+	scene.campaign.field.marks = 0
+	before = scene.campaign.snapshot()
+	browser.purchase_button.pressed.emit()
+	check(scene.campaign.snapshot() == before,"Purchase revalidates funds after the displayed quote becomes stale")
+	scene.campaign.field.marks = 1000; scene._show_popup("service")
+	var price: float = scene.campaign.commerce.catalog.upgrades.hold.price
+	catalogue(scene).purchase_button.pressed.emit()
+	check(scene.campaign.commerce.capacity() == 16 and scene.campaign.field.marks == 1000-price,"Catalogue purchase installs the real upgrade and charges its price")
+	check(catalogue(scene).selected_id == "hold" and catalogue(scene).purchase_button.disabled,"Purchased equipment stays selected and cannot be bought twice")
+	scene.dock_page = "market"; scene._show_popup("service")
 	var cargo_before: int = scene.campaign.commerce.quantity("water")
 	scene.trade_amount = 1
 	scene._commerce_action("buy","water")
