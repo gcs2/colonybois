@@ -29,6 +29,8 @@ V04 bounded repair: defense-field restriction now appears in preview and commit 
 
 ## Task register
 
+V04/N07 visual checkpoint: galaxy candidatev2 removes radar and improves contextual world rows/tool materials, but independent critic rejects its HUD size and quantitative range geometry. Atlas updated with explicit candidate status and unchanged completion counts. [Coverage review](reviews/VIEW_MOCK_COVERAGE.md) owns measured gaps. Next use engine-projected navigation geometry with compact reviewed overlays; don't repeat image generation to establish mathematical range accuracy or count this as final art.
+
 Q02 package checkpoint: build20260924-050435 includes the validated defense-field preview repair. `Play.cmd` selects it; exported-pack flight startup and27 focused regression checks pass. No HUD redesign is packaged; prior builds/saves remain. Continue the reference/mock gate, not feature expansion.
 
 | ID | Task | Status and current evidence | Gate |

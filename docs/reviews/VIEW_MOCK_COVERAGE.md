@@ -67,6 +67,14 @@ Independent follow-up critic inspected denied/embargo/survey/atmosphere/defense/
 
 ## Delivery status
 
+### Galaxy visual candidate v2
+
+Built-in imagegen edit of05-galaxy-local-v1, saved locally as `artifacts/field-instruments-review/05-galaxy-local-v2.png`; exact prompt in [prompt register](FIELD_INSTRUMENTS_MOCK_PROMPTS.md). The atlas now pairs this candidate with the existing source and dated actual capture, explicitly labelled unaccepted. Actual capture is an unknown target while the candidate is charted: not matched-state evidence.
+
+Independent critic contact_shop_critic inspected source/current/v1/v2. Improvements: no radar, contextual two-world summary, physical tool portraits, destination inside reach, no Jump button. The summary occupies approximately212×194 pixels (2.6% of1672×941) and is legible. Failure: ship assembly is approximately724×150 (43%width/16%height), versus34%/13% requested. Destination lies around75% of projected radius rather than1.9/3≈63%, and ship is slightly off centre. Bright core competes with local target; dust remains photographic and closer to overview scale. Unknown selectable stars and decorative background lack clear distinction. These measurements are approximate visual estimates, not projection validation.
+
+Use only the improved contextual grouping and material vocabulary as partial references. Final ring/ship/star positions must share the engine projection; never bake this raster's geometry into gameplay. Remaining gates: compliant HUD sizing with readable controls, matched charted/unknown captures, populated categories, all-angle camera, transition motion and achievable dust assets. No family completion or user acceptance is awarded; the old candidate remains local for provenance. Generated images remain local and excluded from Git, while prompt/index/review records are backed up.
+
 Defense preview repair supersedes the mismatch observations above: the same field restriction now appears in quote and commit, with no debit on refusal. Regenerated24-image fixtures remove the obsolete audit-warning line; historical critique remains evidence of why the correction was necessary. Independent critic confirmed the corrected reason,92/100 energy, matching manifest and no unintended composition/clipping change. Production source changed only for this validated refusal repair, not a HUD redesign. See [navigation checkpoint](../systems/GALAXY_NAVIGATION.md). Full visual and native gates remain open.
 
 ### Populated surface study, 24 September
