@@ -7,8 +7,10 @@ func run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var manifest: Array=[]
 	var proposal: bool="--proposal" in OS.get_cmdline_user_args()
+	var fidelity: bool="--fidelity" in OS.get_cmdline_user_args()
 	for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 		for tag: String in ["first","repeat","agreements","trade-signed","alliance-ready","alliance-signed","withdrawn","embargo","exchange-poor","gift-spent","chart-own-territory","war"]:
+			if fidelity and tag not in ["first","agreements"]: continue
 			var game:=Session.new(); game.field.state=Field.fresh("s7p0"); game.field.bind_account(game.sector.state); game.configure_flagship()
 			game.field.change_flight_mode("orbit"); game.field.marks=300
 			game.diplomacy.contact(game,"consortium")
@@ -39,22 +41,26 @@ func run() -> void:
 			view.add_child(scene); scene.audio.muted=true; scene.save_path=OUT+"/isolated-save.json"
 			scene.ship.position=Field.service_position("orbit_tender"); scene._contact_select("consortium")
 			scene.contact_page=page; scene._show_popup("contact"); scene._update_camera(1); scene._refresh_ui()
-			if proposal:
+			if proposal or fidelity:
 				for child: Node in scene.get_children():
 					if child is CanvasLayer: child.hide()
 				view.size_2d_override=Vector2i(1920,1080)
 				var overlay:=CanvasLayer.new(); view.add_child(overlay)
-				var study:=preload("res://tests/diplomacy_study_panel.gd").new()
+				var study: Control=load("res://tests/communicator_fidelity_study.gd" if fidelity else "res://tests/diplomacy_study_panel.gd").new()
 				study.game=game; study.scene=scene; study.page=page; overlay.add_child(study)
+				if fidelity:
+					# Explicit review camera only: bring the real planet into frame, no simulated travel.
+					scene.camera.position=scene.orbit.planet.position+Vector3(20,8,44)
+					scene.camera.look_at(scene.orbit.planet.position+Vector3(24,0,0))
 			var stable: Dictionary=game.snapshot()
 			for frame: int in range(5): await process_frame
 			await RenderingServer.frame_post_draw
 			assert(game.snapshot()==stable,"Rendering advanced campaign")
-			assert(view.get_texture().get_image().save_png(OUT+"/%s-%s-%d.png" % ["proposal" if proposal else "actual",tag,resolution.y])==OK)
+			assert(view.get_texture().get_image().save_png(OUT+"/%s-%s-%d.png" % ["fidelity" if fidelity else "proposal" if proposal else "actual",tag,resolution.y])==OK)
 			var buttons: Array=[]
 			for node: Node in scene.popup_body.find_children("*","Button",true,false): buttons.append({"text":node.text,"disabled":node.disabled,"tooltip":node.tooltip_text})
 			manifest.append({"state":tag,"height":resolution.y,"page":page,"greeting":scene.contact_greeting,"relation":faction.relation,"marks":game.field.marks,"agreements":game.sector.state.agreements.duplicate(),"reasons":reasons,"buttons":buttons})
 			view.free()
-	var file:=FileAccess.open(OUT+("/proposals.json" if proposal else "/baseline.json"),FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
-	print("Diplomacy baseline:24 captures; actual command outcomes, refused-command invariants and frozen rendering verified. No native input or acting acceptance.")
+	var file:=FileAccess.open(OUT+("/fidelity.json" if fidelity else "/proposals.json" if proposal else "/baseline.json"),FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
+	print("Diplomacy review:%d captures; actual command outcomes, refused-command invariants and frozen rendering verified. No native input or acting acceptance." % manifest.size())
 	quit()

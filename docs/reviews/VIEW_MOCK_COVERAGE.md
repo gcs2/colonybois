@@ -420,3 +420,20 @@ The overlay hides the underlying HUD for a standalone menu composition. Campaign
 Independent critic reviewed all eight1080p proposals: readable without clipping, improved failure/audio feedback, but shortened controls omitted weapon targeting, salvage and orbital Descend. Those instructions are restored and first/second-row shortcuts labeled explicitly. Follow-up also gives Resume primary color, replaces vague file-check advice with continue/create-save guidance and labels muted effects preview unavailable. These remain drawn proposals, not implemented input/preview policies. Source/native/audio and full-HUD composition are still unverified.
 
 User fidelity challenge: these layouts do not meet the approved Field Instruments visual standard. Flat housings, generic typography, missing tactile construction and crude underlying world remain major gaps. Layout correctness and a critic finding no clipping are not visual success. Keep these as structural studies only; the next review must explicitly compare actual composition against the approved target, rather than using the prior structural study as the new quality bar.
+
+## Communicator fidelity reset
+
+Following the user's fidelity challenge, directly inspected `10-contact-v2.png` against the first-contact/agreement studies. The target's face and dialogue remain rejected; its physical housing, portrait staging, pictorial actions and world composition are the relevant reference. The prior studies kept colors but discarded those defining features. Independent critic confirmed that readability had been mistaken for visual progress.
+
+`tests/communicator_fidelity_study.gd` and `review_diplomacy_states.gd --fidelity` now generate four focused captures: first contact and agreements at1080p/1440p, under `artifacts/diplomacy-review/fidelity-*`. Existing approved-use Tavi portrait and existing painted action atlas are reused; no character creation. New review-only aperture, alcove, narrow layered casing, muted grain, recessed segmented gauges and mounted exit draw over the real orbital renderer. An explicit review camera composes the real planet; it is not player-navigation evidence. Campaign/refusal checks and immutable render assertions still run. No production scene, export or game behavior changed.
+
+| Target attribute | Current evidence / gap |
+|---|---|
+| Pictorial actions | Painted trade/treaty/fleet/service assets restored at useful size; substantially closer than glyphs |
+| Portrait staging | Enlarged existing portrait, clipped aperture and foreground sill; architecture and light still schematic, no acting |
+| Physical housing | Layered edges, central divider, mounted exit and gauge sockets; still too uniform and thin versus sculpted target |
+| Typography / hierarchy | Representative first, faction second, readable actions; not final typographic acceptance |
+| World context | Actual planet visible through review camera; enlarged blur/blockiness and excessive brightness expose renderer gap; ship/destination composition unresolved |
+| Motion / input | Static drawing only; no input, tooltip, assembly or acting proof |
+
+Independent critic found a material composition improvement but rejected equivalence to the target. Corrections restore the non-aggression market restriction, make Contact a backed return control, enlarge/crop portrait staging, mount Goodbye and inset the gauges. The source Spore continuity and original target are still distinct checks; no new Spore workflow evidence was gathered. Final corrections require continued visual review, and this study remains below the requested quality bar.
