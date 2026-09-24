@@ -123,14 +123,14 @@
     {
       "view": "system",
       "kind": "reference",
-      "path": "artifacts/references/spore/video/singularmix-system-02h00m09s-full.png",
-      "bytes": 38357,
-      "sha256": "649575141b79a2b2458833e0d73909bde1337c585a866e26ce4842094e14b79a",
+      "path": "artifacts/references/spore/video/navigation-system-7204-v3.png",
+      "bytes": 145641,
+      "sha256": "2f160d8feb0470ea2fe03dfef2ebbf4661d82e111c46c275ab5cfcc574c4a6b2",
       "resolution": null,
       "approval": "not implied by inclusion",
       "capture_build_commit": null,
-      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7209s",
-      "context": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7204s",
+      "context": "Paused muted full-screen capture; 2560x1440 raster, 1920x1080 decoder, effective 1080p (R100). L3 for cited labels/values. State evidence only; no input, timing or audio verification."
     },
     {
       "view": "system",
@@ -165,14 +165,14 @@
     {
       "view": "galaxy",
       "kind": "reference",
-      "path": "artifacts/references/spore/video/singularmix-galaxy-01h59m59s-full.png",
-      "bytes": 45867,
-      "sha256": "44213724a4028173961cd9c7f67596fc13cbd4d1a6385bfc3ffa4d7c5d2c8218",
+      "path": "artifacts/references/spore/video/navigation-galaxy-7199-v3.png",
+      "bytes": 182900,
+      "sha256": "5a80cf88db93cb26e454f62a1966f933d48d56c27c06d1d9638914110dd3aa7b",
       "resolution": null,
       "approval": "not implied by inclusion",
       "capture_build_commit": null,
       "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7199s",
-      "context": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "context": "Paused muted full-screen capture; 2560x1440 raster, 1920x1080 decoder, effective 1080p (R100). L3 for cited labels/values. State evidence only; no input, timing or audio verification."
     },
     {
       "view": "galaxy",

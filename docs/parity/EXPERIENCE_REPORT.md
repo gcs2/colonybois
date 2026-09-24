@@ -4,7 +4,7 @@ Generated from `experience_coverage.json`. These are evidence metrics, not game 
 
 | Category | Workflows | Visually sampled | Readable | Interaction verified | Presentation reviewed | Audio reviewed |
 |---|---:|---:|---:|---:|---:|---:|
-| Navigation and flight | 7 | 4 | 0 | 0 | 0 | 0 |
+| Navigation and flight | 7 | 4 | 2 | 0 | 0 | 0 |
 | Ship operation and personal combat | 8 | 3 | 0 | 0 | 0 | 0 |
 | Living worlds and intervention | 7 | 1 | 0 | 0 | 0 | 0 |
 | Colonies and production | 5 | 1 | 0 | 0 | 0 | 0 |

@@ -86,11 +86,14 @@
       "owner": "I01",
       "title": "Surface \u2194 system \u2194 galaxy transitions",
       "evidence_times": [
+        7199,
         7200,
+        7204,
+        7209,
         7210
       ],
       "visual_sampled": true,
-      "readable_evidence": false,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -99,7 +102,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "Galaxy and system endpoint HUD states only; surface endpoint and actual transition boundary absent. See navigation recapture in SPORE_EXTENDED_VIDEO_EVIDENCE.md. No complete action/result, restrictions, failure, motion or audio verification.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/navigation-system-7204-v3.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": [
+          "contact_shop_critic",
+          "root"
+        ],
+        "supported_claim": "Galaxy and system endpoint HUD states only; surface endpoint and actual transition boundary absent."
+      }
     },
     {
       "id": "RF003",
@@ -108,10 +122,13 @@
       "owner": "I01",
       "title": "System planets, destinations and selection",
       "evidence_times": [
+        7199,
+        7204,
+        7209,
         7210
       ],
       "visual_sampled": true,
-      "readable_evidence": false,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -120,7 +137,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "System planets, orbital paths and blue planet brackets readable; hover versus selection semantics and triggering input unverified. See navigation recapture in SPORE_EXTENDED_VIDEO_EVIDENCE.md. No complete action/result, restrictions, failure, motion or audio verification.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/navigation-system-7204-v3.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": [
+          "contact_shop_critic",
+          "root"
+        ],
+        "supported_claim": "System planets, orbital paths and blue planet brackets readable; hover versus selection semantics and triggering input unverified."
+      }
     },
     {
       "id": "RF004",

@@ -87,6 +87,22 @@ The contact frame makes the greeting, Trade/Repair/Recharge/Missions/Diplomacy c
 
 Use the v2 contact/shop images in the paired board. Replacing those two v1 images raises the five-family set's mean legibility to **1.8/3** (galaxy 1, system 1, contact 3, shop 3, combat 1). The two improved frames alone score **3/3**. This improves visual evidence; it does not add new workflow coverage, establish transaction click causality, or provide any audio evidence. Galaxy/system/combat still need higher-detail references before fine HUD claims. Cutscenes, personality over a complete encounter and funny audio remain unassessed.
 
+## Navigation recapture: readable galaxy and system states
+
+24 September 2026. Three new full-screen browser captures replace the small galaxy/system references in the comparison atlas. Playback remained paused and muted; seeking used the player's keyboard controls. Each PNG has a same-stem JSON sidecar with the observed media time, decoder dimensions and viewport. The game fills the 2560×1440 raster; the decoder is 1920×1080, so effective detail is capped at **1080 pixels**, not 1440. Resolution score **100/100** describes this source-detail cap, not game quality or understanding.
+
+| File under artifacts/references/spore/video | Source time | Directly visible evidence |
+|---|---|---|
+| navigation-galaxy-7199-v3.png | 7199.121965 s | Galaxy route/relationship marks, home marker, an expanded cargo/tool tray at bottom right, two ally portraits, treasury 12,811 and hull 4,500. No surface chart. |
+| navigation-system-7204-v3.png | See sidecar, approximately 7204.12 s | System star and orbital paths, moving ship with bright trails, destination brackets, the same lower-right cargo/tool and condition anchors. |
+| navigation-system-7209-v3.png | See sidecar, approximately 7209.12 s | System flight continues; purple category selected with a different tray, a collected-spice notification, destination name and persistent condition/treasury. |
+
+These frames are L3 for the cited numbers and labels, and useful for layout comparison. They do **not** establish what each route color means, the source input that caused travel or category selection, collection rules, energy cost, blocked travel, complete transition timing, or audio. The five-second sample interval misses the actual scale-change boundary. This is a before/after reference with an explicit motion gap, not a completed before/action/result verification. Surface entry still needs its own sequence.
+
+Design synthesis: preserve familiar ship/tool anchors across scale changes; replace scale-specific context rather than showing the surface chart everywhere. A populated tray must fit without a giant panel. Keep world-attached destination feedback legible against trails and bright stars. These observations support the original Field Instruments treatment; they do not authorize copying Spore's frame artwork or reviving its permanent application bar against the user's Escape-menu requirement.
+
+Independent review by contact_shop_critic confirmed full-raster gameplay and narrowly readable endpoint states for RF002/RF003. Required mock corrections: reduce the system candidate's competing foreground rocks and redundant chart; correct the galaxy candidate's 2.4 pc destination outside its 3 pc boundary; add populated category trays and contextual ally/notification states. No interaction, motion, audio or user-acceptance gate was passed.
+
 ## Separate launch source
 
 [SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.

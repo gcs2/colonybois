@@ -11,7 +11,7 @@ The user challenged the implementation-first drift. Small functional corrections
 | Dimension | Verified register result | Limit |
 |---|---|---|
 | Source workflows visually sampled | 17/61 (27.9%) | Open denominator; not all states or rules observed |
-| Source workflows with readable evidence | 3/61 (4.9%) | Exact cited claims only |
+| Source workflows with readable evidence | 5/61 (8.2%) | Exact cited claims only |
 | Source interactions fully verified | 0/61 | Before/action/result, restrictions and failure evidence incomplete |
 | Source presentation / audio reviewed | 0/61 / 0/61 | Muted stills do not establish delivery or sound |
 | View families with a base candidate file | 6/33 (18.2%) | File presence only; all have pending states or corrections |
@@ -33,6 +33,8 @@ Recomputed with tools/ReferenceCoverageReport.py and checked the six candidate f
 All other 27 registered families lack a mapped Field Instruments base candidate. Character experiments do not count as screen mocks; actual game captures do not count as redesign mocks. Contact window/choices have partial user endorsement, not whole-family approval.
 
 ### Orbital HUD comparison inspected in this audit
+
+Navigation follow-up: the atlas now uses unobscured full-screen galaxy/system recaptures at effective 1080p. Independent critic contact_shop_critic verified readable endpoint states; RF002/RF003 gain readable evidence only. The older small frame limitation below applies to the initial orbital comparison, not the replacement system/galaxy cards. The actual scale-change boundary and surface approach sequence remain absent. Corrected mocks must show populated category trays, quantities, alternate categories, ally indicators and brief notifications. Five isolated icons are insufficient evidence of content capacity. Preserve the user's Escape-only application menu rather than copying Spore's permanent bottom strip.
 
 - Source: archived Spore manual image manual-27.png, printed pages 48-49, establishes tool categories/expansion, contextual availability, selection then targeting and wheel-based scale controls. The 02:00:09 system-video frame establishes broad composition only: gameplay is small, overlay-obscured and unsuitable for exact text/value claims. System footage is not a direct equivalent of our separate orbital encounter view.
 - Current: artifacts/landing-motion/frame-050.png from the latest native sequence. Small globe with large empty sky, scattered bottom HUD panels, separate text status blocks and weak instrument grouping. The landing ring/readout corrections do not resolve these composition problems.

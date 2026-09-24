@@ -9,8 +9,8 @@ const REFERENCE_METRICS = {
       "percent": 27.9
     },
     "readable_evidence": {
-      "count": 3,
-      "percent": 4.9
+      "count": 5,
+      "percent": 8.2
     },
     "interaction_verified": {
       "count": 0,
@@ -36,8 +36,8 @@ const REFERENCE_METRICS = {
         "percent": 57.1
       },
       "readable_evidence": {
-        "count": 0,
-        "percent": 0.0
+        "count": 2,
+        "percent": 28.6
       },
       "interaction_verified": {
         "count": 0,

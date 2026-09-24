@@ -51,15 +51,15 @@ const REFERENCE_SET = {
       "id": "system",
       "title": "System navigation",
       "coverage": "N06",
-      "sourceTime": 7209,
+      "sourceTime": 7204,
       "current": "navigation-fullscreen-system-1920.png",
       "target": "04-system-v1.png",
-      "observation": "A star, orbital paths, planets and communicator share a full-screen world; surface terrain map is absent.",
+      "observation": "A star, orbital paths, planets, blue planet brackets and ship trails share a full-screen world. Cargo/tools and ship condition retain their corner anchors; surface chart is absent. Bracket input semantics are unverified.",
       "synthesis": "Direct planetary selection with energy/travel feedback. Preserve compact ship anchors, replace terrain information with scale context.",
-      "gap": "Target candidate is visually rich but adds redundant lower-left system chart and busy foreground asteroids. Reduce those; larger tool art is still pending.",
+      "gap": "Target candidate is visually rich but adds redundant lower-left system chart and busy foreground asteroids. Reduce those; larger tool art is still pending. Add populated category trays, quantities, ally and notification states; isolated icons do not prove content capacity.",
       "gate": "Planet selection and travel are immediately understood at 1080p without a separate Jump form.",
-      "sourceImage": "../../artifacts/references/spore/video/singularmix-system-02h00m09s-full.png",
-      "sourceLabel": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "sourceImage": "../../artifacts/references/spore/video/navigation-system-7204-v3.png",
+      "sourceLabel": "Paused muted full-screen capture; 2560x1440 raster, 1920x1080 decoder, effective 1080p (R100). L3 for cited labels/values. State evidence only; no input, timing or audio verification."
     },
     {
       "id": "galaxy",
@@ -70,10 +70,10 @@ const REFERENCE_SET = {
       "target": "05-galaxy-local-v1.png",
       "observation": "Many spatially selectable stars, ship-centered reach and relationship/route marks. Destination choice is part of the world.",
       "synthesis": "Full orbitable galaxy, visible knowledge states, real parsec distances and a range boundary in the galactic plane.",
-      "gap": "Current map has excessive void and weak fog vocabulary. Mock geometry is WRONG: 2.4 pc lies outside a 3 pc ring; only its material/density mood is a candidate.",
+      "gap": "Current map has excessive void and weak fog vocabulary. Mock geometry is WRONG: 2.4 pc lies outside a 3 pc ring; only its material/density mood is a candidate. Add populated category trays, quantities, ally and notification states; isolated icons do not prove content capacity.",
       "gate": "Current, visited, detected and unknown states are legible; reach and validator agree at every camera angle.",
-      "sourceImage": "../../artifacts/references/spore/video/singularmix-galaxy-01h59m59s-full.png",
-      "sourceLabel": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+      "sourceImage": "../../artifacts/references/spore/video/navigation-galaxy-7199-v3.png",
+      "sourceLabel": "Paused muted full-screen capture; 2560x1440 raster, 1920x1080 decoder, effective 1080p (R100). L3 for cited labels/values. State evidence only; no input, timing or audio verification."
     },
     {
       "id": "galaxy-overview",
