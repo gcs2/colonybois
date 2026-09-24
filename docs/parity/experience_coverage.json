@@ -448,7 +448,7 @@
       "category": "living_worlds",
       "owner": "L01",
       "title": "Collect/store/release organisms and objects",
-      "evidence_times": [1804.235112, 1805.235111, 1807.235110, 1808.235109],
+      "evidence_times": [1804.235112, 1805.235111, 1807.235110, 1808.235109, 2242.695572, 2482.695572, 2483.195569, 2484.195567, 2485.195567],
       "visual_sampled": true,
       "readable_evidence": true,
       "interaction_verified": false,
@@ -459,7 +459,7 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Collection-feedback samples only: highlighted beam tool, world beam, new tray item count4 then5 and Brasstax card. No exact input, collection unit/cost, release, failure, full timing or audio proof. See cargo sequence in SPORE_EXTENDED_VIDEO_EVIDENCE.md.",
+      "note": "Collection and release feedback sampled. New release frames show selected cargo count10 then9, downward-arrow cursor, world beam, creature-shaped endpoint and fifth T1 circle becoming cyan. Briefing instructs plants first and says populations stabilize T-Score. Exact player input, costs, refusals, full timing and audio remain unverified. Root and contact_shop_critic inspected release frames; see release sequence in SPORE_EXTENDED_VIDEO_EVIDENCE.md.",
       "readability_evidence": {
         "file": "artifacts/references/spore/video/cargo-1808-card.png",
         "resolution_score": 100,

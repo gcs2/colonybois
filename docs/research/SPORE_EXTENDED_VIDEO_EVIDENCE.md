@@ -147,3 +147,17 @@ Adaptation: dedicated cargo is optional inspection/management. Preserve a quick 
 ## Separate launch source
 
 [SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.
+
+## Cargo release: briefing and placement sequence
+
+24 September, inspected directly in [SingularMix Space Stage footage](https://www.youtube.com/watch?v=0NN5fBVEHcA&t=2482s). Local prefix `artifacts/references/spore/video/release-`; five PNG/JSON pairs,2560×1440 screenshot with1920×1080 decoder, effective1080p/R100. All paused and muted, unobscured at archival capture. Exact times come from JSON media state; its URL retains stale t=1850 and is not the capture time. Independent critic verified every frame and narrowed the claims below.
+
+| File | Exact time | Observed evidence |
+|---|---:|---|
+| 2242-briefing |2242.695572|In-game briefing instructs filling the Food Web with cargo specimens, plants first; populations stabilize T-Score. This is instruction text, not a demonstrated rule boundary.|
+| 2482-selected |2482.695572|Yellow paw cargo slot count10 and downward-arrow/rings cursor over ground. A separate Shrubbits/large-plant tooltip does not identify the selected paw species.|
+| 2483-beam |2483.195569|Same selected slot count9 and luminous ship-to-ground beam.|
+| 2484-ground |2484.195567|Small creature-shaped figure at the beam endpoint; exact species identity unconfirmed.|
+| 2485-foodweb |2485.195567|Fifth T1 food-web circle changes from dark to cyan, consistent with the second herbivore position. Rightmost item tooltip reads Froggy/Carnivore; its status as the next required action is not established.|
+
+The world, selected cargo stack and compact food-web instrument remain visible through placement. This supports direct world-facing deployment feedback; it does not establish the exact mouse action, one-click quantity rule, energy cost, failure restrictions, continuous motion timing or sound. No complete-interaction flag is awarded. RF018 remains sampled/readable with this stronger release evidence; overall counts remain18/61 sampled and7/61 readable, zero complete interactions/presentation/audio. No new ecology or compulsory mission scope follows from this observation.
