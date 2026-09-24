@@ -1,5 +1,11 @@
 # Resume here
 
+## Latest scope correction — character production deferred
+
+The user reiterated the deferral after further image generation: stop this branch and answer the scope question. No further character images or model refinement now. Internal asset reuse does not imply a player creator; recommended optional later interface is a bounded preset selector.
+
+User wants character modeling/corpus expansion later, questions a full creature creator, and asks about internal reuse versus a small preset selector. Read [CHARACTER_SCOPE_OPTIONS.md](CHARACTER_SCOPE_OPTIONS.md). V1/V2 are preserved unfinished; no fidelity pass. Stop further model refinement and do not build a universal body-part editor. Latest cast critique: too much animated-film animal styling; Prosperity/Harmony too similar. A requested bounded style comparison explores tactile miniature, graphic alien and strange naturalism, with a distinct aquatic Harmony option. Return to the space game after that comparison. The overall game goal remains active.
+
 ## Current verified checkpoint — 24 September
 
 Galaxy implementation is committed and pushed as **aa0ff3bac4974261c3862ba84a749135652b4953**, with the remote branch hash verified. Final checks: 40 galaxy, 67 full-screen navigation and 41 system assertions; separate export and isolated exported-pack flight smoke passed. **Play.cmd** points to **build/versions/20260924-003147/FrontierWorlds.exe**. The user's older running game was not touched. See [GALAXY_NAVIGATION.md](GALAXY_NAVIGATION.md). Approval access is restored; [GALAXY_CHECKPOINT_PENDING.md](GALAXY_CHECKPOINT_PENDING.md) is an interruption/recovery record, not an active blocker.

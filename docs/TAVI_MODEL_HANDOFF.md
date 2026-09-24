@@ -1,5 +1,7 @@
 # Tavi merchant: concept-to-model fidelity test
 
+Status: DEFERRED at the user's request after V2. Preserve both experiments; no further refinement or cast production is currently authorized as the next priority. A bounded requested art-direction comparison does not reopen full modeling. See CHARACTER_SCOPE_OPTIONS.md.
+
 24 September 2026. A bounded asset experiment explicitly requested by the user. This does not change the game engine, render pipeline, saved campaign or approved gameplay scope. The delegated modeler works alongside the main task; no separate user task has been created.
 
 ## What the reference is good for
@@ -42,6 +44,8 @@ Initial portrait asset budget hypothesis: roughly 20–60k triangles and a small
 Godot recommends glTF/GLB for 3D scene exchange and imports materials/scene data. [Official format documentation](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html). AnimationTree can select and blend authored animations; it does not author them. [Official animation documentation](https://docs.godotengine.org/en/stable/tutorials/animation/animation_tree.html). These capabilities establish a viable pipeline, not a guarantee that the current model meets the concept.
 
 ## Review rubric
+
+Latest user steering: keep trying the actual model, with a close visual match (approximately “95%”) as the desired outcome. This is an aspirational art acceptance threshold, not permission to assign an invented numeric score. A second connected-surface experiment is underway in art/prototypes/tavi_v2; keep the failed-fidelity first proof for comparison. No higher reasoning setting has been requested or applied as a model override.
 
 Use matched camera framing and a comparable neutral background. Report each dimension as pass, partial or fail, with visible evidence. No single percentage or triangle count substitutes for art judgment.
 

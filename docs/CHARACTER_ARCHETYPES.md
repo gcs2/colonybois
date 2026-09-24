@@ -14,6 +14,8 @@ The Trader article exposes voice references under neutral, angry, happy, laugh, 
 
 ## Our character architecture
 
+Subsequent explicit request: map characters to the philosophies and create one cast sheet. PHILOSOPHY_CAST_PROMPT.md records the resulting proposal: LEFT-derived merchant for Prosperity, RIGHT-derived harbor keeper for Harmony, plus six distinct individuals. This is a later deliberate mapping, not a reinterpretation of the user's earlier visual comment. No saved faction attributes have changed.
+
 Keep species anatomy, national government, public philosophy, individual occupation, personal temperament and current relationship separate. Those fields jointly inform behavior; none determines the whole personality. Two nations of one species can disagree; two representatives of one philosophy can be warm and cold respectively. Body size does not determine honesty, greed or morality.
 
 For each representative define a desire, a fear, a contradiction, a personal bond, a boundary and a particular way of addressing the player. Then specify gesture, prop, setting and voice. Only after those decisions produce silhouette and expression studies. Avoid creating faces first and attaching a personality afterward.
