@@ -61,6 +61,13 @@ class Study extends Base.InventoryStudy:
 			detail = "Restores up to %d energy.\n\nEnergy %d / %d\nConsumes one pack. No passive recharge." % [game.field.PACK_ENERGY, game.field.state.energy, game.field.max_capacity("energy")]
 			action = "Use one pack"
 			refusal = game.field.pack_reason()
+			if refusal=="Pack coupling cooling down.":
+				refusal="Cooling down: %ds. Close inspection to resume time." % ceili(game.field.state.pack_ready_at-game.field.state.time)
+			if selected>0:
+				var id: String = "repair_pack" if selected==1 else "mega_repair_pack"
+				var supply: Dictionary = game.field.repair_items()[id]
+				detail = ("Fully repairs the hull." if supply.full else "Restores up to %d hull." % supply.hull) + "\n\nHull %d / %d\nConsumes one repair pack." % [game.field.state.hull,game.field.max_capacity("hull")]
+				refusal = game.field.repair_pack_reason(id)
 		elif section == "specimens":
 			caption = "%d / 12 living specimens" % game.biosphere.used()
 			for id: String in game.biosphere.state.cargo:
