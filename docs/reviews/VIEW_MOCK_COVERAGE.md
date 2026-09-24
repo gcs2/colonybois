@@ -178,6 +178,18 @@ For every row: link current implementation evidence, candidate image(s), source 
 
 Check 1920×1080 and larger layouts, pointer hit areas, keyboard focus, named tooltips, short/long item names and full inventories. Test actual scaling in implementation; raster mocks do not prove responsive layout. Full-screen world views must remain visually dominant.
 
+## Dedicated cargo baseline — 24 September 2026
+
+`tests/review_cargo_current.gd` renders actual production UI in an isolated campaign: empty onboard, populated freight, full freight with colony kit, populated specimens and surface store, each at1920×1080 and2560×1440. Ten captures and a manifest live under `artifacts/cargo-review/`; five before/after snapshot assertions verify browsing does not mutate campaign state. Inventories are synthetic fixtures, not earned progression or native input evidence. The captures are local ignored artifacts; the generator is the reproducible source checkpoint.
+
+Independent critic inspected these states and the existing `singularmix-shop-02h00m23s-v2-full.png` source. That source supports compact cargo pictures/quantity badges and separate transaction details in a shop, not a standalone inventory interaction. No source workflow or complete mock-family credit is added.
+
+Findings: freight already pushes repair supplies below the visible panel; the kit case exposes only the first supply row. Higher resolution scales the same hierarchy rather than solving it. Specimen names wrap around tiny portraits while most of the panel remains vacant. Identical crate tab icons, flat charcoal material and copper-colored headings fail the selected Field Instruments direction. Disabled actions lack an adjacent visible reason; tooltip behavior was not exercised in this capture. Surface stock uses one tile per unit while other compartments use stacks, without a consistent selection language.
+
+Next proposal contract: compact pictorial stacks beside persistent selected-item details/action/refusal, independently scrolling or paginated grid, stable compartment navigation and capacity. Show kit quantity1 separately from its four freight spaces. Freight capacity8 (16 with upgrade), specimen capacity12, energy packs3, shared ordinary/full repair-pack capacity3, existing climate locker6 and remote surface produce8 are distinct. Keep the empty/deferred climate locker subordinate. Goods may be inspected here; buying/selling requires actual market access. Specimens select for later surface release; their catalog home is not recorded acquisition provenance. Surface produce is not ship cargo. Preserve actual validated actions, prices and limits rather than inventing universal Use/Sell buttons.
+
+This is a rejected baseline diagnosis, not a new mock, integrated redesign or visual acceptance. Empty specimen/surface, full specimen, long-name/catalog expansion, focus, hover, scrolling, motion and audio remain uncaptured for this view.
+
 ## Motion rules
 
 Initial boarding may use roughly 700 ms of visual assembly: short lateral housing travel, a catch settling, tool-tray unfolding, communicator shutters. Input must be usable immediately; skip snaps to the settled state. Reopening ordinary panels should take roughly 120–180 ms, be interruptible/reversible, and never steal aim/focus. Reduced motion uses an immediate state change or a brief fade, without travel, bounce, shake or gauge sweeps. Those numbers are initial targets for playtesting, not measured finished behavior. Author sound separately: soft mechanism/catch/relay cues at low level, no toy keyboard bounce. Preserve the real hull/energy values throughout.
