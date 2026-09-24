@@ -10,6 +10,8 @@ Navigation composition supplement: `tests/review_field_navigation.gd` is a code-
 
 Shared prompt:
 
+Projection supplement: tests/review_projected_galaxy.gd uses the actual StarGraph renderer with a compact review-only overlay. No new image generation or raster compositing is involved. Outputs cover known/unknown, rotated and underside views at1080p/1440p; VIEW_MOCK_COVERAGE.md owns evidence and limits. This demonstrates correct projection/footprint while exposing current world-art deficits, not replacing the environmental target.
+
 Use case: ui-mockup. Original Frontier Worlds game interface design mock, NOT a shipped screenshot. One complete 16:9 game screen at 1920x1080 composition, no outer poster border.
 Reference image 1 establishes APPROVED environmental fidelity: attainable stylized real-time Godot 3D, simple repeated meshes, matte materials, directional light, original creepy-cute life. Reference image 2: use ONLY the LEFT 'FIELD INSTRUMENTS' concept as the now-approved interface direction; ignore its other two panels.
 Visual system: compact matte ivory instrument housings, charcoal inset displays, tactile flat catches and shallow segmented gauges, sharply clipped corners, mustard / vermilion / muted teal / plum accents with functional meaning. Not glossy, no copper, no rounded rectangle pill buttons, no ornamental borders or giant sci-fi cockpit. Crisp contemporary humanist sans serif. Readable labels where necessary, recognizable filled item/tool symbols, hover tooltips. Keep bone housings compact, not broad white walls. No copied franchise assets or logos.

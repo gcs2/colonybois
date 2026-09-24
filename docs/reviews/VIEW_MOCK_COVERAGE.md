@@ -67,7 +67,15 @@ Independent follow-up critic inspected denied/embargo/survey/atmosphere/defense/
 
 ## Delivery status
 
+### Projected galaxy overlay review
+
+`tests/review_projected_galaxy.gd` renders actual `sector_chart.gd` StarGraph geometry beneath a proposed compact overlay. Eight captures: known, unknown, rotated and underside at1080p/1440p, under `artifacts/field-instruments-review/states/projected-galaxy-{state}-{width}.png`. The JSON companion records angle, screen target, actual distance/reach and housing footprint. This harness does not modify production scenes, player saves or the playable export.
+
+Ship housing is612×120 at normalized1920×1080 (31.875%width,11.111%height), satisfying the requested34%/13% cap. Known rows use actual campaign planet names; unknown summary hides them. Screen-to-world roundtrip and card/HUD non-overlap assertions pass for these fixtures. Stars and reach share the production projection rather than generated-image coordinates. This is three scripted camera orientations, not unrestricted native-camera verification. Actual dust is sparse with a visible boundary/seam; materials and glyphs remain provisional. No claim of matching imagegen fidelity, responsive controls, tooltip timing or complete view coverage.
+
 ### Galaxy visual candidate v2
+
+Projected-overlay critic verdict: contact_shop_critic inspected known/unknown/rotated/underside1080p and known1440p. Confirmed compliant housing size, adjacent summary, concealed names/count in unknown state, no clipping/HUD overlap, and source-consistent grouping. Open: conspicuous dust cutoff, weak target emphasis, crowded/edge placement, off-screen/behind-camera summary suppression, flat materials/temporary glyphs. Card covers part of the range boundary and nearby stars in these samples; do not call general occlusion handling solved. This is projection/layout evidence only.
 
 Built-in imagegen edit of05-galaxy-local-v1, saved locally as `artifacts/field-instruments-review/05-galaxy-local-v2.png`; exact prompt in [prompt register](FIELD_INSTRUMENTS_MOCK_PROMPTS.md). The atlas now pairs this candidate with the existing source and dated actual capture, explicitly labelled unaccepted. Actual capture is an unknown target while the candidate is charted: not matched-state evidence.
 
