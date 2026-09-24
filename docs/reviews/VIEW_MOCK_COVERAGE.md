@@ -11,7 +11,7 @@ The user challenged the implementation-first drift. Small functional corrections
 | Dimension | Verified register result | Limit |
 |---|---|---|
 | Source workflows visually sampled | 18/61 (29.5%) | Open denominator; not all states or rules observed |
-| Source workflows with readable evidence | 7/61 (11.5%) | Exact cited claims only |
+| Source workflows with readable evidence | 9/61 (14.8%) | Exact cited claims only |
 | Source interactions fully verified | 0/61 | Before/action/result, restrictions and failure evidence incomplete |
 | Source presentation / audio reviewed | 0/61 / 0/61 | Muted stills do not establish delivery or sound |
 | View families with a base candidate file | 6/33 (18.2%) | File presence only; all have pending states or corrections |
@@ -273,6 +273,18 @@ Independent review found stale palette energy, incorrect generic-refusal classif
 Limits: synthetic pointer/keyboard injection, fixed ship and explicit test-clock advancement; no physical-user playtest, autonomous travel or continuous motion/audio proof. Picker has two fixture species and a provisional supply glyph. Surrounding chart/palette is static review composition. Tooltip position, card footprint, material/art quality and broader invalid targets remain open. Screenshot files are local; reproducible harness and review record are backed up. No family or source-coverage completion increase.
 
 Next review family: combat target/weapon/health/energy, damage, refusal and destruction/salvage. Inspect a readable extended Spore before/during/after sequence, then pair current captures with Field Instruments states. Carry release polish/native-input gaps forward without expanding ecology or integrating production ahead of the every-view gate.
+
+## Combat source and actual baseline — 24 September 2026
+
+Six independently inspected high-detail Spore frames now replace the earlier low-resolution combat evidence for narrow target/HUD observations; see [combat source sequence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md#readable-surface-combat-and-destruction-sequence--24-september-2026). Effective1080p source reveals target-local turret/city health, persistent own health/weapon selection, city statistic losses and apparent destruction/ascent. Costs/input/refusals/salvage, full motion and audio remain unverified. RF009/RF011 readability raises readable coverage to9/61; sampled18/61 and all complete-workflow totals stay unchanged.
+
+`tests/review_combat_baseline.gd` produces20 actual-UI captures at1080p/1440p: selected, cooldown, low energy, wrong seeker target, incoming aim, laser hit, disabled flyer, salvage order without weapon, full hold and recovered salvage. Files and `baseline.json` live in `artifacts/combat-review`. Model assertions check refused orders preserve snapshots, a laser spends5 energy and reduces hull64→48, full hold prevents salvage, successful salvage adds one glass cargo, and rendering does not advance the campaign. Selection/orders call scene methods; hit uses the model command; disablement is a synthetic damage fixture. No player saves, continuous motion, audio or native-input claims.
+
+Reproduced defects: cooldown shows FIRING, energy4 and invalid seeker target show READY with Use enabled, and active salvage without an equipped weapon shows FIRING with Cancel disabled. Full-hold refusal is returned by the command but not expressed by this frozen order UI. Costs/range are absent beside surface target hull; low-energy toast has weak contrast over snow. Independent critic inspected low-energy/cooldown/incoming/salvaging at1080p and incoming1440p, confirming those defects without major clipping. It also found overlapping aim volumes, weak incoming-warning contrast and split target identity/health hierarchy. These are captured production defects, not fixes.
+
+The code audit separately found civilian structures incorrectly offered as cargo by the HUD and non-Morrow orbital text retaining Morrow/custodian wording; those require dedicated captures. Keep Morrow's intact custodian and separate20-energy shroud recovery distinct from ordinary hostile freight salvage. Remaining baseline states include approach, actual incoming impact/miss, tow, civilian refusal and orbital combat variants.
+
+Next: source-informed compact combat mock for target health, weapon cost/range, real readiness/refusal and cancellation, with persistent own hull/energy and unambiguous damage/aftermath. Then extend baseline/mocks to the remaining orbital/defeat cases. The source city destruction is not evidence that our ship-wreck salvage exists in Spore. No production integration or final art acceptance.
 
 ## Motion rules
 

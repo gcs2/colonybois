@@ -96,7 +96,7 @@
       "key": "scale_transition",
       "category": "navigation",
       "owner": "I01",
-      "title": "Surface \u2194 system \u2194 galaxy transitions",
+      "title": "Surface ↔ system ↔ galaxy transitions",
       "evidence_times": [
         7199,
         7200,
@@ -269,11 +269,15 @@
       "owner": "C01",
       "title": "Weapon activation, impact and target response",
       "evidence_times": [
-        3620,
-        3625
+        3612.534889,
+        3622.534889,
+        3627.534889,
+        3632.534889,
+        3637.534889,
+        3642.534889
       ],
       "visual_sampled": true,
-      "readable_evidence": false,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -282,7 +286,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "Six independently inspected1080p-decoded combat frames: target-local turret179 and city3000→1800→1200 health, population105→75, income108→72/hour, player health25, highlighted slot4, apparent destruction then ascent. Exact input, per-shot cost/damage, restrictions, motion/audio, player defeat and salvage not established. See SPORE_EXTENDED_VIDEO_EVIDENCE.md combat sequence.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/combat-3627-damage.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": [
+          "root",
+          "contact_shop_critic"
+        ],
+        "supported_claim": "Readable target-local Khadia health1800 and contextual city statistics, own health25, selected weapon slot4; adjacent archived frames establish numeric change and visible aftermath, not per-shot causality/cost or input."
+      }
     },
     {
       "id": "RF010",
@@ -310,10 +325,15 @@
       "owner": "C01",
       "title": "Damage, hull warning and target-local health",
       "evidence_times": [
-        3620
+        3612.534889,
+        3622.534889,
+        3627.534889,
+        3632.534889,
+        3637.534889,
+        3642.534889
       ],
       "visual_sampled": true,
-      "readable_evidence": false,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -322,7 +342,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "Six independently inspected1080p-decoded combat frames: target-local turret179 and city3000→1800→1200 health, population105→75, income108→72/hour, player health25, highlighted slot4, apparent destruction then ascent. Exact input, per-shot cost/damage, restrictions, motion/audio, player defeat and salvage not established. See SPORE_EXTENDED_VIDEO_EVIDENCE.md combat sequence.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/combat-3627-damage.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": [
+          "root",
+          "contact_shop_critic"
+        ],
+        "supported_claim": "Readable target-local Khadia health1800 and contextual city statistics, own health25, selected weapon slot4; adjacent archived frames establish numeric change and visible aftermath, not per-shot causality/cost or input."
+      }
     },
     {
       "id": "RF012",
@@ -448,7 +479,17 @@
       "category": "living_worlds",
       "owner": "L01",
       "title": "Collect/store/release organisms and objects",
-      "evidence_times": [1804.235112, 1805.235111, 1807.235110, 1808.235109, 2242.695572, 2482.695572, 2483.195569, 2484.195567, 2485.195567],
+      "evidence_times": [
+        1804.235112,
+        1805.235111,
+        1807.23511,
+        1808.235109,
+        2242.695572,
+        2482.695572,
+        2483.195569,
+        2484.195567,
+        2485.195567
+      ],
       "visual_sampled": true,
       "readable_evidence": true,
       "interaction_verified": false,
@@ -465,7 +506,10 @@
         "resolution_score": 100,
         "legibility": 3,
         "context_complete": true,
-        "reviewers": ["root", "contact_shop_critic"],
+        "reviewers": [
+          "root",
+          "contact_shop_critic"
+        ],
         "supported_claim": "Count5 in the new upper-right cargo slot and Brasstax card are readable with the world and highlighted beam tool visible. Collection feedback only; no release or input-causality claim."
       }
     },
@@ -512,7 +556,7 @@
       "key": "world_decoration",
       "category": "living_worlds",
       "owner": "L01",
-      "title": "Color/sculpt/decorative tools \u2014 reference only, excluded from delivery",
+      "title": "Color/sculpt/decorative tools — reference only, excluded from delivery",
       "evidence_times": [],
       "visual_sampled": false,
       "readable_evidence": false,

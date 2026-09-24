@@ -161,3 +161,22 @@ Adaptation: dedicated cargo is optional inspection/management. Preserve a quick 
 | 2485-foodweb |2485.195567|Fifth T1 food-web circle changes from dark to cyan, consistent with the second herbivore position. Rightmost item tooltip reads Froggy/Carnivore; its status as the next required action is not established.|
 
 The world, selected cargo stack and compact food-web instrument remain visible through placement. This supports direct world-facing deployment feedback; it does not establish the exact mouse action, one-click quantity rule, energy cost, failure restrictions, continuous motion timing or sound. No complete-interaction flag is awarded. RF018 remains sampled/readable with this stronger release evidence; overall counts remain18/61 sampled and7/61 readable, zero complete interactions/presentation/audio. No new ecology or compulsory mission scope follows from this observation.
+
+## Readable surface combat and destruction sequence — 24 September 2026
+
+Source: [SingularMix, Spore Playthrough: Space Stage](https://www.youtube.com/watch?v=0NN5fBVEHcA&t=3612s). Six paused/muted fullscreen screenshots,2560×1440 capture with1920×1080 decoded gameplay (effective1080p, R100; documented labels readable). Files are under `artifacts/references/spore/video/`; JSON exact time is authoritative, because the page URL retains the original3610-second parameter. Screenshots are research only, not game assets. Root and independent critic inspected all six.
+
+| Exact seconds | Filename stem | Direct observation |
+|---|---|---|
+|3612.534889|combat-3612-turret|Target-local Turret card with health179; bomb-shaped slot4 highlighted; player health25.|
+|3622.534889|combat-3622-city|Khadia card: health3000, population105, production/income+108.00/hour; beams/flashes and red city markers.|
+|3627.534889|combat-3627-damage|Same city health1800; weapon effects cross the settlement.|
+|3632.534889|combat-3632-city-loss|City health1200, population75, production/income+72.00/hour; burning structures.|
+|3637.534889|combat-3637-destruction|Previously occupied city footprint is largely absent amid fire/smoke and dark ground; city card gone. Apparent destruction, not proof of ownership transfer.|
+|3642.534889|combat-3642-ascent|Ship above curved planet with long exhaust; consistent with ascent.|
+
+Player health25 remains visible through the sequence; changing weapon-slot fill does not establish cooldown. These sampled moments do not prove exact clicks, damage per shot, costs, complete duration/easing, weapon roles, salvage, annexation or player defeat. No listening occurred.
+
+Re-inspected original manual printed p.49 (`manual-27.png`): category → tool → target workflow, numbered shortcuts/charges, travel/tool energy expenditure, repair/refuel destinations and ship-clone recovery at nearest colony after zero health. Those documented mechanics corroborate the control/resource structure, **not** action causality or recovery in this footage.
+
+Adaptation: keep target identity/health beside the target, selected weapon and own health/energy compact and persistent, and impacts/aftermath visible in the world. Show costs and actionable refusals without falsely labelling them READY. Preserve our distinction between intact disablement, hostile freight salvage and special wreck recovery. Do not invent Spore salvage behavior from the aftermath image. RF009/RF011 now have readable evidence; counts18/61 sampled,9/61 readable, zero fully verified interactions/presentation/audio. Other flags stay unchanged.
