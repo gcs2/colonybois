@@ -128,7 +128,7 @@ func bind(game: RefCounted) -> void:
 		if game.sector.state.colonies.has(planet): game.sector.refresh_colony(planet)
 func restore(source: Variant, upgrades: Array) -> Error:
 	if not source is Dictionary or not source.has_all(["worlds","charges","stock"]): return ERR_INVALID_DATA
-	if not source.worlds is Dictionary or source.worlds.size() > 23 or not source.charges is Dictionary or source.charges.size() != 4 or not source.stock is Dictionary or source.stock.size() > 48: return ERR_INVALID_DATA
+	if not source.worlds is Dictionary or source.worlds.size() > 6144 or not source.charges is Dictionary or source.charges.size() != 4 or not source.stock is Dictionary or source.stock.size() > 12288: return ERR_INVALID_DATA
 	var count: int = 0
 	for id: String in state.charges:
 		if not source.charges.has(id) or not source.charges[id] is int or source.charges[id] < 0 or source.charges[id] > HOLD: return ERR_INVALID_DATA

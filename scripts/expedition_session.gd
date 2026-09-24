@@ -3,7 +3,8 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 18
+const VERSION := 19
+const Galaxy = preload("res://scripts/galaxy_catalog.gd")
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
 const Conflict = preload("res://scripts/empire_conflict.gd")
@@ -39,6 +40,7 @@ var worlds: Dictionary = {}
 
 func _init() -> void:
 	sector.new_game()
+	Galaxy.install(sector)
 	# A new flight campaign keeps the existing zero-Mark start. No migration windfall.
 	sector.state.credits = field.marks
 	sector.state.planets.s0p0.name = "Morrow"
@@ -137,7 +139,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -145,6 +147,8 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_sector := Sector.new()
 	var error: Error = candidate_sector.restore_snapshot(source.sector)
 	if error != OK: return error
+	if source.version >= 19 and not valid_galaxy(candidate_sector): return ERR_INVALID_DATA
+	Galaxy.install(candidate_sector)
 	var candidate_field := Field.new()
 	# Validate owned equipment before hull/energy; a forged capacity cannot admit an overfilled ship.
 	var candidate_commerce := Commerce.new()
@@ -159,7 +163,7 @@ func restore_snapshot(source: Variant) -> Error:
 	if error != OK: return error
 	if source.version >= 2 and not source.has("worlds"): return ERR_INVALID_DATA
 	var saved_worlds: Variant = source.get("worlds",{})
-	if not saved_worlds is Dictionary or saved_worlds.size() > 23: return ERR_INVALID_DATA
+	if not saved_worlds is Dictionary or saved_worlds.size() > Galaxy.COUNT*3: return ERR_INVALID_DATA
 	saved_worlds = saved_worlds.duplicate(true)
 	for id: Variant in saved_worlds:
 		if not id is String or Geography.definition(id).is_empty() or id == candidate_field.state.planet_id or not saved_worlds[id] is Dictionary: return ERR_INVALID_DATA
@@ -209,6 +213,7 @@ func restore_snapshot(source: Variant) -> Error:
 			if Geography.definition(ship.target_planet).is_empty() or system_of(ship.target_planet) != ship.destination or ship.remaining <= 0 or candidate_field.state.flight_mode != "orbit": return ERR_INVALID_DATA
 		elif ship.remaining != 0 or not ship.destination.is_empty(): return ERR_INVALID_DATA
 	sector.state = candidate_sector.state
+	sector.reindex_systems()
 	field.state = candidate_field.state
 	field.bind_account(sector.state)
 	sector_clock = source.sector_clock
@@ -291,25 +296,34 @@ func owner_of(id: String) -> String:
 	var owner: String = sector.state.planets[Colonies.strategic_id(id)].owner
 	return "" if owner == "player" else owner
 
+func destination_access(id: String) -> String:
+	var system: Dictionary = sector.system_by_id(system_of(id))
+	if system.is_empty(): return "Unknown destination."
+	var owner: String = system.owner
+	if not owner.is_empty() and sector.faction_by_id(owner).get("embargo",false) and owner+":non_aggression" not in sector.state.agreements and not conflict.at_war(owner): return "Destination access closed by embargo."
+	return ""
+
 func quote(id: String) -> Dictionary:
 	var target: Dictionary = Geography.definition(id)
-	if target.is_empty(): return {"reason":"Unknown destination.","energy":0,"seconds":0,"route":[]}
+	if target.is_empty(): return {"reason":"Unknown destination.","energy":0,"seconds":0,"route":[],"distance":0.0,"range":commerce.drive_range()}
 	var destination: String = system_of(id)
-	var route: Array = sector.route_between(sector.state.flagship.system,destination,true,conflict.at_war(owner_of(id)))
-	var hops: int = maxi(0,route.size()-1)
-	var energy: int = 3 if hops == 0 else hops*8
-	var seconds: int = 6 if hops == 0 else hops*12
+	var origin: String = sector.state.flagship.system
+	var separation: float = Galaxy.distance(sector.system_by_id(origin),sector.system_by_id(destination))
+	var local: bool = origin == destination
+	var route: Array = [origin] if local else [origin,destination]
+	var energy: int = 3 if local else maxi(8,ceili(separation*3.0))
+	var seconds: int = 2 if local else clampi(ceili(separation/6.0)+1,2,4)
 	var reason: String = ""
 	if traveling(): reason = "Journey already underway."
 	elif field.state.flight_mode != "orbit": reason = "Leave the atmosphere first."
 	elif id == field.state.planet_id: reason = "Already in orbit here."
-	elif not sector.is_revealed(destination): reason = "Explore the frontier to reveal this system."
-	elif route.is_empty(): reason = "No accessible route; check border restrictions."
-	elif hops > commerce.drive_range(): reason = "Beyond the drive's %d-link range." % commerce.drive_range()
+	elif not sector.is_revealed(destination): reason = "Beyond charted sensor reach."
+	elif separation > commerce.drive_range()+0.00001: reason = "%.1f pc away · engine reach %d pc." % [separation,commerce.drive_range()]
+	elif not destination_access(id).is_empty(): reason = destination_access(id)
 	elif field.state.survey_active: reason = "Wait for the orbital survey to finish."
 	elif field.state.guardian_alert > 0: reason = "Break contact with the custodian before jumping."
 	elif field.state.energy < energy: reason = "Need %d energy. Dock or use a reserve pack." % energy
-	return {"reason":reason,"energy":energy,"seconds":seconds,"route":route}
+	return {"reason":reason,"energy":energy,"seconds":seconds,"route":route,"distance":separation,"range":commerce.drive_range()}
 
 func begin_travel(id: String) -> String:
 	var offer: Dictionary = quote(id)
@@ -332,7 +346,7 @@ func begin_travel(id: String) -> String:
 
 func advance_travel() -> void:
 	var ship: Dictionary = sector.state.flagship
-	if sector.route_between(ship.system,ship.destination,true,conflict.at_war(owner_of(ship.target_planet))).is_empty():
+	if not destination_access(ship.target_planet).is_empty():
 		field.note("blocked_%d" % field.state.time,"Passage closed. Returned to departure orbit; spent drive energy is not refunded.")
 		ship.target_planet = ""; ship.destination = ""; ship.remaining = 0; ship.route = []
 		return
@@ -353,6 +367,7 @@ func advance_travel() -> void:
 	ship.target_planet = ""; ship.destination = ""; ship.remaining = 0; ship.route = []
 	var system: Dictionary = sector.system_by_id(ship.system)
 	system.visited = true
+	Galaxy.reveal(sector,system.id,maxf(5,commerce.drive_range()))
 	if not owner_of(target).is_empty(): diplomacy.contact(self,owner_of(target))
 	diplomacy.record(self,"exploration","Reached "+str(Geography.definition(target).name)+".","",{"planet":target},0,"arrival:"+target)
 	field.note("arrival_%d" % field.state.time,"Reached "+Geography.definition(target).name+". Chart its orbit or approach a landing site.")
@@ -388,3 +403,17 @@ func salvage_enemy(at: Vector3) -> String:
 	field.note("enemy_salvage","Recovered %d %s from %s." % [profile.quantity,commerce.catalog.goods[profile.bounty].name,profile.name])
 	diplomacy.record(self,"combat","Recovered cargo from "+str(profile.name)+".","",{"planet":field.state.planet_id,"item":profile.bounty,"quantity":profile.quantity})
 	return ""
+
+static func valid_galaxy(candidate: RefCounted) -> bool:
+	if candidate.state.get("galaxy_version",0) != Galaxy.VERSION or candidate.state.systems.size() != Galaxy.COUNT: return false
+	var seen: Dictionary = {}
+	for star: Variant in candidate.state.systems:
+		if not star is Dictionary or not star.has_all(["id","pc_x","pc_z","detected","planets","visited","links"]): return false
+		if not star.id is String or seen.has(star.id) or not star.detected is bool: return false
+		if not (star.pc_x is float or star.pc_x is int) or not (star.pc_z is float or star.pc_z is int): return false
+		if not is_finite(float(star.pc_x)) or not is_finite(float(star.pc_z)) or Galaxy.position(star).length() > 150: return false
+		seen[star.id] = true
+		if not star.planets is Array or star.planets.is_empty() or star.planets.size() > 3: return false
+		for id: Variant in star.planets:
+			if not id is String or Geography.definition(local_id(id)).is_empty() or not candidate.state.planets.has(id) or system_of(local_id(id)) != star.id: return false
+	return true

@@ -48,7 +48,7 @@ func _ready() -> void:
 	var stage: Control = Stage.create(self)
 	var header: HBoxContainer = Stage.header(stage)
 	heading = text_label("SYSTEM VIEW",24); heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(heading)
-	sector = button("Sector","systems","Zoom out to the sector chart [G]",func() -> void: sector_requested.emit(),header)
+	sector = button("Galaxy","systems","Zoom out to the galaxy [G]",func() -> void: sector_requested.emit(),header)
 	close = button("Orbit","planet_map","Return to the ship's current planet [J / Esc]",func() -> void: close_requested.emit(),header)
 	preview = SubViewportContainer.new(); preview.stretch = true
 	preview.gui_input.connect(_view_input); preview.mouse_filter = Control.MOUSE_FILTER_STOP; Stage.world(stage,preview)

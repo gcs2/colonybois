@@ -1,6 +1,8 @@
 # Frontier Worlds
 
-**Full-screen navigation:** Planet map (M), system view (J) and sector chart (G) now occupy the whole viewport with overlaid controls. Wheel zooms; right-drag pans the sector or rotates the system, and dragging rotates the planet. The surface-dock approach error is fixed. The latest playtest still rejects overall game quality; [current correction priorities](docs/PLAYABILITY_REBUILD.md) take precedence over the feature inventory below.
+**Galaxy navigation:** G opens a full-screen 2,048-star seeded galaxy. Wheel zooms; right-drag orbits above/below its plane; Shift + right-drag or middle-drag pans. Home focuses the ship; End frames the galaxy. Click a known star to select it, then click again (or Enter) to travel; selecting the current star opens its system. Travel uses actual parsec distance, finite energy and paid engine tiers of 3/5/8/12/20 pc. Most generated destinations currently support orbital visits only: this does not deliver whole landable planets or a galaxy-wide civilization simulation. [Controls and limits](docs/GALAXY_NAVIGATION.md).
+
+**Full-screen views:** Planet map (M), system view (J) and galaxy (G) fill the viewport. The local terrain chart is surface-only. The latest playtest still rejects overall game quality; [current correction priorities](docs/PLAYABILITY_REBUILD.md) take precedence over the feature inventory below. Field Instruments mockups remain design candidates, not the current playable HUD.
 
 **Active combat support:** Dock → Upgrades → Support sells Shield and Rally Call through earned badge alternatives. Click their Weapons icons to spend energy for temporary flagship protection or doubled personal/allied damage. Visible timers and cooldowns persist through travel and saves. [Controls, costs and limits](docs/SHIP_SUPPORT.md).
 

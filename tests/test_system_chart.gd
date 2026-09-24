@@ -33,7 +33,7 @@ func run() -> void:
 	game.field.state.survey_ticks = game.field.definition().survey_seconds; chart.refresh()
 	check(chart.bodies.s2p0.site_marker.visible and chart.details.text.contains("ecosystem"),"Real completed survey reveals the known landing marker and conditions")
 	chart.select_planet("s2p1")
-	check(not chart.travel.disabled and "3 energy" in chart.travel.text and "6 seconds" in chart.travel.text,"In-system destination quote uses actual shared drive cost and time")
+	check(not chart.travel.disabled and "3 energy" in chart.travel.text and "2 seconds" in chart.travel.text,"In-system destination quote uses actual shared drive cost and time")
 	check(chart.details.text.contains("Orbital destination") and not chart.bodies.s2p1.site_marker.visible,"Nonlandable planets remain real orbital destinations without fabricated surface sites")
 	before = game.snapshot(); chart.select_planet("s2p2"); chart.refresh()
 	check(game.snapshot() == before and not game.worlds.has("s2p2"),"Selection and repeated presentation cannot fabricate visits")
@@ -74,14 +74,14 @@ func run() -> void:
 	scene.system_map.select_planet("s2p1"); scene.system_map.travel.pressed.emit()
 	check(scene.campaign.traveling() and scene.model.state.energy == 97 and scene.system_map.close.disabled,"Actual system departure charges once and locks return during transit")
 	var origin: Vector3 = scene.system_map.ship_marker.position
-	scene._process(2)
-	check(scene.campaign.sector.state.flagship.remaining == 4 and scene.system_map.ship_marker.position != origin,"The same campaign clock advances the rendered interplanetary voyage")
+	scene._process(1)
+	check(scene.campaign.sector.state.flagship.remaining == 1 and scene.system_map.ship_marker.position != origin,"The same campaign clock advances the rendered interplanetary voyage")
 	check(scene.hud.paused_badge.text == "IN TRANSIT","HUD does not mislabel the active travel clock as paused")
 	press(scene,KEY_ESCAPE); var clock: int = scene.model.state.time; scene._process(2)
 	check(scene.popup_kind == "menu" and scene.model.state.time == clock,"Escape opens pause/save during transit and stops the shared clock")
 	scene._save(false)
 	var loaded := Session.new(); var path: String = scene._campaign_path(true)
-	check(loaded.load_from(path) == OK and loaded.sector.state.flagship.remaining == 4,"Mid-transfer autosave preserves the real remaining journey")
+	check(loaded.load_from(path) == OK and loaded.sector.state.flagship.remaining == 1,"Mid-transfer autosave preserves the real remaining journey")
 	scene._close_popup(); scene._process(4); await process_frame; await process_frame
 	scene = root.get_node("SystemFlight"); scene.set_process(false); scene.set_physics_process(false); scene.audio.muted = true
 	check(scene.model.state.planet_id == "s2p1" and scene.model.state.energy == 97 and scene.orbit.planet.planet_definition.id == "s2p1","Arrival rebuilds destination orbit without a second charge")

@@ -15,7 +15,9 @@ func capacity() -> int:
 	return 16 if "hold" in state.upgrades else 8
 
 func drive_range() -> int:
-	return 5 if "drive" in state.upgrades else 3
+	for tier: int in range(4,0,-1):
+		if ("drive" if tier == 1 else "drive_%d" % tier) in state.upgrades: return [3,5,8,12,20][tier]
+	return 3
 
 func used_space(game: RefCounted) -> int:
 	return quantity()+game.colonies.reserved_space()
@@ -183,6 +185,7 @@ func buy_upgrade(game: RefCounted, port: String, at: Vector3, id: String) -> Str
 	game.field.marks -= float(catalog.upgrades[id].price)
 	state.upgrades.append(id)
 	game.field.installed_upgrades = state.upgrades
+	if id.begins_with("drive"): game.Galaxy.reveal(game.sector,game.sector.state.flagship.system,maxf(5,drive_range()))
 	game.field.note("upgrade_"+id,"Installed "+str(catalog.upgrades[id].name)+".")
 	game.diplomacy.record(game,"equipment","Installed "+str(catalog.upgrades[id].name)+".","",{"upgrade":id,"price":catalog.upgrades[id].price})
 	return ""
@@ -195,7 +198,7 @@ func restore(source: Variant, legacy: bool = true) -> Error:
 	if legacy:
 		for id: String in Recognition.catalog.badges:
 			if not source.badges.has(id): source.badges[id] = 0
-	if source.upgrades.size() > catalog.upgrades.size() or source.badges.size() != catalog.badges.size() or source.cargo.size() > 16 or source.markets.size() > 24 or source.flows.size() > 1728: return ERR_INVALID_DATA
+	if source.upgrades.size() > catalog.upgrades.size() or source.badges.size() != catalog.badges.size() or source.cargo.size() > 16 or source.markets.size() > 6144 or source.flows.size() > 131072: return ERR_INVALID_DATA
 	var seen: Array = []
 	for id: Variant in source.upgrades:
 		if not id is String or not catalog.upgrades.has(id) or id in seen: return ERR_INVALID_DATA

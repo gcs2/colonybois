@@ -109,7 +109,9 @@ func run() -> void:
 	before = game.snapshot()
 	check(not game.use_support("shield").is_empty() and game.snapshot() == before,"No support activation during interstellar transit")
 	while game.traveling(): game.tick()
-	check(not game.field.Support.active(game.field,"shield") and game.field.state.support.shield.ready == 45,"Journey consumes active duration and preserves cooldown")
+	check(game.field.Support.active(game.field,"shield") and game.field.state.support.shield.until-game.field.state.time == 8 and game.field.state.support.shield.ready == 45,"Short journey consumes elapsed duration without resetting effect or cooldown")
+	ticks(game,8)
+	check(not game.field.Support.active(game.field,"shield"),"Shield still expires at its original absolute deadline")
 	# Actual hotbar/inspection controls and feedback at native layout scale.
 	game = pilot(); equip(game)
 	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate(); scene.campaign = game; root.add_child(scene)

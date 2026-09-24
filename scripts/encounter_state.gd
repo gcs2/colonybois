@@ -74,6 +74,10 @@ func definition() -> Dictionary:
 
 func local_services() -> Dictionary:
 	var result: Dictionary = services()
+	var system_index: int = int(str(state.planet_id).get_slice("p",0).trim_prefix("s"))
+	if system_index >= 12:
+		if system_index%17 != 0: return {}
+		result.erase("basin_port")
 	if state.planet_id != "morrow":
 		for id: String in result:
 			result[id].planet = state.planet_id

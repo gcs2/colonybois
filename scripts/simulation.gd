@@ -15,12 +15,14 @@ var catalog: Dictionary = {}
 var state: Dictionary = {}
 var blocked_ports: Array = [] # Derived expedition port outages, never a second damage record.
 var climate_effects: Dictionary = {} # Derived from the personal campaign, never separately saved.
+var system_index: Dictionary = {}
 var playtest: bool = "--playtest" in OS.get_cmdline_user_args()
 
 func _init() -> void:
 	catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
 
 func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
+	system_index.clear()
 	state = {"version":SAVE_VERSION, "seed":seed_value, "tick":0, "credits":650.0,
 		"systems":[], "planets":{}, "colonies":{}, "settlements":{}, "factions":catalog.factions.duplicate(true),
 		"agreements":[], "discoveries":{}, "milestones":[], "rank":0, "log":[],
@@ -52,11 +54,13 @@ func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
 	else: _log("Welcome to Solace. Connect zones, then explore the frontier.")
 	changed.emit()
 
+func reindex_systems() -> void:
+	system_index.clear()
+	for system: Dictionary in state.systems: system_index[system.id] = system
+
 func system_by_id(id: String) -> Dictionary:
-	for system: Dictionary in state.systems:
-		if system.id == id:
-			return system
-	return {}
+	if system_index.size() != state.systems.size(): reindex_systems()
+	return system_index.get(id,{})
 
 func faction_by_id(id: String) -> Dictionary:
 	for faction: Dictionary in state.factions:
@@ -68,6 +72,7 @@ func is_revealed(sid: String) -> bool:
 	var system: Dictionary = system_by_id(sid)
 	if system.is_empty(): return false
 	if system.visited or system.get("charted",false): return true
+	if state.has("galaxy_version"): return system.get("detected",false)
 	for neighbor: String in system.links:
 		if system_by_id(neighbor).visited: return true
 	return false
@@ -644,6 +649,7 @@ func restore_snapshot(source: Variant) -> Error:
 		if not parsed.has(field): return ERR_FILE_CORRUPT
 	if not parsed.colonies is Dictionary or not parsed.systems is Array: return ERR_FILE_CORRUPT
 	state = parsed
+	reindex_systems()
 	state.version = SAVE_VERSION
 	if not state.has("settlements"): state["settlements"] = {}
 	if state.has("urban") and not state.urban.has("tutorial_step"): state.urban["tutorial_step"] = 1 if not str(state.urban.path).is_empty() else 0

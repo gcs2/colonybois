@@ -45,7 +45,7 @@ func run() -> void:
 	check(d.act(game,"consortium","gift").is_empty() and game.field.marks == money-120,"Goodwill is funded by the preceding cargo sale")
 	before = game.snapshot()
 	check(not d.act(game,"consortium","gift").is_empty() and game.snapshot() == before,"Grant cannot be spammed for trust")
-	check(not game.sector.is_revealed("s11"),"Remote frontier system is initially outside player knowledge")
+	check(not game.sector.system_by_id("s11").get("charted",false) and not game.sector.system_by_id("s11").visited,"Detected frontier star initially has no detailed planetary chart")
 	check(d.act(game,"consortium","alliance").is_empty() and game.sector.is_revealed("s11"),"Alliance supplies usable navigation knowledge")
 	check(not game.sector.system_by_id("s11").visited and game.quote("s11p0").reason.is_empty(),"Shared chart permits travel without falsely awarding a visit")
 	check(d.act(game,"consortium","non_aggression").is_empty(),"Transit pledge is signable after contact")

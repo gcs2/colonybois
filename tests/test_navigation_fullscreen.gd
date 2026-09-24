@@ -30,7 +30,7 @@ func run() -> void:
 			check(not scene.hud.visible and not scene.hud.navigation.is_visible_in_tree(),"Flight controls/local radar hidden in "+mode)
 			var stage: Control = view.get_node("NavigationStage")
 			for child: Node in stage.get_children():
-				if child is PanelContainer or child is HBoxContainer:
+				if (child is PanelContainer or child is HBoxContainer) and child.is_visible_in_tree():
 					check(view.get_global_rect().grow(1).encloses(child.get_global_rect()),"Navigation instruments stay inside full screen: "+mode)
 			scene._show_popup("menu"); await process_frame
 			check(scene.popup.z_index > view.z_index and scene.menu_shade.z_index > view.z_index,"Escape menu renders above full-screen map")
@@ -43,7 +43,9 @@ func run() -> void:
 	check(graph.magnification > 1 and graph.point(scene.campaign.sector.system_by_id("s0")).distance_to(anchor) < 0.01,"Galaxy wheel zoom anchors the star under the cursor")
 	var right := InputEventMouseButton.new(); right.button_index = MOUSE_BUTTON_RIGHT; right.pressed = true; graph._gui_input(right)
 	var motion := InputEventMouseMotion.new(); motion.relative = Vector2(45,-30); var pan: Vector2 = graph.pan; graph._gui_input(motion)
-	check(graph.pan == pan+motion.relative,"Galaxy right-drag pans the same selectable graph")
+	check(graph.yaw != 0 and graph.pitch != 0.58,"Galaxy right-drag orbits around the galactic plane")
+	right.shift_pressed = true; graph._gui_input(right); graph._gui_input(motion)
+	check(graph.pan == pan+motion.relative,"Shift-right-drag pans independently of orbit")
 	graph.reset_view(); check(graph.pan == Vector2.ZERO and graph.magnification == 1,"Frame sector restores a usable overview")
 	# The original interaction had an untyped ternary Array that threw before flying.
 	scene.sector_map.hide(); scene.system_map.hide(); scene.planet_map.hide()

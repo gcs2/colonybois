@@ -56,7 +56,7 @@ func promotion(game: RefCounted, level: int) -> void:
 	game.diplomacy.record(game,"progression","Promoted to "+str(catalog.rank_names[level-1])+".","",{"rank":level,"points":points(game.commerce.state.badges)},0,"rank:"+str(level))
 func restore(value: Variant, badges: Dictionary) -> Error:
 	if not value is Dictionary or not value.has_all(["climate_highs","pinned","queue"]): return ERR_INVALID_DATA
-	if not value.climate_highs is Dictionary or value.climate_highs.size() > 23 or not value.pinned is String or (not value.pinned.is_empty() and not badges.has(value.pinned)): return ERR_INVALID_DATA
+	if not value.climate_highs is Dictionary or value.climate_highs.size() > 6144 or not value.pinned is String or (not value.pinned.is_empty() and not badges.has(value.pinned)): return ERR_INVALID_DATA
 	for id: Variant in value.climate_highs:
 		if not id is String or id == "morrow" or Geography.definition(id).is_empty(): return ERR_INVALID_DATA
 		var tier: Variant = value.climate_highs[id]

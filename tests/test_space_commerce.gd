@@ -56,9 +56,9 @@ func run() -> void:
 	check(game.field.state.energy < 100 and not game.field.state.warm and not game.field.state.seeded,"Loop uses finite energy and requires no planting")
 	for system: Dictionary in game.sector.state.systems: system.visited = true
 	c.state.upgrades.erase("drive")
-	check(not game.quote("s11p0").reason.is_empty(),"Base drive rejects the known four-link journey")
+	check(not game.quote("s8p0").reason.is_empty(),"Base drive rejects the known destination beyond three parsecs")
 	c.state.upgrades.append("drive")
-	check(game.quote("s11p0").reason.is_empty() and game.quote("s11p0").energy == 32,"Purchased drive opens the longer route without discounting energy")
+	check(game.quote("s8p0").reason.is_empty() and game.quote("s8p0").energy == ceili(game.quote("s8p0").distance*3),"Purchased drive opens the longer route without discounting energy")
 	c.update_badges(game)
 	var history_size: int = game.field.state.history.size()
 	c.update_badges(game); c.update_badges(game)

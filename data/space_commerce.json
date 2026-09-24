@@ -174,7 +174,7 @@
     "drive": {
       "name": "Extended-range drive",
       "price": 160,
-      "description": "Raises jump range from 3 to 5 links. Energy consumption stays at 8 per link.",
+      "description": "Extends engine reach from 3 to 5 parsecs. Each jump consumes energy.",
       "requires": {
         "explorer": 1,
         "merchant": 2,
@@ -281,6 +281,42 @@
         "merchant": 4,
         "explorer": 4
       }
+    },
+    "drive_2": {
+      "name": "8 pc interstellar drive",
+      "price": 520,
+      "description": "Reach stars up to 8 parsecs away in one jump. Longer jumps consume more energy.",
+      "prior": "drive",
+      "requires": {
+        "explorer": 3,
+        "merchant": 3,
+        "diplomat": 3
+      },
+      "rank": 5
+    },
+    "drive_3": {
+      "name": "12 pc interstellar drive",
+      "price": 1200,
+      "description": "Reach stars up to 12 parsecs away in one jump. Longer jumps consume more energy.",
+      "prior": "drive_2",
+      "requires": {
+        "explorer": 4,
+        "merchant": 4,
+        "diplomat": 4
+      },
+      "rank": 6
+    },
+    "drive_4": {
+      "name": "20 pc interstellar drive",
+      "price": 2600,
+      "description": "Reach stars up to 20 parsecs away in one jump. Longer jumps consume more energy.",
+      "prior": "drive_3",
+      "requires": {
+        "explorer": 5,
+        "merchant": 5,
+        "diplomat": 5
+      },
+      "rank": 7
     }
   }
 }

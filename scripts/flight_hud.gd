@@ -121,7 +121,7 @@ func _build() -> void:
 	navigation_actions[-1].tooltip_text = "Zoom out · at surface limit, ascend to orbit"
 	navigation_actions.append(symbol_at("zoom_in",Rect2(354,781,58,58),"zoom_in","Zoom in",Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom in · move camera closer"
-	sector_button = symbol_at("systems",Rect2(354,647,58,58),"sector","Sector chart · select a star and orbital destination [G]",Art.GOLD)
+	sector_button = symbol_at("systems",Rect2(354,647,58,58),"sector","Galaxy · select a star and orbital destination [G]",Art.GOLD)
 	system_button = symbol_at("system_view",Rect2(287,647,58,58),"system_view","System view · nearby planets [J]",Art.NAV)
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	tool_title = label_at("",Rect2(772,634,516,26),18)

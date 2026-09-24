@@ -21,7 +21,7 @@ func run() -> void:
 	game.field.change_flight_mode("orbit")
 	check(not game.begin_travel("s11p0").is_empty(),"Unknown distant systems cannot bypass discovery fog")
 	check(not game.sector.command("travel",{"system":"s1"}).is_empty(),"Legacy strategic travel cannot move the same ship independently")
-	check(game.quote("s1p0").energy == 8 and game.quote("s1p0").seconds == 12,"Neighbor journey exposes cost and duration before launch")
+	check(game.quote("s1p0").energy == 8 and game.quote("s1p0").seconds == 2,"Neighbor journey exposes cost and duration before launch")
 	game.field.state.scanned.append("relay")
 	game.field.state.samples = 1
 	game.field.state.hull = 63.0
@@ -33,8 +33,8 @@ func run() -> void:
 	game.field.state.service_stock.orbit_tender = 0
 	check(game.begin_travel("s1p0").is_empty() and game.field.state.energy == 92,"Departure consumes energy once")
 	check(not game.begin_travel("s2p0").is_empty() and game.field.state.energy == 92,"Repeated departure cannot double spend or replace the destination")
-	for i: int in range(5): game.tick()
-	check(game.traveling() and game.field.state.planet_id == "morrow" and game.sector.state.flagship.remaining == 7,"Travel takes time without revealing destination early")
+	game.tick()
+	check(game.traveling() and game.field.state.planet_id == "morrow" and game.sector.state.flagship.remaining == 1,"Travel takes time without revealing destination early")
 	var path: String = "res://artifacts/transit_test.fw"
 	check(game.save_to(path) == OK,"In-transit campaign saves")
 	var loaded := Session.new()
@@ -54,6 +54,7 @@ func run() -> void:
 	check(game.field.marks == 64 and game.field.state.energy == 100,"Remote docking charges the real treasury")
 	game.field.act("scan","relay",0)
 	check(game.field.state.history.any(func(entry: Dictionary) -> bool: return entry.id == "s1p0:scan_relay"),"Discovery history keeps separate world-scoped achievements")
+	for i: int in range(24): game.tick() # Production uses simulation time, not travel animation length.
 	game.field.state.energy = 1.0
 	check(not game.begin_travel("morrow").is_empty() and game.field.state.planet_id == "s1p0","Insufficient fuel blocks travel instead of granting a free return")
 	game.field.state.energy = 100.0
@@ -90,7 +91,7 @@ func run() -> void:
 	explorer.field.change_flight_mode("orbit")
 	var visited_bodies: int = 0
 	var itinerary_ok: bool = true
-	for system: Dictionary in explorer.sector.state.systems:
+	for system: Dictionary in explorer.sector.state.systems.slice(0,12):
 		var route: Array = explorer.sector.route_between(explorer.sector.state.flagship.system,system.id,true)
 		for hop: String in route:
 			if hop == explorer.sector.state.flagship.system: continue

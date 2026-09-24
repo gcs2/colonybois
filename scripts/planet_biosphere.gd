@@ -143,12 +143,12 @@ func tick(game: RefCounted) -> void:
 			game.climate.bind(game)
 func restore(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["worlds","cargo","catalogued","completed"]): return ERR_INVALID_DATA
-	if not source.worlds is Dictionary or source.worlds.size() > 24 or not source.cargo is Dictionary or not source.catalogued is Array or not source.completed is Array: return ERR_INVALID_DATA
+	if not source.worlds is Dictionary or source.worlds.size() > 6144 or not source.cargo is Dictionary or not source.catalogued is Array or not source.completed is Array: return ERR_INVALID_DATA
 	var count: int = 0
 	for id: Variant in source.cargo:
 		if not id is String or not data().has(id) or not Validation.number(source.cargo[id],1,HOLD,true): return ERR_INVALID_DATA
 		count += source.cargo[id]
-	if count > HOLD or source.catalogued.size() > 18 or source.completed.size() > 48: return ERR_INVALID_DATA
+	if count > HOLD or source.catalogued.size() > 18 or source.completed.size() > 12288: return ERR_INVALID_DATA
 	var seen: Array = []
 	for id: Variant in source.catalogued:
 		if not id is String or not data().has(id) or id in seen: return ERR_INVALID_DATA

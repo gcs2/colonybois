@@ -842,6 +842,9 @@ func _process(delta: float) -> void:
 				for id: String in old_escorts:
 					if campaign.fleet.state.ships[id].status == "lost":
 						_toast(campaign.fleet.catalog[id].name+" lost · relations −7"); audio.play("error")
+	if sector_map.visible and campaign != null and campaign.traveling():
+		sector_map.graph.travel_fraction = clampf(1.0-(campaign.sector.state.flagship.remaining-tick_clock)/maxf(1,campaign.sector.state.flagship.duration),0,1)
+		sector_map.graph.queue_redraw()
 	_update_camera(delta)
 	if not paused and not _inspection_open() and model.state.flight_mode == "orbit": orbit.advance(delta)
 	if not paused and not _inspection_open() and model.state.flight_mode == "surface":
@@ -1735,7 +1738,7 @@ func _refresh_ui() -> void:
 	if orbital and not model.has_wreck() and orbital_target != "guardian":
 		objective.text = "Chart this world, dock for services, or choose your next destination."
 		subject.text = model.definition().name+" / orbit"
-		explanation.text = "Press M for planetary survey or G for the sector chart."
+		explanation.text = "Press M for planetary survey or G for the galaxy."
 		use_button.disabled = true
 	if orbital and not model.has_wreck() and orbital_target == "guardian" and model.has_guardian():
 		objective.text = "Recover cargo or continue exploring." if s.guardian_disabled else "Hostile contact · dodge the marked strike or retreat."
@@ -1957,7 +1960,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover pulse ward\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: sector chart · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover pulse ward\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: galaxy · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
@@ -2146,7 +2149,7 @@ func _inspect_system(id: String) -> void:
 
 func _build_systems_panel() -> void:
 	if campaign != null:
-		_panel_copy("CARGO  %d units · DRIVE  %d links" % [campaign.commerce.capacity(),campaign.commerce.drive_range()],Instruments.CARGO)
+		_panel_copy("CARGO  %d units · DRIVE  %d pc" % [campaign.commerce.capacity(),campaign.commerce.drive_range()],Instruments.CARGO)
 		_button("Badges & upgrade eligibility",_show_popup.bind("badges"),popup_body)
 	popup_body.add_child(_label("REACTOR  ·  %d / %d ENERGY" % [model.state.energy,model.max_capacity("energy")],17,Instruments.GOLD))
 	system_energy = ProgressBar.new()
@@ -2413,7 +2416,7 @@ func _service_action(purchase_pack: bool) -> void:
 	_show_popup("service")
 
 func _toggle_sector_map() -> void:
-	if campaign == null: _toast("Sector navigation requires a flight campaign."); return
+	if campaign == null: _toast("Galaxy navigation requires a flight campaign."); return
 	if sector_map.visible:
 		if not campaign.traveling(): sector_map.hide()
 		return
