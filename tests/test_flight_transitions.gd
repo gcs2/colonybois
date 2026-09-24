@@ -43,6 +43,17 @@ func run() -> void:
 		if scene.model.state.flight_mode == "orbit" and scene.ship.position.distance_to(scene.orbit.planet.position) < 21: collided = true
 	check(scene.model.state.flight_mode == "surface" and not collided,"Far-side entry reaches the surface without becoming stuck against the planet")
 	check(scene.model.state.landings == 1,"A completed multi-waypoint approach records one landing")
+	scene._change_flight_mode("orbit")
+	scene.arrival_fade = 0
+	scene.landing = true; scene.landing_waypoints.clear()
+	scene.destination = scene.ship.position+Vector3(0,0,3)
+	scene._update_flight_effects(0)
+	check(is_zero_approx(scene.transition_veil.color.a),"Final approach remains visible three units before arrival")
+	scene.destination = scene.ship.position+Vector3(0,0,0.66)
+	scene._update_flight_effects(0)
+	check(scene.transition_veil.color.a > 0.95 and scene.wreck_label.modulate.a < 0.05,"World locators disappear with the world at the reference-frame swap")
+	scene._cancel_orders(); scene._update_flight_effects(0)
+	check(is_zero_approx(scene.transition_veil.color.a) and scene.wreck_label.modulate.a == 1,"Cancellation immediately restores world and locator opacity")
 	scene.audio.muted = false
 	scene.audio.guide("missing_test_recording","No machine voice should speak this.")
 	check(not scene.audio.voice.playing,"Absent guide recordings remain caption-only")

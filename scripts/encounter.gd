@@ -938,10 +938,13 @@ func _update_flight_effects(delta: float) -> void:
 	if not stopped: arrival_fade = maxf(0,arrival_fade-delta*1.8)
 	var outbound: float = 0
 	if not orbital and velocity.y > 0.1: outbound = smoothstep(53,58,ship.position.y)
-	if orbital and landing and landing_waypoints.is_empty(): outbound = 1-smoothstep(1,9,ship.position.distance_to(destination))
+	# Cover only the reference-frame swap, not the visible final approach.
+	if orbital and landing and landing_waypoints.is_empty(): outbound = 1-smoothstep(0.65,1.8,ship.position.distance_to(destination))
 	transition_veil.color.a = maxf(arrival_fade,outbound)
 	transition_caption.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / ATMOSPHERE")
 	transition_caption.modulate.a = transition_veil.color.a
+	for locator: Label in [ship_locator,planet_locator,wreck_label,guardian_label]:
+		locator.modulate.a = 1.0-transition_veil.color.a
 
 func _update_visuals() -> void:
 	if support_visual != null: support_visual.refresh(model,ship.position,0,true)

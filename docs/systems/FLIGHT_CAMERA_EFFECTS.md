@@ -1,5 +1,12 @@
 # Wider flight camera and bounded effects
 
+## Shorter transition concealment (24 September 2026)
+
+The critic found that approach scenery became almost black well before arrival while orbital labels remained. The departure veil now covers only the last 1.8 to 0.65 approach units rather than the last nine; ship, planet, wreck and guardian labels fade with the world. Cancellation restores opacity immediately. This preserves the existing reference-frame transition rather than claiming seamless descent.
+
+15 transition assertions pass, including the visible approach at three units, hidden locators at the swap and cancellation recovery. Build `20260924-034422`. The isolated native eight-second sequence was refreshed. Independent critic confirms planet/ship visibility in frames 053/055/057 and world-label fading at 059, with surface visible under fade at 060 and clear at 065. Exact near-black duration and human feel are not established by sampled stills. Geographic landmark continuity and the final-braking speed rebound remain unresolved; neither this fade correction nor the earlier route-speed change establishes accepted flight feel.
+
+
 ## Continuous landing turns (24 September 2026)
 
 Far-side landing previously treated every arc waypoint as a stopping destination. A measured fixture took 12.667 seconds, reaching only 0.84 units/s between intermediate points and spending 470 physics frames below half speed. Intermediate landing waypoints now use continuous travel speed and hand off within four units; only the final destination uses arrival slowdown. The identical fixture completes in 5.983 seconds with minimum intermediate speed 12.53 and zero slow frames. This changes landing guidance only, not ship maximum speed, travel prices or energy.
