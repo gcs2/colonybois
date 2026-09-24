@@ -10,8 +10,8 @@ The user challenged the implementation-first drift. Small functional corrections
 
 | Dimension | Verified register result | Limit |
 |---|---|---|
-| Source workflows visually sampled | 17/61 (27.9%) | Open denominator; not all states or rules observed |
-| Source workflows with readable evidence | 6/61 (9.8%) | Exact cited claims only |
+| Source workflows visually sampled | 18/61 (29.5%) | Open denominator; not all states or rules observed |
+| Source workflows with readable evidence | 7/61 (11.5%) | Exact cited claims only |
 | Source interactions fully verified | 0/61 | Before/action/result, restrictions and failure evidence incomplete |
 | Source presentation / audio reviewed | 0/61 / 0/61 | Muted stills do not establish delivery or sound |
 | View families with a base candidate file | 6/33 (18.2%) | File presence only; all have pending states or corrections |

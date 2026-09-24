@@ -5,12 +5,12 @@ const REFERENCE_METRICS = {
   "overall": {
     "denominator": 61,
     "visual_sampled": {
-      "count": 17,
-      "percent": 27.9
+      "count": 18,
+      "percent": 29.5
     },
     "readable_evidence": {
-      "count": 6,
-      "percent": 9.8
+      "count": 7,
+      "percent": 11.5
     },
     "interaction_verified": {
       "count": 0,
@@ -84,12 +84,12 @@ const REFERENCE_METRICS = {
       "owner": "L01",
       "denominator": 7,
       "visual_sampled": {
-        "count": 1,
-        "percent": 14.3
+        "count": 2,
+        "percent": 28.6
       },
       "readable_evidence": {
-        "count": 0,
-        "percent": 0.0
+        "count": 1,
+        "percent": 14.3
       },
       "interaction_verified": {
         "count": 0,

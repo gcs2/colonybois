@@ -53,6 +53,10 @@ These are project requirements derived from the evidence, not claims of verified
 | Badges | Collection screen with named accomplishment | Levels, progress, unlock preview, pinning | Achievement event links to a newly available capability and actual shop |
 | Escape menu | Dim world, pause simulation and input | Resume, save/load, settings, history, title | Escape closes current window first; settings returns to menu; pre-existing pause is preserved |
 
+## Cargo inspection versus world collection
+
+The [collection sequence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md#collection-feedback-and-cargo-continuity) shows beam feedback, a changing compact cargo tray and an organism card with the world visible. Our dedicated cargo grid is an optional inspection/management view, not a mandatory step for collection or deployment. Keep the category→item→world-target path and finite counts in the flight palette. Review organism identity, incoming-item feedback, full-hold refusal and release targeting as world-facing states alongside the modal inspection states. The sampled source does not prove exact click mechanics, energy cost or absence of other inventory screens; those remain research gaps.
+
 ## Navigation state contract — source-informed proposal
 
 The [boundary evidence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md) supports compact contextual system information and stable HUD anchors during a scale change. The following requirements are our design, not proof of source inputs or implemented Field Instruments behavior. No local surface chart appears in galaxy or system views.

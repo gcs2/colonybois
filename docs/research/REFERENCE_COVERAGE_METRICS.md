@@ -29,6 +29,8 @@ The later navigation recapture adds narrowly readable galaxy/system endpoint and
 
 The surface recapture at1805.490461s adds narrowly readable RF001 state evidence, independently checked by root and contact_shop_critic: **6/61 (9.8%)** readable overall. It shows surface composition and populated tools, not steering, altitude, zoom or beam-input mechanics. Source detail is capped at1080p (R100). All interaction/presentation/audio flags remain false.
 
+Latest collection-feedback sequence adds RF018 sampled/readable evidence: **18/61 (29.5%) sampled; 7/61 (11.5%) readable**. Four inspected frames at1804–1808s have1080p source detail (R100), complete world/HUD context and L3 for the cited cargo counts and Brasstax card. Root and contact_shop_critic agree on those narrow observations. Input, cost, release, failure, full motion and audio remain unverified; all complete interaction/presentation/audio totals remain zero. Earlier counts above are dated checkpoints.
+
 ## Resolution and legibility
 
 For every video frame record the full PNG dimensions, decoded source dimensions measured at capture, visible gameplay rectangle excluding browser/letterboxing, actual timestamp, completeness and overlays. Keep originals and rejected captures clearly distinct.

@@ -448,9 +448,9 @@
       "category": "living_worlds",
       "owner": "L01",
       "title": "Collect/store/release organisms and objects",
-      "evidence_times": [],
-      "visual_sampled": false,
-      "readable_evidence": false,
+      "evidence_times": [1804.235112, 1805.235111, 1807.235110, 1808.235109],
+      "visual_sampled": true,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -459,7 +459,15 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Collection-feedback samples only: highlighted beam tool, world beam, new tray item count4 then5 and Brasstax card. No exact input, collection unit/cost, release, failure, full timing or audio proof. See cargo sequence in SPORE_EXTENDED_VIDEO_EVIDENCE.md.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/cargo-1808-card.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": ["root", "contact_shop_critic"],
+        "supported_claim": "Count5 in the new upper-right cargo slot and Brasstax card are readable with the world and highlighted beam tool visible. Collection feedback only; no release or input-causality claim."
+      }
     },
     {
       "id": "RF019",

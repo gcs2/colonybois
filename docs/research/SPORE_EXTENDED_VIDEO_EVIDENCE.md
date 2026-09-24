@@ -127,6 +127,23 @@ Independent critic contact_shop_critic confirmed the sequence and persistent bot
 
 Compared with our candidates, 05 lacks the compact known-system summary; 04 lacks intermediate/refusal states and retains a redundant chart/heavy asteroid foreground. The dated actual system capture's 12-second quote is historical: current code uses two seconds locally and two–four between systems. Follow the [interface contract](../reviews/SPORE_INTERFACE_CONTRACT.md) for our proposed state behavior rather than copying screenshot values.
 
+## Collection feedback and cargo continuity
+
+24 September follow-up on [extended gameplay at30:04](https://www.youtube.com/watch?v=0NN5fBVEHcA&t=1804s). Four paused, muted frames have full PNGs and same-stem JSON sidecars in `artifacts/references/spore/video/`. Browser capture2560×1440, decoder1920×1080, full-raster gameplay and unobscured bottom HUD: effective detail1080p, R100. L3 applies to the specific item counts/name below, not every small icon. No viewport override or account setting changed.
+
+| File | Exact source seconds | Direct observation |
+|---|---:|---|
+| cargo-1804-before.png | 1804.235112 | Highlighted beam-tool tile; far-right upper tray position empty; no organism card |
+| cargo-1805-beam.png | 1805.235111 | Green/yellow world beam; that tray position still empty |
+| cargo-1807-result.png | 1807.235110 | Beam visible; new upper-right tray item reads4; Brasstax picture/name card at top right |
+| cargo-1808-card.png | 1808.235109 | Same item reads5; card persists; no active beam visible in this sample |
+
+Root and independent contact_shop_critic inspected all four frames. Ship/world, selected beam tool and compact cargo remain visible throughout these samples; no dedicated inventory modal appears. The sequence is sampled at one/two-second intervals using paused frame advance, not a continuous motion review. Exact mouse input, acquisition per click, full costs/restrictions, timing, failure and release are unverified. Playback remained muted; no audio claim. The source's collection mission is not approval to add compulsory delivery errands.
+
+Manual printed p.49 (`manual-27.png`) separately describes category selection, tool selection and target application, with charge counts above slots and shortcut numbers below. It points readers to the in-game guide for cargo abduction/transport detail; the manual does not fill in those missing mechanics for this audit.
+
+Adaptation: dedicated cargo is optional inspection/management. Preserve a quick world-facing path through the tool tray, target feedback and collection result; do not force this loop through our large paused cargo proposal. Add organism identity/result-card and tray-change states to the paired surface review. The evidence does not establish that Spore never has a separate inventory. RF018 now has sampled/readable feedback evidence; complete interaction/presentation/audio flags remain false. Raw captures remain local; source links, timestamps and findings are tracked.
+
 ## Separate launch source
 
 [SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.
