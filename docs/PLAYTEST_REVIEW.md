@@ -1,5 +1,9 @@
 # Presentation and interaction review — 22 September 2026
 
+## Latest: 23 September evening space playtest
+
+The user still finds the game shallow and unfun: awkward navigation/combat/UI, cheap sound, long waits, unclear zoom and tiny landing facades. They request big homeworld cities, animated guidance, expressive communications, inhabited planets, fully explorable procedural worlds and full-screen planetary/galactic navigation. Explorer recognition was the positive exception. Read [PLAYABILITY_REBUILD.md](PLAYABILITY_REBUILD.md) for code evidence and the superseding production order. Feature breadth is not presentation or fun acceptance.
+
 ## User assessment
 
 The user rejected the colony presentation, font, overwhelming interface and tutorial flow. The repeated city buildings did not convincingly communicate 120,000 residents. The planet's fixed colony marker floated over rotating geography. Colonization felt free and instantaneous, with an entire starter settlement appearing without construction. There was no sound feedback. Flagship travel lacked engagement. These are failures of the player experience even where automated checks passed.

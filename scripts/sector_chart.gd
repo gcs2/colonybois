@@ -3,6 +3,7 @@ extends PanelContainer
 signal close_requested
 signal travel_requested(planet: String)
 signal system_requested(system: String)
+const Stage = preload("res://scripts/navigation_stage.gd")
 const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Session = preload("res://scripts/expedition_session.gd")
@@ -23,8 +24,20 @@ class StarGraph extends Control:
 	signal selected(id: String)
 	var campaign: RefCounted
 	var selected_id: String = "s0"
+	var magnification: float = 1.0
+	var pan := Vector2.ZERO
+	var dragging: bool = false
+	func view_center() -> Vector2: return Vector2((size.x-380)*0.5,size.y*0.5)
+	func reset_view() -> void:
+		magnification = 1; pan = Vector2.ZERO; queue_redraw()
+	func zoom_at(steps: float, anchor: Vector2) -> void:
+		var previous: float = magnification
+		magnification = clampf(magnification*pow(1.18,-steps),0.65,3.5)
+		pan = anchor-view_center()-(anchor-view_center()-pan)*(magnification/previous)
+		queue_redraw()
 	func point(system: Dictionary) -> Vector2:
-		return Vector2(55+(system.x+20)/42.0*(size.x-110),45+(system.z+11)/36.0*(size.y-90))
+		var base := Vector2(85+(system.x+20)/42.0*(size.x-570),125+(system.z+11)/36.0*(size.y-250))
+		return (base-view_center())*magnification+view_center()+pan
 	func _draw() -> void:
 		if campaign == null: return
 		var font: Font = ThemeDB.fallback_font
@@ -65,6 +78,12 @@ class StarGraph extends Control:
 			draw_colored_polygon(PackedVector2Array([at+Vector2(0,-8),at+Vector2(6,5),at+Vector2(-6,5)]),Color("fff0c2"))
 	func _gui_input(event: InputEvent) -> void:
 		if campaign == null or campaign.traveling(): return
+		if event is InputEventMouseMotion and dragging:
+			pan += event.relative; queue_redraw(); accept_event(); return
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_RIGHT: dragging = event.pressed; accept_event(); return
+			if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+				zoom_at(-1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1,event.position); accept_event(); return
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			for system: Dictionary in campaign.sector.state.systems:
 				if campaign.sector.is_revealed(system.id) and point(system).distance_to(event.position) < 24:
@@ -87,42 +106,23 @@ func button(text: String, action: Callable) -> Button:
 	return result
 
 func _ready() -> void:
-	position = Vector2(24,100)
-	size = Vector2(1552,592)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("0b1520")
-	style.set_content_margin_all(24)
-	add_theme_stylebox_override("panel",style)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation",12)
-	add_child(column)
-	var header := HBoxContainer.new()
-	column.add_child(header)
+	var stage: Control = Stage.create(self)
+	var header: HBoxContainer = Stage.header(stage)
 	heading = label("SECTOR CHART",24)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(heading)
 	close = button("Close [G / Esc]",func() -> void: close_requested.emit())
 	header.add_child(close)
-	var body := HBoxContainer.new()
-	body.add_theme_constant_override("separation",24)
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(body)
 	graph = StarGraph.new()
-	graph.custom_minimum_size = Vector2(880,410)
-	graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	graph.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	graph.selected.connect(select_system)
-	body.add_child(graph)
-	var side := VBoxContainer.new()
-	side.custom_minimum_size.x = 490
-	side.add_theme_constant_override("separation",8)
-	body.add_child(side)
+	Stage.world(stage,graph)
+	var side: VBoxContainer = Stage.sidebar(stage,360)
 	worlds = VBoxContainer.new()
 	side.add_child(worlds)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
 	UI.instrument(inspect_system,"system_view",UI.NAV); side.add_child(inspect_system)
 	details = label("")
-	details.custom_minimum_size = Vector2(490,100)
+	details.custom_minimum_size = Vector2(320,100)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(details)
 	travel = button("",func() -> void: travel_requested.emit(selected_planet))
@@ -135,7 +135,11 @@ func _ready() -> void:
 	progress.show_percentage = false
 	UI.meter(progress,UI.GOLD)
 	side.add_child(progress)
-	column.add_child(label("Select a star, then an orbital destination. Gold: your system · mint: explored · gray: uncharted · orange: freight",14))
+	var footer: HBoxContainer = Stage.footer(stage)
+	footer.add_child(button("−",func() -> void: graph.zoom_at(1,graph.view_center())))
+	footer.add_child(button("+",func() -> void: graph.zoom_at(-1,graph.view_center())))
+	footer.add_child(button("Frame sector",graph.reset_view))
+	footer.add_child(label("Wheel: zoom · Right-drag: pan · Select a star to inspect its planets",15))
 	hide()
 
 func present(session: RefCounted) -> void:

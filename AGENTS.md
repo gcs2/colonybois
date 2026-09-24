@@ -10,6 +10,8 @@
 
 ## Product constraints
 
+- Latest evening playtest rejects breadth without playability: clunky UI/combat, cheap audio, slow/jumpy navigation and small landing facades remain unacceptable. Read docs/PLAYABILITY_REBUILD.md. Prioritize full-screen navigation and responsive travel, an inhabited Morrow with city/port life and expressive communications, and a shared-geography whole-planet pipeline. Explorer badge feedback is the positive reference. Do not resume tool-catalog expansion or compulsory tutorial work ahead of these corrections. Literal Earth size is under discussion, not an approved engine migration.
+
 - 23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
 
 - Latest visual rejection: no rounded icon wells, shiny copper-like borders or persistent selected-tool captions above the palette. Current SVG glyphs remain temporary; typography and planet art are rejected. Preserve named hover tooltips. Do not extend the rejected material style to other screens.

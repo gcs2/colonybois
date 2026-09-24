@@ -4,6 +4,7 @@ signal close_requested
 signal travel_requested(site_id: String)
 signal survey_requested
 signal ui_cue(cue: String)
+const Stage = preload("res://scripts/navigation_stage.gd")
 const Globe = preload("res://scripts/planet_globe.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const UI = preload("res://scripts/flight_interface.gd")
@@ -48,38 +49,20 @@ func button(text: String, action: Callable, parent: Control, tint: Color = UI.NA
 	return item
 
 func _ready() -> void:
-	position = Vector2(24,100)
-	size = Vector2(1552,592)
-	var backing: StyleBoxFlat = UI.box(UI.NAV)
-	backing.bg_color = UI.INK
-	add_theme_stylebox_override("panel",backing)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation",10)
-	add_child(column)
-	var header := HBoxContainer.new()
-	column.add_child(header)
+	var stage: Control = Stage.create(self)
+	var header: HBoxContainer = Stage.header(stage)
 	var title: Label = text_label(definition.name.to_upper()+"  /  PLANETARY ATLAS",24)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	header.add_child(text_label("INSPECTION PAUSED",12,UI.GOLD))
 	button("Close  [M / Esc]",func() -> void: close_requested.emit(),header)
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation",24)
-	column.add_child(body)
-	var left := VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body.add_child(left)
 	preview = SubViewportContainer.new()
-	preview.custom_minimum_size = Vector2(870,450)
-	preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	preview.stretch = true
 	preview.mouse_filter = Control.MOUSE_FILTER_STOP
 	preview.gui_input.connect(_map_input)
-	left.add_child(preview)
+	Stage.world(stage,preview)
 	viewport = SubViewport.new()
-	viewport.size = Vector2i(960,460)
+	viewport.size = Vector2i(1600,900)
 	viewport.own_world_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	preview.add_child(viewport)
@@ -120,11 +103,11 @@ func _ready() -> void:
 	preview.add_child(site_caption)
 	ship_caption = text_label("▲  SHIP",12,UI.GOLD)
 	preview.add_child(ship_caption)
-	left.add_child(text_label("Drag globe to rotate  ·  Wheel to zoom  ·  Select the green landing beacon",13,UI.MUTED))
-	var sidebar := VBoxContainer.new()
-	sidebar.custom_minimum_size.x = 490
-	sidebar.add_theme_constant_override("separation",12)
-	body.add_child(sidebar)
+	var footer: HBoxContainer = Stage.footer(stage)
+	footer.add_child(text_label("Drag to rotate · Wheel to zoom",15,UI.MUTED))
+	button("−",func() -> void: change_zoom(1),footer).tooltip_text = "Zoom out"
+	button("+",func() -> void: change_zoom(-1),footer).tooltip_text = "Zoom in"
+	var sidebar: VBoxContainer = Stage.sidebar(stage,380)
 	var layers := HBoxContainer.new()
 	layers.add_theme_constant_override("separation",8)
 	sidebar.add_child(layers)
@@ -138,16 +121,16 @@ func _ready() -> void:
 	UI.meter(progress_bar,UI.NAV)
 	sidebar.add_child(progress_bar)
 	survey_button = button("Chart from orbit · 20 energy",func() -> void: survey_requested.emit(),sidebar,UI.GOLD)
-	sidebar.add_child(text_label("KNOWN LANDING SITES",12,UI.MUTED))
+	sidebar.add_child(text_label("LANDING BEACONS",12,UI.MUTED))
 	site_button = button(site_name(),focus_site,sidebar,Color("86cf9a"))
 	report = text_label("",15,UI.MUTED)
-	report.custom_minimum_size.x = 480
+	report.custom_minimum_size.x = 340
 	report.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(report)
 	travel_button = button("",func() -> void: travel_requested.emit(str(definition.sites[0].id)) if not definition.sites.is_empty() else close_requested.emit(),sidebar,Color("86cf9a"))
 	var legend: Label = text_label("Dark grid: uncharted\nViolet: orbital geography · green: local site chart\nOrbital imaging does not identify ground resources.",13,UI.MUTED)
 	legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	legend.custom_minimum_size.x = 480
+	legend.custom_minimum_size.x = 340
 	sidebar.add_child(legend)
 	visibility_changed.connect(func() -> void:
 		dragging = false
@@ -195,14 +178,17 @@ func _map_input(event: InputEvent) -> void:
 			if event.pressed: drag_distance = 0
 			elif drag_distance < 5: pick_site(event.position)
 		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
-			zoom = clampf(zoom+(-0.6 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 0.6),8.8,17)
-			camera.position.z = zoom
+			change_zoom(-1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1)
 		accept_event()
 	elif event is InputEventMouseMotion and dragging:
 		drag_distance += event.relative.length()
 		globe.rotation.y += event.relative.x*0.008
 		globe.rotation.x = clampf(globe.rotation.x+event.relative.y*0.006,-1.4,1.4)
 		accept_event()
+
+func change_zoom(steps: float) -> void:
+	zoom = clampf(zoom*pow(1.14,steps),7.8,24)
+	camera.position.z = zoom
 
 func marker_visible(marker: Node3D) -> bool:
 	var normal: Vector3 = marker.global_position.normalized()

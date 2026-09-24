@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Full-screen navigation:** Planet map (M), system view (J) and sector chart (G) now occupy the whole viewport with overlaid controls. Wheel zooms; right-drag pans the sector or rotates the system, and dragging rotates the planet. The surface-dock approach error is fixed. The latest playtest still rejects overall game quality; [current correction priorities](docs/PLAYABILITY_REBUILD.md) take precedence over the feature inventory below.
+
 **Active combat support:** Dock → Upgrades → Support sells Shield and Rally Call through earned badge alternatives. Click their Weapons icons to spend energy for temporary flagship protection or doubled personal/allied damage. Visible timers and cooldowns persist through travel and saves. [Controls, costs and limits](docs/SHIP_SUPPORT.md).
 
 **Alien colony invasions:** enter Veyr, Orin or Lumen, declare war through Communications → Conflict and descend. Precise attacks can trigger surrender; click the hall to accept or explicitly refuse. Capture transfers surviving production and finite stock with damage intact; destruction leaves a ruin requiring paid reconstruction. Distinct captures unlock Conqueror recognition and paid hull eligibility. [Controls, consequences and limits](docs/TERRITORIAL_COMBAT.md).

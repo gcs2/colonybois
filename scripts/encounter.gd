@@ -1774,6 +1774,10 @@ func _refresh_ui() -> void:
 	var local_view: bool = not orbital and not (system_map != null and system_map.visible) and not (sector_map != null and sector_map.visible)
 	hud.navigation.visible = local_view; hud.chart_backing.visible = local_view; hud.chart_heading.visible = local_view
 	_update_guidance()
+	var map_open: bool = planet_map.visible or system_map.visible or sector_map.visible
+	hud.visible = not map_open
+	guide_arrow.visible = guide_arrow.visible and not map_open
+	guide_caption.visible = guide_caption.visible and not map_open
 
 func _short_reason(reason: String) -> String:
 	# Keep the full validated reason on hover; the instrument shows one short cause.
@@ -1883,6 +1887,7 @@ func _show_popup(kind: String) -> void:
 	if kind == "service" and dock_page == "upgrades" and upgrade_family == "support":
 		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
+	popup.z_index = 30; menu_shade.z_index = 20
 	popup.visible = true
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
@@ -2336,7 +2341,8 @@ func _approach_service(id: String) -> void:
 	if ship.position.distance_to(Model.service_position(id)) <= float(model.local_services()[id].reach):
 		_show_popup("service")
 		return
-	var route: Array[Vector3] = FlightControls.landing_route(ship.position,Model.service_position(id),orbit.planet.position) if model.state.flight_mode == "orbit" else [Model.service_position(id)]
+	var route: Array[Vector3] = [Model.service_position(id)]
+	if model.state.flight_mode == "orbit": route = FlightControls.landing_route(ship.position,Model.service_position(id),orbit.planet.position)
 	_navigate(route.pop_front())
 	service_waypoints = route
 	service_order = id

@@ -1,5 +1,15 @@
 # Resume here
 
+## Full-screen navigation and evening playtest — latest checkpoint
+
+Read [PLAYABILITY_REBUILD.md](PLAYABILITY_REBUILD.md) before continuing. The user rejected the shallow, slow, awkward overall experience and asks for populated worlds, cities, communications, whole procedural planets and full-screen maps. Planet, system and sector now fill the viewport with overlaid controls; the underlying flight HUD hides. Galaxy wheel zoom/right-drag pan work. Escape appears above maps. Fixed the surface-dock approach runtime exception. Save format remains v18; the unfinished optional-guide work was set aside and is not shipped.
+
+Validation: 69 dedicated navigation checks, plus planet 34, system 41, travel 45, HUD 50, flight transitions 12 and diplomacy 45. Actual 1080p/1440p captures reviewed; layout checks also cover ultrawide. Final visual quality, native playability, combat/audio acceptance and whole planets remain open.
+
+Playable build: **build/versions/20260923-224349/FrontierWorlds.exe** through Play.cmd. Exported-pack startup smoke passed. The user's older running game was not restarted or overwritten.
+
+Next: responsive travel and inhabited Morrow/communications, alongside a bounded shared-geography whole-planet prototype. Read the new plan's evidence and acceptance criteria. Do not default back to more weapons/tools or ecology content. The exact physical scale is a design discussion; no engine migration is approved.
+
 ## Active Shield and Rally Call — latest checkpoint
 
 Read [SHIP_SUPPORT.md](SHIP_SUPPORT.md). Two paid, badge-gated support tools now connect shop purchases, inventory, mouse activation, finite energy, timed effects, real flagship/escort combat and saved cooldowns. Shield protects the flagship while escorts and ports remain exposed. Rally Call doubles personal and assisting escort damage; projectiles preserve their launch multiplier. Both tools have original candidate effects, icons, hover help and active timers. Snapshot v18 / field v9 migrate older saves without free equipment or energy.

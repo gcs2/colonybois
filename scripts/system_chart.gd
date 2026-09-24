@@ -5,6 +5,7 @@ signal sector_requested
 signal orbit_requested
 signal travel_requested(planet: String)
 signal ui_cue(cue: String)
+const Stage = preload("res://scripts/navigation_stage.gd")
 const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Globe = preload("res://scripts/planet_globe.gd")
@@ -44,18 +45,14 @@ func button(text: String, icon: String, hint: String, action: Callable, parent: 
 	UI.instrument(item,icon,UI.NAV); item.tooltip_text = hint
 	item.pressed.connect(func() -> void: ui_cue.emit("ui_confirm"); action.call()); parent.add_child(item); return item
 func _ready() -> void:
-	position = Vector2(24,100); size = Vector2(1552,592)
-	var style := StyleBoxFlat.new(); style.bg_color = Color("0b1520"); style.set_content_margin_all(16); add_theme_stylebox_override("panel",style)
-	var column := VBoxContainer.new(); column.add_theme_constant_override("separation",10); add_child(column)
-	var header := HBoxContainer.new(); column.add_child(header)
+	var stage: Control = Stage.create(self)
+	var header: HBoxContainer = Stage.header(stage)
 	heading = text_label("SYSTEM VIEW",24); heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(heading)
 	sector = button("Sector","systems","Zoom out to the sector chart [G]",func() -> void: sector_requested.emit(),header)
 	close = button("Orbit","planet_map","Return to the ship's current planet [J / Esc]",func() -> void: close_requested.emit(),header)
-	var body := HBoxContainer.new(); body.add_theme_constant_override("separation",20); body.size_flags_vertical = Control.SIZE_EXPAND_FILL; column.add_child(body)
-	preview = SubViewportContainer.new(); preview.stretch = true; preview.custom_minimum_size = Vector2(950,430)
-	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL; preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	preview.gui_input.connect(_view_input); preview.mouse_filter = Control.MOUSE_FILTER_STOP; body.add_child(preview)
-	viewport = SubViewport.new(); viewport.size = Vector2i(1000,480); viewport.own_world_3d = true; viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED; preview.add_child(viewport)
+	preview = SubViewportContainer.new(); preview.stretch = true
+	preview.gui_input.connect(_view_input); preview.mouse_filter = Control.MOUSE_FILTER_STOP; Stage.world(stage,preview)
+	viewport = SubViewport.new(); viewport.size = Vector2i(1600,900); viewport.own_world_3d = true; viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED; preview.add_child(viewport)
 	world = Node3D.new(); viewport.add_child(world); planets_root = Node3D.new(); world.add_child(planets_root)
 	var environment := WorldEnvironment.new(); var sky := Environment.new()
 	sky.background_mode = Environment.BG_COLOR; sky.background_color = Color("050a15")
@@ -70,17 +67,17 @@ func _ready() -> void:
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 4.1; torus.outer_radius = 4.25; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
-	var side := VBoxContainer.new(); side.custom_minimum_size.x = 480; side.add_theme_constant_override("separation",12); body.add_child(side)
-	details = text_label(""); details.custom_minimum_size = Vector2(480,180); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(details)
+	var side: VBoxContainer = Stage.sidebar(stage,360)
+	details = text_label(""); details.custom_minimum_size = Vector2(320,115); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,side)
-	status = text_label("",15); status.custom_minimum_size = Vector2(480,65); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(status)
+	status = text_label("",15); status.custom_minimum_size = Vector2(320,65); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(status)
 	progress = ProgressBar.new(); progress.custom_minimum_size.y = 8; progress.show_percentage = false; UI.meter(progress,UI.GOLD); side.add_child(progress)
-	var controls := HBoxContainer.new(); side.add_child(controls)
+	var controls: HBoxContainer = Stage.footer(stage)
 	button("","zoom_in","Zoom toward selected planet [Numpad +]",zoom.bind(-1),controls)
 	button("","zoom_out","Zoom out; at the outer limit, open sector [Numpad −]",zoom.bind(1),controls)
 	button("","system_view","Frame all planets [Home / Numpad 5]",reset_camera,controls)
-	instruction = text_label("Hover: cost and conditions · click: fly · right-drag: orbit camera · wheel: zoom · arrows/numpad 4/6: select",13)
-	column.add_child(instruction)
+	instruction = text_label("Wheel: zoom · Right-drag: rotate · Click a planet to fly",15)
+	controls.add_child(instruction)
 	visibility_changed.connect(func() -> void: viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED; dragging = false)
 	hide()
 func ink(color: Color) -> StandardMaterial3D:
