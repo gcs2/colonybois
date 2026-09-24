@@ -46,3 +46,5 @@
 - Reject flat blue Windows-style panels. Review the whole actual aesthetic against Field Instruments mocks with the visual critic, not just clipping. Equipment uses pictorial grids plus effects and flavor. Broader market/HUD conversion remains open.
 - EU4 screenshot reference: compact recognizable icons with immediate named tooltips and actual shortcuts where bound. Keep original Field Instruments materials.
 - Finished colony kits cost Marks only; crafting should be an alternative, not an additional charge. Crafting remains unimplemented. Cut Mark currency artwork is provisional; retain Marks and one treasury.
+
+- User rejected the wide commodity row with details underneath as a regression. Use the compact equipment-style grid with selected-item details beside it for trading. Do not revive the wide layout based on critic approval; user preference is authoritative.

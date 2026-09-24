@@ -1,4 +1,4 @@
-extends VBoxContainer
+extends HBoxContainer
 ## Presentation-only quotes. The campaign command revalidates every transaction.
 signal selected(id: String)
 signal trade_requested(action: String, id: String)
@@ -15,14 +15,20 @@ var sell_button: Button
 func _ready() -> void:
 	name = "CommodityShop"
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	add_theme_constant_override("separation",10)
+	add_theme_constant_override("separation",14)
+	var catalogue := ScrollContainer.new()
+	catalogue.custom_minimum_size = Vector2(270,288)
+	catalogue.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(catalogue)
 	var grid := GridContainer.new()
 	grid.columns = 3
-	grid.add_theme_constant_override("h_separation",8)
-	add_child(grid)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation",6)
+	grid.add_theme_constant_override("v_separation",6)
+	catalogue.add_child(grid)
 	for offer: Dictionary in offers:
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(150,100)
+		button.custom_minimum_size = Vector2(84,92)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.set_meta("equipment_tile",true)
 		button.set_meta("commodity_id",offer.id)
@@ -38,22 +44,22 @@ func _ready() -> void:
 		picture.texture = Style.equipment_icon(offer.id)
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		picture.custom_minimum_size.y = 69
+		picture.custom_minimum_size.y = 49
 		picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		contents.add_child(picture)
-		var label := Label.new()
-		label.text = offer.title
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size",14)
-		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		contents.add_child(label)
+		var price := Style.money(offer.buy,13)
+		price.alignment = BoxContainer.ALIGNMENT_CENTER
+		price.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		contents.add_child(price)
 		var stripe := ColorRect.new()
 		stripe.name = "Selection"; stripe.color = Color("f2ead3")
-		stripe.position = Vector2(2,7); stripe.size = Vector2(3,86)
+		stripe.position = Vector2(2,7); stripe.size = Vector2(3,78)
 		stripe.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(stripe)
 		entries[offer.id] = button
 	detail = VBoxContainer.new()
+	detail.custom_minimum_size.x = 250
+	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail.add_theme_constant_override("separation",8)
 	add_child(detail)
 	if not entries.has(selected_id): selected_id = str(offers[0].id) if not offers.is_empty() else ""

@@ -1,5 +1,12 @@
 # Personal contact and persistent diplomatic consequences
 
+## Compact grid correction (24 September 2026)
+
+The user rejected the wide commodity row with details underneath, preferring the existing compact equipment grid and adjacent details. Trading now follows that layout: three columns of 84x92 item tiles in a 270px scroll area, beside selected-good information and buy/sell actions. Tiles show buy price per unit; immediate named tooltips explicitly identify unit prices; side totals apply the selected quantity. Merchant, actual transaction rules and selection persistence remain. The earlier wide-layout critic verdict does not constitute user acceptance and is superseded.
+
+Build `20260924-033526`. Independent critic reviewed all 12 corrected captures with no blocking layout/refusal issue. 81 contact checks pass; refreshed native 1080p/1440p fixtures include water/glass four-unit totals, buy/sell, exhausted stock and insufficient funds. This is the requested layout correction, not final user art approval.
+
+
 ## Commodity browsing and immediate hover (24 September 2026)
 
 Commodity trading now uses a three-column pictorial selector, preserving the local representative. Selected goods show description, aboard/stock/demand counts and explicitly labeled buy/sell transaction totals. Quantity selection stays 1/4/8. Buy/sell commands revalidate current funds, cargo, stock and access; browsing never changes the campaign. Selection survives transactions. Empty cargo, stock exhaustion and insufficient funds have visible refusal copy. Home reserve export remains separate. No new commodity or crafting mechanics were added.
