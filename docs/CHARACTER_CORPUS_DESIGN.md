@@ -36,6 +36,8 @@ These are design influences, not claims about actual extraterrestrial taxonomy o
 
 ## Fish in a floating orb
 
+SUPERSEDED: the user rejects the elaborate vehicle/tools described below. Latest direction is simply an ordinary fish in a plain floating round orb, no tools or machinery. The apparent harmlessness contrasting with possible great power is the appeal. See PLAIN_FISH_AND_ASSET_VERSIONS.md. The earlier apparatus proposal remains historical, not a production requirement.
+
 Proposed character: an experienced aquatic broker or port official who uses a transparent water-filled mobility sphere. It is ordinary transport and habitat for this person, not a novelty pet bowl. A small external stabilizer ring carries one articulated gripper, communications hardware and a docking socket. The fish faces the visitor, hovers closer to inspect an offered sample, and operates internal controls with fins or body gestures. The gripper handles solid wares outside.
 
 Personal history could appear through a family token on the ring, a repair patch and instruments collected from different ports. Leave personality open: a formal bureaucrat, confident merchant or impulsive explorer all work. A fish need not be the joke. The surprising vehicle and purposeful behavior already provide charm.

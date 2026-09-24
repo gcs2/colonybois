@@ -2,6 +2,8 @@
 
 ## Latest scope correction — character production deferred
 
+Latest concept correction: [PLAIN_FISH_AND_ASSET_VERSIONS.md](PLAIN_FISH_AND_ASSET_VERSIONS.md). User wants a plain fish in a plain orb with no tools; possible powerful/final-boss role remains an idea. The elaborate habitat and near-identical style options were rejected. Preserve revisions side by side; distinguish design variants, asset maturity and future runtime quality levels. Only the specifically requested plain-fish concept was generated; no resumption of modeling or a creature creator.
+
 The user reiterated the deferral after further image generation: stop this branch and answer the scope question. No further character images or model refinement now. Internal asset reuse does not imply a player creator; recommended optional later interface is a bounded preset selector.
 
 User wants character modeling/corpus expansion later, questions a full creature creator, and asks about internal reuse versus a small preset selector. Read [CHARACTER_SCOPE_OPTIONS.md](CHARACTER_SCOPE_OPTIONS.md). V1/V2 are preserved unfinished; no fidelity pass. Stop further model refinement and do not build a universal body-part editor. Latest cast critique: too much animated-film animal styling; Prosperity/Harmony too similar. A requested bounded style comparison explores tactile miniature, graphic alien and strange naturalism, with a distinct aquatic Harmony option. Return to the space game after that comparison. The overall game goal remains active.
