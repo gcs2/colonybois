@@ -64,11 +64,11 @@ func fire(game: RefCounted, weapon: String, target: String, point: Vector3, at: 
 	state.fired += 1
 	if weapon == "surface_laser":
 		impacts.append({"planet":planet,"time":game.field.state.time,"at":local.units[target].at.duplicate(),"radius":1.4})
-		_damage(game,planet,target,float(spec.damage))
+		_damage(game,planet,target,float(spec.damage)*game.field.damage_multiplier())
 	else:
 		if weapon == "ground_bomb": point.y = Geography.surface_height(game.field.definition(),point.x,point.z)
 		else: point = position(local.units[target].at)
-		local.shots.append({"weapon":weapon,"target":target,"origin":packed(at),"point":packed(point),"launch":int(game.field.state.time),"impact":int(game.field.state.time)+int(spec.delay)})
+		local.shots.append({"weapon":weapon,"multiplier":game.field.damage_multiplier(),"target":target,"origin":packed(at),"point":packed(point),"launch":int(game.field.state.time),"impact":int(game.field.state.time)+int(spec.delay)})
 	return ""
 func _damage(game: RefCounted, planet: String, target: String, amount: float) -> void:
 	var unit: Dictionary = state.worlds[planet].units[target]
@@ -91,11 +91,11 @@ func resolve(game: RefCounted) -> void:
 			if shot.impact > game.field.state.time: continue
 			var spec: Dictionary = data().weapons[shot.weapon]
 			impacts.append({"planet":planet,"time":game.field.state.time,"at":local.units[shot.target].at.duplicate() if shot.weapon == "seeker" else shot.point.duplicate(),"radius":2.5 if shot.weapon == "seeker" else spec.radius})
-			if shot.weapon == "seeker": _damage(game,planet,shot.target,float(spec.damage))
+			if shot.weapon == "seeker": _damage(game,planet,shot.target,float(spec.damage)*float(shot.get("multiplier",1)))
 			else:
 				for id: String in local.units:
 					var at: Vector3 = position(local.units[id].at)
-					if profiles(planet)[id].kind == "ground" and Vector2(at.x,at.z).distance_to(Vector2(shot.point[0],shot.point[2])) <= float(spec.radius): _damage(game,planet,id,float(spec.damage))
+					if profiles(planet)[id].kind == "ground" and Vector2(at.x,at.z).distance_to(Vector2(shot.point[0],shot.point[2])) <= float(spec.radius): _damage(game,planet,id,float(spec.damage)*float(shot.get("multiplier",1)))
 		local.shots = local.shots.filter(func(shot: Dictionary) -> bool: return shot.impact > game.field.state.time)
 		if planet != game.field.state.planet_id or game.field.state.flight_mode != "surface" or game.traveling():
 			for unit: Dictionary in local.units.values(): unit.fire_at = 0
@@ -130,7 +130,7 @@ func step(game: RefCounted, ship: Vector3) -> String:
 			unit.fire_at = 0; unit.ready = int(game.field.state.time)+4
 			game.fleet.hit_volume(game,position(unit.aim),float(spec.radius),float(spec.damage))
 			if ship.distance_to(position(unit.aim)) <= float(spec.radius):
-				game.field.state.hull = maxf(0,float(game.field.state.hull)-float(spec.damage)); event = "hit"
+				event = "hit" if game.field.receive_damage(float(spec.damage)) else "shield_block"
 				if game.field.state.hull <= 0:
 					game.field._emergency_tow()
 					for other: Dictionary in local.units.values(): other.fire_at = 0
@@ -181,6 +181,7 @@ func restore(source: Variant, time: int, upgrades: Array) -> Error:
 			if not shot is Dictionary or not shot.has_all(["weapon","target","origin","point","launch","impact"]): return ERR_INVALID_DATA
 			if shot.weapon not in ["seeker","ground_bomb"] or not shot.target is String or not vector_valid(shot.origin) or not vector_valid(shot.point): return ERR_INVALID_DATA
 			if data().weapons[shot.weapon].upgrade not in upgrades: return ERR_INVALID_DATA
+			if not number(shot.get("multiplier",1),1,2,true) or (shot.get("multiplier",1) == 2 and "rally_call" not in upgrades): return ERR_INVALID_DATA
 			if not number(shot.launch,0,time,true) or not number(shot.impact,time+1,time+2,true) or shot.impact != shot.launch+2: return ERR_INVALID_DATA
 			if shot.weapon == "seeker" and (not local.units.has(shot.target) or profiles(planet)[shot.target].kind != "air"): return ERR_INVALID_DATA
 			if shot.weapon == "ground_bomb" and Vector2(shot.point[0],shot.point[2]).length() > 38: return ERR_INVALID_DATA

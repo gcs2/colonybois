@@ -148,7 +148,7 @@ func step(game: RefCounted, ship: Vector3) -> String:
 		r.fire_at = 0; r.ready = now+5
 		game.fleet.hit_volume(game,C.position(r.aim),4,14)
 		if ship.distance_to(C.position(r.aim)) <= 4:
-			game.field.state.hull = maxf(0,float(game.field.state.hull)-14)
+			if not game.field.receive_damage(14): return "shield_block"
 			if game.field.state.hull == 0: game.field._emergency_tow(); return "tow"
 			return "hit"
 		return "miss"

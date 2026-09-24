@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 17
+const VERSION := 18
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
 const Conflict = preload("res://scripts/empire_conflict.gd")
@@ -137,7 +137,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -234,6 +234,14 @@ func restore_snapshot(source: Variant) -> Error:
 func configure_flagship() -> void:
 	field.installed_upgrades = commerce.state.upgrades
 	sector.state.flagship = {"personal":true,"planet":field.state.planet_id,"system":system_of(field.state.planet_id),"target_planet":"","destination":"","route":[],"remaining":0,"duration":0}
+
+func use_support(id: String) -> String:
+	if traveling(): return "Wait until the jump ends."
+	var blocked: String = Field.Support.use(field,id)
+	if not blocked.is_empty(): return blocked
+	var spec: Dictionary = Field.Support.catalog[id]
+	diplomacy.record(self,"combat","Activated "+str(spec.name)+".","",{"tool":id,"energy":spec.energy,"expires":field.state.support[id].until,"ready":field.state.support[id].ready})
+	return ""
 
 func service_reason(port: String, at: Vector3, action: String) -> String:
 	var blocked: String = commerce.access(self,port,at)

@@ -1,0 +1,4 @@
+{
+  "shield": {"name":"Shield", "energy":30, "duration":10, "cooldown":45, "color":"8ad8d3", "description":"Blocks flagship damage for ten seconds. Escorts remain vulnerable. Weapons still consume energy."},
+  "rally_call": {"name":"Rally Call", "energy":25, "duration":12, "cooldown":60, "color":"dba5df", "description":"Doubles flagship and assisting escort weapon damage for twelve seconds. Does not restore hull or energy."}
+}

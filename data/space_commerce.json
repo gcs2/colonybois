@@ -70,6 +70,26 @@
     }
   },
   "upgrades": {
+    "shield": {
+      "name": "Shield",
+      "price": 500,
+      "description": "Blocks flagship damage for 10 seconds. Costs 30 energy, 45-second cooldown. Does not protect escorts or ports.",
+      "requires": {
+        "defender": 3,
+        "colonist": 2
+      },
+      "family": "support"
+    },
+    "rally_call": {
+      "name": "Rally Call",
+      "price": 360,
+      "description": "Doubles flagship and assisting escort weapon damage for 12 seconds. Costs 25 energy, 60-second cooldown.",
+      "requires": {
+        "defender": 2,
+        "diplomat": 1
+      },
+      "family": "support"
+    },
     "heat_ray": {
       "name": "Heat ray",
       "price": 250,

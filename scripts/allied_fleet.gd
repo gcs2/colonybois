@@ -151,15 +151,15 @@ func assist(game: RefCounted, target: String, engaged: bool, ship: Vector3) -> v
 		unit.ready = int(game.field.state.time)+int(catalog[id].cycle)
 		flashes.append({"id":id,"origin":Combat.packed(at),"end":Combat.packed(endpoint)})
 		if orbital and target == "raid":
-			game.conflict.damage(game,float(catalog[id].damage))
+			game.conflict.damage(game,float(catalog[id].damage)*game.field.damage_multiplier())
 		elif orbital:
-			game.field.damage_guardian(float(catalog[id].damage))
+			game.field.damage_guardian(float(catalog[id].damage)*game.field.damage_multiplier())
 			if game.field.state.guardian_disabled:
 				game.diplomacy.record(game,"combat",game.field.enemy_profile().name+" neutralized with allied support.",id,{"planet":game.field.state.planet_id},0,"defeat:"+game.field.state.planet_id)
 				game.commerce.update_badges(game)
 		else:
 			game.combat.state.worlds[game.field.state.planet_id] = game.combat.world(game.field.state.planet_id)
-			game.combat._damage(game,game.field.state.planet_id,target,float(catalog[id].damage))
+			game.combat._damage(game,game.field.state.planet_id,target,float(catalog[id].damage)*game.field.damage_multiplier())
 func restore(value: Variant, time: int, sector: RefCounted) -> Error:
 	if not value is Dictionary or not value.has_all(["ships","assist","context","last_step"]): return ERR_INVALID_DATA
 	if not value.ships is Dictionary or value.ships.size() > 3 or not value.assist is bool or not value.context is String: return ERR_INVALID_DATA

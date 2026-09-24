@@ -563,7 +563,7 @@
       ],
       "source": "tools",
       "acquisition": "badge/shop",
-      "mapping": "scripts/encounter_state.gd: shroud reduces damage; does not implement invisibility",
+      "mapping": "scripts/ship_support.gd:paid timed flagship invulnerability; scenario costs/timing/eligibility; native review open",
       "decision": "retain"
     },
     {
@@ -587,7 +587,7 @@
       ],
       "source": "rally",
       "acquisition": "badge/shop",
-      "mapping": null,
+      "mapping": "scripts/ship_support.gd:paid timed personal/allied damage boost; surface/orbit/projectile integration; scenario values",
       "decision": "retain"
     },
     {

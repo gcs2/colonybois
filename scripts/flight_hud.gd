@@ -18,6 +18,7 @@ var chart_backing: ColorRect
 var navigation_backing: ColorRect
 var navigation_actions: Array[Button] = []
 var toolbar: Array[Button] = []
+var support_badges: Dictionary = {}
 var category_buttons: Dictionary = {}
 var active_group: String = "Main tools"
 var palette_expanded: bool = true
@@ -145,7 +146,11 @@ func _build() -> void:
 	weapon_button = item_buttons.lance
 	quick_cargo = button_at("Inventory",Rect2(1445,789,124,32),"cargo",Art.CARGO,"inventory")
 	quick_cargo.tooltip_text = "Open inventory: specimens and usable energy packs [I]"
-	label_at("SCOUT",Rect2(1324,667,240,23),14,Art.GOLD)
+	label_at("SCOUT",Rect2(1324,667,110,23),14,Art.GOLD)
+	for id: String in ["shield","rally_call"]:
+		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
+		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
+		support_badges[id] = chip; chip.hide()
 	flight_readout = label_at("",Rect2(1324,692,240,21),13)
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	energy_label = label_at("",Rect2(1324,750,230,17),11,Art.GOLD)
@@ -295,6 +300,12 @@ func select_tool(id: String) -> void:
 
 func refresh_items(model: RefCounted, locked: bool) -> void:
 	palette_locked = locked
+	for id: String in support_badges:
+		var chip: Button = support_badges[id]
+		chip.visible = model.Support.active(model,id)
+		chip.text = Palette.count(id,model.state)
+		chip.tooltip_text = Art.tooltip(Palette.entry(id).title+" active\n"+Palette.entry(id).hint)
+		chip.disabled = locked
 	var selected: Dictionary = Palette.entry(selected_tool)
 	tool_spec.text = selected.summary if selected.view == model.state.flight_mode else Palette.unavailable(selected_tool,model)
 	for button: Button in category_buttons.values(): button.disabled = locked

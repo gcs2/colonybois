@@ -1,6 +1,8 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 8
+const VERSION := 9
+const Support = preload("res://scripts/ship_support.gd")
+var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
 var installed_upgrades: Array = []
 var planetary: RefCounted
@@ -91,7 +93,17 @@ func has_guardian() -> bool:
 	return not enemy_profile().is_empty()
 
 func lance_damage() -> float:
-	return 33.0 if "emitter" in installed_upgrades else LANCE_DAMAGE
+	return (33.0 if "emitter" in installed_upgrades else LANCE_DAMAGE)*damage_multiplier()
+
+func damage_multiplier() -> float:
+	return 2.0 if Support.active(self,"rally_call") else 1.0
+
+func receive_damage(amount: float) -> bool:
+	if Support.active(self,"shield"):
+		shield_hit_time = int(state.time)
+		return false
+	state.hull = maxf(0,float(state.hull)-amount)
+	return true
 
 func max_capacity(family: String) -> float:
 	if upgrade_catalog.is_empty(): upgrade_catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/space_commerce.json")).upgrades
@@ -192,7 +204,7 @@ func use_repair_pack(item: String) -> String:
 
 
 static func fresh(planet: String = "morrow") -> Dictionary:
-	return {"version":VERSION, "time":0, "scanned":[], "samples":0, "native_stock":3,
+	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
 		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
@@ -270,7 +282,7 @@ func guardian_step(ship_at: Vector3, escorts: Array = []) -> String:
 			state.guardian_shots += 1
 			var aim := Vector3(state.guardian_aim[0],state.guardian_aim[1],state.guardian_aim[2])
 			if ship_at.distance_to(aim) > float(enemy_profile().radius): return "guardian_miss"
-			state.hull = maxf(0,float(state.hull)-float(enemy_profile().damage)*(0.3 if state.shroud_on else 1.0))
+			if not receive_damage(float(enemy_profile().damage)*(0.3 if state.shroud_on else 1.0)): return "shield_block"
 			if state.hull > 0: return "guardian_hit"
 			_emergency_tow(); return "tow"
 		if intruding and state.guardian_alert >= 3 and current.distance_to(ship_at) <= GUARDIAN_FIRE_RANGE and state.time >= state.guardian_ready_at:
@@ -283,7 +295,7 @@ func guardian_step(ship_at: Vector3, escorts: Array = []) -> String:
 	state.guardian_shots += 1
 	state.guardian_aim = [target.x,target.y,target.z]
 	if target.distance_to(ship_at) > 0.5: return "guardian_miss"
-	state.hull = maxf(0,float(state.hull)-(3 if state.shroud_on else 10))
+	if not receive_damage(3 if state.shroud_on else 10): return "shield_block"
 	note("first_guardian_fire","A custodian skiff challenged the scout inside the wreck's exclusion zone. It breaks pursuit when ships withdraw.")
 	if state.hull > 0: return "guardian_hit"
 	_emergency_tow()
@@ -291,6 +303,7 @@ func guardian_step(ship_at: Vector3, escorts: Array = []) -> String:
 
 func _emergency_tow() -> void:
 	state.tow_count += 1
+	for effect: Dictionary in state.support.values(): effect.until = 0
 	state.hull = 35.0
 	state.energy = minf(float(state.energy),15.0)
 	state.shroud_on = false
@@ -437,7 +450,7 @@ func tick(threat_distance: float = INF) -> String:
 	if state.threat_clock < 6: return ""
 	state.threat_clock = 0
 	if threat_distance >= HAZARD_RADIUS: return "warning"
-	state.hull = maxf(0,float(state.hull)-(5 if state.shroud_on else 18))
+	if not receive_damage(5 if state.shroud_on else 18): return "shield_block"
 	note("first_pulse","The orbital wreck's defense field struck the scout. The pulse repeats while inside its core.")
 	if state.hull > 0: return "pulse"
 	_emergency_tow()
@@ -535,15 +548,19 @@ func restore_snapshot(source: Variant) -> Error:
 		value.guardian_salvaged = false
 		if value.planet_id != "morrow" and not value.guardian_disabled: value.guardian_hull = Encounters.hull(value.planet_id)
 	if value.get("version") == 7:
-		value.version = VERSION
+		value.version = 8
 		value.repair_packs = {"repair_pack":0,"mega_repair_pack":0}
 		value.repair_stock = initial_repair_stock()
+	if value.get("version") == 8:
+		value.version = VERSION
+		value.support = Support.fresh()
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
 		if typeof(defaults[key]) in [TYPE_INT,TYPE_FLOAT]:
 			if not (typeof(value[key]) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(value[key])): return ERR_INVALID_DATA
 		elif typeof(defaults[key]) != typeof(value[key]): return ERR_INVALID_DATA
+	if not Support.validate(value.support,int(value.time),installed_upgrades): return ERR_INVALID_DATA
 	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3: return ERR_INVALID_DATA
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.homeworld_id.is_empty() or value.homeworld_id.length() > 64: return ERR_INVALID_DATA
@@ -605,6 +622,8 @@ func restore_snapshot(source: Variant) -> Error:
 			value[key] = int(value[key])
 		elif typeof(defaults[key]) == TYPE_FLOAT: value[key] = float(value[key])
 	for entry: Dictionary in value.history: entry.time = int(entry.time)
+	for entry: Dictionary in value.support.values():
+		for key: String in entry: entry[key] = int(entry[key])
 	state = value.duplicate(true)
 	account = {}
 	return OK

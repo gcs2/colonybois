@@ -11,11 +11,14 @@ static func slot_rect(slot: int) -> Rect2:
 const GROUPS := {
 	"Main tools": ["scan", "collect"],
 	"Environment": ["heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","heat_charge","cool_charge","atmosphere_charge","vacuum_charge","warm", "seed"],
-	"Weapons": ["lance","surface_laser","seeker","ground_bomb"],
+	"Weapons": ["lance","surface_laser","seeker","ground_bomb","shield","rally_call"],
 	"Inventory": ["pack","repair_pack","mega_repair_pack"],
 }
 
 static func entry(id: String) -> Dictionary:
+	if Model.Support.catalog.has(id):
+		var spec: Dictionary = Model.Support.catalog[id]
+		return {"id":id,"title":spec.name,"icon":id,"tint":Color(spec.color),"kind":"ability","view":"both","summary":spec.description,"hint":"%s %d energy; %d seconds active; %d-second cooldown. Click to activate without changing your selected weapon." % [spec.description,spec.energy,spec.duration,spec.cooldown]}
 	if Climate.data().tools.has(id):
 		var spec: Dictionary = Climate.data().tools[id]
 		return {"id":id,"title":spec.name,"icon":id,"tint":Color(spec.color),"kind":"tool","view":"both","summary":"%+d global %s · eight-second pulse" % [spec.delta,spec.axis],"hint":"%+d global %s over eight seconds. %s Click the planet or terrain. Unstabilized climate drifts toward native conditions." % [spec.delta,spec.axis,"Consumes one owned unit." if spec.charge else "%d energy per pulse." % spec.energy]}
@@ -50,11 +53,15 @@ static func unavailable(id: String, model: RefCounted) -> String:
 		return "Available in orbit" if item.view == "orbit" else "Enter the atmosphere to use this tool"
 	if Combat.data().weapons.has(id) and not Combat.installed(model,id): return "Purchase this weapon at a dock."
 	if Climate.data().tools.has(id): return "Requires the shared campaign." if model.planetary == null else model.planetary.available(model,id)
+	if Model.Support.catalog.has(id): return Model.Support.reason(model,id)
 	if id == "pack": return model.pack_reason()
 	if Model.repair_items().has(id): return model.repair_pack_reason(id)
 	return ""
 
 static func count(id: String, state: Dictionary) -> String:
+	if Model.Support.catalog.has(id):
+		var entry: Dictionary = state.support[id]
+		return "%ds" % (entry.until-state.time) if entry.until > state.time else "%ds" % (entry.ready-state.time) if entry.ready > state.time else ""
 	if id == "pack": return "× %d" % state.energy_packs
 	if Model.repair_items().has(id): return "× %d" % state.repair_packs[id]
 	if id == "seed": return "× %d" % state.samples

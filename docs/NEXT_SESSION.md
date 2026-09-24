@@ -1,5 +1,15 @@
 # Resume here
 
+## Active Shield and Rally Call — latest checkpoint
+
+Read [SHIP_SUPPORT.md](SHIP_SUPPORT.md). Two paid, badge-gated support tools now connect shop purchases, inventory, mouse activation, finite energy, timed effects, real flagship/escort combat and saved cooldowns. Shield protects the flagship while escorts and ports remain exposed. Rally Call doubles personal and assisting escort damage; projectiles preserve their launch multiplier. Both tools have original candidate effects, icons, hover help and active timers. Snapshot v18 / field v9 migrate older saves without free equipment or energy.
+
+Verification: full regression suite passed with the initial 57 support assertions; expanded **60-check** support and 46 capacity suites passed after shop layout changes. Actual shop, combat effects, equipment and cooldown captures rendered at 1080p/1440p. Exported-pack flight startup smoke passed. Native combat feel, balance, dedicated audio and AAA presentation acceptance remain open.
+
+Playable build: **build/versions/20260923-221637/FrontierWorlds.exe** through Play.cmd.
+
+Next: continue remaining personal-ship tool breadth and connected exploration/trade/diplomacy, consulting the reference inventory before choosing the next bounded feature. Cloaking, area fleet repair, weapon tiers and fleet progression remain open. Keep native flight/art/audio gates visible. Coloring/sculpting are excluded; further planet modification remains deferred per the user, not a parity gap to revive automatically. Existing climate behavior stays intact. Do not expand the ecology corpus.
+
 ## Territorial combat — latest checkpoint
 
 Read [TERRITORIAL_COMBAT.md](TERRITORIAL_COMBAT.md). Six alien frontier settlements now support actual surface weapon/guard combat, surrender, capture versus ruins, per-planet ownership, surviving production and finite stock transfer, paid reconstruction, government territorial defeat and Conqueror recognition. The three-player-colony cap remains; larger multi-city invasions and strategic war economies remain open. Snapshot v17 preserves the results and migrates v16 without invented conquests.

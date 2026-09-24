@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Active combat support:** Dock → Upgrades → Support sells Shield and Rally Call through earned badge alternatives. Click their Weapons icons to spend energy for temporary flagship protection or doubled personal/allied damage. Visible timers and cooldowns persist through travel and saves. [Controls, costs and limits](docs/SHIP_SUPPORT.md).
+
 **Alien colony invasions:** enter Veyr, Orin or Lumen, declare war through Communications → Conflict and descend. Precise attacks can trigger surrender; click the hall to accept or explicitly refuse. Capture transfers surviving production and finite stock with damage intact; destruction leaves a ruin requiring paid reconstruction. Distinct captures unlock Conqueror recognition and paid hull eligibility. [Controls, consequences and limits](docs/TERRITORIAL_COMBAT.md).
 
 **Colony defense:** the shield/arrow icon opens military warnings, port condition, finite batteries, repairs and peace negotiations. Hostile empires warn before war; raids arrive in orbit and can be fought by clicking their ships with your existing weapon and escorts. War breaks treaties; neglected attacks disable real ports and exports. [Rules, costs and remaining gaps](docs/EMPIRE_CONFLICT.md).

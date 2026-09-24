@@ -7,6 +7,7 @@ const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
+var support_visual: Node3D
 var territory_panel: RefCounted
 var conflict_view: Node3D
 var signal_view: Node3D
@@ -251,6 +252,7 @@ func _ready() -> void:
 	weapon_beam.visible = false
 	add_child(effects)
 	effects.setup(ship)
+	support_visual = preload("res://scripts/ship_support_visual.gd").new(); add_child(support_visual)
 	var nav_mesh := TorusMesh.new()
 	nav_mesh.inner_radius = 0.6
 	nav_mesh.outer_radius = 0.72
@@ -801,11 +803,13 @@ func _process(delta: float) -> void:
 				if ground_event == "tow": attack = "tow"
 				elif ground_event == "hit": _toast("Surface defenses hit · move clear of their aim"); audio.play("error")
 				elif ground_event == "aim": audio.play("target_lock")
+				elif ground_event == "shield_block": audio.play("scan_complete")
 			if campaign != null and pulse != "tow" and attack != "tow":
 				var raid_event: String = campaign.conflict.step(campaign,ship.position)
 				if raid_event == "tow": attack = "tow"
 				elif raid_event == "hit": _toast("Raid strike hit · move clear of the aim volume"); audio.play("error")
 				elif raid_event == "aim": audio.play("target_lock")
+				elif raid_event == "shield_block": audio.play("scan_complete")
 			if campaign != null and pulse != "tow" and attack != "tow" and conflict_view != null and conflict_view.attacking:
 				campaign.fleet.assist(campaign,"raid",true,ship.position)
 			elif campaign != null and pulse != "tow" and attack != "tow":
@@ -817,6 +821,7 @@ func _process(delta: float) -> void:
 				_toast("Incoming strike · move outside the marked volume")
 				audio.play("target_lock")
 			elif attack == "guardian_miss": _toast("Strike evaded")
+			if pulse == "shield_block" or attack == "shield_block": audio.play("scan_complete")
 			if pulse == "tow" or attack == "tow":
 				_cancel_orders()
 				_restore_ship()
@@ -851,6 +856,7 @@ func _process(delta: float) -> void:
 	_operate_surface_attack()
 	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
 	if fleet_visual != null: fleet_visual.refresh(campaign,delta,paused or _inspection_open())
+	if support_visual != null: support_visual.refresh(model,ship.position,delta,paused or _inspection_open())
 	if conflict_view != null: conflict_view.refresh(delta)
 	if signal_view != null: signal_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "orbit")
 	if biosphere_view != null: biosphere_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "surface")
@@ -917,6 +923,7 @@ func _update_flight_effects(delta: float) -> void:
 	transition_caption.modulate.a = transition_veil.color.a
 
 func _update_visuals() -> void:
+	if support_visual != null: support_visual.refresh(model,ship.position,0,true)
 	_update_outpost_visual()
 	orbit.show_aim(model,enemy_flash)
 	if orbit.hostile_visual != null: orbit.hostile_visual.disabled = model.state.guardian_disabled
@@ -980,12 +987,21 @@ func _target_position(id: String = "") -> Vector3:
 	var node: Node3D = targets[id]
 	return node.position+Vector3(0,2.5 if id in ["pod","relay"] else 0.6,0)
 
+func _activate_support(id: String) -> void:
+	if paused or _inspection_open(): return
+	var blocked: String = campaign.use_support(id) if campaign != null else Model.Support.use(model,id)
+	_toast(blocked if not blocked.is_empty() else Model.Support.catalog[id].name+" active")
+	audio.play("error" if not blocked.is_empty() else "scan_complete" if id == "shield" else "target_lock")
+	if blocked.is_empty(): _save(false)
+	_refresh_ui()
+
 func _hud_action(action: String) -> void:
 	if action.begins_with("item:"):
 		if paused or _inspection_open(): return
 		var id: String = action.trim_prefix("item:")
 		if not hud.Palette.unavailable(id,model).is_empty(): return
-		if id == "lance": _select_weapon()
+		if Model.Support.catalog.has(id): _activate_support(id)
+		elif id == "lance": _select_weapon()
 		elif id == "seed" and campaign != null: _cargo_tab("specimens")
 		elif Climate.data().tools.has(id): _select_climate(id)
 		elif SurfaceCombat.data().weapons.has(id): _select_surface_weapon(id)
@@ -1036,10 +1052,11 @@ func _hud_action(action: String) -> void:
 			_toast(error if not error.is_empty() else "%s · restored %d hull" % [Model.repair_items()[action].name,model.state.hull-hull_before])
 			audio.play("error" if not error.is_empty() else "cargo")
 			if error.is_empty(): _save(false)
+		"shield", "rally_call": _activate_support(action)
 		"shroud":
 			if paused or _inspection_open(): return
 			var error: String = model.toggle_shroud()
-			_toast(error if not error.is_empty() else ("Shield active · consumes 2 energy per second" if model.state.shroud_on else "Shield deactivated"))
+			_toast(error if not error.is_empty() else ("Pulse ward active · consumes 2 energy per second" if model.state.shroud_on else "Pulse ward deactivated"))
 			audio.play("error" if not error.is_empty() else "ui_confirm")
 		"repair":
 			if paused or _inspection_open(): return
@@ -1652,7 +1669,7 @@ func _refresh_ui() -> void:
 	if orbital:
 		if s.survey_ticks < int(model.definition().survey_seconds): objective.text = "Chart Morrow from Planet map to locate orbital signals."
 		elif not s.guardian_disabled and not s.shroud_unlocked: objective.text = "A custodian guards the wreck. Disable it or risk a fast salvage."
-		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its shield."
+		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its pulse ward."
 		else: objective.text = "Shield recovered. Explore, repair or return to Morrow."
 	elif s.landings > 0: objective.text = "Explore freely. Your surveys are secure."
 	elif "relay" not in s.scanned: objective.text = "Click the relay to investigate its signal."
@@ -1686,7 +1703,7 @@ func _refresh_ui() -> void:
 			explanation.text = "%d%% · stay near the wreck" % int(salvage_progress*100) if salvage_order and not navigating else ("Defense pulse repeats every 6 s." if field_distance < Model.HAZARD_WARNING else "Chart in Planet map; click the wreck to approach." if hud.navigation.wreck_known and not s.shroud_unlocked else "Click Morrow to descend.")
 			use_button.text = "Cancel" if salvage_order else ("Salvage" if hud.navigation.wreck_known and not s.shroud_unlocked else "Use")
 			use_button.disabled = paused or _inspection_open() or not hud.navigation.wreck_known or s.shroud_unlocked
-			use_button.tooltip_text = "Approach the wreck; recovering its shield takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
+			use_button.tooltip_text = "Approach the wreck; recovering its pulse ward takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
 		var reason: String = model.reason(tool,selected,0)
@@ -1786,13 +1803,13 @@ func _update_guidance() -> void:
 			line = "A custodian skiff warns before firing. Leave its exclusion zone or click it to disable it with the arc lance."
 		elif model.state.guardian_disabled and not model.state.shroud_unlocked:
 			id = "safe_wreck"
-			line = "The skiff is disabled, not destroyed. The pulse field remains. Click the wreck to recover its shield."
+			line = "The skiff is disabled, not destroyed. The pulse field remains. Click the wreck to recover its pulse ward."
 		elif not model.state.shroud_unlocked:
 			id = "wreck"
 			line = "The chart found a wreck inside a repeating pulse field. A skiff guards it. Click the wreck to approach or disable the skiff first."
 		else:
 			id = "shroud"
-			line = "The recovered shield reduces damage. Activate it in Equipment; it consumes 2 energy per second."
+			line = "The recovered pulse ward reduces orbital damage. Activate it in Equipment; it consumes 2 energy per second."
 	elif model.state.landings > 0:
 		id = "return"
 		line = "Back in the basin. Your surveys are secure. You're free to explore."
@@ -1863,6 +1880,8 @@ func _show_popup(kind: String) -> void:
 	if kind in ["contact","signals","conflict","territory"] and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
+	if kind == "service" and dock_page == "upgrades" and upgrade_family == "support":
+		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
 	popup.visible = true
 	var header := HBoxContainer.new()
@@ -1933,7 +1952,7 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover shield\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: sector chart · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover pulse ward\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: sector chart · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
 		popup_body.add_child(copy)
@@ -2137,17 +2156,25 @@ func _build_systems_panel() -> void:
 	modules.columns = 2
 	modules.add_theme_constant_override("h_separation",8)
 	modules.add_theme_constant_override("v_separation",8)
-	popup_body.add_child(modules)
 	system_buttons.clear()
 	_panel_copy("HULL  %d / %d · field repair restores 35 for 30 reactor energy outside a hazard. Repair cooldown: 20 s." % [model.state.hull,model.max_capacity("hull")])
-	_panel_copy("RECOVERED SHIELD (phase shroud)  %s · absorbs most pulse damage, drains 2 energy/s." % ("ACTIVE" if model.state.shroud_on else "INSTALLED" if model.state.shroud_unlocked else "NOT ACQUIRED"))
+	for id: String in Model.Support.catalog:
+		var entry: Dictionary = hud.Palette.entry(id)
+		var owned: bool = id in model.installed_upgrades
+		var support_button: Button = _button(entry.title+(" · "+hud.Palette.count(id,model.state) if owned else " · purchase at a dock"),_inventory_action.bind(id,"systems"),popup_body)
+		Instruments.instrument(support_button,id,entry.tint)
+		support_button.set_meta("support_id",id)
+		support_button.disabled = paused or not Model.Support.reason(model,id).is_empty()
+		support_button.tooltip_text = Instruments.tooltip(entry.hint+"\n"+Model.Support.reason(model,id))
+	_panel_copy("RECOVERED PULSE WARD (phase shroud)  %s · absorbs most pulse damage, drains 2 energy/s." % ("ACTIVE" if model.state.shroud_on else "INSTALLED" if model.state.shroud_unlocked else "NOT ACQUIRED"))
 	if model.state.shroud_unlocked:
-		var shield: Button = _button("Deactivate shield" if model.state.shroud_on else "Activate shield · 2 energy / second",_inventory_action.bind("shroud","systems"),popup_body)
+		var shield: Button = _button("Deactivate pulse ward" if model.state.shroud_on else "Activate pulse ward · 2 energy / second",_inventory_action.bind("shroud","systems"),popup_body)
 		shield.disabled = paused or model.state.flight_mode != "orbit" or (not model.state.shroud_on and model.state.energy < 2)
 	var repair: Button = _button("Field repair · 30 energy",_inventory_action.bind("repair","systems"),popup_body)
 	repair.disabled = paused or not model.repair_reason(_wreck_distance()).is_empty()
 	repair.tooltip_text = model.repair_reason(_wreck_distance())
 	_panel_copy("ARC LANCE  installed · %d damage · 24 m · 10 energy/shot · 2 s recovery. Select it, then click a hostile ship." % model.lance_damage())
+	popup_body.add_child(modules)
 	for i: int in range(TOOLS.size()):
 		var id: String = TOOLS[i]
 		var button: Button = _button(Equipment.title(id),_inspect_system.bind(id),modules)
@@ -2482,8 +2509,8 @@ func _upgrade_requirements(id: String) -> String:
 func _build_upgrade_shop() -> void:
 	var families := HBoxContainer.new()
 	popup_body.add_child(families)
-	for family: String in ["ship","hull","energy"]:
-		var tab: Button = _button({"ship":"Equipment","hull":"Hull","energy":"Reactor"}[family],func() -> void: upgrade_family = family; _show_popup("service"),families)
+	for family: String in ["ship","hull","energy","support"]:
+		var tab: Button = _button({"ship":"Equipment","hull":"Hull","energy":"Reactor","support":"Support"}[family],func() -> void: upgrade_family = family; _show_popup("service"),families)
 		tab.disabled = family == upgrade_family
 		tab.tooltip_text = "Compare installed equipment and available upgrades."
 	if upgrade_family == "ship":
@@ -2493,6 +2520,8 @@ func _build_upgrade_shop() -> void:
 		var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
 		kit.disabled = paused or not kit_reason.is_empty()
 		kit.tooltip_text = kit_reason
+	elif upgrade_family == "support":
+		_panel_copy("Activate from the Weapons palette. Energy is spent once; cooldowns persist through travel and loading.")
 	else:
 		_panel_copy("%s capacity: %d · installation preserves your current reserves." % ["Hull" if upgrade_family == "hull" else "Energy",model.max_capacity(upgrade_family)],Instruments.GOLD)
 	var entries: Array = campaign.commerce.catalog.upgrades.keys()
@@ -2507,6 +2536,7 @@ func _build_upgrade_shop() -> void:
 		var owned: bool = id in campaign.commerce.state.upgrades
 		var button: Button = _button("Installed" if owned else "Purchase · %d Marks" % upgrade.price,_commerce_action.bind("upgrade",id),popup_body)
 		button.set_meta("upgrade_id",id)
+		if Model.Support.catalog.has(id): Instruments.instrument(button,id,Color(Model.Support.catalog[id].color))
 		button.disabled = paused or not blocked.is_empty()
 		button.tooltip_text = blocked
 		if not blocked.is_empty() and not owned: _panel_copy(blocked)
