@@ -1,12 +1,23 @@
 # Resume here
 
+## Optional orbital signals — latest gameplay checkpoint
+
+Read [SPACE_SIGNAL_ENCOUNTERS.md](SPACE_SIGNAL_ENCOUNTERS.md). Orbital surveys reveal two physical contacts: Nacre's optional convoy commitment resolves through real combat or a paid escape; Kestrel's guarded registry requires a six-second, eight-energy scan before a public/private ownership-evidence decision. Timers run offworld only after commitment, failures/abandonment have explicit costs, and terminal outcomes cannot be farmed. Captain 1 opens an alternate paid reactor path. Snapshot v15 preserves encounters and migrates older campaigns without free rewards. Existing artwork/audio remain candidates; no planet coloring or sculpting was added.
+
+Validation: full regression suite passed with 60 signal checks, followed by the expanded 67-check suite after fixing scan persistence through scene initialization. Rendered actual orbit, offers, scan, decision and badge views at 1080p and 1440p; compact copy keeps all initial options visible. Native input/fun and final presentation approval remain open.
+
+Playable build: **build/versions/20260923-210207/FrontierWorlds.exe** through Play.cmd. Final signal, shared-session, flight, planet-map and system-chart checks passed after the scan-preservation fix. Exported-pack flight startup smoke passed.
+
+Next: **W01 empire hostility and raids**, integrating current relations, colonies, fleet losses, trade access and chronicle. Start with visible threats and a consequential defense response; avoid a parallel combat simulation or invisible colony damage. Keep remaining personal-ship equipment and full mission breadth tracked. Do not expand ecology, coloring or terrain editing.
+
+
 ## Latest scope correction — planet editing skipped
 
 23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
 
-The uncommitted coloring implementation, icons, tests and snapshot-v15 changes were discarded at the user's request. Latest playable and save format remain the prior badges checkpoint (snapshot v14); no coloring feature shipped. Older next-step instructions below are historical where they conflict with this correction.
+The uncommitted coloring implementation, icons, tests and snapshot-v15 changes were discarded at the user's request. At that scope-correction checkpoint, the playable and save format remained the prior badges checkpoint (snapshot v14); no coloring feature shipped. The later signals checkpoint above independently introduces v15. Older next-step instructions below are historical where they conflict with this correction.
 
-Next: **E02 optional space encounters and consequences**, integrated with E01 exploration and D01 diplomacy. Start from the existing wreck and contact systems: discover an optional situation during flight, choose a consequential response with a visible cost/risk, resolve it through ship or diplomatic actions, and preserve its reward/failure/history. Avoid deliveries, compulsory gardening and additional planet-editing tools. Keep connected flight, readable UI, audio and native playtest gates active.
+Previous next step (now implemented as the bounded pilot above): **E02 optional space encounters and consequences**, integrated with E01 exploration and D01 diplomacy. Start from the existing wreck and contact systems: discover an optional situation during flight, choose a consequential response with a visible cost/risk, resolve it through ship or diplomatic actions, and preserve its reward/failure/history. Avoid deliveries, compulsory gardening and additional planet-editing tools. Keep connected flight, readable UI, audio and native playtest gates active.
 
 ## Badges and master promotions — latest checkpoint
 

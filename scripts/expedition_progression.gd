@@ -23,6 +23,7 @@ func climate_completed(planet: String, tier: int) -> void:
 	if tier > native: state.climate_highs[planet] = maxi(tier,int(state.climate_highs.get(planet,native)))
 func progress(game: RefCounted, badge: String) -> int:
 	match badge:
+		"captain": return game.signals.completed()
 		"diplomat", "trader":
 			var count: int = 0
 			for faction: Dictionary in game.sector.state.factions:

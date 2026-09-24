@@ -2,6 +2,8 @@
 
 23 September 2026. User direction: establish the core loop and confirm understanding of all subsystems first, then flesh out a broad, deep corpus with synergies and cohesive story. **Alignment has not passed.** The latest screenshot rejection makes the interface correction an immediate prerequisite. Spore Space Stage parity is the baseline; no optional addition silently replaces a baseline feature.
 
+Latest scope correction: coloring/sculpting are explicitly skipped and further planet editing is deferred. Existing climate/ecosystem behavior remains. Consult the current task board and SPACE_STAGE_TARGET for implementation status; older gap descriptions below describe the original alignment audit.
+
 ## Working loop to validate
 
 Explore → discover useful things → choose how to spend energy, cargo space and risk → trade or invest → earn recognition → purchase capabilities → reach new opportunities. Personally flying and applying tools is the activity, not a menu wrapper around an economy. Colonies, ecosystems, diplomacy, combat and history change what the next expedition can achieve.

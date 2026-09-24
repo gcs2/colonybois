@@ -9,6 +9,7 @@
     "surveyor":{"name":"Cartographer","levels":[1,3,6,12,24],"description":"Finish orbital surveys of distinct worlds.","icon":"planet_map"},
     "naturalist":{"name":"Naturalist","levels":[3,6,9,12,18],"description":"Catalogue distinct species. Repeated scans and specimens do not count.","icon":"scan"},
     "zoologist":{"name":"Zoologist","levels":[1,2,3,4,6],"description":"Complete new ecosystem tiers. Rebuilding a lost tier never awards it again.","icon":"seed"},
-    "terraformer":{"name":"Terra-Wrangler","levels":[1,2,4,8,16],"description":"Improve worlds above their native climate tier. Each world's highest achieved tier counts once.","icon":"heat_ray"}
+    "terraformer":{"name":"Terra-Wrangler","levels":[1,2,4,8,16],"description":"Improve worlds above their native climate tier. Each world's highest achieved tier counts once.","icon":"heat_ray"},
+    "captain":{"name":"Captain","levels":[1,3,6,12,20],"description":"Resolve distinct optional space encounters. Declined, failed or repeated outcomes earn no progress.","icon":"signal"}
   }
 }

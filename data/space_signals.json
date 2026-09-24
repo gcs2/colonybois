@@ -1,0 +1,129 @@
+{
+  "convoy": {
+    "planet": "s1p0",
+    "faction": "consortium",
+    "title": "A narrow departure",
+    "kind": "convoy",
+    "position": [
+      16,
+      9,
+      31
+    ],
+    "seconds": 180,
+    "briefing": "A cutter is shadowing our convoy. Cover a departure attempt, or finance the broker's safe-passage deal.",
+    "commitment": "Accepting cover starts a 180-second departure window. Disable the cutter before it closes. The timer continues if you leave this world. Retreat is possible; a broken commitment costs 4 relations.",
+    "choices": {
+      "defend": {
+        "label": "Cover their departure",
+        "icon": "lance",
+        "hint": "180 seconds to disable the Rake cutter. Success: 90 Marks and +12 consortium relations. Failure or abandonment: −4 relations.",
+        "detail": "+90 Marks · Consortium +12 · failure −4 relations"
+      },
+      "passage": {
+        "label": "Underwrite safe passage",
+        "icon": "cargo",
+        "hint": "Approach within 12 m; pay 60 Marks. +8 consortium relations, no cash reward. The payment protects the convoy, not your ship.",
+        "detail": "−60 Marks · Consortium +8 · cutter stays hostile to you"
+      },
+      "decline": {
+        "label": "Decline involvement",
+        "icon": "decline",
+        "hint": "The convoy stays behind. No cost or relationship penalty; this offer closes permanently.",
+        "detail": "No penalty · closes this opportunity"
+      }
+    },
+    "outcomes": {
+      "defend": {
+        "marks": 90,
+        "relations": {
+          "consortium": 12
+        },
+        "summary": "The cutter is disabled. The convoy makes its departure and pays your escort fee."
+      },
+      "passage": {
+        "marks": -60,
+        "relations": {
+          "consortium": 8
+        },
+        "summary": "The convoy buys a departure corridor. The cutter still threatens other ships, including yours."
+      },
+      "failed": {
+        "marks": 0,
+        "relations": {
+          "consortium": -4
+        },
+        "summary": "The promised departure window closes. The convoy turns back and its broker records your broken commitment."
+      },
+      "declined": {
+        "marks": 0,
+        "relations": {},
+        "summary": "You declined the escort request. The convoy remains outside your protection."
+      }
+    },
+    "summary": "Your escort commitment starts a 180-second window. Leaving does not stop its clock."
+  },
+  "registry": {
+    "planet": "s2p0",
+    "faction": "commune",
+    "title": "Who owns the silence?",
+    "kind": "registry",
+    "position": [
+      30,
+      10,
+      26
+    ],
+    "seconds": 6,
+    "briefing": "A derelict buoy bears conflicting salvage claims. Scan it, then publish the evidence or sell exclusive rights. A sentry guards the site.",
+    "commitment": "Scan within 12 m for six uninterrupted simulation seconds: 8 energy per attempt. Moving away, changing orders or being towed breaks the scan. Inspection pauses it. Decide what to do with the evidence afterward.",
+    "choices": {
+      "inspect": {
+        "label": "Approach and scan the buoy",
+        "icon": "scan",
+        "hint": "8 energy per scan attempt. Six seconds within 12 m; the local sentry remains a real threat.",
+        "detail": "8 energy per attempt · hold within 12 m · sentry remains dangerous"
+      },
+      "publish": {
+        "label": "Publish the competing claims",
+        "icon": "communicator",
+        "hint": "20 Marks survey stipend; Commune +12, Directorate −6. Makes the evidence public; excludes the private sale.",
+        "detail": "+20 Marks · Commune +12 · Directorate −6"
+      },
+      "license": {
+        "label": "Sell an exclusive warrant",
+        "icon": "cargo",
+        "hint": "100 Marks; Directorate +10, Commune −8. Grants the claimant exclusive evidence; excludes public release.",
+        "detail": "+100 Marks · Directorate +10 · Commune −8"
+      },
+      "decline": {
+        "label": "Leave the registry alone",
+        "icon": "decline",
+        "hint": "No relationship penalty. Closes this opportunity; scan energy already spent is not refunded.",
+        "detail": "No penalty · closes this opportunity"
+      }
+    },
+    "outcomes": {
+      "publish": {
+        "marks": 20,
+        "relations": {
+          "commune": 12,
+          "directorate": -6
+        },
+        "summary": "You publish the conflicting seals. Independent claimants can challenge ownership, angering the Directorate's claimant."
+      },
+      "license": {
+        "marks": 100,
+        "relations": {
+          "directorate": 10,
+          "commune": -8
+        },
+        "summary": "You sell exclusive evidence to the Directorate claimant. Commune observers condemn the closed proceeding."
+      },
+      "declined": {
+        "marks": 0,
+        "relations": {},
+        "summary": "You leave the ownership dispute unresolved. No one receives your evidence."
+      }
+    },
+    "summary": "Close-range scan: 8 energy, six seconds. Move or change orders to interrupt; inspection pauses."
+  }
+}

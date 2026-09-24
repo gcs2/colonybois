@@ -7,6 +7,7 @@ const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
+var signal_view: Node3D
 var recognition_button: Button
 var upgrade_preview: String = ""
 var rendered_planet: String = "morrow"
@@ -224,6 +225,8 @@ func _ready() -> void:
 	_build_service_ports()
 	if campaign != null:
 		campaign.climate.bind(campaign)
+		signal_view = preload("res://scripts/signal_view.gd").new()
+		orbit.add_child(signal_view); signal_view.setup(self)
 		biosphere_view = preload("res://scripts/biosphere_view.gd").new()
 		surface_root.add_child(biosphere_view); biosphere_view.setup(self)
 		var pulse_mesh := TorusMesh.new(); pulse_mesh.inner_radius = 19.0; pulse_mesh.outer_radius = 19.16
@@ -255,6 +258,7 @@ func _ready() -> void:
 	_update_visuals()
 	_update_camera(1.0)
 	_refresh_ui()
+	if signal_view != null: signal_view.ready_for_orders = true
 	get_tree().auto_accept_quit = false
 	if campaign != null and campaign.traveling(): _show_travel_view()
 	if persistence_blocked:
@@ -263,7 +267,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		_cancel_orders()
+		_cancel_orders(true)
 		paused = true
 		audio.suspend_voice(true)
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
@@ -665,6 +669,7 @@ func _make_ui() -> void:
 	system_map.sector_requested.connect(_toggle_sector_map)
 	system_map.travel_requested.connect(_launch_journey)
 	system_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
+	if signal_view != null: signal_view.setup_ui(root)
 	recognition_button = _button("",_show_popup.bind("badges"),root)
 	recognition_button.position = Vector2(1010,80); recognition_button.size = Vector2(550,38)
 	Instruments.instrument(recognition_button,"log",Instruments.GOLD)
@@ -685,6 +690,7 @@ func _physics_process(delta: float) -> void:
 	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
 	if not input_direction.is_zero_approx():
 		if biosphere_view != null: biosphere_view.cancel()
+		if signal_view != null: signal_view.cancel()
 		kit_mode = false; deploy_order = false
 		navigating = false
 		approach_subject = false
@@ -772,6 +778,7 @@ func _process(delta: float) -> void:
 			var old_shots: int = model.state.guardian_shots
 			var old_pulse: int = model.state.threat_clock
 			var old_escorts: Array = campaign.fleet.active_ids() if campaign != null else []
+			model.state.position = [ship.position.x,ship.position.y,ship.position.z]
 			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
 			if model.state.planet_id != rendered_planet:
 				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
@@ -830,6 +837,7 @@ func _process(delta: float) -> void:
 	_operate_surface_attack()
 	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
 	if fleet_visual != null: fleet_visual.refresh(campaign,delta,paused or _inspection_open())
+	if signal_view != null: signal_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "orbit")
 	if biosphere_view != null: biosphere_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "surface")
 	if not paused and not _inspection_open():
 		weapon_flash = maxf(0,weapon_flash-delta)
@@ -1350,6 +1358,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	if signal_view != null and signal_view.pick(screen): return
 	if biosphere_view != null and not biosphere_view.deploy_id.is_empty():
 		if biosphere_view.pick(screen): return
 	if not climate_tool.is_empty() and campaign != null:
@@ -1453,7 +1462,8 @@ func _activate_selected() -> void:
 		approach_subject = true
 	else: held = true
 
-func _cancel_orders() -> void:
+func _cancel_orders(preserve_signal_scan: bool = false) -> void:
+	if signal_view != null: signal_view.cancel(preserve_signal_scan)
 	if biosphere_view != null: biosphere_view.cancel()
 	surface_order = false
 	surface_salvage_order = false
@@ -1489,7 +1499,7 @@ func _stop() -> void:
 
 func _toggle_pause() -> void:
 	paused = not paused
-	_cancel_orders()
+	_cancel_orders(true)
 	audio.suspend_voice(paused)
 
 func _departure() -> void:
@@ -1709,6 +1719,7 @@ func _refresh_ui() -> void:
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
 	if biosphere_view != null: biosphere_view.refresh_hud()
+	if signal_view != null: signal_view.refresh_hud()
 	if recognition_button != null:
 		if _inspection_open() and recognition_notice != null: recognition_notice.hide()
 		recognition_button.visible = campaign != null and not popup.visible and not planet_map.visible and not system_map.visible and not sector_map.visible
@@ -1813,7 +1824,8 @@ func _inventory_action(action: String, panel: String) -> void:
 	_show_popup(panel)
 
 func _show_popup(kind: String) -> void:
-	_cancel_orders()
+	_cancel_orders(true)
+	if signal_view != null: signal_view.signal_button.hide()
 	if recognition_notice != null: recognition_notice.hide()
 	if recognition_button != null: recognition_button.hide()
 	# Remove the wide case/contact content before requesting a narrower panel.
@@ -1826,7 +1838,7 @@ func _show_popup(kind: String) -> void:
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
 	popup.size = Vector2(555,660 if kind in ["service","contact","freight"] and campaign != null else 595)
-	if kind == "contact" and campaign != null:
+	if kind in ["contact","signals"] and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
@@ -1836,6 +1848,7 @@ func _show_popup(kind: String) -> void:
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
 	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
 	titles.fleet = "ALLIED FLEET"
+	titles.signals = "ORBITAL SIGNALS"
 	titles.biosphere = "PLANET ECOSYSTEM"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1851,6 +1864,8 @@ func _show_popup(kind: String) -> void:
 		_button("Controls",_menu_page.bind("controls"),popup_body)
 		_button("Audio settings",_menu_page.bind("audio"),popup_body)
 		_button("Return to title",_exit_encounter,popup_body)
+	elif kind == "signals" and signal_view != null:
+		signal_view.build_panel()
 	elif kind == "freight" and campaign != null:
 		var panel := preload("res://scripts/freight_panel.gd").new()
 		panel.campaign = campaign
@@ -1942,7 +1957,7 @@ func _toggle_planet_map() -> void:
 		planet_map.hide()
 		audio.play("ui_close")
 		return
-	_cancel_orders()
+	_cancel_orders(true)
 	popup.hide()
 	var location: Vector3 = Geography.site_direction(model.state.planet_id)
 	if model.state.flight_mode == "orbit":
@@ -2162,7 +2177,7 @@ func _load() -> void:
 		if model.state.planet_id != rendered_planet:
 			call_deferred("_reload_destination")
 			return
-		_cancel_orders()
+		_cancel_orders(true)
 		_restore_ship()
 		_apply_flight_mode()
 		progress = 0
@@ -2341,7 +2356,7 @@ func _toggle_sector_map() -> void:
 	if sector_map.visible:
 		if not campaign.traveling(): sector_map.hide()
 		return
-	_cancel_orders()
+	_cancel_orders(true)
 	popup.hide()
 	planet_map.hide()
 	if system_map != null: system_map.hide()
@@ -2363,7 +2378,7 @@ func _toggle_system_view() -> void:
 func _open_system_view(id: String) -> void:
 	if campaign == null: return
 	if not system_map.present(campaign,id): _toast("Visit or chart this system first."); return
-	_cancel_orders(); popup.hide(); planet_map.hide(); sector_map.hide()
+	_cancel_orders(true); popup.hide(); planet_map.hide(); sector_map.hide()
 	system_map.locked = paused; system_map.refresh(); audio.play("ui_open"); _refresh_ui()
 
 func _close_system_view() -> void:
@@ -2495,6 +2510,9 @@ func _contact_action(action: String) -> void:
 	_refresh_ui()
 
 func _build_contact_panel() -> void:
+	var signal_button: Button = _button("Orbital signals · %d open" % campaign.signals.open_ids().size(),_show_popup.bind("signals"),popup_body)
+	Instruments.instrument(signal_button,"signal",Instruments.GOLD)
+	signal_button.tooltip_text = "Optional encounters, active commitments and their outcomes"
 	var known: Array = []
 	for f: Dictionary in campaign.sector.state.factions:
 		if f.get("contacted",false): known.append(f.id)
@@ -2692,7 +2710,7 @@ func _build_chronicle_panel() -> void:
 	_panel_copy("Colony day %d · treasury %d Marks\nLast day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],Instruments.GOLD)
 	var filters := HBoxContainer.new()
 	popup_body.add_child(filters)
-	for filter: String in ["all","diplomacy","trade","exploration","local"]:
+	for filter: String in ["all","diplomacy","trade","exploration","encounter","local"]:
 		var button: Button = _button(filter.capitalize(),func() -> void: chronicle_filter = filter; chronicle_page = 0; _show_popup("journal"),filters)
 		button.add_theme_font_size_override("font_size",13)
 		button.disabled = chronicle_filter == filter

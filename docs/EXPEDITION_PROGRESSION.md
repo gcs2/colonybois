@@ -1,10 +1,10 @@
 # Expedition recognition and master ranks
 
-23 September 2026. P01 integrated checkpoint. Ten implemented families are not the thirty-family reference inventory, and this does not complete progression parity.
+23 September 2026. P01 integrated checkpoint. Eleven implemented families are not the thirty-family reference inventory, and this does not complete progression parity.
 
 ## What the player does
 
-Click the rank readout near the treasury, or open Escape → Badges. The case displays ten five-tier families, unearned stars, earned tiers and progress. Select a family to see its counting rule, next threshold and related shop entries. Pin one family's progress to the HUD. A reward link opens its real shop family with that entry first; prices, location, embargoes, prior upgrades and existing ownership still apply.
+Click the rank readout near the treasury, or open Escape → Badges. The case displays eleven five-tier families, unearned stars, earned tiers and progress. Select a family to see its counting rule, next threshold and related shop entries. Pin one family's progress to the HUD. A reward link opens its real shop family with that entry first; prices, location, embargoes, prior upgrades and existing ownership still apply.
 
 Accomplishments produce a short animated award and the existing achievement cue during active flight. Awards do not pause the game. Opening an inspection dismisses the displayed card; pending cards wait. Each badge tier and promotion is recorded in the persistent chronicle. The art and audio remain candidates, not approved production masters.
 
@@ -21,6 +21,7 @@ Accomplishments produce a short animated award and the existing achievement cue 
 | Cartographer | Distinct completed orbital surveys | 1 / 3 / 6 / 12 / 24 |
 | Naturalist | Distinct catalogued species | 3 / 6 / 9 / 12 / 18 |
 | Zoologist | New complete ecosystem tiers recorded | 1 / 2 / 3 / 4 / 6 |
+| Captain | Distinct successful optional orbital encounters | 1 / 3 / 6 / 12 / 20 |
 | Terra-Wrangler | Per-world highest climate improvement above native tier | 1 / 2 / 4 / 8 / 16 |
 
 An alliance cancellation/re-signing cannot increment Diplomat again. Repeated scanning, returning to a cleared encounter, rebuilding the same ecological tier and heating/cooling back to an old climate maximum cannot farm recognition. Colony kits under construction do not count. Climate recognition occurs at actual pulse completion, including off-screen worlds, and never at transient intermediate values. Once earned, badge tiers remain even if a site, relationship or ecosystem is subsequently lost.
@@ -44,3 +45,5 @@ Snapshot v14 adds saved climate maxima, pinned family and pending notices. Exist
 ## Reference provenance
 
 The [earlier badge audit](SPORE_BADGE_PARITY.md) and [reference manifest](parity/reference_progression.json) remain the scope record. A fresh indexed [Master Badge](https://spore.fandom.com/wiki/Master_Badge) result confirmed ten promotion thresholds and fleet links; direct page retrieval was blocked. [Badge Point](https://spore.fandom.com/wiki/Badge_Point) and [StrategyWiki's badge listing](https://strategywiki.org/wiki/Spore/Badges) also blocked direct retrieval. Per-family points, disputed thresholds and exhaustive unlock edges remain unverified; the implementation's scenario tuning above is separate from those source claims.
+
+The optional-signal checkpoint adds Captain as an original scenario family, with a paid reactor eligibility path at tier 1. It is not the reference one-tier Captain's Badge, and does not close that reference entry. Only two encounters currently exist, so tiers 2–5 remain unreachable. See [SPACE_SIGNAL_ENCOUNTERS.md](SPACE_SIGNAL_ENCOUNTERS.md).

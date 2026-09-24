@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**Optional orbital signals:** survey Nacre I or Kestrel I, then click the new contact or open Communications → Orbital signals. Defend a convoy or finance its escape; scan a guarded registry and choose who gets the evidence. Costs, deadlines, diplomatic consequences and Captain recognition persist. [Controls, outcomes and limitations](docs/SPACE_SIGNAL_ENCOUNTERS.md).
+
 **Badges and promotions:** click the rank readout or Escape → Badges. Ten accomplishment families now connect exploration, commerce, diplomacy, surveys, settlement and planet work to persistent recognition and paid upgrade eligibility. Select a family, pin progress or inspect its actual shop reward. Brief animated awards use the existing achievement cue. [Rules, tuning and remaining parity gaps](docs/EXPEDITION_PROGRESSION.md).
 
 **System navigation / J:** zoom outward from orbit to see the star and its actual planets. Hover for a quote and click a destination to spend energy and travel; mouse wheel/right-drag and arrows/numpad also work. Zoom farther out to the sector; Escape pauses an active journey for saving. The local terrain chart remains surface-only. [Controls, verified behavior and limits](docs/SYSTEM_NAVIGATION.md).

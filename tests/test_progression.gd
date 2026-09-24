@@ -10,7 +10,7 @@ func check(ok: bool, label: String) -> void:
 	if not ok: failures += 1; printerr("FAIL: "+label)
 func run() -> void:
 	var game := Session.new()
-	check(game.commerce.state.badges.size() == 10 and Recognition.points(game.commerce.state.badges) == 0,"Fresh campaign starts with ten empty accomplishment families and no free recognition")
+	check(game.commerce.state.badges.size() == 11 and Recognition.points(game.commerce.state.badges) == 0,"Fresh campaign starts with eleven empty accomplishment families and no free recognition")
 	for id: String in ["moss_lantern","ribbon_bush","hollow_crown"]:
 		check(game.biosphere.act(game,id,"scan",game.biosphere.site("morrow",id)).is_empty(),"Real specimen scan accepted: "+id)
 	check(game.commerce.state.badges.naturalist == 1 and game.commerce.eligible("hold"),"Distinct local observations unlock a peaceful hold path without travel or deliveries")

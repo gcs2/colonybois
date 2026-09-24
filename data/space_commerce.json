@@ -220,7 +220,8 @@
       "requires": {
         "merchant": 1,
         "explorer": 1,
-        "trader": 1
+        "trader": 1,
+        "captain": 1
       }
     },
     "energy_2": {
