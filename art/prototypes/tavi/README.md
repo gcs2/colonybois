@@ -2,7 +2,7 @@
 
 This isolated Godot 4.7.2 project demonstrates the **editable mesh → GLB export → GLB reimport → native rendering** loop. It is an intentionally bounded anatomical blockout. It does **not** demonstrate the concept's final modeling/material fidelity, acting, animation or a production-ready game asset.
 
-Reference: the **left** creature in [`../../concepts/characters/merchant-directions-20260924.png`](../../concepts/characters/merchant-directions-20260924.png). The first and third directions are liked; the central radial face is not used. The handoff/spec is [`../../../docs/TAVI_MODEL_HANDOFF.md`](../../../docs/TAVI_MODEL_HANDOFF.md). This merchant has no assigned Spore philosophy. The supplied image is concept art; the images generated here are actual rasterized mesh renders.
+Reference: the **left** creature in [`../../concepts/characters/merchant-directions-20260924.png`](../../concepts/characters/merchant-directions-20260924.png). The first and third directions are liked; the central radial face is not used. The handoff/spec is [`../../../docs/TAVI_MODEL_HANDOFF.md`](../../../docs/art/TAVI_MODEL_HANDOFF.md). This merchant has no assigned Spore philosophy. The supplied image is concept art; the images generated here are actual rasterized mesh renders.
 
 ## Source and regeneration
 

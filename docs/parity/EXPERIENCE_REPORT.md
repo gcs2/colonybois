@@ -17,4 +17,4 @@ Generated from `experience_coverage.json`. These are evidence metrics, not game 
 
 Overall: **17/61 (27.9%) visually sampled**. Readable, interaction and presentation coverage remain independently gated.
 
-Full rules: [REFERENCE_COVERAGE_METRICS.md](../REFERENCE_COVERAGE_METRICS.md). Catalog variant/price/unlock audit and unknown denominator closure remain separate.
+Full rules: [REFERENCE_COVERAGE_METRICS.md](../research/REFERENCE_COVERAGE_METRICS.md). Catalog variant/price/unlock audit and unknown denominator closure remain separate.

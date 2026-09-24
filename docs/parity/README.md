@@ -6,4 +6,4 @@ The current reference catalog is [reference_inventory.json](reference_inventory.
 
 Progress and weights are provisional estimates, not measured completion. Reference inventory closure, MECE ownership review, mapping to existing board IDs and dependency review remain outstanding. Do not derive an official overall percentage or claim exhaustive Spore item coverage from this draft. Deferred/excluded rows have weight zero and must remain visible as scope exceptions.
 
-See [goal and check-in contract](../GOAL_AND_CHECKINS.md) and [dated preliminary status](../PARITY_STATUS_2026-09-23.md).
+See [goal and check-in contract](../delivery/GOAL_AND_CHECKINS.md) and [dated preliminary status](../history/PARITY_STATUS_2026-09-23.md).

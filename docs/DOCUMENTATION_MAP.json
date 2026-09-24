@@ -1,0 +1,793 @@
+{
+  "schema": 1,
+  "scope": "Every maintained file under docs/; one primary purpose per file. This is documentation coverage, not game parity.",
+  "moves": {
+    "docs/SPACE_FIRST_DIRECTION.md": "docs/direction/SPACE_FIRST_DIRECTION.md",
+    "docs/SPACE_STAGE_TARGET.md": "docs/direction/SPACE_STAGE_TARGET.md",
+    "docs/STORY_CURRENT.md": "docs/direction/STORY_CURRENT.md",
+    "docs/CORE_LOOP_AND_CONTENT_EPIC.md": "docs/direction/CORE_LOOP_AND_CONTENT_EPIC.md",
+    "docs/CONTENT_CORPUS.md": "docs/direction/CONTENT_CORPUS.md",
+    "docs/DIPLOMACY_AND_CHRONICLE.md": "docs/direction/DIPLOMACY_AND_CHRONICLE.md",
+    "docs/AI_AND_TRANSPORT.md": "docs/direction/AI_AND_TRANSPORT.md",
+    "docs/LIVING_ECOSYSTEMS.md": "docs/direction/LIVING_ECOSYSTEMS.md",
+    "docs/LIVING_RESOURCES_AND_UI_DIRECTIONS.md": "docs/direction/LIVING_RESOURCES_AND_UI_DIRECTIONS.md",
+    "docs/RESOURCE_AND_UNLOCK_DIRECTION.md": "docs/direction/RESOURCE_AND_UNLOCK_DIRECTION.md",
+    "docs/CONTACT_PERFORMANCE_SPEC.md": "docs/direction/CONTACT_PERFORMANCE_SPEC.md",
+    "docs/ARCHITECTURE.md": "docs/systems/ARCHITECTURE.md",
+    "docs/ALLIED_FLEET.md": "docs/systems/ALLIED_FLEET.md",
+    "docs/EMPIRE_CONFLICT.md": "docs/systems/EMPIRE_CONFLICT.md",
+    "docs/ENERGY_ECONOMY.md": "docs/systems/ENERGY_ECONOMY.md",
+    "docs/EXPEDITION_COLONIES.md": "docs/systems/EXPEDITION_COLONIES.md",
+    "docs/EXPEDITION_CONTACT.md": "docs/systems/EXPEDITION_CONTACT.md",
+    "docs/EXPEDITION_FREIGHT.md": "docs/systems/EXPEDITION_FREIGHT.md",
+    "docs/EXPEDITION_PROGRESSION.md": "docs/systems/EXPEDITION_PROGRESSION.md",
+    "docs/EXPEDITION_SESSION.md": "docs/systems/EXPEDITION_SESSION.md",
+    "docs/FIELD_ENCOUNTER.md": "docs/systems/FIELD_ENCOUNTER.md",
+    "docs/FLIGHT_CAMERA_EFFECTS.md": "docs/systems/FLIGHT_CAMERA_EFFECTS.md",
+    "docs/GALAXY_NAVIGATION.md": "docs/systems/GALAXY_NAVIGATION.md",
+    "docs/INTERSTELLAR_FLIGHT.md": "docs/systems/INTERSTELLAR_FLIGHT.md",
+    "docs/ORBITAL_COMBAT.md": "docs/systems/ORBITAL_COMBAT.md",
+    "docs/ORBITAL_ENCOUNTERS.md": "docs/systems/ORBITAL_ENCOUNTERS.md",
+    "docs/ORBITAL_THREAT.md": "docs/systems/ORBITAL_THREAT.md",
+    "docs/PLANET_BIOSPHERE.md": "docs/systems/PLANET_BIOSPHERE.md",
+    "docs/PLANET_CLIMATE.md": "docs/systems/PLANET_CLIMATE.md",
+    "docs/PLANET_GENERATION.md": "docs/systems/PLANET_GENERATION.md",
+    "docs/REPAIR_SUPPLIES.md": "docs/systems/REPAIR_SUPPLIES.md",
+    "docs/SHIP_CAPACITY.md": "docs/systems/SHIP_CAPACITY.md",
+    "docs/SHIP_COMMERCE.md": "docs/systems/SHIP_COMMERCE.md",
+    "docs/SHIP_SUPPORT.md": "docs/systems/SHIP_SUPPORT.md",
+    "docs/SPACE_SIGNAL_ENCOUNTERS.md": "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md",
+    "docs/SURFACE_COMBAT.md": "docs/systems/SURFACE_COMBAT.md",
+    "docs/SYSTEM_NAVIGATION.md": "docs/systems/SYSTEM_NAVIGATION.md",
+    "docs/TERRITORIAL_COMBAT.md": "docs/systems/TERRITORIAL_COMBAT.md",
+    "docs/CONTENT_INVENTORY.md": "docs/systems/CONTENT_INVENTORY.md",
+    "docs/ART_DIRECTION.md": "docs/art/ART_DIRECTION.md",
+    "docs/ART_PRODUCTION_PLAN.md": "docs/art/ART_PRODUCTION_PLAN.md",
+    "docs/AUDIO_PRODUCTION.md": "docs/art/AUDIO_PRODUCTION.md",
+    "docs/BIOSPHERE_ASSET_SPEC.md": "docs/art/BIOSPHERE_ASSET_SPEC.md",
+    "docs/CHARACTER_ARCHETYPES.md": "docs/art/CHARACTER_ARCHETYPES.md",
+    "docs/CHARACTER_CORPUS_DESIGN.md": "docs/art/CHARACTER_CORPUS_DESIGN.md",
+    "docs/CHARACTER_SCOPE_OPTIONS.md": "docs/art/CHARACTER_SCOPE_OPTIONS.md",
+    "docs/TAVI_MODEL_HANDOFF.md": "docs/art/TAVI_MODEL_HANDOFF.md",
+    "docs/SCOUT_ASSET.md": "docs/art/SCOUT_ASSET.md",
+    "docs/FLIGHT_TECH_ASSESSMENT.md": "docs/research/FLIGHT_TECH_ASSESSMENT.md",
+    "docs/SC4_SYSTEMS_AND_RENDERING.md": "docs/research/SC4_SYSTEMS_AND_RENDERING.md",
+    "docs/SPORE_BADGE_PARITY.md": "docs/research/SPORE_BADGE_PARITY.md",
+    "docs/SPORE_EXTENDED_VIDEO_EVIDENCE.md": "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md",
+    "docs/SPORE_GUI_FORENSICS.md": "docs/research/SPORE_GUI_FORENSICS.md",
+    "docs/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md": "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md",
+    "docs/SPORE_PALETTE_AUDIT.md": "docs/research/SPORE_PALETTE_AUDIT.md",
+    "docs/SPORE_SPACE_STAGE_RESEARCH.md": "docs/research/SPORE_SPACE_STAGE_RESEARCH.md",
+    "docs/REFERENCE_COVERAGE_METRICS.md": "docs/research/REFERENCE_COVERAGE_METRICS.md",
+    "docs/VISUAL_FIDELITY_FEASIBILITY.md": "docs/research/VISUAL_FIDELITY_FEASIBILITY.md",
+    "docs/ADVISOR_ART.md": "docs/reviews/ADVISOR_ART.md",
+    "docs/CHARACTER_STYLE_PROMPT.md": "docs/reviews/CHARACTER_STYLE_PROMPT.md",
+    "docs/CITY_CONCEPT.md": "docs/reviews/CITY_CONCEPT.md",
+    "docs/CITY_TEXTURES.md": "docs/reviews/CITY_TEXTURES.md",
+    "docs/CONTACT_MOCK_PROMPTS.md": "docs/reviews/CONTACT_MOCK_PROMPTS.md",
+    "docs/FIELD_INSTRUMENTS_MOCK_PROMPTS.md": "docs/reviews/FIELD_INSTRUMENTS_MOCK_PROMPTS.md",
+    "docs/FLIGHT_HUD_REVIEW.md": "docs/reviews/FLIGHT_HUD_REVIEW.md",
+    "docs/PHILOSOPHY_CAST_PROMPT.md": "docs/reviews/PHILOSOPHY_CAST_PROMPT.md",
+    "docs/PLAIN_FISH_AND_ASSET_VERSIONS.md": "docs/reviews/PLAIN_FISH_AND_ASSET_VERSIONS.md",
+    "docs/PLAYABILITY_REBUILD.md": "docs/reviews/PLAYABILITY_REBUILD.md",
+    "docs/PLAYTEST_REVIEW.md": "docs/reviews/PLAYTEST_REVIEW.md",
+    "docs/SPORE_INTERFACE_CONTRACT.md": "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+    "docs/UI_ICON_VOCABULARY.md": "docs/reviews/UI_ICON_VOCABULARY.md",
+    "docs/UI_LIFE_EXPLORATION_PROMPTS.md": "docs/reviews/UI_LIFE_EXPLORATION_PROMPTS.md",
+    "docs/VIEW_MOCK_COVERAGE.md": "docs/reviews/VIEW_MOCK_COVERAGE.md",
+    "docs/VISUAL_TARGET_PROMPTS_20260923.md": "docs/reviews/VISUAL_TARGET_PROMPTS_20260923.md",
+    "docs/TAVI_FIDELITY_REVIEW.md": "docs/reviews/TAVI_FIDELITY_REVIEW.md",
+    "docs/CAMPAIGN_FOUNDATION.md": "docs/history/CAMPAIGN_FOUNDATION.md",
+    "docs/PROJECT_VISION.md": "docs/history/PROJECT_VISION.md",
+    "docs/STORY_EXPLORATIONS.md": "docs/history/STORY_EXPLORATIONS.md",
+    "docs/PARITY_STATUS_2026-09-23.md": "docs/history/PARITY_STATUS_2026-09-23.md",
+    "docs/GALAXY_CHECKPOINT_PENDING.md": "docs/history/GALAXY_CHECKPOINT_PENDING.md",
+    "docs/TWO_DAY_VISUAL_TARGET.md": "docs/history/TWO_DAY_VISUAL_TARGET.md",
+    "docs/FLIGHT_INTERFACE.md": "docs/history/FLIGHT_INTERFACE.md",
+    "docs/GOAL_AND_CHECKINS.md": "docs/delivery/GOAL_AND_CHECKINS.md"
+  },
+  "documents": [
+    {
+      "path": "docs/DOCUMENTATION_MAP.json",
+      "category": "delivery",
+      "status": "current",
+      "title": "Documentation ownership registry"
+    },
+    {
+      "path": "docs/NEXT_SESSION.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Resume here"
+    },
+    {
+      "path": "docs/PRODUCTION_GOAL.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Frontier Worlds production goal"
+    },
+    {
+      "path": "docs/README.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Documentation map"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Roadmap and playtest gates"
+    },
+    {
+      "path": "docs/TASK_BOARD.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Production task board"
+    },
+    {
+      "path": "docs/art/ART_DIRECTION.md",
+      "category": "art",
+      "status": "specification",
+      "title": "Art direction: creepy-cute space exploration"
+    },
+    {
+      "path": "docs/art/ART_PRODUCTION_PLAN.md",
+      "category": "art",
+      "status": "specification",
+      "title": "Art production contract"
+    },
+    {
+      "path": "docs/art/AUDIO_PRODUCTION.md",
+      "category": "art",
+      "status": "specification",
+      "title": "Flight audio production"
+    },
+    {
+      "path": "docs/art/BIOSPHERE_ASSET_SPEC.md",
+      "category": "art",
+      "status": "deferred",
+      "title": "Expedition specimens: pilot kit specification"
+    },
+    {
+      "path": "docs/art/CHARACTER_ARCHETYPES.md",
+      "category": "art",
+      "status": "deferred",
+      "title": "Character first, artwork second"
+    },
+    {
+      "path": "docs/art/CHARACTER_CORPUS_DESIGN.md",
+      "category": "art",
+      "status": "deferred",
+      "title": "A diverse cast beyond the first eight"
+    },
+    {
+      "path": "docs/art/CHARACTER_SCOPE_OPTIONS.md",
+      "category": "art",
+      "status": "deferred",
+      "title": "Character scope and direction options"
+    },
+    {
+      "path": "docs/art/README.md",
+      "category": "art",
+      "status": "generated",
+      "title": "Art index"
+    },
+    {
+      "path": "docs/art/SCOUT_ASSET.md",
+      "category": "art",
+      "status": "specification",
+      "title": "Kiteback scout: authored model candidate"
+    },
+    {
+      "path": "docs/art/TAVI_MODEL_HANDOFF.md",
+      "category": "art",
+      "status": "deferred",
+      "title": "Tavi merchant: concept-to-model fidelity test"
+    },
+    {
+      "path": "docs/delivery/GOAL_AND_CHECKINS.md",
+      "category": "delivery",
+      "status": "current",
+      "title": "Status check-in contract"
+    },
+    {
+      "path": "docs/delivery/README.md",
+      "category": "delivery",
+      "status": "generated",
+      "title": "Delivery index"
+    },
+    {
+      "path": "docs/direction/AI_AND_TRANSPORT.md",
+      "category": "direction",
+      "status": "proposal",
+      "title": "Living cities: AI, transport and rewarding expansion"
+    },
+    {
+      "path": "docs/direction/CONTACT_PERFORMANCE_SPEC.md",
+      "category": "direction",
+      "status": "design",
+      "title": "A conversation with somebody"
+    },
+    {
+      "path": "docs/direction/CONTENT_CORPUS.md",
+      "category": "direction",
+      "status": "design",
+      "title": "Breadth and depth of content"
+    },
+    {
+      "path": "docs/direction/CORE_LOOP_AND_CONTENT_EPIC.md",
+      "category": "direction",
+      "status": "design",
+      "title": "Core alignment and the next content epic"
+    },
+    {
+      "path": "docs/direction/DIPLOMACY_AND_CHRONICLE.md",
+      "category": "direction",
+      "status": "proposal",
+      "title": "Alien contact and the civilization chronicle"
+    },
+    {
+      "path": "docs/direction/LIVING_ECOSYSTEMS.md",
+      "category": "direction",
+      "status": "proposal",
+      "title": "Living ecosystems and a growing species collection"
+    },
+    {
+      "path": "docs/direction/LIVING_RESOURCES_AND_UI_DIRECTIONS.md",
+      "category": "direction",
+      "status": "proposal",
+      "title": "Living resources and interface alternatives"
+    },
+    {
+      "path": "docs/direction/README.md",
+      "category": "direction",
+      "status": "generated",
+      "title": "Direction index"
+    },
+    {
+      "path": "docs/direction/RESOURCE_AND_UNLOCK_DIRECTION.md",
+      "category": "direction",
+      "status": "proposal",
+      "title": "Visible planetary production, scarcity and unlocks"
+    },
+    {
+      "path": "docs/direction/SPACE_FIRST_DIRECTION.md",
+      "category": "direction",
+      "status": "design",
+      "title": "Space-first direction"
+    },
+    {
+      "path": "docs/direction/SPACE_STAGE_TARGET.md",
+      "category": "direction",
+      "status": "design",
+      "title": "Space Stage successor: complete target and evidence"
+    },
+    {
+      "path": "docs/direction/STORY_CURRENT.md",
+      "category": "direction",
+      "status": "design",
+      "title": "The Vanguard and the worlds that forgot us"
+    },
+    {
+      "path": "docs/history/CAMPAIGN_FOUNDATION.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Campaign foundation"
+    },
+    {
+      "path": "docs/history/CITY_ART_PRODUCTION_2026-09-24.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Frontier Worlds: production plan for a polished city-and-space game"
+    },
+    {
+      "path": "docs/history/FLIGHT_INTERFACE.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Flight interface: color, interaction and navigation"
+    },
+    {
+      "path": "docs/history/GALAXY_CHECKPOINT_PENDING.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Galaxy implementation checkpoint \u2014 interruption and recovery record"
+    },
+    {
+      "path": "docs/history/NEXT_SESSION_2026-09-24.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Resume here"
+    },
+    {
+      "path": "docs/history/PARITY_STATUS_2026-09-23.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Spore Space Stage parity check-in \u2014 23 September 2026"
+    },
+    {
+      "path": "docs/history/PROJECT_VISION.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Frontier Worlds: project vision"
+    },
+    {
+      "path": "docs/history/README.md",
+      "category": "history",
+      "status": "generated",
+      "title": "History index"
+    },
+    {
+      "path": "docs/history/ROADMAP_2026-09-24.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Roadmap and playtest gates"
+    },
+    {
+      "path": "docs/history/STORY_EXPLORATIONS.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Five competing story treatments"
+    },
+    {
+      "path": "docs/history/TASK_BOARD_2026-09-24.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Production task board"
+    },
+    {
+      "path": "docs/history/TWO_DAY_VISUAL_TARGET.md",
+      "category": "history",
+      "status": "historical",
+      "title": "Two-day presentation target and galaxy correction"
+    },
+    {
+      "path": "docs/parity/COVERAGE.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Base Space Stage coverage contract"
+    },
+    {
+      "path": "docs/parity/EXPERIENCE_REPORT.md",
+      "category": "research",
+      "status": "generated",
+      "title": "Reference experience coverage report"
+    },
+    {
+      "path": "docs/parity/README.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Preliminary task decomposition"
+    },
+    {
+      "path": "docs/parity/contact_candidate_manifest.json",
+      "category": "research",
+      "status": "evidence",
+      "title": "contact_candidate_manifest.json"
+    },
+    {
+      "path": "docs/parity/experience_coverage.json",
+      "category": "research",
+      "status": "evidence",
+      "title": "experience_coverage.json"
+    },
+    {
+      "path": "docs/parity/launch_capture_manifest.json",
+      "category": "research",
+      "status": "evidence",
+      "title": "launch_capture_manifest.json"
+    },
+    {
+      "path": "docs/parity/reference_inventory.json",
+      "category": "research",
+      "status": "evidence",
+      "title": "reference_inventory.json"
+    },
+    {
+      "path": "docs/parity/reference_progression.json",
+      "category": "research",
+      "status": "evidence",
+      "title": "reference_progression.json"
+    },
+    {
+      "path": "docs/parity/tasks.tsv",
+      "category": "research",
+      "status": "evidence",
+      "title": "tasks.tsv"
+    },
+    {
+      "path": "docs/research/FLIGHT_TECH_ASSESSMENT.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "First-person flight: stack assessment"
+    },
+    {
+      "path": "docs/research/README.md",
+      "category": "research",
+      "status": "generated",
+      "title": "Research index"
+    },
+    {
+      "path": "docs/research/REFERENCE_COVERAGE_METRICS.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Reference coverage and experience confidence"
+    },
+    {
+      "path": "docs/research/SC4_SYSTEMS_AND_RENDERING.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "SimCity 4 research: demand, desirability, regions and art format"
+    },
+    {
+      "path": "docs/research/SPORE_BADGE_PARITY.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Spore badges, achievements and shop unlocks"
+    },
+    {
+      "path": "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Extended Spore gameplay: visual evidence register"
+    },
+    {
+      "path": "docs/research/SPORE_GUI_FORENSICS.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Spore Space Stage GUI: forensic review"
+    },
+    {
+      "path": "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Space Stage launch: sampled staging evidence"
+    },
+    {
+      "path": "docs/research/SPORE_PALETTE_AUDIT.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Space Stage palette and input audit"
+    },
+    {
+      "path": "docs/research/SPORE_SPACE_STAGE_RESEARCH.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Spore Space Stage: preserve the play"
+    },
+    {
+      "path": "docs/research/VISUAL_FIDELITY_FEASIBILITY.md",
+      "category": "research",
+      "status": "evidence",
+      "title": "Visual fidelity: feasibility and proof"
+    },
+    {
+      "path": "docs/reviews/ADVISOR_ART.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Advisor art \u2014 first integrated candidates"
+    },
+    {
+      "path": "docs/reviews/CHARACTER_STYLE_PROMPT.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Deferred character style comparison"
+    },
+    {
+      "path": "docs/reviews/CITY_CONCEPT.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Urban tutorial city: revised scale study"
+    },
+    {
+      "path": "docs/reviews/CITY_TEXTURES.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Generated city material candidates"
+    },
+    {
+      "path": "docs/reviews/CONTACT_MOCK_PROMPTS.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Contact mock prompts and review"
+    },
+    {
+      "path": "docs/reviews/FIELD_INSTRUMENTS_MOCK_PROMPTS.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Field Instruments complete-view mock register"
+    },
+    {
+      "path": "docs/reviews/FLIGHT_HUD_REVIEW.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Flight instrument implementation review"
+    },
+    {
+      "path": "docs/reviews/MODELING_POSTMORTEM_2026-09-24.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Character modeling postmortem"
+    },
+    {
+      "path": "docs/reviews/PHILOSOPHY_CAST_PROMPT.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Eight philosophies: original cast concept"
+    },
+    {
+      "path": "docs/reviews/PLAIN_FISH_AND_ASSET_VERSIONS.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Plain fish and non-destructive asset versions"
+    },
+    {
+      "path": "docs/reviews/PLAYABILITY_REBUILD.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Space Stage playability and inhabited-world correction"
+    },
+    {
+      "path": "docs/reviews/PLAYTEST_REVIEW.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Presentation and interaction review \u2014 22 September 2026"
+    },
+    {
+      "path": "docs/reviews/README.md",
+      "category": "reviews",
+      "status": "generated",
+      "title": "Reviews index"
+    },
+    {
+      "path": "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Space Stage interface: correction contract"
+    },
+    {
+      "path": "docs/reviews/TAVI_FIDELITY_REVIEW.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Actual modeling proof: technical pass, art gate still open"
+    },
+    {
+      "path": "docs/reviews/UI_ICON_VOCABULARY.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Functional icon controls; artwork rejected"
+    },
+    {
+      "path": "docs/reviews/UI_LIFE_EXPLORATION_PROMPTS.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "UI and living-world follow-up prompts"
+    },
+    {
+      "path": "docs/reviews/VIEW_MOCK_COVERAGE.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Every-view mock coverage"
+    },
+    {
+      "path": "docs/reviews/VISUAL_TARGET_PROMPTS_20260923.md",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "Two-day visual target prompts"
+    },
+    {
+      "path": "docs/systems/ALLIED_FLEET.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Allied escorts and persistent losses"
+    },
+    {
+      "path": "docs/systems/ARCHITECTURE.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Architecture"
+    },
+    {
+      "path": "docs/systems/CONTENT_INVENTORY.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Content inventory and integration gaps"
+    },
+    {
+      "path": "docs/systems/EMPIRE_CONFLICT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Empire hostilities and colony defense"
+    },
+    {
+      "path": "docs/systems/ENERGY_ECONOMY.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Finite ship energy"
+    },
+    {
+      "path": "docs/systems/EXPEDITION_COLONIES.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Ship-delivered colonies and export production"
+    },
+    {
+      "path": "docs/systems/EXPEDITION_CONTACT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Personal contact and persistent diplomatic consequences"
+    },
+    {
+      "path": "docs/systems/EXPEDITION_FREIGHT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Automated physical freight"
+    },
+    {
+      "path": "docs/systems/EXPEDITION_PROGRESSION.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Expedition recognition and master ranks"
+    },
+    {
+      "path": "docs/systems/EXPEDITION_SESSION.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Shared expedition session \u2014 first integration checkpoint"
+    },
+    {
+      "path": "docs/systems/FIELD_ENCOUNTER.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Morrow Basin: first personal ship encounter"
+    },
+    {
+      "path": "docs/systems/FLIGHT_CAMERA_EFFECTS.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Wider flight camera and bounded effects"
+    },
+    {
+      "path": "docs/systems/GALAXY_NAVIGATION.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Galaxy navigation checkpoint"
+    },
+    {
+      "path": "docs/systems/INTERSTELLAR_FLIGHT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Personal interstellar travel checkpoint"
+    },
+    {
+      "path": "docs/systems/ORBITAL_COMBAT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Orbital custodian pilot"
+    },
+    {
+      "path": "docs/systems/ORBITAL_ENCOUNTERS.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Hostile encounters beyond Morrow"
+    },
+    {
+      "path": "docs/systems/ORBITAL_THREAT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Orbital wreck encounter"
+    },
+    {
+      "path": "docs/systems/PLANET_BIOSPHERE.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Collect life, establish worlds"
+    },
+    {
+      "path": "docs/systems/PLANET_CLIMATE.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Personal planet manipulation"
+    },
+    {
+      "path": "docs/systems/PLANET_GENERATION.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Visitable planet production pipeline"
+    },
+    {
+      "path": "docs/systems/README.md",
+      "category": "systems",
+      "status": "generated",
+      "title": "Systems index"
+    },
+    {
+      "path": "docs/systems/REPAIR_SUPPLIES.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Carried repair supplies"
+    },
+    {
+      "path": "docs/systems/SHIP_CAPACITY.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Purchased hull and reactor capacity"
+    },
+    {
+      "path": "docs/systems/SHIP_COMMERCE.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Carried cargo, finite markets and purchasable unlocks"
+    },
+    {
+      "path": "docs/systems/SHIP_SUPPORT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Active Shield and Rally Call"
+    },
+    {
+      "path": "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Optional orbital encounters"
+    },
+    {
+      "path": "docs/systems/SURFACE_COMBAT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Surface weapons and persistent defenses"
+    },
+    {
+      "path": "docs/systems/SYSTEM_NAVIGATION.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Personal system navigation"
+    },
+    {
+      "path": "docs/systems/TERRITORIAL_COMBAT.md",
+      "category": "systems",
+      "status": "checkpoint",
+      "title": "Alien colonies: surrender, capture and ruins"
+    },
+    {
+      "path": "docs/ui-review/data.js",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "data.js"
+    },
+    {
+      "path": "docs/ui-review/icons.html",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "icons.html"
+    },
+    {
+      "path": "docs/ui-review/index.html",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "index.html"
+    },
+    {
+      "path": "docs/ui-review/reference-assets.json",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "reference-assets.json"
+    },
+    {
+      "path": "docs/ui-review/reference-metrics.js",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "reference-metrics.js"
+    },
+    {
+      "path": "docs/ui-review/reference-set.js",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "reference-set.js"
+    },
+    {
+      "path": "docs/ui-review/references.html",
+      "category": "reviews",
+      "status": "evidence",
+      "title": "references.html"
+    }
+  ]
+}

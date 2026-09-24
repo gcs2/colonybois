@@ -1,6 +1,6 @@
 # Selective concept approval
 
-Source: built-in imagegen; exact prompt in docs/CONTACT_MOCK_PROMPTS.md, section Nonhuman anatomy exploration.
+Source: built-in imagegen; exact prompt in docs/reviews/CONTACT_MOCK_PROMPTS.md, section Nonhuman anatomy exploration.
 
 User likes LEFT and RIGHT character directions. CENTER is somewhat too creepy and is not a production target. This complete source sheet is retained to preserve the approved choices in context, not to approve all three designs or the generated background artifacts.
 

@@ -24,7 +24,7 @@ try {
         if (-not $Voice) { $Voice = $availableVoices[0] }
     }
     if ($availableVoices -notcontains $Voice) { throw "Voice unavailable: $Voice. Use -ListVoices to see installed voices." }
-    if (-not $InputFile) { $InputFile = Join-Path $projectRoot 'docs\STORY_EXPLORATIONS.md' }
+    if (-not $InputFile) { $InputFile = Join-Path $projectRoot 'docs\history\STORY_EXPLORATIONS.md' }
     if (-not $OutputFile) { $OutputFile = Join-Path $projectRoot 'artifacts\narration\story-explorations.wav' }
     $InputFile = (Resolve-Path -LiteralPath $InputFile).Path
     $OutputFile = [System.IO.Path]::GetFullPath($OutputFile)
