@@ -6,7 +6,7 @@ Updated 24 September 2026. Read the [documentation map](README.md) for ownership
 
 Character modeling, new character design and cast expansion remain **deferred** after the failed modeling demonstration. The user subsequently authorized existing generated images as in-game portraits: Tavi now uses a static concept-derived cutout. This narrow integration does not reopen fish revisions, modeling or a creator. Preserve the prototypes and read the [postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md). The overall space-game objective is unchanged.
 
-Resume the connected spaceflight/contact/trade experience, with Spore evidence and approved Field Instruments direction informing bounded changes. The user likes the contact window and choices; the face, joke and model fidelity were rejected. Existing representatives can remain temporary while the interaction improves. See the board for execution order and [contact performance requirements](direction/CONTACT_PERFORMANCE_SPEC.md).
+First complete the reference/current/mock coverage gate in [TASK_BOARD.md](TASK_BOARD.md), beginning with orbital/surface HUD. The user rejected continued implementation without comprehensive source fidelity and every-view mocks. [Coverage audit](reviews/VIEW_MOCK_COVERAGE.md): 17/61 sampled source workflows, 3/61 readable, zero fully verified interactions/presentation/audio; six base candidate files across 33 families, zero complete family state sets. These are evidence counts, not game completion. No further discretionary UI/feature production ahead of the gate. Existing builds remain available; character production remains deferred.
 
 ## Playable checkpoint and limits
 

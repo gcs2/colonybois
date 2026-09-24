@@ -22,4 +22,4 @@ Report implemented, verified and user-accepted status, evidence, blockers and ne
 
 ## Delivery ownership
 
-Use [TASK_BOARD.md](TASK_BOARD.md) for the current queue and [ROADMAP.md](ROADMAP.md) for gates. Research and coordinated every-view mocks remain required, alongside bounded playable improvements. Do not revive historical pending-checkpoint blockers or deferred character modeling from older documents. The full objective remains larger than a single visual milestone.
+Use [TASK_BOARD.md](TASK_BOARD.md) for the current queue and [ROADMAP.md](ROADMAP.md) for gates. Research and coordinated every-view mocks are the immediate prerequisite, following the user correction on 24 September. Complete the source/current/mock coverage gate in TASK_BOARD.md before discretionary implementation. The full product objective is unchanged; this restores its required work order. Do not substitute narrow fixes or critic no-regression checks for complete view/state evidence. Do not revive historical pending-checkpoint blockers or deferred character modeling from older documents. The full objective remains larger than a single visual milestone.
