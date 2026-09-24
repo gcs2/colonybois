@@ -1,5 +1,12 @@
 # Wider flight camera and bounded effects
 
+## Planet-fixed landing destination (24 September 2026)
+
+The orbital approach previously ended at a hard-coded space position, unrelated to the globe's site marker. Entry now uses the actual marker direction transformed by the planet rotation, at radius plus six units. The final leg follows the moving site as the globe rotates; the same named site remains selected. This is a destination-alignment correction, not generated matching surface terrain.
+
+The landing-flow test now rotates the globe and advances its rotation throughout 24 hemisphere/rate cases. It verifies marker/entry-ray alignment every step, arrival within 0.66 units of the current target, surface completion and no collision-clamp contact. All pass; 15 transition assertions also pass. The original static far-side fixture is 5.90 seconds. The refreshed native sequence includes planet rotation and reaches surface around 5.8 seconds with steadily declining final sampled speed in this case. Do not generalize that trace to all braking paths. Build `20260924-034851`. Independent critic found no blocking route/arrival regression in the sampled sequence, but flagged the tiny site marker and misleading negative orbital Y label. Terrain continuity and human motion-feel acceptance remain open.
+
+
 ## Shorter transition concealment (24 September 2026)
 
 The critic found that approach scenery became almost black well before arrival while orbital labels remained. The departure veil now covers only the last 1.8 to 0.65 approach units rather than the last nine; ship, planet, wreck and guardian labels fade with the world. Cancellation restores opacity immediately. This preserves the existing reference-frame transition rather than claiming seamless descent.

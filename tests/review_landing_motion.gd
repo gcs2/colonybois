@@ -21,6 +21,7 @@ func run() -> void:
 	var trace := FileAccess.open("res://artifacts/landing-motion/trace.csv",FileAccess.WRITE)
 	trace.store_line("frame,seconds,mode,speed,planet_clearance")
 	for frame: int in range(480):
+		scene.orbit.advance(1.0/60)
 		scene._physics_process(1.0/60)
 		scene._update_camera(1.0/60)
 		scene._update_visuals(); scene._refresh_ui(); scene._update_flight_effects(1.0/60)

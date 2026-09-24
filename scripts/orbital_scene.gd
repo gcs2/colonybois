@@ -14,7 +14,10 @@ var guardian := Node3D.new()
 var guardian_eye: MeshInstance3D
 var hostile_visual: Node3D
 var aim_marker := Node3D.new()
-const APPROACH := Vector3(0,8,8)
+func landing_position() -> Vector3:
+	# Keep entry above the same planet-fixed site shown on the globe and atlas.
+	var direction: Vector3 = planet.site_marker.position.normalized()
+	return planet.position+planet.basis*direction*(planet.radius+6.0)
 
 func _ready() -> void:
 	planet.planet_definition = planet_definition

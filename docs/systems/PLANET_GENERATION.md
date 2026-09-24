@@ -26,7 +26,7 @@ Persist an ID, full integer seed, generator version, archetype, authored sites a
 2. Generate landing regions from the spherical sampler. Match coast, climate and elevation to the selected coordinate; add deterministic finer detail without altering the large geography. Current Morrow ground remains the earlier authored terrain and does not yet match this globe.
 3. Select biome kits from temperature, water, terrain and atmosphere: ground materials, geological meshes, plants, fauna, weather, ambient sound and landing hazards. Kits need authored creepy-cute assets and distinct interactions. Palettes alone are insufficient.
 4. Place resource opportunities using geological/ecological constraints and independent seeded streams. Persist depletion, structures, discoveries and environmental changes as deltas. No new economic resource production is claimed by this renderer.
-5. Add continuous approach cues and reference-frame handoff at the chosen site; test every approach hemisphere, camera scale and environment. Current Morrow return is a local scene transition with one landable basin, not seamless planetary flight.
+5. Orbital entry now follows the actual rotating site-marker direction instead of a fixed space point. Continue with landmark/terrain continuity and reference-frame handoff at the chosen site; test every approach hemisphere, camera scale and environment. Current Morrow return is a local scene transition with one landable basin, not seamless planetary flight.
 6. Extend beyond three terrestrial families only after three genuinely different expeditions work. Airless/cratered moons, volcanic worlds, deep oceans and gas giants require their own geology, atmosphere and access rules; do not implement them as palette swaps.
 
 ## Art acceptance

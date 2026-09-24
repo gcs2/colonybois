@@ -726,6 +726,7 @@ func _physics_process(delta: float) -> void:
 		surface_order = false
 		service_order = ""
 	if navigating:
+		if landing and landing_waypoints.is_empty(): destination = orbit.landing_position()
 		if approach_subject: destination = _target_position()+Vector3(0,1,1).normalized()*Equipment.reach(tool)*0.55
 		if attack_order:
 			var away_from_guardian: Vector3 = ship.position-model.guardian_position()
@@ -1575,7 +1576,7 @@ func _departure() -> void:
 func _begin_landing() -> void:
 	if model.definition().sites.is_empty(): _toast("No playable landing region on this planet yet."); return
 	if paused or _inspection_open() or model.state.flight_mode != "orbit" or landing: return
-	var route: Array[Vector3] = FlightControls.landing_route(ship.position,OrbitalScene.APPROACH,orbit.planet.position)
+	var route: Array[Vector3] = FlightControls.landing_route(ship.position,orbit.landing_position(),orbit.planet.position)
 	_navigate(route.pop_front())
 	landing_waypoints = route
 	landing = true

@@ -26,14 +26,21 @@ func run() -> void:
 	for hz: int in [30,60,120]:
 		for angle: int in range(0,360,45):
 			scene._change_flight_mode("orbit")
+			scene.orbit.planet.rotation.y = deg_to_rad(angle)
 			scene.ship.position = scene.orbit.planet.position+Vector3(cos(deg_to_rad(angle))*55,12,sin(deg_to_rad(angle))*55)
 			scene._begin_landing()
 			var touched: bool = false
+			var arrival_error: float = INF
 			for frame: int in range(hz*20):
 				if scene.model.state.flight_mode == "surface": break
+				scene.orbit.advance(1.0/hz)
+				var site_ray: Vector3 = scene.orbit.planet.basis*scene.orbit.planet.site_marker.position.normalized()
+				var entry_ray: Vector3 = (scene.orbit.landing_position()-scene.orbit.planet.position).normalized()
+				if site_ray.distance_to(entry_ray) > 0.0001: passed = false
+				arrival_error = scene.ship.position.distance_to(scene.orbit.landing_position())
 				scene._physics_process(1.0/hz)
 				if scene.model.state.flight_mode == "orbit" and scene.ship.position.distance_to(scene.orbit.planet.position) <= 21.01: touched = true
-			if touched or scene.model.state.flight_mode != "surface":
+			if touched or scene.model.state.flight_mode != "surface" or arrival_error >= 0.66:
 				passed = false; printerr("Landing failed at ",angle," degrees / ",hz," Hz")
 	print("Landing route sweep: 24 hemisphere/rate cases; passed ",passed)
 	scene.free()
