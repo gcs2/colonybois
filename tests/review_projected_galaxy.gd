@@ -9,16 +9,23 @@ class Overlay extends "res://tests/review_field_navigation.gd".Study:
 	var game: RefCounted
 	var known: bool=true
 	var card: Rect2
+	var summary_visible: bool=false
 	const SHIP_RECT=Rect2(1284,936,612,120)
-	func _draw() -> void:
-		label(Vector2(32,48),"Galaxy",30)
-		label(Vector2(635,34),"REVIEW OVERLAY · ACTUAL GALAXY PROJECTION",16,Color("97aaa5"))
-		label(Vector2(1750,48),"%d Marks" % game.field.marks,20)
+	func summary() -> void:
+		summary_visible=false; card=Rect2()
 		var system: Dictionary=game.sector.system_by_id("s1")
+		if not graph.in_front(Chart.StarGraph.Galaxy.position(system)): return
 		var point: Vector2=graph.point(system)
+		if not Rect2(16,90,1888,820).has_point(point): return
+		summary_visible=true
+		draw_circle(point,10,Color(0.8,0.92,0.91,0.15))
+		draw_circle(point,4,LIGHT)
 		bracket(point,18,LIGHT)
 		var height: float=64+system.planets.size()*36 if known else 96
-		card=Rect2(Vector2(clampf(point.x+30,24,1576),clampf(point.y-30,100,880-height)),Vector2(320,height))
+		var x: float=point.x+30 if point.x+350<1896 else point.x-350
+		card=Rect2(Vector2(clampf(x,24,1576),clampf(point.y-30,100,910-height)),Vector2(320,height))
+		var anchor:=Vector2(card.position.x if x>point.x else card.end.x,clampf(point.y,card.position.y+12,card.end.y-12))
+		draw_line(point+Vector2(20 if x>point.x else -20,0),anchor,Color("a7b7b1"),1,true)
 		housing(card,PAPER)
 		housing(card.grow(-3),INK)
 		var at: Vector2=card.position+Vector2(16,30)
@@ -29,6 +36,11 @@ class Overlay extends "res://tests/review_field_navigation.gd".Study:
 				draw_circle(at+Vector2(9,29+i*36),7,Color("87b4b1") if i==0 else Color("cbaa78"))
 				label(at+Vector2(28,36+i*36),planet.name,18)
 		else: label(at+Vector2(0,36),"Worlds not yet charted",18,Color("a7b7b1"))
+	func _draw() -> void:
+		label(Vector2(32,48),"Galaxy",30)
+		label(Vector2(635,34),"REVIEW OVERLAY · ACTUAL GALAXY PROJECTION",16,Color("97aaa5"))
+		label(Vector2(1750,48),"%d Marks" % game.field.marks,20)
+		summary()
 		housing(SHIP_RECT,PAPER)
 		label(Vector2(1300,958),"EXPEDITION SHIP",14,INK)
 		for i: int in range(4):
@@ -58,23 +70,36 @@ func run() -> void:
 		graph.selected_id="s0"; graph.hovered=""
 		var overlay:=Overlay.new(); overlay.graph=graph; overlay.game=game; overlay.size=Vector2(1920,1080)
 		viewport.add_child(overlay)
-		for state: String in ["known","unknown","rotated","underside"]:
+		for state: String in ["known","unknown","rotated","underside","right-edge","left-edge","offscreen","behind"]:
+			graph.reset_view(); graph.magnification=2.4
 			overlay.known=state!="unknown"; game.sector.system_by_id("s1").charted=overlay.known
 			graph.yaw=0.9 if state=="rotated" else 0.0
 			graph.pitch=-0.58 if state=="underside" else 0.58
+			var pc: Vector2=Chart.StarGraph.Galaxy.position(game.sector.system_by_id("s1"))
+			if state in ["right-edge","left-edge"]:
+				graph.pan=Vector2(1880 if state=="right-edge" else 40,430)-graph.project(pc)
+			if state=="offscreen": graph.pan=Vector2(3000,0)
+			if state=="behind":
+				var forward: Vector3=graph.camera_axes().z
+				graph.focus_pc=pc-Vector2(forward.x,forward.z)*100
 			graph.cache_stars(); graph.queue_redraw(); overlay.queue_redraw()
 			for frame: int in range(3): await process_frame
 			await RenderingServer.frame_post_draw
 			var target: Vector2=graph.point(game.sector.system_by_id("s1"))
 			var expected: Vector2=Chart.StarGraph.Galaxy.position(game.sector.system_by_id("s1"))
-			assert(graph.world_at(target).distance_to(expected)<0.001)
+			if state!="behind": assert(graph.world_at(target).distance_to(expected)<0.001)
+			assert(overlay.summary_visible==(state not in ["offscreen","behind"]))
+			if state=="behind": assert(not graph.in_front(expected))
+			if overlay.summary_visible:
+				assert(Rect2(0,0,1920,1080).encloses(overlay.card))
+				assert(not overlay.card.has_point(target))
 			assert(overlay.SHIP_RECT.size.x/1920.0<=0.34 and overlay.SHIP_RECT.size.y/1080.0<=0.13)
 			assert(not overlay.card.intersects(overlay.SHIP_RECT))
 			var file: String="%s/projected-galaxy-%s-%d.png" % [OUT,state,resolution.x]
 			assert(viewport.get_texture().get_image().save_png(file)==OK)
-			evidence.append({"state":state,"resolution":[resolution.x,resolution.y],"image":file,"yaw":graph.yaw,"pitch":graph.pitch,"distance_pc":game.quote("s1p0").distance,"reach_pc":game.commerce.drive_range(),"target_screen":[target.x,target.y],"ship_housing_fraction":[612.0/1920,120.0/1080],"native_input":false})
+			evidence.append({"state":state,"resolution":[resolution.x,resolution.y],"image":file,"summary_visible":overlay.summary_visible,"yaw":graph.yaw,"pitch":graph.pitch,"distance_pc":game.quote("s1p0").distance,"reach_pc":game.commerce.drive_range(),"target_screen":[target.x,target.y],"ship_housing_fraction":[612.0/1920,120.0/1080],"native_input":false})
 		viewport.free()
 	var record:=FileAccess.open(OUT+"/projected-galaxy-evidence.json",FileAccess.WRITE)
 	record.store_string(JSON.stringify({"kind":"production galaxy renderer with review-only overlay","states":evidence},"\t"))
-	print("Projected galaxy review: 8 captures, projection roundtrip and overlay bounds passed.")
+	print("Projected galaxy review: 16 captures; projection, edge placement and visibility assertions passed.")
 	quit()
