@@ -22,6 +22,10 @@ Next inspect actual action→feedback→result and failure sequences; cutscenes/
 
 User likes the contact window and interaction choices, rejects the v2 face, and rejects the transmission-delay joke. Preserve the window; v3 is a face-only experiment, not accepted art. Its eyelids/mouth still look too human and sleepy. Do not write further jokes for this project. Source greeting now reads “I’m Tavi Rill. If you’re here to trade, let’s see what you’ve brought.” Existing candidate bitmaps still contain the rejected line; treat it as obsolete. No new exported build in this checkpoint.
 
+## Delegated character-model demonstration
+
+User requested a separate modeling focus or subagent. A subagent built an isolated actual 3D maquette; no separate user-owned conversation was created. Read [TAVI_MODEL_HANDOFF.md](TAVI_MODEL_HANDOFF.md) and [TAVI_FIDELITY_REVIEW.md](TAVI_FIDELITY_REVIEW.md). Real GLB export/reimport works, but rendered art falls short of the concept. The prototype is not integrated, rigged, animated or user-approved. Do not equate this technical proof with achieved fidelity. Finish connected anatomy through a modeling/sculpt pass before scaling the cast. Endorsed left/right concept directions are now preserved under art/concepts/characters with selective-approval notes; generated model/captures remain reproducible local outputs.
+
 ## Art and gameplay reminders
 
 Latest character direction: [CHARACTER_ARCHETYPES.md](CHARACTER_ARCHETYPES.md). Develop personality before further face generation. User likes first and third creatures in `10-contact-alien-exploration.png`; middle is too creepy. “Harmonious” described these mocks, not a requested empire philosophy. Proposed merchant is large, confident, mildly arrogant, family-oriented and widely traveled. Preserve the endorsed window; use natural actor-friendly dialogue. First/third are visual directions, not production-ready rigs or accepted performances.

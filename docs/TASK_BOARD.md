@@ -22,6 +22,8 @@ Status meanings: **In progress** = current work; **Next** = ordered near-term qu
 
 ## Immediate queue
 
+User-requested modeling demonstration: [Tavi handoff](TAVI_MODEL_HANDOFF.md), [actual fidelity review](TAVI_FIDELITY_REVIEW.md). Delegated isolated GLB proof succeeds technically, falls short artistically. No game integration, rig, animation or user acceptance. A connected anatomy/sculpt pass is the next asset gate; this does not unlock batch cast production.
+
 Character pipeline: [CHARACTER_ARCHETYPES.md](CHARACTER_ARCHETYPES.md) separates researched Spore philosophies from our individual personalities. User endorses first/third alien-sheet directions, finds middle too creepy; “harmonious” was visual feedback, not a faction assignment. Personality, motivation and acting spec precede further polished art. Large family merchant is the first proposed character; no new cast implementation or faction reclassification yet.
 
 | ID | Task | Status and current evidence | Gate |

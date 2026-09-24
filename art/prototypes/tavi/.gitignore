@@ -1,0 +1,12 @@
+.godot/
+renders/
+*.log
+*.glb
+*.glb.import
+skin_color.png
+skin_color.png.import
+skin_normal.png
+skin_normal.png.import
+*.png
+*.png.import
+model_stats.json
