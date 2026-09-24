@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="64" viewBox="0 0 128 64">
+<path d="M8 1H120L127 8V56L120 63H8L1 56V8Z" fill="#202525" stroke="#a6a99d"/>
+<path d="M9 3H119L125 9V54L119 60H9L3 54V9Z" fill="#2a3030"/>
+<path d="M9 3H119L124 8M3 9V53" fill="none" stroke="#525b59"/>
+<path d="M4 55L9 60H119L125 54" fill="none" stroke="#1b2020"/>
+</svg>

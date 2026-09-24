@@ -1,5 +1,14 @@
 # Personal contact and persistent diplomatic consequences
 
+## Field Instruments correction (24 September 2026)
+
+Build `20260924-032013` replaces the rejected blue communicator with matte ivory housing, charcoal chambers, Barlow typography and four painted contact actions. Equipment uses a three-column pictorial grid with prices, tier markers, flavor/effects and fixed purchase/refusal controls. Actor continuity and validated transactions remain. Colony kits now cost 300 Marks only; alternate crafting remains future work. Cut Mark is provisional. First/repeat and relationship-sensitive greetings persist acknowledgment. Native Control tooltip delay is zero following the user's EU4 reference; live pointer timing remains to review.
+
+Verification: contact presentation 76, diplomacy 72, colonies 49, commerce 49 and support 61 checks pass (307 total). Independent critic reviewed locked, available and purchased captures at 1080p/1440p: selection and fixed refusal visible, no major checkpoint blocker. Available/purchased images use an explicitly funded Merchant-tier fixture and actual UI transaction: 1,000 to 880 Marks, cargo capacity 8 to 16. Stills do not establish timing, audio, fun or final art approval. Flavor scroll boundary remains a refinement.
+
+Evidence: local artifacts/contact-first-1920.png, contact-shop-upgrades-1920.png, contact-shop-available-1920.png and contact-shop-purchased-1920.png, with 2560 counterparts. Artwork prompts/provenance: assets/ui/COMMUNICATOR_ASSETS.md. Market and supply layouts, surrounding HUD, animated performance and user acceptance remain open. Earlier checkpoints below are historical.
+
+
 ## Compact equipment catalogue — 24 September 2026
 
 Build `20260924-023446` replaces expanded upgrade paragraphs with a scrollable equipment list and one selected-item detail/purchase area. Selection persists through purchase refreshes and badge links; prices, badge requirements, installed state and refusal reasons use actual commerce data. The portrait and return controls remain visible. This does not add new content or reopen character modeling.

@@ -128,7 +128,8 @@ func run() -> void:
 	for button: Node in scene.popup_body.find_children("*","Button",true,false):
 		if button.get_meta("upgrade_id","") in ["shield","rally_call"]:
 			choices += 1
-			check(button.icon != null and button.get_global_rect().end.y < scene.popup.get_global_rect().end.y,"Support purchase has its icon and fits without scrolling: "+str(button.get_meta("upgrade_id")))
+			var pictures: Array = button.find_children("*","TextureRect",true,false)
+			check(pictures.size() == 1 and pictures[0].texture != null and button.get_global_rect().end.y < scene.popup.get_global_rect().end.y,"Support tile has its item art and fits without scrolling: "+str(button.get_meta("upgrade_id")))
 	check(choices == 2,"Dedicated Support shop shows both real equipment entries")
 	scene._close_popup(); scene.paused = true; ticks(game,60); before = game.snapshot(); scene._hud_action("shield")
 	check(game.snapshot() == before,"Pause blocks support activation")

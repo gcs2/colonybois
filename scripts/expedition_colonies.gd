@@ -20,8 +20,7 @@ func buy_reason(game: RefCounted, port: String, at: Vector3) -> String:
 	var id: String = strategic_id(game.field.state.planet_id)
 	if not game.sector.state.colonies.has(id): return "Load a colony kit at one of your established colonies."
 	if game.commerce.quantity()+KIT_SPACE > game.commerce.capacity(): return "Reserve four cargo spaces for the kit."
-	var source: Dictionary = game.sector.state.colonies[id]
-	if game.field.marks < Settlement.MARKS or source.materials < Settlement.MATERIALS or source.supplies < Settlement.SUPPLIES: return "Requires 300 Marks, 100 colony materials and 80 colony supplies."
+	if game.field.marks < Settlement.MARKS: return "Requires 300 Marks."
 	return ""
 
 func buy_kit(game: RefCounted, port: String, at: Vector3) -> String:
@@ -29,10 +28,8 @@ func buy_kit(game: RefCounted, port: String, at: Vector3) -> String:
 	if not blocked.is_empty(): return blocked
 	var id: String = strategic_id(game.field.state.planet_id)
 	game.field.marks -= Settlement.MARKS
-	game.sector.state.colonies[id].materials -= Settlement.MATERIALS
-	game.sector.state.colonies[id].supplies -= Settlement.SUPPLIES
 	state.kit_source = id
-	game.diplomacy.record(game,"colonies","Loaded a colony kit: 300 Marks, 100 materials and 80 supplies committed.","",{"source":id,"cargo_space":KIT_SPACE})
+	game.diplomacy.record(game,"colonies","Purchased a colony kit for 300 Marks.","",{"source":id,"cargo_space":KIT_SPACE,"marks_delta":-Settlement.MARKS})
 	return ""
 
 func deployment_reason(game: RefCounted) -> String:

@@ -24,12 +24,22 @@ func run() -> void:
 	var actor: Control = scene.contact_portrait
 	check(actor != null and actor.speaking == 0,"Opening contact creates a listening actor")
 	check(actor.texture.resource_path.ends_with("tavi-portrait-v1.png"),"Tavi uses the concept-derived runtime portrait")
+	var introduction: String = scene.contact_greeting
+	var tiles: Array = scene.popup_body.find_children("*","Button",true,false).filter(func(button: Node) -> bool: return button.has_meta("contact_action"))
+	check(tiles.size() == 4 and tiles.all(func(button: Button) -> bool: return button.icon != null and not button.tooltip_text.is_empty()),"First contact exposes four pictorial actions with named tooltips")
+	for tile: Button in tiles:
+		if tile.get_meta("contact_action") == "Diplomacy": tile.pressed.emit(); break
+	check(scene.contact_page == "agreements" and scene.contact_portrait == actor,"Pictorial diplomacy action reaches real agreements without replacing the representative")
+	check(introduction == scene.campaign.diplomacy.profiles.consortium.greeting,"First answered contact shows the introduction before acknowledging it")
+	var restored := Session.new()
+	check(restored.load_from(scene._campaign_path(true)) == OK and "consortium" not in restored.diplomacy.unread(),"Answering first contact persists its acknowledgment immediately")
 	actor.clock = 9.0
 	var before: Dictionary = scene.campaign.snapshot()
 	for page: String in ["exchange","fleet","conflict","agreements"]:
 		scene.contact_page = page; scene._show_popup("contact")
 		check(scene.contact_portrait == actor and actor.clock == 9.0,"Drawer keeps the actor and presentation clock: "+page)
 	check(scene.campaign.snapshot() == before,"Browsing does not advance or mutate campaign state")
+	check(scene.contact_greeting == introduction,"Drawer changes preserve the first greeting until the encounter closes")
 	scene._contact_action("gift")
 	check(scene.campaign.field.marks == 180 and actor.mood == "pleased" and actor.speaking > 0,"Committed grant spends actual Marks and produces acceptance")
 	actor._process(1.0)
@@ -48,6 +58,7 @@ func run() -> void:
 	check(scene.contact_portrait == null and scene.contact_reply.is_empty(),"Closing clears the response and actor reference immediately")
 	scene._show_popup("contact")
 	check(scene.contact_portrait != actor and scene.contact_portrait.speaking == 0,"Reopening creates a fresh listening encounter without stale acceptance")
+	check(scene.contact_greeting == scene.campaign.diplomacy.greeting(scene.campaign,"consortium") and scene.contact_greeting != introduction,"Reopened contact uses a repeat greeting rather than replaying the introduction")
 	actor = scene.contact_portrait
 	scene._contact_select("directorate")
 	check(scene.contact_portrait != actor and scene.contact_portrait.faction_id == "directorate","A different faction gets its own representative")

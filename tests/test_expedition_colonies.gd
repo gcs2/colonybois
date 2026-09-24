@@ -27,10 +27,12 @@ func run() -> void:
 	before = game.snapshot()
 	check(not c.buy_kit(game,"basin_port",port).is_empty() and game.snapshot() == before,"Kit needs four actual free hold spaces")
 	game.commerce.state.cargo.clear()
+	game.sector.state.colonies.s0p0.materials = 0
+	game.sector.state.colonies.s0p0.supplies = 0
 	var materials: float = game.sector.state.colonies.s0p0.materials
 	var supplies: float = game.sector.state.colonies.s0p0.supplies
 	check(c.buy_kit(game,"basin_port",port).is_empty(),"Home dock assembles and loads a paid kit")
-	check(game.field.marks == 200 and game.sector.state.colonies.s0p0.materials == materials-100 and game.sector.state.colonies.s0p0.supplies == supplies-80,"Marks and physical construction stocks are debited exactly once")
+	check(game.field.marks == 200 and game.sector.state.colonies.s0p0.materials == materials and game.sector.state.colonies.s0p0.supplies == supplies,"Purchasing a kit charges Marks only and preserves colony materials and supplies")
 	check(game.commerce.used_space(game) == 4 and game.commerce.quantity() == 0,"Kit occupies cargo space without masquerading as saleable commodities")
 	before = game.snapshot()
 	check(not c.buy_kit(game,"basin_port",port).is_empty() and game.snapshot() == before,"Repeated purchase cannot duplicate a kit")

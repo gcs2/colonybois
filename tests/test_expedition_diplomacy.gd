@@ -14,6 +14,7 @@ func travel(game: RefCounted, id: String) -> void:
 		if not game.traveling(): break
 		game.tick()
 func run() -> void:
+	check_greetings()
 	var game := Session.new()
 	var d: RefCounted = game.diplomacy
 	var before: Dictionary = game.snapshot()
@@ -93,6 +94,7 @@ func run() -> void:
 	scene.save_path = "res://artifacts/diplomacy_ui.json"
 	scene.contacted_faction = "commune"
 	scene._show_popup("contact")
+	scene.contact_page = "agreements"; scene._show_popup("contact")
 	await process_frame
 	var acted: bool = false
 	for button: Button in scene.popup_body.find_children("*","Button",true,false):
@@ -115,3 +117,32 @@ func run() -> void:
 	scene.free()
 	print("Expedition diplomacy assertions: %d; failures: %d" % [checks,failures])
 	quit(1 if failures else 0)
+
+func check_greetings() -> void:
+	var legacy := Session.new()
+	legacy.sector.faction_by_id("consortium").contacted = true
+	check(legacy.diplomacy.answer(legacy,"consortium") and legacy.diplomacy.state.keys.has("read:consortium") and not legacy.diplomacy.state.keys.has("contact:consortium"),"Legacy known civilization remembers the call without fabricating first contact")
+	var snapshot: Dictionary = legacy.snapshot()
+	check(not legacy.diplomacy.answer(legacy,"consortium") and legacy.snapshot() == snapshot,"Repeated acknowledgment never duplicates history")
+	check(not legacy.diplomacy.answer(legacy,"commune") and legacy.snapshot() == snapshot,"Uncontacted civilization cannot be acknowledged remotely")
+	for id: String in ["directorate","consortium","commune"]:
+		var game := Session.new()
+		var d: RefCounted = game.diplomacy
+		d.contact(game,id)
+		var profile: Dictionary = d.profiles[id]
+		var faction: Dictionary = game.sector.faction_by_id(id)
+		faction.relation = 50
+		var before: Dictionary = game.snapshot()
+		check(d.greeting(game,id) == profile.greeting and game.snapshot() == before,"First greeting identifies the speaker even with high relations: "+id)
+		d.acknowledge(id)
+		check(d.greeting(game,id) == profile.friendly,"Previously answered friendly contact recognizes the player: "+id)
+		faction.relation = 0
+		check(d.greeting(game,id) == profile.repeat,"Neutral repeat does not introduce the speaker again: "+id)
+		check(d.act(game,id,"trade").is_empty() and d.greeting(game,id) == profile.trading,"Signed trade agreement changes the next greeting: "+id)
+		faction.relation = 50
+		check(d.act(game,id,"alliance").is_empty() and d.greeting(game,id) == profile.allied,"Alliance greeting takes precedence over trade: "+id)
+		var restored := Session.new()
+		check(restored.restore_snapshot(game.snapshot()) == OK and restored.diplomacy.greeting(restored,id) == profile.allied,"Acknowledgment and contextual greeting survive restore: "+id)
+		faction.embargo = true
+		check(d.greeting(game,id) == profile.hostile,"Closed markets cannot offer a warm trading greeting: "+id)
+		check(game.conflict.command(game,id,"declare").is_empty() and d.greeting(game,id) == profile.war,"Actual war replaces peaceful greetings: "+id)

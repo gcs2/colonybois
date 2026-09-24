@@ -40,3 +40,9 @@
 - Player-facing money is Marks, with history in data/catalog.json. The internal credits save key remains for compatibility; do not expose it as the currency's name.
 - Read README.md for run/test/build instructions and docs/ROADMAP.md for milestone boundaries.
 - The user rejected the current presentation as an early systems demo. docs/reviews/PLAYTEST_REVIEW.md records the critique, corrections and remaining gates. Do not call the city visually convincing or the tutorial successful based on tests, population counters or generated mockups. Native input playtesting and human readability/fun review remain necessary.
+
+## Latest communicator corrections (24 September 2026)
+
+- Reject flat blue Windows-style panels. Review the whole actual aesthetic against Field Instruments mocks with the visual critic, not just clipping. Equipment uses pictorial grids plus effects and flavor. Broader market/HUD conversion remains open.
+- EU4 screenshot reference: compact recognizable icons with immediate named tooltips and actual shortcuts where bound. Keep original Field Instruments materials.
+- Finished colony kits cost Marks only; crafting should be an alternative, not an additional charge. Crafting remains unimplemented. Cut Mark currency artwork is provisional; retain Marks and one treasury.

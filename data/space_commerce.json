@@ -78,7 +78,8 @@
         "defender": 3,
         "colonist": 2
       },
-      "family": "support"
+      "family": "support",
+      "flavor": "A brief shell of charged particles between your hull and the next impact."
     },
     "rally_call": {
       "name": "Rally Call",
@@ -88,7 +89,8 @@
         "defender": 2,
         "diplomat": 1
       },
-      "family": "support"
+      "family": "support",
+      "flavor": "A shared firing solution that brings scattered escorts onto one target."
     },
     "heat_ray": {
       "name": "Heat ray",
@@ -99,7 +101,8 @@
         "merchant": 2,
         "terraformer": 1,
         "zoologist": 1
-      }
+      },
+      "flavor": "Built to thaw frozen landing sites before the first cargo ramp opens."
     },
     "cool_ray": {
       "name": "Refrigeration ray",
@@ -110,7 +113,8 @@
         "merchant": 2,
         "terraformer": 1,
         "zoologist": 1
-      }
+      },
+      "flavor": "The cooling vanes frost over even in the heat of a working engine room."
     },
     "cloud_accumulator": {
       "name": "Cloud accumulator",
@@ -121,7 +125,8 @@
         "merchant": 2,
         "terraformer": 1,
         "zoologist": 1
-      }
+      },
+      "flavor": "On dry worlds, the first returning clouds draw a crowd at the port."
     },
     "cloud_vacuum": {
       "name": "Cloud vacuum",
@@ -132,7 +137,8 @@
         "merchant": 2,
         "terraformer": 1,
         "zoologist": 1
-      }
+      },
+      "flavor": "A vacuum manifold designed for skies too dense for a landing crew."
     },
     "seeker": {
       "name": "Seeker missile launcher",
@@ -141,7 +147,8 @@
       "requires": {
         "defender": 1,
         "explorer": 2
-      }
+      },
+      "flavor": "The guidance head holds its target through a hard banking turn."
     },
     "ground_bomb": {
       "name": "Ground bomb bay",
@@ -150,7 +157,8 @@
       "requires": {
         "defender": 1,
         "merchant": 2
-      }
+      },
+      "flavor": "A reinforced belly rack built to release its payload cleanly under fire."
     },
     "hold": {
       "name": "Expanded cargo hold",
@@ -160,7 +168,8 @@
         "merchant": 1,
         "explorer": 2,
         "naturalist": 1
-      }
+      },
+      "flavor": "Standard freight cradles replace the awkward corners of a scout hold."
     },
     "emitter": {
       "name": "Focused arc emitter",
@@ -169,7 +178,8 @@
       "requires": {
         "defender": 1,
         "explorer": 2
-      }
+      },
+      "flavor": "Aligned focusing forks turn a scattered discharge into a concentrated strike."
     },
     "drive": {
       "name": "Extended-range drive",
@@ -180,7 +190,8 @@
         "merchant": 2,
         "diplomat": 1
       },
-      "rank": 3
+      "rank": 3,
+      "flavor": "A recalibrated jump assembly opens routes beyond the familiar stars."
     },
     "hull_1": {
       "name": "Hull reinforcement I",
@@ -193,7 +204,8 @@
         "explorer": 1,
         "colonist": 1,
         "conqueror": 1
-      }
+      },
+      "flavor": "Layered armor surrounds the compartments a returning crew needs most."
     },
     "hull_2": {
       "name": "Hull reinforcement II",
@@ -206,7 +218,8 @@
         "defender": 2,
         "explorer": 2,
         "colonist": 2
-      }
+      },
+      "flavor": "Layered armor surrounds the compartments a returning crew needs most."
     },
     "hull_3": {
       "name": "Hull reinforcement III",
@@ -218,7 +231,8 @@
       "requires": {
         "defender": 3,
         "explorer": 3
-      }
+      },
+      "flavor": "Layered armor surrounds the compartments a returning crew needs most."
     },
     "hull_4": {
       "name": "Hull reinforcement IV",
@@ -230,7 +244,8 @@
       "requires": {
         "defender": 4,
         "explorer": 4
-      }
+      },
+      "flavor": "Layered armor surrounds the compartments a returning crew needs most."
     },
     "energy_1": {
       "name": "Reactor reservoir I",
@@ -243,7 +258,8 @@
         "explorer": 1,
         "trader": 1,
         "captain": 1
-      }
+      },
+      "flavor": "Insulated storage banks hold a larger charge; they cannot create energy."
     },
     "energy_2": {
       "name": "Reactor reservoir II",
@@ -256,7 +272,8 @@
         "merchant": 2,
         "explorer": 2,
         "surveyor": 2
-      }
+      },
+      "flavor": "Insulated storage banks hold a larger charge; they cannot create energy."
     },
     "energy_3": {
       "name": "Reactor reservoir III",
@@ -268,7 +285,8 @@
       "requires": {
         "merchant": 3,
         "explorer": 3
-      }
+      },
+      "flavor": "Insulated storage banks hold a larger charge; they cannot create energy."
     },
     "energy_4": {
       "name": "Reactor reservoir IV",
@@ -280,7 +298,8 @@
       "requires": {
         "merchant": 4,
         "explorer": 4
-      }
+      },
+      "flavor": "Insulated storage banks hold a larger charge; they cannot create energy."
     },
     "drive_2": {
       "name": "8 pc interstellar drive",
@@ -292,7 +311,8 @@
         "merchant": 3,
         "diplomat": 3
       },
-      "rank": 5
+      "rank": 5,
+      "flavor": "A deeper-range jump assembly for routes beyond the old charts."
     },
     "drive_3": {
       "name": "12 pc interstellar drive",
@@ -304,7 +324,8 @@
         "merchant": 4,
         "diplomat": 4
       },
-      "rank": 6
+      "rank": 6,
+      "flavor": "A deeper-range jump assembly for routes beyond the old charts."
     },
     "drive_4": {
       "name": "20 pc interstellar drive",
@@ -316,7 +337,8 @@
         "merchant": 5,
         "diplomat": 5
       },
-      "rank": 7
+      "rank": 7,
+      "flavor": "A deeper-range jump assembly for routes beyond the old charts."
     }
   }
 }

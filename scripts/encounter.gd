@@ -23,8 +23,9 @@ var upgrade_family: String = "ship"
 var trade_amount: int = 1
 const AlienPortrait = preload("res://scripts/alien_portrait.gd")
 var contacted_faction: String = ""
-var contact_page: String = "agreements"
+var contact_page: String = "home"
 var contact_reply: String = ""
+var contact_greeting: String = ""
 var contact_portrait: AlienPortrait = null
 var contact_accepted: bool = true
 var chronicle_filter: String = "all"
@@ -124,6 +125,7 @@ var progress_bar: ProgressBar
 var toolbar: Array[Button] = []
 var labels: Dictionary = {}
 var popup: PanelContainer
+var communicator_shell: Control
 var popup_kind: String = ""
 var popup_body: VBoxContainer
 var toast_time: float = 0.0
@@ -650,6 +652,11 @@ func _make_ui() -> void:
 	popup.size = Vector2(555,595)
 	popup.add_theme_stylebox_override("panel",_style(Instruments.INK))
 	root.add_child(popup)
+	communicator_shell = preload("res://scripts/communicator_shell.gd").new()
+	root.add_child(communicator_shell)
+	communicator_shell.z_index = 29
+	communicator_shell.hide()
+	popup.resized.connect(_sync_communicator_shell)
 	var popup_scroll := ScrollContainer.new()
 	popup_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	popup.add_child(popup_scroll)
@@ -660,6 +667,7 @@ func _make_ui() -> void:
 	popup.visible = false
 	popup.visibility_changed.connect(func() -> void:
 		menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return)
+		_sync_communicator_shell()
 		if not popup.visible: _reset_contact_presentation())
 	planet_map = PlanetMap.new()
 	planet_map.definition = model.definition()
@@ -1904,6 +1912,16 @@ func _show_popup(kind: String) -> void:
 	if kind == "service" and not shop_actor.is_empty():
 		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
+	var instrument: bool = kind in ["contact","service"] and campaign != null
+	if instrument:
+		popup.position = Vector2(310,135); popup.size = Vector2(980,630)
+		if kind == "contact" and contact_page == "home":
+			popup.position = Vector2(310,170); popup.size = Vector2(980,560)
+		var transparent := StyleBoxEmpty.new()
+		transparent.set_content_margin(SIDE_LEFT,30); transparent.set_content_margin(SIDE_RIGHT,30)
+		transparent.set_content_margin(SIDE_TOP,9); transparent.set_content_margin(SIDE_BOTTOM,32)
+		popup.add_theme_stylebox_override("panel",transparent)
+	else: popup.add_theme_stylebox_override("panel",_style(Color("242622")))
 	popup.z_index = 30; menu_shade.z_index = 20
 	popup.visible = true
 	var header := HBoxContainer.new()
@@ -1915,11 +1933,14 @@ func _show_popup(kind: String) -> void:
 	titles.conflict = "COLONY DEFENSE"
 	titles.territory = "COLONY TERMS"
 	titles.biosphere = "PLANET ECOSYSTEM"
-	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
+	var title: Label = _label(titles.get(kind,"EXPEDITION"),12 if instrument else 22,Color("343b31") if instrument else Instruments.PAPER)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
-	_button("×",_escape_menu,header,"ui_close")
-	popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
+	var close: Button = _button("×",_escape_menu,header,"ui_close")
+	if instrument:
+		close.custom_minimum_size = Vector2(28,28)
+		header.add_theme_constant_override("separation",10)
+	else: popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
 	if kind == "menu":
 		_button("Resume game",_close_popup,popup_body)
 		_button("Save game",_save,popup_body)
@@ -2014,6 +2035,16 @@ func _show_popup(kind: String) -> void:
 		popup_body.add_child(copy)
 		_button("Sell one cultivated pod",func() -> void: _trade(false),popup_body)
 		_button("Stop recurring deliveries" if model.state.route else "Agree recurring deliveries",func() -> void: _trade(true),popup_body)
+	if instrument:
+		preload("res://scripts/communicator_style.gd").apply(popup_body)
+		title.add_theme_color_override("font_color",Color("343b31"))
+	_sync_communicator_shell()
+
+func _sync_communicator_shell() -> void:
+	if communicator_shell == null or popup == null: return
+	communicator_shell.visible = popup.visible and popup_kind in ["contact","service"] and campaign != null
+	communicator_shell.position = popup.position
+	communicator_shell.size = popup.size
 
 func _inspection_open() -> bool:
 	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible) or (system_map != null and system_map.visible)
@@ -2375,24 +2406,24 @@ func _build_service_panel() -> void:
 	_build_service_contents()
 	var contents: Array[Node] = popup_body.get_children().slice(start)
 	var row := HBoxContainer.new()
+	row.name = "ServiceContents"
 	row.add_theme_constant_override("separation",18)
 	var stage := VBoxContainer.new()
-	stage.custom_minimum_size.x = 280
+	stage.custom_minimum_size.x = 340
 	row.add_child(stage)
 	if not is_instance_valid(contact_portrait):
 		contact_portrait = AlienPortrait.new()
 		contact_portrait.faction_id = representative
 		stage.add_child(contact_portrait)
 	else: contact_portrait.reparent(stage)
-	contact_portrait.custom_minimum_size = Vector2(280,320)
+	_frame_portrait(stage)
 	contact_portrait.show()
 	var identity: Label = _label(campaign.diplomacy.profiles[representative].speaker,20,Instruments.PAPER)
 	stage.add_child(identity)
 	_button("Communications",_show_popup.bind("contact"),stage)
-	_button("Return to flight",_close_popup,stage)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(490,490)
+	scroll.custom_minimum_size = Vector2(490,470)
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(scroll)
 	var goods := VBoxContainer.new()
@@ -2401,6 +2432,14 @@ func _build_service_panel() -> void:
 	scroll.add_child(goods)
 	for child: Node in contents: child.reparent(goods)
 	popup_body.add_child(row)
+	var footer := HBoxContainer.new()
+	popup_body.add_child(footer)
+	if dock_page == "upgrades": _button("Badges",_show_popup.bind("badges"),footer)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(spacer)
+	var undock: Button = _button("Undock",_close_popup,footer)
+	undock.custom_minimum_size = Vector2(140,32)
 
 func _service_representative() -> String:
 	if campaign == null or not model.local_services().has(selected_service): return ""
@@ -2408,8 +2447,17 @@ func _service_representative() -> String:
 	if owner.is_empty() or not campaign.diplomacy.profiles.has(owner): return ""
 	return owner if campaign.sector.faction_by_id(owner).get("contacted",false) else ""
 
+func _frame_portrait(stage: Control, height: float = 370) -> void:
+	var chamber := preload("res://scripts/communicator_chamber.gd").new()
+	chamber.custom_minimum_size = Vector2(340,height)
+	stage.add_child(chamber)
+	stage.move_child(chamber,0)
+	contact_portrait.reparent(chamber)
+	contact_portrait.custom_minimum_size = Vector2(316,height-24)
+
 func _shop_tab(button: Button, selected: bool) -> void:
 	button.disabled = selected
+	button.set_meta("instrument_selected",selected)
 	if selected:
 		button.add_theme_stylebox_override("disabled",Instruments.box(Instruments.PAPER,true))
 		button.add_theme_color_override("font_disabled_color",Instruments.PAPER)
@@ -2422,7 +2470,11 @@ func _build_service_contents() -> void:
 	var port: Dictionary = model.local_services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
 	if campaign != null:
-		_panel_copy("%d Marks     CARGO %d / %d" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.GOLD)
+		var balance := HBoxContainer.new()
+		balance.add_theme_constant_override("separation",22)
+		balance.add_child(preload("res://scripts/communicator_style.gd").money(int(model.marks),18))
+		balance.add_child(_label("CARGO %d / %d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()],15,Instruments.MUTED))
+		popup_body.add_child(balance)
 		var tabs := HFlowContainer.new()
 		popup_body.add_child(tabs)
 		for page: String in ["market","upgrades","energy","warehouse","fleet","climate"]:
@@ -2596,7 +2648,7 @@ func _build_upgrade_shop() -> void:
 	shop.locked = paused
 	shop.selected_id = upgrade_preview
 	if upgrade_family == "ship":
-		shop.offers.append({"id":"colony_kit","title":"Colony landing kit","price":300,"description":"Carries a new colony in four cargo spaces. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.","requirements":"Also costs 100 local materials and 80 local supplies.","reason":campaign.colonies.buy_reason(campaign,selected_service,ship.position),"owned":false,"action":"kit","icon":"badge_colonist"})
+		shop.offers.append({"id":"colony_kit","title":"Colony landing kit","price":300,"flavor":"A shelter and landing gear, folded into one freight cradle.","description":"Carries a new colony in four cargo spaces. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.","requirements":"Purchase includes the construction materials and supplies.","reason":campaign.colonies.buy_reason(campaign,selected_service,ship.position),"owned":false,"action":"kit","icon":"badge_colonist"})
 	for id: String in campaign.commerce.catalog.upgrades:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
 		if upgrade.get("family","ship") != upgrade_family: continue
@@ -2606,14 +2658,11 @@ func _build_upgrade_shop() -> void:
 		elif id.begins_with("drive"): symbol = "planet_map"
 		elif id == "emitter": symbol = "lance"
 		elif id == "hold": symbol = "cargo"
-		shop.offers.append({"id":id,"title":upgrade.name,"price":upgrade.price,"description":upgrade.description,"requirements":"Requires "+_upgrade_requirements(id),"reason":campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id),"owned":id in campaign.commerce.state.upgrades,"action":"upgrade","icon":symbol})
+		shop.offers.append({"id":id,"title":upgrade.name,"price":upgrade.price,"flavor":upgrade.get("flavor",""),"description":upgrade.description,"requirements":"Requires "+_upgrade_requirements(id),"reason":campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id),"owned":id in campaign.commerce.state.upgrades,"action":"upgrade","icon":symbol})
 	shop.selected.connect(func(id: String) -> void: upgrade_preview = id)
 	shop.purchase_requested.connect(_commerce_action)
 	popup_body.add_child(shop)
-	var navigation := HBoxContainer.new()
-	popup_body.add_child(navigation)
-	_button("Badges",_show_popup.bind("badges"),navigation)
-	_button("Undock",_close_popup,navigation)
+	if _service_representative().is_empty(): _button("Badges",_show_popup.bind("badges"),popup_body)
 
 func _build_badges_panel() -> void:
 	var panel := preload("res://scripts/badge_case.gd").new(); panel.campaign = campaign
@@ -2626,6 +2675,7 @@ func _build_badges_panel() -> void:
 func _contact_select(id: String) -> void:
 	if id != contacted_faction: _reset_contact_presentation()
 	contacted_faction = id
+	contact_page = "home"
 	contact_reply = ""
 	_show_popup("contact")
 
@@ -2645,8 +2695,54 @@ func _reset_contact_presentation() -> void:
 	if is_instance_valid(contact_portrait): contact_portrait.queue_free()
 	contact_portrait = null
 	contact_reply = ""
+	contact_greeting = ""
+	contact_page = "home"
 
 func _build_contact_panel() -> void:
+	var start: int = popup_body.get_child_count()
+	_build_contact_contents()
+	if not is_instance_valid(contact_portrait): return
+	var contents: Array[Node] = popup_body.get_children().slice(start)
+	var introduction: Node = popup_body.get_node("ContactIntroduction")
+	var dialogue: Node = introduction.get_child(1)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation",18)
+	var stage := VBoxContainer.new()
+	stage.custom_minimum_size.x = 340
+	row.add_child(stage)
+	contact_portrait.reparent(stage)
+	_frame_portrait(stage,350 if contact_page == "home" else 370)
+	var navigation := HBoxContainer.new()
+	navigation.add_theme_constant_override("separation",8)
+	stage.add_child(navigation)
+	contents[0].reparent(navigation)
+	contents[0].text = "Signals · %d" % campaign.signals.open_ids().size()
+	contents[0].custom_minimum_size.y = 30
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(490,400 if contact_page == "home" else 490)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	row.add_child(scroll)
+	var choices := VBoxContainer.new()
+	choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	choices.add_theme_constant_override("separation",8)
+	scroll.add_child(choices)
+	for child: Node in contents:
+		if child == contents[0]: continue
+		if child == introduction:
+			dialogue.reparent(choices)
+			popup_body.remove_child(introduction); introduction.queue_free()
+		else: child.reparent(choices)
+	popup_body.add_child(row)
+	var footer := HBoxContainer.new()
+	popup_body.add_child(footer)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(spacer)
+	var goodbye: Button = _button("Goodbye",_close_popup,footer)
+	goodbye.custom_minimum_size = Vector2(140,32)
+
+func _build_contact_contents() -> void:
 	var signal_button: Button = _button("Orbital signals · %d open" % campaign.signals.open_ids().size(),_show_popup.bind("signals"),popup_body)
 	Instruments.instrument(signal_button,"signal",Instruments.GOLD)
 	signal_button.tooltip_text = "Optional encounters, active commitments and their outcomes"
@@ -2656,22 +2752,26 @@ func _build_contact_panel() -> void:
 	var local: String = campaign.owner_of(model.state.planet_id)
 	if contacted_faction not in known: contacted_faction = local if local in known else str(known[0]) if not known.is_empty() else ""
 	var roster := HBoxContainer.new()
+	roster.visible = known.size() > 1
 	popup_body.add_child(roster)
 	for id: String in known:
 		var button: Button = _button(campaign.diplomacy.profiles[id].speaker,_contact_select.bind(id),roster)
-		button.disabled = id == contacted_faction
+		_shop_tab(button,id == contacted_faction)
 		button.tooltip_text = campaign.sector.faction_by_id(id).name
 	if contacted_faction.is_empty():
 		_panel_copy("No alien channels established. Explore inhabited systems to make first contact.",Instruments.PAPER)
 	else:
 		var f: Dictionary = campaign.sector.faction_by_id(contacted_faction)
 		var profile: Dictionary = campaign.diplomacy.profiles[contacted_faction]
-		campaign.diplomacy.acknowledge(contacted_faction)
 		var introduction := HBoxContainer.new()
+		introduction.name = "ContactIntroduction"
 		introduction.add_theme_constant_override("separation",18)
 		popup_body.add_child(introduction)
 		if is_instance_valid(contact_portrait) and contact_portrait.faction_id != contacted_faction:
 			_reset_contact_presentation()
+		if contact_greeting.is_empty():
+			contact_greeting = campaign.diplomacy.greeting(campaign,contacted_faction)
+			if campaign.diplomacy.answer(campaign,contacted_faction): _save(false)
 		if not is_instance_valid(contact_portrait):
 			contact_portrait = AlienPortrait.new()
 			contact_portrait.custom_minimum_size = Vector2(320,250)
@@ -2686,15 +2786,52 @@ func _build_contact_panel() -> void:
 		dialogue.add_theme_constant_override("separation",14)
 		dialogue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		introduction.add_child(dialogue)
-		_contact_copy(dialogue,"%s · %s\n%s\n%s / %s" % [profile.speaker,profile.species,f.name,f.government,f.philosophy],Color(profile.color))
-		_contact_copy(dialogue,"“%s”" % (contact_reply if not contact_reply.is_empty() else campaign.diplomacy.greeting(campaign,contacted_faction)),Instruments.PAPER)
-		_contact_copy(dialogue,"Relations %+d · %s\n%s" % [f.relation,"trade embargo" if f.get("embargo",false) else "open communications",f.reason],Instruments.MUTED)
+		var identity: Label = _label(profile.speaker,27,Instruments.PAPER)
+		var identity_row := HBoxContainer.new()
+		dialogue.add_child(identity_row)
+		identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		identity.mouse_filter = Control.MOUSE_FILTER_PASS
+		identity.tooltip_text = "%s · %s\nGovernment: %s\nPhilosophy: %s" % [profile.species,profile.role,f.government,f.philosophy]
+		identity_row.add_child(identity)
+		var war: bool = campaign.conflict.at_war(contacted_faction)
+		var attitude: String = "AT WAR" if war else "EMBARGO" if f.get("embargo",false) else "ALLIED" if contacted_faction+":alliance" in campaign.sector.state.agreements else "FRIENDLY" if f.relation >= 40 else "CORDIAL" if f.relation >= 0 else "WARY"
+		var indicator: Label = _label(attitude,13,Color("df977c") if war or f.relation < 0 else Color("a9c9a5"))
+		indicator.set_meta("semantic_color",true)
+		indicator.mouse_filter = Control.MOUSE_FILTER_PASS
+		indicator.tooltip_text = "Relations %+d\n%s" % [f.relation,f.reason]
+		identity_row.add_child(indicator)
+		_contact_copy(dialogue,f.name,Instruments.MUTED)
+		var separator := HSeparator.new()
+		dialogue.add_child(separator)
+		_contact_copy(dialogue,"“%s”" % (contact_reply if not contact_reply.is_empty() else contact_greeting),Instruments.PAPER)
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
+		tabs.visible = contact_page != "home"
+		if contact_page != "home": _button("‹ Back",func() -> void: contact_page = "home"; _show_popup("contact"),tabs)
 		for page: String in ["agreements","exchange","fleet","conflict"]:
 			var tab: Button = _button(page.capitalize(),func() -> void: contact_page = page; _show_popup("contact"),tabs)
-			tab.disabled = contact_page == page
-		if contact_page == "agreements":
+			_shop_tab(tab,contact_page == page)
+		if contact_page == "home":
+			var grid := GridContainer.new()
+			grid.columns = 2
+			grid.add_theme_constant_override("h_separation",10)
+			grid.add_theme_constant_override("v_separation",10)
+			popup_body.add_child(grid)
+			_contact_tile("Trade","cargo",func() -> void:
+				var dock: Dictionary = _contact_dock_context()
+				if dock.docked and str(dock.reason).is_empty(): dock_page = "market"; _contact_dock()
+				else: contact_page = "exchange"; _show_popup("contact"),grid)
+			_contact_tile("Diplomacy","log",func() -> void: contact_page = "agreements"; _show_popup("contact"),grid)
+			_contact_tile("Fleet","fleet",func() -> void: contact_page = "fleet"; _show_popup("contact"),grid)
+			var dock: Dictionary = _contact_dock_context()
+			var dock_tile: Button = _contact_tile("Dock services" if dock.docked else "Approach dock","repair_pack",_contact_dock,grid)
+			dock_tile.disabled = not str(dock.reason).is_empty()
+			dock_tile.tooltip_text = dock.reason if dock_tile.disabled else "Services at "+str(dock.name)
+		elif campaign.conflict.at_war(contacted_faction) and contact_page in ["agreements","exchange"]:
+			_panel_copy("Diplomatic agreements and exchanges are suspended during war.")
+			var peace: Button = _button("Review war and peace",_show_popup.bind("conflict"),popup_body)
+			Instruments.instrument(peace,"defense",Instruments.CARGO)
+		elif contact_page == "agreements":
 			var offers: Dictionary = {"trade":"Trade agreement · preferred market prices","non_aggression":"Non-aggression · guaranteed transit","alliance":"Alliance · charts and escort access"}
 			var descriptions: Dictionary = {"trade":"Local buy prices 10% lower; sale prices 10% higher, rounded to Marks. Stock and demand stay finite.","non_aggression":"Allows passage through this nation's territory even during a commercial embargo. It does not reopen its markets.","alliance":"Shares nearby navigation charts and permits one loaned escort, subject to your fleet capacity. Request it in allied orbit. Charts do not count as visits."}
 			for pact: String in offers:
@@ -2718,12 +2855,27 @@ func _build_contact_panel() -> void:
 				button.disabled = paused or not blocked.is_empty()
 				button.tooltip_text = blocked if not blocked.is_empty() else "One goodwill grant per nation. Each completed chart can be licensed to one nation only."
 			_panel_copy("A chart license is exclusive: choose which nation gains your findings.")
+	if contact_page == "home": return
 	var dock: Dictionary = _contact_dock_context()
 	var dock_button: Button = _button(dock.label,_contact_dock,popup_body)
 	dock_button.disabled = not str(dock.reason).is_empty()
 	dock_button.tooltip_text = dock.reason if not str(dock.reason).is_empty() else "Local services at %s. Communications do not move your ship or grant remote market access." % dock.name
 	if not str(dock.reason).is_empty(): _panel_copy(dock.reason)
 	_button("Colony administration",_show_popup.bind("colonies"),popup_body)
+
+func _contact_tile(caption: String, icon: String, action: Callable, parent: Control) -> Button:
+	var button: Button = _button(caption,action,parent)
+	button.set_meta("contact_action",caption)
+	button.custom_minimum_size = Vector2(230,100)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.icon = preload("res://scripts/communicator_style.gd").action_icon(["cargo","log","fleet","repair_pack"].find(icon))
+	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width",84)
+	button.add_theme_constant_override("h_separation",14)
+	button.add_theme_font_size_override("font_size",19)
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.tooltip_text = caption
+	return button
 
 func _contact_dock_context() -> Dictionary:
 	var result: Dictionary = {"id":"", "name":"", "label":"Dock unavailable", "reason":"No dock services at this location.", "docked":false}

@@ -27,8 +27,15 @@ func contact(game: RefCounted, id: String) -> void:
 		game.field.note("contact_"+id,"Incoming transmission · "+str(faction.name)+". Open communications.")
 
 func greeting(game: RefCounted, id: String) -> String:
+	if not profiles.has(id): return ""
 	var faction: Dictionary = game.sector.faction_by_id(id)
-	return profiles[id].hostile if faction.get("embargo",false) else profiles[id].friendly if faction.relation >= 40 else profiles[id].greeting
+	var profile: Dictionary = profiles[id]
+	if game.conflict.at_war(id): return profile.war
+	if faction.get("embargo",false): return profile.hostile
+	if not state.keys.has("read:"+id): return profile.greeting
+	if id+":alliance" in game.sector.state.agreements: return profile.allied
+	if id+":trade" in game.sector.state.agreements: return profile.trading
+	return profile.friendly if faction.relation >= 40 else profile.repeat
 
 func unread() -> Array:
 	var result: Array = []
@@ -38,6 +45,15 @@ func unread() -> Array:
 
 func acknowledge(id: String) -> void:
 	if state.keys.has("contact:"+id): state.keys["read:"+id] = state.keys["contact:"+id]
+
+func answer(game: RefCounted, id: String) -> bool:
+	if not profiles.has(id) or not game.sector.faction_by_id(id).get("contacted",false) or state.keys.has("read:"+id): return false
+	if state.keys.has("contact:"+id):
+		acknowledge(id)
+	else:
+		# Migrated contacts may predate detailed history. Record only today's call.
+		record(game,"communication","Opened communications with "+str(game.sector.faction_by_id(id).name)+".",id,{},0,"read:"+id)
+	return true
 
 func reason(game: RefCounted, id: String, action: String) -> String:
 	if game.traveling(): return "Wait until the jump ends."

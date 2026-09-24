@@ -6,7 +6,7 @@
 
 ## Play the colony loop
 
-1. At an established colony, approach a dock through Communications and open **Upgrades**. Load a colony kit for **300 Marks, 100 colony materials and 80 colony supplies**. It occupies four actual freight spaces. One kit may be aboard at a time; the scenario allows three total colonies, including Morrow and projects in progress.
+1. At an established colony, approach a dock through Communications and open **Upgrades**. Load a colony kit for **300 Marks** (finished kit; local materials and supplies are included, not additionally debited). It occupies four actual freight spaces. One kit may be aboard at a time; the scenario allows three total colonies, including Morrow and projects in progress.
 2. Carry the kit to unclaimed Nacre I or Kestrel I. Complete the orbital survey, descend, open **Inventory**, and select the kit. Click clear ground. The footprint rejects steep terrain and leaves clearance for water, life, relics, resources and the landing approach.
 3. The ship flies to the footprint before unloading. Stop, steer, choose another tool or open a drawer to cancel; the kit stays aboard. There is no second charge when it lands.
 4. The site progresses through cargo, frame and pressure-shell stages over **18 colony days: nine active minutes**. Construction continues off-screen. Inspection and pause stop simulation time. Delivered construction does not require further supply trips.
