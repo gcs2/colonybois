@@ -19,6 +19,7 @@ var changing_planet: bool = false
 const Campaign = preload("res://scripts/expedition_session.gd")
 var campaign: RefCounted = null
 var dock_page: String = "market"
+var commodity_preview: String = "alloy"
 var upgrade_family: String = "ship"
 var trade_amount: int = 1
 const AlienPortrait = preload("res://scripts/alien_portrait.gd")
@@ -2612,20 +2613,18 @@ func _build_market_panel() -> void:
 		export_button.disabled = paused or not blocked.is_empty()
 		export_button.tooltip_text = blocked if not blocked.is_empty() else "Draws from your real colony stock; preserves 80 materials for construction."
 		_panel_copy("Colony stock: %d materials · reserve 80" % campaign.sector.state.colonies.s0p0.materials)
+	var shop := preload("res://scripts/commodity_shop.gd").new()
+	shop.selected_id = commodity_preview
+	shop.amount = trade_amount
+	shop.locked = paused
 	for item: String in commerce.catalog.goods:
 		var good: Dictionary = commerce.catalog.goods[item]
 		var offer: Dictionary = commerce.market(planet)[item]
-		var heading: Label = _panel_copy("%s  ·  aboard %d / stock %d / demand %d" % [good.name,commerce.quantity(item),offer.stock,offer.demand],Instruments.PAPER)
-		heading.tooltip_text = good.description
-		var actions := HBoxContainer.new()
-		popup_body.add_child(actions)
-		for buying: bool in [true,false]:
-			var blocked: String = commerce.reason(campaign,selected_service,ship.position,item,trade_amount,buying)
-			var button: Button = _button("%s %d · %d Marks" % ["Buy" if buying else "Sell",trade_amount,commerce.price(planet,item,buying,campaign)*trade_amount],_commerce_action.bind("buy" if buying else "sell",item),actions)
-			button.disabled = paused or not blocked.is_empty()
-			button.tooltip_text = blocked if not blocked.is_empty() else "%d Marks per unit. %s" % [commerce.price(planet,item,buying,campaign),good.description]
-	_panel_copy("Both docks share finite stocks. Every four colony days, local consumption restores one demand; export producers replenish one unit.")
-	_button("Undock",_close_popup,popup_body)
+		shop.offers.append({"id":item,"title":good.name,"description":good.description,"aboard":commerce.quantity(item),"stock":offer.stock,"demand":offer.demand,"buy":commerce.price(planet,item,true,campaign),"sell":commerce.price(planet,item,false,campaign),"buy_reason":commerce.reason(campaign,selected_service,ship.position,item,trade_amount,true),"sell_reason":commerce.reason(campaign,selected_service,ship.position,item,trade_amount,false)})
+	shop.selected.connect(func(id: String) -> void: commodity_preview = id)
+	shop.trade_requested.connect(_commerce_action)
+	popup_body.add_child(shop)
+	if _service_representative().is_empty(): _button("Undock",_close_popup,popup_body)
 
 func _upgrade_requirements(id: String) -> String:
 	var alternatives: PackedStringArray = []

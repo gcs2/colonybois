@@ -1,5 +1,14 @@
 # Personal contact and persistent diplomatic consequences
 
+## Commodity browsing and immediate hover (24 September 2026)
+
+Commodity trading now uses a three-column pictorial selector, preserving the local representative. Selected goods show description, aboard/stock/demand counts and explicitly labeled buy/sell transaction totals. Quantity selection stays 1/4/8. Buy/sell commands revalidate current funds, cargo, stock and access; browsing never changes the campaign. Selection survives transactions. Empty cargo, stock exhaustion and insufficient funds have visible refusal copy. Home reserve export remains separate. No new commodity or crafting mechanics were added.
+
+Contact presentation: 81 checks; commerce: 49 checks pass. Added actual UI selection, buy, sell, selection persistence and stale-funds refusal assertions. Native fixtures captured all three goods, four-unit totals, purchased/sold and unaffordable states at 1080p and 1440p. The glass purchase also exhausted local stock. Full-cargo and demand-exhaustion visual coverage remain open. Independent critique requested explicit total labels and larger imagery; both corrected. Final user acceptance remains open.
+
+Actual hover check (`tests/review_immediate_tooltips.gd`): synthetic pointer over a real contact action produced its visible native tooltip within three frames (51.218 ms observed), with zero configured delay and no click. Screenshot: artifacts/immediate-contact-tooltip.png. This is synthetic native evidence, not human timing/playability acceptance. Commodity captures: artifacts/contact-shop-market-1920.png, market-water-four-1920.png, market-glass-four-1920.png, market-purchased-1920.png, market-sold-1920.png, market-unaffordable-1920.png and 2560 counterparts.
+
+
 ## Field Instruments correction (24 September 2026)
 
 Build `20260924-032013` replaces the rejected blue communicator with matte ivory housing, charcoal chambers, Barlow typography and four painted contact actions. Equipment uses a three-column pictorial grid with prices, tier markers, flavor/effects and fixed purchase/refusal controls. Actor continuity and validated transactions remain. Colony kits now cost 300 Marks only; alternate crafting remains future work. Cut Mark is provisional. First/repeat and relationship-sensitive greetings persist acknowledgment. Native Control tooltip delay is zero following the user's EU4 reference; live pointer timing remains to review.

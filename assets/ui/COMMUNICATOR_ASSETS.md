@@ -21,3 +21,9 @@ Use the supplied painted object atlas ONLY as a style/material reference. Create
 ## Font provenance
 
 Barlow Regular, Barlow Project Authors, downloaded unmodified from Google's official fonts repository: https://github.com/google/fonts/tree/main/ofl/barlow. The bundled `assets/fonts/OFL-Barlow.txt` contains the SIL Open Font License 1.1 and copyright notice. Export includes that license. No installed system font is required for the communicator. Other HUD areas still use the preceding font until their visual correction is reviewed.
+
+## Resonant glass commodity illustration
+
+Built-in imagegen; runtime copy `assets/ui/resonant-glass-v1.png`. Source `exec-8cd9d3df-bcdd-4634-bbad-a28a97dd01cb.png`. Original transparent output preserved. Candidate artwork, not final user acceptance.
+
+Prompt: Create a single production game UI item illustration on a truly transparent background. Resonant glass cargo: three chunky heat-grown smoky lavender and amber crystal prisms bundled in a small matte ivory freight clamp with terracotta padding. Hand-painted stylized 3D object, tactile materials, confident simple silhouette, readable at 70 pixels. Three-quarter orthographic view, upper-left lighting, centered with 15 percent empty margin. No text, no border, no frame, no glow, no ground plane, no backdrop. Original playful science-fiction expedition equipment, restrained detail, consistent with matte ivory Field Instruments UI.

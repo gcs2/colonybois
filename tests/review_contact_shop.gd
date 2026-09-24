@@ -42,6 +42,32 @@ func run() -> void:
 			print("Columns: ",scroll.size," goods ",goods.size," minimum ",goods.get_combined_minimum_size())
 			for child: Node in goods.get_children():
 				if child is Label: assert(child.size.x <= goods.size.x,"Description exceeds commerce column")
+			if page == "market":
+				for commodity: String in ["water","glass"]:
+					scene.commodity_preview = commodity; scene.trade_amount = 4
+					scene._show_popup("service")
+					for frame: int in range(5): await process_frame
+					await RenderingServer.frame_post_draw
+					view.get_texture().get_image().save_png("res://artifacts/market-%s-four-%d.png" % [commodity,resolution.x])
+				scene.campaign.field.marks = 1000; scene._show_popup("service")
+				var market: Node = scene.popup_body.find_child("CommodityShop",true,false)
+				assert(not market.buy_button.disabled)
+				market.buy_button.pressed.emit(); scene._refresh_ui()
+				for frame: int in range(5): await process_frame
+				await RenderingServer.frame_post_draw
+				view.get_texture().get_image().save_png("res://artifacts/market-purchased-%d.png" % resolution.x)
+				market = scene.popup_body.find_child("CommodityShop",true,false)
+				assert(not market.sell_button.disabled)
+				market.sell_button.pressed.emit(); scene._refresh_ui()
+				for frame: int in range(5): await process_frame
+				await RenderingServer.frame_post_draw
+				view.get_texture().get_image().save_png("res://artifacts/market-sold-%d.png" % resolution.x)
+				scene.commodity_preview = "water"
+				scene.campaign.field.marks = 0; scene._show_popup("service"); scene._refresh_ui()
+				for frame: int in range(5): await process_frame
+				await RenderingServer.frame_post_draw
+				view.get_texture().get_image().save_png("res://artifacts/market-unaffordable-%d.png" % resolution.x)
+				scene.trade_amount = 1; scene.campaign.field.marks = 300; scene._refresh_ui()
 		# Explicit progressed fixture: an earned Merchant tier and funded treasury.
 		# The subsequent purchase is the real validated UI command.
 		scene.campaign.commerce.state.badges.merchant = 1
