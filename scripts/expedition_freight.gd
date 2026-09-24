@@ -7,6 +7,7 @@ const DAYS_PER_LINK := 2
 var state: Dictionary = {"routes":{}}
 
 func market_access(game: RefCounted, destination: String) -> String:
+	if not game.conflict.port_reason(destination).is_empty(): return "Destination port disabled by raid damage."
 	var owner: String = game.sector.system_by_id(game.system_of(destination)).owner
 	if owner.is_empty(): return ""
 	var faction: Dictionary = game.sector.faction_by_id(owner)
@@ -85,6 +86,7 @@ func tick(game: RefCounted) -> void:
 	for source: String in state.routes:
 		var route: Dictionary = state.routes[source]
 		var warehouse: Dictionary = game.colonies.state.outposts[source].stock
+		if not game.conflict.port_reason(source).is_empty(): _status(game,source,"Blocked · source port disabled; cargo retained"); continue
 		if route.phase != "waiting":
 			if not path_open(game,route.path): _status(game,source,"Blocked · transit border closed; cargo retained"); continue
 			route.remaining = maxi(0,route.remaining-1)

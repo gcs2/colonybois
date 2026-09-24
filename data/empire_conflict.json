@@ -1,0 +1,19 @@
+{
+  "warning_seconds": 90,
+  "raid_warning_seconds": 90,
+  "raid_interval": 600,
+  "truce_seconds": 300,
+  "port_integrity": 100,
+  "battery_marks": 180,
+  "battery_materials": 60,
+  "battery_ammo": 12,
+  "rearm_marks": 60,
+  "rearm_materials": 20,
+  "repair_marks": 80,
+  "repair_materials": 20,
+  "factions": {
+    "directorate": {"name":"Directorate interdiction cutter","hull":120,"color":"d88b72","priority":"weakest port"},
+    "consortium": {"name":"Consortium seizure vessel","hull":108,"color":"d6bd69","priority":"largest warehouse"},
+    "commune": {"name":"Commune exclusion frigate","hull":96,"color":"8dc3a3","priority":"most altered climate"}
+  }
+}

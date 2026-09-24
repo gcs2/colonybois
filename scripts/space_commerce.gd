@@ -51,6 +51,8 @@ func price(planet: String, item: String, buying: bool, game: RefCounted = null) 
 	return maxi(1,int(ceil(float(good.base)*float(good.factors[Geography.definition(planet).archetype])*(1.2 if buying else 0.8)*treaty)))
 
 func access(game: RefCounted, port: String, at: Vector3) -> String:
+	var port_damage: String = game.conflict.port_reason(game.field.state.planet_id)
+	if not port_damage.is_empty(): return port_damage
 	if game.traveling(): return "Complete the journey first."
 	var providers: Dictionary = game.field.local_services()
 	if not providers.has(port) or providers[port].mode != game.field.state.flight_mode: return "No dock in reach."
@@ -134,7 +136,7 @@ func progress(game: RefCounted, badge: String) -> int:
 		var cleared: int = 1 if game.field.has_guardian() and game.field.state.guardian_disabled else 0
 		for id: String in game.worlds:
 			if not Field.Encounters.profile(id).is_empty() and game.worlds[id].guardian_disabled: cleared += 1
-		return cleared+game.combat.cleared()
+		return cleared+game.combat.cleared()+game.conflict.state.defended.size()
 	var count: int = 0
 	for system: Dictionary in game.sector.state.systems:
 		if system.visited: count += 1

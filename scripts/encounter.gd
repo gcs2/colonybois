@@ -7,6 +7,7 @@ const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
+var conflict_view: Node3D
 var signal_view: Node3D
 var recognition_button: Button
 var upgrade_preview: String = ""
@@ -225,6 +226,8 @@ func _ready() -> void:
 	_build_service_ports()
 	if campaign != null:
 		campaign.climate.bind(campaign)
+		conflict_view = preload("res://scripts/conflict_view.gd").new()
+		orbit.add_child(conflict_view); conflict_view.setup(self)
 		signal_view = preload("res://scripts/signal_view.gd").new()
 		orbit.add_child(signal_view); signal_view.setup(self)
 		biosphere_view = preload("res://scripts/biosphere_view.gd").new()
@@ -669,6 +672,7 @@ func _make_ui() -> void:
 	system_map.sector_requested.connect(_toggle_sector_map)
 	system_map.travel_requested.connect(_launch_journey)
 	system_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
+	if conflict_view != null: conflict_view.setup_ui(root)
 	if signal_view != null: signal_view.setup_ui(root)
 	recognition_button = _button("",_show_popup.bind("badges"),root)
 	recognition_button.position = Vector2(1010,80); recognition_button.size = Vector2(550,38)
@@ -690,6 +694,7 @@ func _physics_process(delta: float) -> void:
 	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
 	if not input_direction.is_zero_approx():
 		if biosphere_view != null: biosphere_view.cancel()
+		if conflict_view != null: conflict_view.cancel()
 		if signal_view != null: signal_view.cancel()
 		kit_mode = false; deploy_order = false
 		navigating = false
@@ -795,6 +800,13 @@ func _process(delta: float) -> void:
 				elif ground_event == "hit": _toast("Surface defenses hit · move clear of their aim"); audio.play("error")
 				elif ground_event == "aim": audio.play("target_lock")
 			if campaign != null and pulse != "tow" and attack != "tow":
+				var raid_event: String = campaign.conflict.step(campaign,ship.position)
+				if raid_event == "tow": attack = "tow"
+				elif raid_event == "hit": _toast("Raid strike hit · move clear of the aim volume"); audio.play("error")
+				elif raid_event == "aim": audio.play("target_lock")
+			if campaign != null and pulse != "tow" and attack != "tow" and conflict_view != null and conflict_view.attacking:
+				campaign.fleet.assist(campaign,"raid",true,ship.position)
+			elif campaign != null and pulse != "tow" and attack != "tow":
 				campaign.fleet.assist(campaign,"guardian" if model.state.flight_mode == "orbit" else surface_selected,attack_order if model.state.flight_mode == "orbit" else surface_order and not surface_salvage_order,ship.position)
 			if not model.has_wreck() and attack in ["guardian_hit","guardian_miss","tow"]:
 				enemy_flash = 0.35
@@ -837,6 +849,7 @@ func _process(delta: float) -> void:
 	_operate_surface_attack()
 	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
 	if fleet_visual != null: fleet_visual.refresh(campaign,delta,paused or _inspection_open())
+	if conflict_view != null: conflict_view.refresh(delta)
 	if signal_view != null: signal_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "orbit")
 	if biosphere_view != null: biosphere_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "surface")
 	if not paused and not _inspection_open():
@@ -1358,6 +1371,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	if conflict_view != null and conflict_view.pick(screen): return
 	if signal_view != null and signal_view.pick(screen): return
 	if biosphere_view != null and not biosphere_view.deploy_id.is_empty():
 		if biosphere_view.pick(screen): return
@@ -1463,6 +1477,7 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders(preserve_signal_scan: bool = false) -> void:
+	if conflict_view != null: conflict_view.cancel()
 	if signal_view != null: signal_view.cancel(preserve_signal_scan)
 	if biosphere_view != null: biosphere_view.cancel()
 	surface_order = false
@@ -1719,6 +1734,7 @@ func _refresh_ui() -> void:
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
 	if biosphere_view != null: biosphere_view.refresh_hud()
+	if conflict_view != null: conflict_view.refresh_hud()
 	if signal_view != null: signal_view.refresh_hud()
 	if recognition_button != null:
 		if _inspection_open() and recognition_notice != null: recognition_notice.hide()
@@ -1825,6 +1841,7 @@ func _inventory_action(action: String, panel: String) -> void:
 
 func _show_popup(kind: String) -> void:
 	_cancel_orders(true)
+	if conflict_view != null: conflict_view.button.hide(); conflict_view.alert.hide()
 	if signal_view != null: signal_view.signal_button.hide()
 	if recognition_notice != null: recognition_notice.hide()
 	if recognition_button != null: recognition_button.hide()
@@ -1838,7 +1855,7 @@ func _show_popup(kind: String) -> void:
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
 	popup.size = Vector2(555,660 if kind in ["service","contact","freight"] and campaign != null else 595)
-	if kind in ["contact","signals"] and campaign != null:
+	if kind in ["contact","signals","conflict"] and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
@@ -1849,6 +1866,7 @@ func _show_popup(kind: String) -> void:
 	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
 	titles.fleet = "ALLIED FLEET"
 	titles.signals = "ORBITAL SIGNALS"
+	titles.conflict = "COLONY DEFENSE"
 	titles.biosphere = "PLANET ECOSYSTEM"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1864,6 +1882,8 @@ func _show_popup(kind: String) -> void:
 		_button("Controls",_menu_page.bind("controls"),popup_body)
 		_button("Audio settings",_menu_page.bind("audio"),popup_body)
 		_button("Return to title",_exit_encounter,popup_body)
+	elif kind == "conflict" and conflict_view != null:
+		conflict_view.build_panel()
 	elif kind == "signals" and signal_view != null:
 		signal_view.build_panel()
 	elif kind == "freight" and campaign != null:
@@ -2548,7 +2568,7 @@ func _build_contact_panel() -> void:
 		_contact_copy(dialogue,"Relations %+d · %s\n%s" % [f.relation,"trade embargo" if f.get("embargo",false) else "open communications",f.reason],Instruments.MUTED)
 		var tabs := HBoxContainer.new()
 		popup_body.add_child(tabs)
-		for page: String in ["agreements","exchange","fleet"]:
+		for page: String in ["agreements","exchange","fleet","conflict"]:
 			var tab: Button = _button(page.capitalize(),func() -> void: contact_page = page; _show_popup("contact"),tabs)
 			tab.disabled = contact_page == page
 		if contact_page == "agreements":
@@ -2562,6 +2582,9 @@ func _build_contact_panel() -> void:
 				button.disabled = paused or not blocked.is_empty()
 				button.tooltip_text = descriptions[pact]+("\n"+blocked if not blocked.is_empty() else "")
 				if not active and not blocked.is_empty(): _panel_copy(blocked)
+		elif contact_page == "conflict":
+			var defense_button: Button = _button("Review threats, war and peace",_show_popup.bind("conflict"),popup_body)
+			Instruments.instrument(defense_button,"defense",Instruments.CARGO)
 		elif contact_page == "fleet":
 			_build_fleet_panel(contacted_faction)
 		else:
@@ -2710,7 +2733,7 @@ func _build_chronicle_panel() -> void:
 	_panel_copy("Colony day %d · treasury %d Marks\nLast day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],Instruments.GOLD)
 	var filters := HBoxContainer.new()
 	popup_body.add_child(filters)
-	for filter: String in ["all","diplomacy","trade","exploration","encounter","local"]:
+	for filter: String in ["all","diplomacy","trade","exploration","encounter","war","local"]:
 		var button: Button = _button(filter.capitalize(),func() -> void: chronicle_filter = filter; chronicle_page = 0; _show_popup("journal"),filters)
 		button.add_theme_font_size_override("font_size",13)
 		button.disabled = chronicle_filter == filter
@@ -2837,6 +2860,8 @@ func _install_export(item: String) -> void:
 	_show_popup("colonies")
 
 func _build_colonies_panel() -> void:
+	var defense_button: Button = _button("Colony defense",_show_popup.bind("conflict"),popup_body)
+	Instruments.instrument(defense_button,"defense",Instruments.CARGO)
 	var freight_button: Button = _button("Freight contracts",_show_popup.bind("freight"),popup_body)
 	Instruments.instrument(freight_button,"cargo",Instruments.CARGO)
 	freight_button.tooltip_text = "Charter carriers, protect a warehouse reserve and manage automatic sales."

@@ -1,5 +1,15 @@
 # Resume here
 
+## Empire hostilities and colony defense — latest checkpoint
+
+Read [EMPIRE_CONFLICT.md](EMPIRE_CONFLICT.md). W01 now connects hostile warnings and explicit war to treaty/escort loss, embargo/transit, a visible warned orbital raider, real mouse weapons/allied losses, paid finite batteries, persistent port damage, production/freight disruption and negotiated peace/truces. Distinct defended colonies count once toward Defender. Snapshot v16 owns the state and preserves older campaigns without invented war. Physical ports share actual service positions and the asset spec; visuals/audio remain provisional.
+
+Verification: full regression suite passed with the initial 65 conflict checks; the expanded 79-check suite adds actual paid founding/construction/freight, remote damage and allied ship losses. Actual 1080p/1440p warning/response/combat/damage views reviewed. Native input, combat balance and final AAA presentation acceptance remain open.
+
+Playable build: **build/versions/20260923-212506/FrontierWorlds.exe** through Play.cmd. Exported-pack flight startup smoke passed.
+
+Next: continue **W01 offensive action and territorial outcomes** — attacks against an actual hostile colony, visible defenses, surrender/capture versus destruction, ownership and production/service consequences, negotiation and chronicle. Read the reference distinctions before implementing; do not silently treat a disabled port as conquered or erased. Keep weapons/support breadth, original art and native flight/audio gates active. Coloring/sculpting stay skipped; further planet editing stays deferred. No ecology corpus expansion.
+
 ## Optional orbital signals — latest gameplay checkpoint
 
 Read [SPACE_SIGNAL_ENCOUNTERS.md](SPACE_SIGNAL_ENCOUNTERS.md). Orbital surveys reveal two physical contacts: Nacre's optional convoy commitment resolves through real combat or a paid escape; Kestrel's guarded registry requires a six-second, eight-energy scan before a public/private ownership-evidence decision. Timers run offworld only after commitment, failures/abandonment have explicit costs, and terminal outcomes cannot be farmed. Captain 1 opens an alternate paid reactor path. Snapshot v15 preserves encounters and migrates older campaigns without free rewards. Existing artwork/audio remain candidates; no planet coloring or sculpting was added.
@@ -8,7 +18,7 @@ Validation: full regression suite passed with 60 signal checks, followed by the 
 
 Playable build: **build/versions/20260923-210207/FrontierWorlds.exe** through Play.cmd. Final signal, shared-session, flight, planet-map and system-chart checks passed after the scan-preservation fix. Exported-pack flight startup smoke passed.
 
-Next: **W01 empire hostility and raids**, integrating current relations, colonies, fleet losses, trade access and chronicle. Start with visible threats and a consequential defense response; avoid a parallel combat simulation or invisible colony damage. Keep remaining personal-ship equipment and full mission breadth tracked. Do not expand ecology, coloring or terrain editing.
+Previous next step (implemented as the pilot above): **W01 empire hostility and raids**, integrating current relations, colonies, fleet losses, trade access and chronicle. Start with visible threats and a consequential defense response; avoid a parallel combat simulation or invisible colony damage. Keep remaining personal-ship equipment and full mission breadth tracked. Do not expand ecology, coloring or terrain editing.
 
 
 ## Latest scope correction — planet editing skipped

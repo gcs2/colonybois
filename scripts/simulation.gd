@@ -13,6 +13,7 @@ const SAVE_VERSION: int = 3
 const SAVE_PATH: String = "user://frontier_save.fw"
 var catalog: Dictionary = {}
 var state: Dictionary = {}
+var blocked_ports: Array = [] # Derived expedition port outages, never a second damage record.
 var climate_effects: Dictionary = {} # Derived from the personal campaign, never separately saved.
 var playtest: bool = "--playtest" in OS.get_cmdline_user_args()
 
@@ -450,8 +451,9 @@ func _tick_trade() -> void:
 	for pid: String in state.colonies:
 		var colony: Dictionary = state.colonies[pid]
 		colony["trade_status"] = "No exports configured"
+		if pid in blocked_ports: colony.trade_status = "Port disabled by raid damage"; continue
 		var source: String = colony.import_from
-		if state.colonies.has(source) and not route_between(state.planets[source].system,state.planets[pid].system).is_empty():
+		if state.colonies.has(source) and source not in blocked_ports and not route_between(state.planets[source].system,state.planets[pid].system).is_empty():
 			for resource: String in ["materials","supplies"]:
 				var donor: Dictionary = state.colonies[source]
 				var transfer: float = minf(0.8,minf(maxf(0.0,float(donor[resource])-80),maxf(0.0,60.0-float(colony[resource]))))

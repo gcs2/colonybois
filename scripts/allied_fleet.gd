@@ -136,7 +136,10 @@ func assist(game: RefCounted, target: String, engaged: bool, ship: Vector3) -> v
 		var at: Vector3 = Combat.position(unit.at)
 		if at.distance_to(ship) > 36: continue
 		var endpoint: Vector3
-		if orbital:
+		if orbital and target == "raid":
+			if not game.conflict.local(game): return
+			endpoint = Combat.position(game.conflict.state.raid.at)
+		elif orbital:
 			if target != "guardian" or not game.field.has_guardian() or game.field.state.guardian_disabled: return
 			endpoint = game.field.guardian_position()
 		else:
@@ -146,7 +149,9 @@ func assist(game: RefCounted, target: String, engaged: bool, ship: Vector3) -> v
 		if at.distance_to(endpoint) > 32: continue
 		unit.ready = int(game.field.state.time)+int(catalog[id].cycle)
 		flashes.append({"id":id,"origin":Combat.packed(at),"end":Combat.packed(endpoint)})
-		if orbital:
+		if orbital and target == "raid":
+			game.conflict.damage(game,float(catalog[id].damage))
+		elif orbital:
 			game.field.damage_guardian(float(catalog[id].damage))
 			if game.field.state.guardian_disabled:
 				game.diplomacy.record(game,"combat",game.field.enemy_profile().name+" neutralized with allied support.",id,{"planet":game.field.state.planet_id},0,"defeat:"+game.field.state.planet_id)

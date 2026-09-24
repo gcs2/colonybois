@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 15
+const VERSION := 16
+const Conflict = preload("res://scripts/empire_conflict.gd")
+var conflict := Conflict.new()
 const Signals = preload("res://scripts/space_signals.gd")
 var signals := Signals.new()
 const Recognition = preload("res://scripts/expedition_progression.gd")
@@ -60,6 +62,7 @@ func tick(threat_distance: float = INF) -> String:
 		var trade_access: Dictionary = {}
 		for faction: Dictionary in sector.state.factions:
 			if faction.get("contacted",false): trade_access[faction.id] = faction.get("embargo",false)
+		sector.blocked_ports = conflict.state.sites.keys().filter(func(id: String) -> bool: return conflict.site(id).integrity == 0)
 		sector.tick()
 		colonies.tick(self)
 		commerce.tick_markets(self)
@@ -68,6 +71,7 @@ func tick(threat_distance: float = INF) -> String:
 			var faction: Dictionary = sector.faction_by_id(id)
 			if bool(faction.get("embargo",false)) != trade_access[id]:
 				diplomacy.record(self,"diplomacy",str(faction.name)+(" imposed a trade embargo." if faction.embargo else " reopened trade."),id,{"embargo":faction.embargo,"relation":faction.relation,"reason":faction.reason})
+	conflict.tick(self)
 	fleet.reconcile(self)
 	return result
 
@@ -88,6 +92,7 @@ func import_legacy(path: String) -> Error:
 	biosphere = Biosphere.new()
 	recognition = Recognition.new()
 	signals = Signals.new()
+	conflict = Conflict.new()
 	colonies = Colonies.new()
 	freight = Freight.new()
 	diplomacy = Diplomacy.new()
@@ -102,7 +107,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"signals":signals.state.duplicate(true),"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"conflict":conflict.state.duplicate(true),"signals":signals.state.duplicate(true),"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -128,7 +133,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -169,6 +174,7 @@ func restore_snapshot(source: Variant) -> Error:
 		if Field.new().restore_snapshot(probe) != OK: return ERR_INVALID_DATA
 	var candidate_diplomacy := Diplomacy.new()
 	var candidate_signals := Signals.new()
+	var candidate_conflict := Conflict.new()
 	var candidate_combat := SurfaceCombat.new()
 	var candidate_fleet := Fleet.new()
 	var candidate_climate := Climate.new()
@@ -185,6 +191,7 @@ func restore_snapshot(source: Variant) -> Error:
 	if source.version >= 6 and candidate_freight.restore(source.get("freight"),candidate_sector,candidate_colonies) != OK: return ERR_INVALID_DATA
 	if source.version >= 4 and candidate_diplomacy.restore(source.get("diplomacy")) != OK: return ERR_INVALID_DATA
 	if source.version >= 15 and candidate_signals.restore(source.get("signals"),int(candidate_field.state.time),candidate_diplomacy) != OK: return ERR_INVALID_DATA
+	if source.version >= 16 and candidate_conflict.restore(source.get("conflict"),int(candidate_field.state.time),candidate_sector,candidate_diplomacy) != OK: return ERR_INVALID_DATA
 	if not candidate_diplomacy.state.events.is_empty() and candidate_diplomacy.state.events.back().time > candidate_field.state.time: return ERR_INVALID_DATA
 	if source.version >= 2:
 		var ship: Dictionary = candidate_sector.state.flagship
@@ -211,6 +218,7 @@ func restore_snapshot(source: Variant) -> Error:
 	freight = candidate_freight
 	diplomacy = candidate_diplomacy
 	signals = candidate_signals
+	conflict = candidate_conflict
 	climate.bind(self)
 	if source.version < 4: diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	if source.version == 1: configure_flagship()

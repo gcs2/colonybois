@@ -116,6 +116,7 @@ func tick(game: RefCounted) -> void:
 		if not outpost.online_recorded:
 			outpost.online_recorded = true
 			game.diplomacy.record(game,"colonies","Landing hub operational on "+str(game.sector.state.planets[id].name)+".","",{"planet":id},0,"hub:"+id)
+		if not game.conflict.port_reason(id).is_empty(): outpost.status = "Port disabled · repair through Colony defense"; continue
 		var item: String = outpost.module
 		if item.is_empty(): outpost.status = "Hub ready · choose an export facility"; continue
 		var count: int = 0

@@ -65,3 +65,5 @@ Then continue spaceship equipment, diplomacy, trade and empire conflict; additio
 ## Check-in use
 
 Run `powershell -ExecutionPolicy Bypass -File tools/ParityReport.ps1` for family/variant ownership counts and unresolved audit entries. It validates structure and task references only. Consult the board and playable evidence for actual status. Do not turn rows, tests, source lines or catalog counts into a game completion percentage.
+
+Latest W01 implementation: [empire conflict](../EMPIRE_CONFLICT.md) connects warned hostility, raids, defense investments, personal/allied combat, persistent port damage and peace. This closes no full war-family parity claim: offensive capture/surrender, wider defenses and strategic war AI remain open. Reference scope exclusions are unchanged.
