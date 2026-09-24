@@ -8,6 +8,7 @@ class Study extends Base.InventoryStudy:
 	var game: RefCounted
 	var mode: String
 	var chart: Control
+	var embedded: bool=false
 	func _ready() -> void:
 		if mode=="chart":
 			chart.position=Vector2(54,772); chart.scale=Vector2(1.25,1.25)
@@ -15,7 +16,7 @@ class Study extends Base.InventoryStudy:
 			add_child(chart)
 		for id: String in game.biosphere.data(): icons[id]=load("res://assets/specimens/%s.png" % id)
 	func _draw() -> void:
-		text(Vector2(32,42),"ACTUAL WORLD · PROPOSED SURFACE INSTRUMENT",19)
+		if not embedded: text(Vector2(32,42),"ACTUAL WORLD · PROPOSED SURFACE INSTRUMENT",19)
 		panel(Rect2(24,722,304 if mode=="chart" else 644,330),IVORY)
 		text(Vector2(44,756),"MAP" if mode=="chart" else "CONDITIONS",22,DARK)
 		text(Vector2(198 if mode=="chart" else 478,756),"MORROW",20,DARK)

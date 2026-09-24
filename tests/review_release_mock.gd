@@ -1,6 +1,8 @@
 extends SceneTree
 ## Static proposed release UI over actual frozen terrain. No player saves or autonomous ticks.
 const Session=preload("res://scripts/expedition_session.gd")
+const Instrument=preload("res://tests/review_surface_instrument.gd")
+const Capacity=preload("res://tests/review_field_capacity.gd")
 const Study=preload("res://tests/release_study_panel.gd")
 const OUT="res://artifacts/release-review"
 func _initialize() -> void: call_deferred("run")
@@ -15,7 +17,7 @@ func run() -> void:
 		if stage=="no-energy": game.field.state.energy=4
 		var ground:=Vector3(8,0,4)
 		ground.y=game.biosphere.Geography.surface_height(game.field.definition(),ground.x,ground.z)+1.5
-		var ship_at:=ground+Vector3(0,5,3)
+		var ship_at:=ground+Vector3(-7,7,5)
 		game.fleet.prepare(game,ship_at)
 		var before: Dictionary=game.snapshot().duplicate(true)
 		var view:=SubViewport.new(); view.size_2d_override=Vector2i(1920,1080); view.size_2d_override_stretch=true
@@ -58,19 +60,33 @@ func run() -> void:
 		var overlay:=CanvasLayer.new(); view.add_child(overlay)
 		var study:=Study.new(); study.game=game; study.stage=stage; study.specimen=id; study.slot=chosen_slot
 		overlay.add_child(study)
-		for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
-			view.size=resolution
-			for frame: int in range(3): await process_frame
-			study.target=scene.camera.unproject_position(ground); study.queue_redraw()
-			await process_frame
-			await RenderingServer.frame_post_draw
-			assert(view.get_texture().get_image().save_png(OUT+"/proposal-%s-%d.png" % [stage,resolution.y])==OK)
+		var map:=Instrument.Study.new(); map.game=game; map.embedded=true; map.mode="chart"; map.chart=scene.hud.navigation
+		map.chart.get_parent().remove_child(map.chart); overlay.add_child(map)
+		var palette:=Capacity.Study.new(); palette.hud=scene.hud; palette.model=game.field; palette.embedded=true
+		overlay.add_child(palette); palette.prepare()
+		for expanded: bool in [false,true]:
+			study.expanded=expanded; scene.hud.palette_expanded=expanded; palette.prepare()
+			for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
+				view.size=resolution
+				for frame: int in range(3): await process_frame
+				study.target=scene.camera.unproject_position(ground)
+				study.emitter=scene.camera.unproject_position(ship_at-Vector3(0,0.8,0))
+				study.footprint.clear()
+				for index: int in range(49):
+					var angle: float=TAU*index/48.0
+					var point:=ground+Vector3(cos(angle)*1.7,0,sin(angle)*1.7)
+					point.y=game.biosphere.Geography.surface_height(game.field.definition(),point.x,point.z)+0.12
+					study.footprint.append(scene.camera.unproject_position(point))
+				study.queue_redraw()
+				await process_frame
+				await RenderingServer.frame_post_draw
+				assert(view.get_texture().get_image().save_png(OUT+"/composed-%s-%s-%d.png" % [stage,"expanded" if expanded else "compact",resolution.y])==OK)
 		assert(rendered_snapshot==game.snapshot(),"Capture must not tick or mutate campaign")
 		records.append({"state":stage,"species":id,"reason":why,"energy":game.field.state.energy,"cargo":game.biosphere.used(),"armed":scene.biosphere_view.deploy_id,"selected":scene.biosphere_view.selected,"action":scene.biosphere_view.action,"hud_state":scene.hud.action_state.text})
 		view.free()
-	var file:=FileAccess.open(OUT+"/proposal-evidence.json",FileAccess.WRITE)
-	file.store_string(JSON.stringify({"kind":"Static proposed UI on actual terrain; proposed retained selection differs from production disarming; actual model costs; no native input, elapsed action or audio proof","states":records},"\t"))
-	print("Release proposal:16 captures; arming/approach/refusal/cancellation resource invariants and successful release debits verified.")
+	var file:=FileAccess.open(OUT+"/composed-evidence.json",FileAccess.WRITE)
+	file.store_string(JSON.stringify({"kind":"Static compact/expanded composed UI on actual terrain; offset ship fixture; projected overlay beam is proposed, not production animation; retained selection differs from production disarming; actual model costs; no native input, elapsed action or audio proof","states":records},"\t"))
+	print("Release composition:32 captures; arming/approach/refusal/cancellation resource invariants and successful release debits verified.")
 	quit()
 
 
