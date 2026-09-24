@@ -3,11 +3,14 @@ extends SceneTree
 const Session=preload("res://scripts/expedition_session.gd")
 const Field=preload("res://scripts/encounter_state.gd")
 const Combat=preload("res://scripts/surface_combat.gd")
+const Study=preload("res://tests/combat_outcome_study.gd")
+const Capacity=preload("res://tests/review_field_capacity.gd")
 const OUT="res://artifacts/combat-review"
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var records: Array=[]
+	var proposal: bool="--proposal" in OS.get_cmdline_user_args()
 	var stages: Array[String]=["surface-hit","surface-evaded","surface-tow","civilian-wreck","orbital-target","orbital-low-energy","orbital-cooldown","orbital-disabled","orbital-full-hold","orbital-recovered","morrow-disabled"]
 	for stage: String in stages:
 		var orbital: bool=stage.begins_with("orbital") or stage=="morrow-disabled"
@@ -21,7 +24,7 @@ func run() -> void:
 		if stage=="civilian-wreck":
 			game.combat._damage(game,planet,id,1000)
 		if stage=="surface-tow": game.field.state.hull=1.0
-		var view:=SubViewport.new(); view.size_2d_override=Vector2i(1600,900); view.size_2d_override_stretch=true
+		var view:=SubViewport.new(); view.size_2d_override=Vector2i(1920,1080) if proposal else Vector2i(1600,900); view.size_2d_override_stretch=true
 		view.render_target_update_mode=SubViewport.UPDATE_ALWAYS; root.add_child(view)
 		var scene: Node3D=load("res://scenes/encounter.tscn").instantiate()
 		scene.campaign=game; scene.process_mode=Node.PROCESS_MODE_DISABLED; view.add_child(scene)
@@ -73,14 +76,32 @@ func run() -> void:
 		var frozen: Dictionary=game.snapshot().duplicate(true)
 		scene._update_camera(1); scene._refresh_ui(); scene._update_visuals()
 		if not orbital: scene.surface_combat_visual.refresh(game,id,0.35,0.1,false)
+		var study: Control=null
+		if proposal:
+			for child: Node in scene.get_children():
+				if child is CanvasLayer: child.hide()
+			var overlay:=CanvasLayer.new(); view.add_child(overlay)
+			study=Study.new(); study.game=game; study.scene=scene; study.stage=stage; study.refusal=reason
+			if not orbital:
+				study.chart=scene.hud.navigation; study.chart.get_parent().remove_child(study.chart)
+				scene.surface_combat_visual.labels[id].hide()
+			overlay.add_child(study)
+			var palette:=Capacity.Study.new(); palette.hud=scene.hud; palette.model=game.field; palette.embedded=true
+			scene.hud.palette_expanded=false; overlay.add_child(palette); palette.prepare()
 		for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 			view.size=resolution
 			for frame: int in range(3): await process_frame
+			if proposal:
+				study.target_screen=scene.camera.unproject_position(game.field.guardian_position() if orbital else Combat.position(game.combat.world(planet).units[id].at))
+				study.wreck_screen=scene.camera.unproject_position(Field.WRECK_POSITION)
+				study.ship_screen=scene.camera.unproject_position(scene.ship.position); study.queue_redraw()
+				await process_frame
 			await RenderingServer.frame_post_draw
-			assert(view.get_texture().get_image().save_png(OUT+"/current-%s-%d.png" % [stage,resolution.y])==OK)
+			assert(view.get_texture().get_image().save_png(OUT+"/%s-%s-%d.png" % ["proposal" if proposal else "current",stage,resolution.y])==OK)
 		assert(frozen==game.snapshot(),"Capture cannot advance the campaign")
 		records.append({"stage":stage,"planet":planet,"reason":reason,"hud":scene.hud.action_state.text,"detail":scene.explanation.text,"button":scene.use_button.text,"disabled":scene.use_button.disabled,"status":scene.status.text,"hull":game.field.state.hull,"energy":game.field.state.energy,"tow_count":game.field.state.tow_count,"cargo":game.commerce.used_space(game)})
+		if proposal: records.back().merge({"proposed_heading":study.heading,"proposed_action":study.action,"proposed_action_enabled":study.action_enabled})
 		view.free()
-	var file:=FileAccess.open(OUT+"/outcomes.json",FileAccess.WRITE); file.store_string(JSON.stringify(records,"\t"))
-	print("Combat outcomes:22 actual captures; hit/evasion/tow/refusal and salvage semantics verified. No native play or audio acceptance.")
+	var file:=FileAccess.open(OUT+("/outcome-proposals.json" if proposal else "/outcomes.json"),FileAccess.WRITE); file.store_string(JSON.stringify(records,"\t"))
+	print("Combat outcomes:22 %s captures; hit/evasion/tow/refusal and salvage semantics verified. No native play or audio acceptance." % ("proposed" if proposal else "actual"))
 	quit()
