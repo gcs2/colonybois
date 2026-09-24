@@ -1878,6 +1878,7 @@ func _close_popup() -> void:
 	popup.hide()
 	system_map.locked = paused
 	menu_return = false
+	contact_page = "home"
 	audio.save_settings()
 	audio.play("ui_close")
 
@@ -2670,6 +2671,12 @@ func _build_upgrade_shop() -> void:
 		elif id == "emitter": symbol = "lance"
 		elif id == "hold": symbol = "cargo"
 		shop.offers.append({"id":id,"title":upgrade.name,"price":upgrade.price,"flavor":upgrade.get("flavor",""),"description":upgrade.description,"requirements":"Requires "+_upgrade_requirements(id),"reason":campaign.commerce.upgrade_reason(campaign,selected_service,ship.position,id),"owned":id in campaign.commerce.state.upgrades,"action":"upgrade","icon":symbol})
+	for i: int in range(shop.offers.size()):
+		if shop.offers[i].id == upgrade_preview:
+			var target: Dictionary = shop.offers[i]
+			shop.offers.remove_at(i)
+			shop.offers.push_front(target)
+			break
 	shop.selected.connect(func(id: String) -> void: upgrade_preview = id)
 	shop.purchase_requested.connect(_commerce_action)
 	popup_body.add_child(shop)
@@ -2707,7 +2714,7 @@ func _reset_contact_presentation() -> void:
 	contact_portrait = null
 	contact_reply = ""
 	contact_greeting = ""
-	contact_page = "home"
+	if contact_page.is_empty(): contact_page = "home"
 
 func _build_contact_panel() -> void:
 	var start: int = popup_body.get_child_count()

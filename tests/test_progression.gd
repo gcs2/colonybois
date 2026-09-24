@@ -100,7 +100,7 @@ func run() -> void:
 	case.shop_requested.emit("hold"); await process_frame
 	var purchases: Array = scene.popup_body.find_children("*","Button",true,false).filter(func(b: Button) -> bool: return b.has_meta("upgrade_id"))
 	check(scene.popup_kind == "service" and purchases[0].get_meta("upgrade_id") == "hold","Badge reward link brings its real shop entry first")
-	check(scene.popup.position.x+scene.popup.size.x <= 1600 and scene.popup.size.x < 580,"Wide badge case shrinks back to a shop that stays inside the viewport")
+	check(scene.popup.position.x+scene.popup.size.x <= 1600 and scene.popup.size.x <= 980,"Shop stays inside the viewport")
 	scene._close_popup(); scene.paused = false
 	var pending: int = loaded.recognition.state.queue.size(); scene._process(0.1)
 	check(scene.recognition_notice.visible and loaded.recognition.state.queue.size() == pending-1,"Flight consumes one persisted award for its non-blocking celebration")

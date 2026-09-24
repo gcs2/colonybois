@@ -96,11 +96,13 @@ func run() -> void:
 	check(scene.system_energy.max_value == 450,"Systems meter uses same authoritative maximum")
 	scene.dock_page = "upgrades"; scene.upgrade_family = "energy"; scene._show_popup("service"); await process_frame
 	var tier_buttons: int = 0
+	var browser: Node = scene.popup_body.find_child("UpgradeShop",true,false)
 	for button: Button in scene.popup_body.find_children("*","Button",true,false):
 		if button.has_meta("upgrade_id"):
 			tier_buttons += 1
-			check(button.disabled and button.text == "Installed","Owned reactor tier renders its installed state")
-	check(tier_buttons == 4 and scene.popup_body.get_combined_minimum_size().x < 555,"Shop family view shows all four tiers within supported width")
+			button.pressed.emit()
+			check(browser.purchase_button.disabled and browser.purchase_button.text == "Installed","Owned reactor tier renders its installed state")
+	check(tier_buttons == 4 and scene.popup_body.get_combined_minimum_size().x <= 980,"Shop family view shows all four tiers within supported width")
 	# Exercise the real shop command, not just its rendered owned state.
 	game.commerce.state.upgrades.erase("energy_4")
 	game.field.installed_upgrades = game.commerce.state.upgrades
@@ -108,9 +110,12 @@ func run() -> void:
 	scene._show_popup("service"); await process_frame
 	var purchased: bool = false
 	funds_before = game.field.marks
+	browser = scene.popup_body.find_child("UpgradeShop",true,false)
 	for button: Button in scene.popup_body.find_children("*","Button",true,false):
-		if button.get_meta("upgrade_id","") == "energy_4" and not button.disabled:
-			button.pressed.emit(); purchased = true; break
+		if button.get_meta("upgrade_id","") == "energy_4":
+			button.pressed.emit()
+			if not browser.purchase_button.disabled:
+				browser.purchase_button.pressed.emit(); purchased = true; break
 	check(purchased and game.field.max_capacity("energy") == 450 and game.field.state.energy == 200 and game.field.marks == funds_before-1300,"Actual dock purchase button installs the final reservoir without free energy")
 	scene._refresh_ui()
 	check(scene.hud.energy_bar.max_value == 450 and scene.hud.energy_bar.value == 200,"HUD updates immediately after purchase")

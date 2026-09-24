@@ -13,6 +13,7 @@ var catalogue: ScrollContainer
 var purchase_button: Button
 
 func _ready() -> void:
+	name = "UpgradeShop"
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation",14)
 	catalogue = ScrollContainer.new()
