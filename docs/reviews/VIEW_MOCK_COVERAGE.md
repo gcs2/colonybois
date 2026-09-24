@@ -49,6 +49,14 @@ N07 state sheet must show known-star hover (including crowded/long names), unkno
 
 Critic comparison: 05 lacks the known-system summary; 04 lacks transition/refusal states and still has redundant chart/foreground clutter. Actual system capture separates the quote into a remote text panel and lacks ship/HUD continuity. Its 12-second quote is outdated; current code quotes 2 seconds locally and 2–4 interstellar. No new view-family completion or user acceptance is awarded.
 
+### Navigation composition fixtures
+
+`tests/review_field_navigation.gd` generates eight schematic states at 1920×1080 and 2560×1440: known hover, unknown hover, selected journey, insufficient energy, intermediate scale, system selection, transit and arrival. Outputs are `artifacts/field-instruments-review/states/navigation-{known,unknown,selected,denied,intermediate,system,transit,arrival}-{1920,2560}.png`. These are code-drawn layout studies, not final environmental/art mocks, campaign-bound UI or input tests. Six base candidate families and zero complete family state sets remain unchanged.
+
+The range ellipse and fixture destination share a projected plane; the 2.4 pc target is at 80% of a 3 pc radius. Known rows and unknown redaction are deliberate fixture data, not actual generated Nacre geography. Quote arithmetic follows the current formula but does not invoke campaign validation. System selection is a separate 92-energy fixture, not the next event after the 84-energy interstellar arrival. Cached provisional glyphs now render correctly; transit has one ship. Remaining requirements include real world fidelity, hovered planet, crowded/long names, all refusal reasons, interruption/back controls, motion, free camera, tooltip behavior and input. No user acceptance is implied.
+
+Independent critic contact_shop_critic confirmed compact known/unknown summaries, distinguishable hover/selection, legible refusal, fixed HUD placement and corrected glyph/range/single-ship fixtures; selected1440p introduced no observed clipping. Critique found ambiguous energy units, mixed journey balances, an unlabelled departure-centered range and weak star-to-system continuity. Follow-up renders explicitly label the separate local journey, energy available/after departure and departure reach; the intermediate star is now anchored at the former galaxy target with a collapsed name header. Those follow-up corrections rendered successfully but have not received another independent visual verdict. Flat panel materials and actual transition motion remain unresolved; no complete family coverage is awarded.
+
 ## Delivery status
 
 ### Populated surface study, 24 September

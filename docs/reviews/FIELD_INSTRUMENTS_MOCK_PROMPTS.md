@@ -6,6 +6,8 @@ Status: UI direction selected by the user; individual screens remain candidates.
 
 24 September correction: first aggregate/synthesize actual Spore references, our current captures and our proposed versions. Pause further generation until this comparison foundation is established. Use larger physical tool artwork (about 40% more area, 18% linear) within compact controls rather than larger panel shells. Keep reference2's labels/units/layout out of unrelated scales; no parsecs on a surface chart. No foreground blur concealing gameplay. A galaxy target inside a 3 pc reach must actually lie inside its projected range. See VISUAL_FIDELITY_FEASIBILITY.md for renderer facts and production limitations.
 
+Navigation composition supplement: `tests/review_field_navigation.gd` is a code-native schematic study, not image generation. It draws eight states at1080p/1440p with compact contextual summaries and a fixed ship instrument, using temporary existing glyphs. No generated backdrop or production art is claimed. Read the navigation fixture section in VIEW_MOCK_COVERAGE.md for exact limitations and output paths; this supplements rather than replaces 04/05 environmental targets.
+
 Shared prompt:
 
 Use case: ui-mockup. Original Frontier Worlds game interface design mock, NOT a shipped screenshot. One complete 16:9 game screen at 1920x1080 composition, no outer poster border.
