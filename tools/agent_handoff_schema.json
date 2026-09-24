@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frontier Worlds bounded agent handoff",
+  "type": "object",
+  "required": ["schema_version", "task_id", "phase", "baseline_commit", "objective", "project_rules", "allowed_paths", "inputs", "acceptance", "output_contract"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "phase": {"enum": ["specify", "implement", "verify", "visual_review"]},
+    "baseline_commit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+    "objective": {"type": "string", "minLength": 1},
+    "project_rules": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "allowed_paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "inputs": {"type": "array", "items": {"type": "object", "required": ["path", "purpose"], "additionalProperties": false, "properties": {"path": {"type": "string"}, "purpose": {"type": "string"}, "commit": {"type": "string"}}}},
+    "acceptance": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "output_contract": {"type": "string", "minLength": 1},
+    "visual": {"type": "object", "required": ["target_image", "runtime_image", "state", "resolution", "camera", "evidence_limit"], "additionalProperties": false, "properties": {"target_image": {"type": "string"}, "runtime_image": {"type": "string"}, "state": {"type": "string"}, "resolution": {"type": "string", "pattern": "^[0-9]+x[0-9]+$"}, "camera": {"type": "string"}, "evidence_limit": {"type": "string"}, "observed_state": {"type": "object"}}},
+    "asset_pilot": {"type": "object", "required": ["brief_path", "concept_image", "target_glb", "godot_wrapper", "acceptance_views"], "additionalProperties": false, "properties": {"brief_path": {"type": "string"}, "concept_image": {"type": "string"}, "target_glb": {"type": "string"}, "godot_wrapper": {"type": "string"}, "acceptance_views": {"type": "array", "minItems": 3, "items": {"type": "string"}}, "tripo_task_id": {"type": "string"}, "price_approval_record": {"type": "string"}}},
+    "provider_budget": {"type": "object", "additionalProperties": false, "properties": {"max_input_tokens": {"type": "integer", "minimum": 1}, "max_output_tokens": {"type": "integer", "minimum": 1}, "max_spend_usd": {"type": "number", "minimum": 0}, "max_retries": {"type": "integer", "minimum": 0}}}
+  },
+  "allOf": [{"if": {"properties": {"phase": {"const": "visual_review"}}}, "then": {"required": ["visual"]}}]
+}

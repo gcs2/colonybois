@@ -15,3 +15,4 @@ Status is the document's role, not a game-completion claim. The task board alone
 | [Roadmap and playtest gates](<../ROADMAP.md>) | current |
 | [Production task board](<../TASK_BOARD.md>) | current |
 | [Status check-in contract](<GOAL_AND_CHECKINS.md>) | current |
+| [Synthetic Squad token-aware development contract](<SYNTHETIC_SQUAD.md>) | specification |

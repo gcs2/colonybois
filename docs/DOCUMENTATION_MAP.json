@@ -196,6 +196,12 @@
       "title": "Delivery index"
     },
     {
+      "path": "docs/delivery/SYNTHETIC_SQUAD.md",
+      "category": "delivery",
+      "status": "specification",
+      "title": "Synthetic Squad token-aware development contract"
+    },
+    {
       "path": "docs/direction/AI_AND_TRANSPORT.md",
       "category": "direction",
       "status": "proposal",
