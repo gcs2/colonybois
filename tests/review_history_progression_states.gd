@@ -6,6 +6,7 @@ func _initialize() -> void: call_deferred("run")
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var manifest: Array=[]
+	var proposal: bool="--proposal" in OS.get_cmdline_user_args()
 	for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 		for tag: String in ["history-empty","history-populated","history-diplomacy","history-filter-empty","history-page-two","badges-fresh","badges-earned","upgrade-eligible-poor","upgrade-installed","notice-enter","notice-settled","notice-dismissed"]:
 			var game:=Session.new()
@@ -43,15 +44,22 @@ func run() -> void:
 				scene.selected_service="basin_port"; scene.dock_page="upgrades"; scene.upgrade_preview="hold"; scene._show_popup("service")
 			else: scene._show_popup("badges")
 			scene._update_camera(1); scene._refresh_ui()
+			if proposal and not tag.begins_with("notice"):
+				for child: Node in scene.get_children():
+					if child is CanvasLayer: child.hide()
+				view.size_2d_override=Vector2i(1920,1080)
+				var overlay:=CanvasLayer.new(); view.add_child(overlay)
+				var study:=preload("res://tests/history_progression_study_panel.gd").new()
+				study.game=game; study.scene=scene; study.stage=tag; overlay.add_child(study)
 			var stable: Dictionary=game.snapshot()
 			for frame: int in range(5): await process_frame
 			await RenderingServer.frame_post_draw
 			assert(game.snapshot()==stable)
-			assert(view.get_texture().get_image().save_png(OUT+"/actual-%s-%d.png" % [tag,resolution.y])==OK)
+			assert(view.get_texture().get_image().save_png(OUT+"/%s-%s-%d.png" % ["proposal" if proposal else "actual",tag,resolution.y])==OK)
 			var labels: Array=[]
 			for node: Node in scene.popup_body.find_children("*","Label",true,false): labels.append(node.text)
 			manifest.append({"state":tag,"height":resolution.y,"events":game.diplomacy.state.events.duplicate(true),"badges":game.commerce.state.badges.duplicate(),"upgrades":game.commerce.state.upgrades.duplicate(),"marks":game.field.marks,"labels":labels,"notice_visible":scene.recognition_notice.visible,"notice_alpha":scene.recognition_notice.modulate.a})
 			view.free()
-	var file:=FileAccess.open(OUT+"/baseline.json",FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
+	var file:=FileAccess.open(OUT+("/proposals.json" if proposal else "/baseline.json"),FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
 	print("History/progression:24 captures; earned eligibility, paid installation, repeat-award invariance and sampled notice lifecycle. Frozen render; not native play.")
 	quit()
