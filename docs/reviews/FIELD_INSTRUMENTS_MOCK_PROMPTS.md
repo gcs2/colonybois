@@ -16,7 +16,42 @@ Environment complexity and UI construction should be feasible as a near-term art
 
 ## 01-surface
 
+### Populated surface candidate v2 — 24 September
+
+Output: `artifacts/field-instruments-review/01-surface-populated-v2.png`, built-in imagegen. Reference roles: existing 01-surface-v1.png for endorsed environment/material direction; scout_surface_95.png as an explicitly dated current-state comparison, not a style to reproduce. Source inspected first: Spore surface at 1805.490461 seconds, recorded as surface-1805-v3.png, plus the navigation recaptures and manual. This is a capacity/design fixture with illustrative equipment; not newly playable content or a completed navigation state set. Independent review found oversized instruments, ambiguous hover/selection and tooltip overlap; v3 below partially corrects these. Neither is user-accepted.
+
+Exact generation prompt:
+
+```text
+Use case: ui-mockup.
+Create one complete 16:9 Frontier Worlds game screen, ideally 1920x1080 or higher. This is an original design candidate, not a shipped screenshot. Reference 1 is our existing surface candidate: preserve its stylized real-time environment fidelity, cream/rust scout, clay ground, mint lantern plants, pond and small bell-shaped grazers. Reference 2 is our current implementation capture ONLY to understand present content and the overly scattered UI that needs replacement; do not copy its panels, labels everywhere or pale terrain.
+Make an actually coherent navigation/tool HUD in the approved FIELD INSTRUMENTS direction. Compact matte ivory manufactured instrument housings, flat charcoal inset trays, clipped corners, subtle mechanical catches, clean humanist sans serif. No shiny copper, rounded wells, glowing blue desktop windows, persistent selected-tool caption, spreadsheet lists, giant white walls, permanent full-width bottom strip, or heroic cinematic complexity.
+Landscape fills the entire screen behind instruments, visible horizon and repeated modular rock/flora clusters continuing past the pond. Foreground sharp enough for gameplay; no depth-of-field blur. Player ship small enough for context but clearly readable. Original creepy-cute bell grazers near the pond, no new character portraits or new species. One world relay with fine selection brackets and small nearby tooltip 'Survey relay' plus '18 m'; no random labels everywhere.
+Top left only 'Morrow' with small SURFACE text. Top right very compact '248 Marks'. Lower left LOCAL SURFACE CHART, small approx 190x170 at1080; depicts actual pond shoreline, relay and triangular ship; distance scale '50 m'. No parsecs, star charts, range circle or galaxy icons on this map. A small terrain/ecology tab pair on housing edge, no whole second panel.
+Lower right ONE joined tool-and-ship assembly maximum 620x230 pixels at1080. World must still visibly dominate >80%. Compact pictorial category tabs along top edge: survey dish (active amber), cargo crate (teal), weapon emitter (vermilion), sprout (sage), radio (plum). No text category title floating above.
+Expanded SURVEY/EQUIPMENT tray has 12 clearly separate dark clipped-square slots in 2 rows of6. Filled original miniature physical tools, not thin line doodles: lens scanner, sample gripper, survey buoy, mapping drone, probe capsule, binocular sensor on row1; energy cell, repair canister, shield puck, locked silhouette, locked silhouette, empty slot on row2. All content is a design capacity fixture, not promised implemented. Selection is fine mustard corner ticks on scanner, not round background. Counts only on finite consumables: buoy 2, drone1, capsule3, energy cell2, repair canister1. Locked slots have small padlocks. No made-up price labels. Tool artwork is larger inside its slots, about18% greater linear coverage than the earlier candidate, leaving clear gaps between slots. Show pointer over energy cell and immediate small charcoal tooltip directly ABOVE THAT SLOT: 'Energy pack' / 'Restores 40 energy' / '2 in cargo'. It must point to the energy cell, not a different control.
+Adjacent right edge of same assembly narrow status instrument with Hull orange gauge '100/100', Energy gold gauge '36/100', small altitude 'ALT 12 m'. Gauges must match those values: hull full, energy about one-third. No passive recharge indicator. Small compact communications icon alongside the gauges. No application utility links.
+Place a short low-priority notification near upper-left under world name 'Relay discovered' with tiny scanner symbol; no tutorial essay.
+Keep lettering clean and minimal, original physical tool art crisp and well separated, attractive but feasible simple 3D world. This is a realistic near-term art and layout candidate, not photorealism. Do not add logos, character portraits, huge cities, on-foot characters, UI captions, extra controls or fake badges.
+```
+
 SURFACE EXPLORATION. Match the reference surface environment and cream/rust scout. Ship above clay/sage terrain, clustered rocks, pond, visible bell grazer feeding near mint lantern reeds. Living behavior clear but no huge creatures. Small target reticle, faint directional pointer to the relay. A compact field-instrument local chart lower left; lower right open Survey category with six pictorial slots, selected scanner. Hover tooltip 'Survey relay'. Hull '100', energy '76'. Top-left 'Morrow'. A small three-lamp discovery cue. No black full-width bottom bar. The world must occupy over 80% of the view.
+
+### Populated surface correction v3
+
+Output: `artifacts/field-instruments-review/01-surface-populated-v3.png`, built-in imagegen edit of v2. V2's independent critic review identified oversized instruments, indistinguishable hovered/selected styling, tooltip overlap and foreground blur. V3 reduces footprint and moves the tooltip out of the tray; its hover colors remain incorrect. These are unaccepted form/capacity studies, not implementation instructions.
+
+Exact correction prompt:
+
+```text
+Edit this existing Frontier Worlds surface mock. Preserve the landscape, ship, relay, creatures, colors, camera, and all existing UI data. One targeted HUD correction pass only; this is a design mock.
+The HUD is too big. Reduce entire lower-right assembly INCLUDING category tabs, tool tray and gauges to 70% of its current width and 70% of its current height, anchored 16px from bottom/right edges. It must occupy approximately x=1090..1904,y=808..1064 in a 1920x1080 normalized composition, at most 43% screen width and24%height; do NOT enlarge icons independently or spread controls back out. Preserve exact 2x6 layout and all 12 content states. Reduce lower-left chart to65% of its present width andheight anchored16px frombottomleft. Maintain legible short labels.
+STATE CORRECTION: Scanner (row1col1) is the ONLY equipped tool, with mustard corner ticks. Energy pack (row2col1) is merely hovered: use subtle thin IVORY outline, NO yellow corners and no yellow underline. Remove unexplained green highlight on gripper row1col2. Keep pack count2, repair1, buoy2,drone1,capsule3. Hull100/100full andEnergy36/100 at36%.
+TOOLTIP: locate 'Energy pack / Restores 40 energy / 2 in cargo' just to LEFT of the expanded tray at the vertical level of the energy pack, outside all slots, on a compact charcoal tooltip with a tiny right-facing pointer touching the hovered cell's left edge. Do not cover the scanner or any other item. Show cursor on that energy cell. No duplicate tooltip, extra titles or explanation text.
+Do not add any other controls, logo, full-width bottom bar or decorative border. Preserve matte ivory clipped housing and charcoal inset, original crisp pictorial icons. The changes should reveal more world rather than replacing it with more UI.
+```
+
+Implementation reconciliation: scripts/flight_palette.gd currently has Main tools / Environment / Weapons / Inventory and an 18-slot page. The mock's five tabs and mixed twelve-item tray are a proposed capacity fixture, not approved category semantics. scripts/encounter_state.gd defines PACK_ENERGY as 50: the mock's 40 must be corrected in any production specification. Survey buoy, mapping drone, probe, binocular sensor and gripper artwork do not establish implemented equipment. Existing scanner/collector/pack/repair/shield behaviors need their real categories, costs and availability mapped before production. Do not create new equipment merely to match the generated picture.
 
 ## 02-surface-combat
 

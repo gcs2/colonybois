@@ -65,10 +65,11 @@
       "title": "Surface steering, altitude, camera and zoom",
       "evidence_times": [
         1800,
+        1805,
         5418
       ],
       "visual_sampled": true,
-      "readable_evidence": false,
+      "readable_evidence": true,
       "interaction_verified": false,
       "presentation_reviewed": false,
       "audio_reviewed": false,
@@ -77,7 +78,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "Readable state only; no input causality, scale transition, camera/altitude mechanics, timing or audio review.",
+      "readability_evidence": {
+        "file": "artifacts/references/spore/video/surface-1805-v3.png",
+        "resolution_score": 100,
+        "legibility": 3,
+        "context_complete": true,
+        "reviewers": [
+          "contact_shop_critic",
+          "root"
+        ],
+        "supported_claim": "Readable surface-state composition: ship above curved terrain, visible beam, flora/creatures, contextual condition panel and populated tray. No steering, altitude, zoom or beam-trigger verification."
+      }
     },
     {
       "id": "RF002",

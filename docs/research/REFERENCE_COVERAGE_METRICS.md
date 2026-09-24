@@ -27,6 +27,8 @@ After the improved shop/contact captures, **readable evidence is 3/61 (4.9%)** f
 
 The later navigation recapture adds narrowly readable galaxy/system endpoint and planet-emphasis evidence for RF002/RF003: **5/61 (8.2%)** readable overall. Three 2560x1440 captures contain full-screen gameplay from a 1920x1080 decoder, capped at R100; root and contact_shop_critic inspected them. The scale-change boundary and surface endpoint are absent. Interaction, presentation and listening remain zero. See the navigation recapture in [extended evidence](SPORE_EXTENDED_VIDEO_EVIDENCE.md).
 
+The surface recapture at1805.490461s adds narrowly readable RF001 state evidence, independently checked by root and contact_shop_critic: **6/61 (9.8%)** readable overall. It shows surface composition and populated tools, not steering, altitude, zoom or beam-input mechanics. Source detail is capped at1080p (R100). All interaction/presentation/audio flags remain false.
+
 ## Resolution and legibility
 
 For every video frame record the full PNG dimensions, decoded source dimensions measured at capture, visible gameplay rectangle excluding browser/letterboxing, actual timestamp, completeness and overlays. Keep originals and rejected captures clearly distinct.
@@ -64,4 +66,4 @@ Next evidence priorities: recover adequately sized shop/contact captures; inspec
 
 ## Latest launch sampling checkpoint
 
-17/61 workflows visually sampled (27.9%); 5/61 readable (8.2%); no full interaction, presentation or listening passes. Three new sampled families come from a 352×262 launch recording: roughly R16 cinematic content, R24 full-height upper bound. They do not pass readability. See SPORE_LAUNCH_SEQUENCE_EVIDENCE.md. More screenshots do not establish timing, voice or comedy.
+17/61 workflows visually sampled (27.9%); 6/61 readable (9.8%); no full interaction, presentation or listening passes. Three new sampled families come from a 352×262 launch recording: roughly R16 cinematic content, R24 full-height upper bound. They do not pass readability. See SPORE_LAUNCH_SEQUENCE_EVIDENCE.md. More screenshots do not establish timing, voice or comedy.

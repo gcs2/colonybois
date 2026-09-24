@@ -6,17 +6,14 @@
     {
       "view": "surface",
       "kind": "reference",
-      "path": "artifacts/references/spore/manual-26.png",
-      "bytes": 2402068,
-      "sha256": "f146df32fe3c64546b2b7ef79107e5b373b46a4cb41e1e42eaa44bd6f695f7d4",
-      "resolution": [
-        2400,
-        1855
-      ],
+      "path": "artifacts/references/spore/video/surface-1805-v3.png",
+      "bytes": 253376,
+      "sha256": "1a33e74225e906a05bedf8bb0f062bbaa3325877a1edcdf08e91f6cebb182bd8",
+      "resolution": null,
       "approval": "not implied by inclusion",
       "capture_build_commit": null,
-      "source_url": null,
-      "context": "Manual pp. 46\u201347; video 30:00 inspected"
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=1805s",
+      "context": "Paused muted surface state at1805.490461s; 2560x1440 raster from1080p decoder (R100). L3 for cited state claims; no control/motion verification."
     },
     {
       "view": "surface",
@@ -36,9 +33,9 @@
     {
       "view": "surface",
       "kind": "concept",
-      "path": "artifacts/field-instruments-review/01-surface-v1.png",
-      "bytes": 2261488,
-      "sha256": "89aeb59caa063f7a2020da7cebfb74a39a30197aaab9b9e978819a488eac9989",
+      "path": "artifacts/field-instruments-review/01-surface-populated-v3.png",
+      "bytes": 2550771,
+      "sha256": "2e57dbe16817150baa831b7c889f3e238352f44d00030457d3a4867a604e42c2",
       "resolution": [
         1672,
         941

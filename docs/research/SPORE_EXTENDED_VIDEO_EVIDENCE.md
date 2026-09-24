@@ -103,6 +103,15 @@ Design synthesis: preserve familiar ship/tool anchors across scale changes; repl
 
 Independent review by contact_shop_critic confirmed full-raster gameplay and narrowly readable endpoint states for RF002/RF003. Required mock corrections: reduce the system candidate's competing foreground rocks and redundant chart; correct the galaxy candidate's 2.4 pc destination outside its 3 pc boundary; add populated category trays and contextual ally/notification states. No interaction, motion, audio or user-acceptance gate was passed.
 
+## Surface tool and collection context recapture
+
+24 September: surface-1805-v3.png and surface-mission-log-1810-v3.png under the same video artifact directory, with JSON sidecars. Exact paused times **1805.490461** and **1810.490461** seconds. The 1920×1080 decoder fills a 2560×1440 screenshot: effective source detail remains capped at 1080p. Muted, paused samples; no listening or input-causality claim.
+
+- At 1805, the curved orange landscape has large purple plants and numerous creatures; the ship projects a luminous beam toward life below. The lower-left panel is **planet condition/food-web information**, not a terrain minimap in this state. Bottom-right categories sit above a populated specimen tray with visible quantities and an emphasized beam-tool slot. This demonstrates why a surface-only local chart also needs an alternate contextual instrument state; it does not prove the toggle input or exact collection rule.
+- At 1810, My Collections / Mission Log overlays the world. A left mission list, alien portrait, right detail text, reward and tracking control are readable. A separate organism card occupies the top-right corner. This is an observed reference screen, **not approval to restore compulsory specimen-delivery errands**. The transition into the log and the inventory change between these frames are unverified.
+
+For our surface candidate, preserve category→item→world targeting, visible finite-item counts and a compact instrument footprint. The surface condition panel, hover identity card and expanded cargo are separate states needing their own mock evidence. A map alone cannot stand for all three. Current comparison uses the dated scout_surface_95.png fixture; it must not be presented as a fresh runtime capture.
+
 ## Separate launch source
 
 [SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.

@@ -11,7 +11,7 @@ The user challenged the implementation-first drift. Small functional corrections
 | Dimension | Verified register result | Limit |
 |---|---|---|
 | Source workflows visually sampled | 17/61 (27.9%) | Open denominator; not all states or rules observed |
-| Source workflows with readable evidence | 5/61 (8.2%) | Exact cited claims only |
+| Source workflows with readable evidence | 6/61 (9.8%) | Exact cited claims only |
 | Source interactions fully verified | 0/61 | Before/action/result, restrictions and failure evidence incomplete |
 | Source presentation / audio reviewed | 0/61 / 0/61 | Muted stills do not establish delivery or sound |
 | View families with a base candidate file | 6/33 (18.2%) | File presence only; all have pending states or corrections |
@@ -42,6 +42,18 @@ Navigation follow-up: the atlas now uses unobscured full-screen galaxy/system re
 - Required next evidence: readable extended gameplay before/during/after planet approach and scale changes, plus our corresponding states and a corrected orbital state sheet. Do not implement a new orbital HUD from this one hero image alone.
 
 ## Delivery status
+
+### Populated surface study, 24 September
+
+Source: artifacts/references/spore/video/surface-1805-v3.png, paused at 1805.490461 seconds; contextual ecology panel, populated specimen tray, beam and life silhouettes. Current comparison: artifacts/scout_surface_95.png is a dated fixture, not a new build capture. Proposed: artifacts/field-instruments-review/01-surface-populated-v2.png and 01-surface-populated-v3.png. Prompts and input roles are preserved in FIELD_INSTRUMENTS_MOCK_PROMPTS.md.
+
+Independent critic contact_shop_critic found v2's right assembly approximately 920×320 at normalized 1080p versus its 620×230 prompt target; chart also too large. V3 reduces the right assembly to approximately 660×247, still slightly oversized; chart including tabs remains about 290×220 versus 190×170 requested. Approximate world occupancy now exceeds 80%. Its tooltip no longer covers the scanner and points clearly to the energy pack. Those specific corrections work; neither image is user-accepted.
+
+Selection remains incoherent: scanner has mustard upper and green lower corners, while the hovered energy cell has mustard selection ticks. Foreground blur persists. Actual pack effect is 50, not the illustrated 40. Five tabs and twelve mixed slots are an illustrative capacity fixture, not the actual four categories and 18-item page. Asset feasibility, geography and other states remain unverified. Neither image proves responsive layout, immediate tooltip timing or a live action.
+
+Required state specification before implementation: one persistent equipped-tool treatment; separate hover/focus/pressed/disabled states; tooltip anchored to the actual hovered item without covering adjacent slots; real inventory packs under Inventory; actual category/page capacity; condition panel distinct from local map; immediate resource count/gauge changes on validated use; zero-count and cooldown refusals. Keep candidate evidence separate from runtime proof. No new complete-family count is awarded.
+
+### Base candidates and remaining gates
 
 - Generated candidates: `artifacts/field-instruments-review/01-surface-v1.png`, `03-orbit-v1.png`, `04-system-v1.png`, `05-galaxy-local-v1.png` `23-motion-storyboard-v1.png` and `10-contact-v2.png` (window/choices endorsed; face and dialogue rejected). `10-contact-v3-face.png` is an unapproved face experiment with the same obsolete dialogue.
 - Surface candidate needs correction: the local surface chart erroneously includes a parsec readout; remove it and any copied galaxy symbols. Preserve distinct surface distances and functional item counts. The heading belongs inside the expanded category tray, never as a floating selected-tool caption.
