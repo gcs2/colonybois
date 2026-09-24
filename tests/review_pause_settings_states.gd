@@ -5,6 +5,7 @@ func _initialize() -> void: call_deferred("run")
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT)
 	var manifest: Array=[]
+	var proposal: bool="--proposal" in OS.get_cmdline_user_args()
 	for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 		for tag: String in ["menu","controls","audio","audio-muted","save-success","load-success","load-missing","load-corrupt"]:
 			var game:=Session.new()
@@ -42,11 +43,18 @@ func run() -> void:
 				scene._load(); scene._close_popup(); assert(game.snapshot()==before)
 			scene._update_camera(1); scene._refresh_ui()
 			scene.status.visible=scene.toast_time>0
+			if proposal:
+				for child: Node in scene.get_children():
+					if child is CanvasLayer: child.hide()
+				view.size_2d_override=Vector2i(1920,1080)
+				var overlay:=CanvasLayer.new(); view.add_child(overlay)
+				var study:=preload("res://tests/pause_settings_study_panel.gd").new()
+				study.game=game; study.scene=scene; study.stage=tag; overlay.add_child(study)
 			var stable: Dictionary=game.snapshot()
 			for frame: int in range(5): await process_frame
 			await RenderingServer.frame_post_draw
 			assert(game.snapshot()==stable)
-			assert(view.get_texture().get_image().save_png(OUT+"/actual-%s-%d.png" % [tag,resolution.y])==OK)
+			assert(view.get_texture().get_image().save_png(OUT+"/%s-%s-%d.png" % ["proposal" if proposal else "actual",tag,resolution.y])==OK)
 			var labels: Array=[]
 			for node: Node in scene.popup_body.find_children("*","Label",true,false): labels.append(node.text)
 			manifest.append({"state":tag,"height":resolution.y,"labels":labels,"popup_visible":scene.popup.visible,"status":scene.status.text,"mix":scene.audio.mix.duplicate()})
@@ -54,6 +62,6 @@ func run() -> void:
 				scene._escape_menu(); assert(scene.popup.visible and scene.popup_kind=="menu")
 				scene._escape_menu(); assert(not scene.popup.visible)
 			view.free()
-	var file:=FileAccess.open(OUT+"/baseline.json",FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
+	var file:=FileAccess.open(OUT+("/proposals.json" if proposal else "/baseline.json"),FileAccess.WRITE); file.store_string(JSON.stringify(manifest,"\t")); file.close()
 	print("Pause/settings:16 captures; isolated saves, failed-load invariance, successful restore, audio settings and Escape return checked. No native input or audio listening proof.")
 	quit()
