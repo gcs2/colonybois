@@ -4,13 +4,13 @@ Updated 24 September 2026. Read the [documentation map](README.md) for ownership
 
 ## Current direction
 
-Character production is **stopped/deferred** after the failed modeling demonstration. No further character images, fish corrections, mesh refinement, cast expansion or creator work is the next task. Preserve the prototypes. Read the [postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md) and [scope decision](art/CHARACTER_SCOPE_OPTIONS.md). The overall space-game objective is unchanged.
+Character modeling, new character design and cast expansion remain **deferred** after the failed modeling demonstration. The user subsequently authorized existing generated images as in-game portraits: Tavi now uses a static concept-derived cutout. This narrow integration does not reopen fish revisions, modeling or a creator. Preserve the prototypes and read the [postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md). The overall space-game objective is unchanged.
 
 Resume the connected spaceflight/contact/trade experience, with Spore evidence and approved Field Instruments direction informing bounded changes. The user likes the contact window and choices; the face, joke and model fidelity were rejected. Existing representatives can remain temporary while the interaction improves. See the board for execution order and [contact performance requirements](direction/CONTACT_PERFORMANCE_SPEC.md).
 
 ## Playable checkpoint and limits
 
-- Latest playable export: `build/versions/20260924-020400/FrontierWorlds.exe`, selected by `Play.cmd`. This adds the [contact lifecycle correction](systems/EXPEDITION_CONTACT.md): tab changes retain the representative, responses fire only on command results, and closing clears stale replies. Sixteen focused checks plus existing diplomacy/commerce/HUD/navigation suites pass; exported-pack startup smoke passed. Native acting/art acceptance remains open. See Git history for the corresponding source checkpoint; the older galaxy checkpoint below remains its navigation baseline.
+- Latest playable export: `build/versions/20260924-022214/FrontierWorlds.exe`, selected by `Play.cmd`. [Contact/shop checkpoint](systems/EXPEDITION_CONTACT.md): contextual dock access, persistent local representative, separately scrolling commerce and Tavi's concept-derived portrait. Thirty-eight focused checks and relevant regressions pass; actual 1080p/1440p captures received independent critique, and exported-pack startup smoke passed. Native acting/art acceptance remains open. See Git history for the corresponding source checkpoint; the older galaxy checkpoint below remains its navigation baseline.
 - That checkpoint records 40 galaxy, 67 full-screen navigation and 41 system assertions plus exported-pack startup smoke. [Galaxy behavior and limits](systems/GALAXY_NAVIGATION.md). Tests do not establish art or playability acceptance.
 - Most generated galaxy destinations remain orbital-only. Full inhabited worlds, responsive encounters, final HUD/art/audio and native fun review remain open.
 - Preserve the user's running game. Use separate versioned exports and isolated test saves; do not silently restart it.

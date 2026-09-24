@@ -19,6 +19,7 @@ func run() -> void:
 	scene._contact_select("consortium")
 	var actor: Control = scene.contact_portrait
 	check(actor != null and actor.speaking == 0,"Opening contact creates a listening actor")
+	check(actor.texture.resource_path.ends_with("tavi-portrait-v1.png"),"Tavi uses the concept-derived runtime portrait")
 	actor.clock = 9.0
 	var before: Dictionary = scene.campaign.snapshot()
 	for page: String in ["exchange","fleet","conflict","agreements"]:
@@ -50,6 +51,59 @@ func run() -> void:
 	check(scene.contact_portrait == null and scene.contact_reply.is_empty(),"Leaving communications clears its presentation")
 	scene._contact_select("consortium"); scene.popup.hide()
 	check(scene.contact_portrait == null,"Direct panel dismissal also releases the actor")
+	scene.model.change_flight_mode("orbit")
+	scene.ship.position = Vector3(0,8,8)
+	scene._contact_select("consortium")
+	var dock: Dictionary = scene._contact_dock_context()
+	check(dock.id == "orbit_tender" and not dock.docked and dock.reason.is_empty(),"Remote channel offers an approach to the actual local orbital provider")
+	before = scene.campaign.snapshot()
+	scene._contact_dock()
+	check(not scene.popup.visible and scene.service_order == "orbit_tender" and scene.campaign.snapshot() == before,"Approach closes the inspection and issues navigation without teleporting or charging")
+	scene.ship.position = scene.Model.service_position("orbit_tender")
+	scene._contact_select("consortium")
+	dock = scene._contact_dock_context()
+	check(dock.docked and str(dock.label).begins_with("Dock services"),"Within reach the same action offers dock services")
+	scene._contact_dock()
+	check(scene.popup.visible and scene.popup_kind == "service" and scene.selected_service == "orbit_tender","Docked contact opens the real service panel")
+	scene.model.state.planet_id = "s7p0"
+	scene.campaign.sector.faction_by_id("consortium").embargo = true
+	scene._contact_select("consortium")
+	dock = scene._contact_dock_context()
+	check("embargo" in str(dock.reason),"Embargo explains why local services cannot be used")
+	before = scene.campaign.snapshot()
+	scene._contact_dock()
+	check(scene.popup_kind == "contact" and scene.campaign.snapshot() == before,"Blocked dock action keeps contact open and leaves campaign untouched")
+	scene.campaign.sector.faction_by_id("consortium").embargo = false
+	scene._show_popup("contact")
+	actor = scene.contact_portrait
+	actor.clock = 7.0
+	scene._contact_dock()
+	check(scene.popup_kind == "service" and scene.contact_portrait == actor and actor.clock == 7.0,"Local representative persists from contact into the dock shop")
+	for page: String in ["upgrades","energy","warehouse","fleet","climate","market"]:
+		scene.dock_page = page; scene._show_popup("service")
+		check(scene.contact_portrait == actor and actor.clock == 7.0,"Shop drawer retains the representative: "+page)
+		if page == "energy":
+			var labels: Array = []
+			for button: Node in scene.popup_body.find_children("*","Button",true,false): labels.append(button.text)
+			check("Energy full" in labels and not labels.any(func(label: String) -> bool: return "HOMEWORLD" in label),"Full energy at a foreign dock is not mislabeled free homeworld service")
+	var cargo_before: int = scene.campaign.commerce.quantity("water")
+	scene.trade_amount = 1
+	scene._commerce_action("buy","water")
+	check(scene.campaign.commerce.quantity("water") == cargo_before+1 and actor.speaking > 0 and actor.mood == "pleased","Real purchase adds cargo and gives a single positive response")
+	actor._process(3.0); scene._show_popup("service")
+	check(actor.speaking == 0,"Shopping refresh does not repeat acceptance")
+	scene.campaign.field.marks = 0
+	before = scene.campaign.snapshot()
+	scene._commerce_action("buy","water")
+	check(scene.campaign.snapshot() == before and actor.mood == "wary","Unaffordable purchase cannot mutate cargo or funds and gives refusal")
+	scene._show_popup("contact")
+	check(scene.contact_portrait == actor,"Returning from shop to communications retains the local actor")
+	scene.model.state.planet_id = "s12p0"
+	dock = scene._contact_dock_context()
+	check(dock.id.is_empty() and not str(dock.reason).is_empty(),"World without a provider offers an explicit unavailable state")
+	check(not scene.model.service_reason("orbit_tender",scene.ship.position).is_empty(),"Direct service query on an unserviced world safely refuses")
+	scene._show_popup("service")
+	check(scene.popup.visible,"Stale provider selection produces an unavailable panel without crashing")
 	await process_frame
 	scene.free()
 	print("Contact presentation: %d checks, %d failures" % [checks,failures])

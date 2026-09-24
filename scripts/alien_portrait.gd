@@ -1,8 +1,9 @@
 extends Control
-## Authored vector busts with bounded gaze, breathing, blink and response poses.
+## Endorsed concept portrait for Tavi; temporary vector actors for other factions.
 ## Presentation clock only; never advances the campaign while a conversation is open.
 const FILES := {"consortium":"oolun-delegate","directorate":"veyri-commissioner","commune":"velith-envoy"}
 const EYES := {"consortium":[Vector2(159,119),Vector2(231,116)],"directorate":[Vector2(163,129),Vector2(232,124)],"commune":[Vector2(172,122),Vector2(222,122),Vector2(196,152)]}
+const MERCHANT_PORTRAIT = preload("res://assets/aliens/tavi-portrait-v1.png")
 var faction_id: String = "consortium"
 var mood: String = "neutral"
 var clock: float = 0.0
@@ -11,7 +12,7 @@ var texture: Texture2D
 func _ready() -> void:
 	if custom_minimum_size == Vector2.ZERO: custom_minimum_size = Vector2(460,200)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	texture = load("res://assets/aliens/"+str(FILES[faction_id])+".svg")
+	texture = MERCHANT_PORTRAIT if faction_id == "consortium" else load("res://assets/aliens/"+str(FILES[faction_id])+".svg")
 	queue_redraw()
 func respond(accepted: bool) -> void:
 	mood = "pleased" if accepted else "wary"
@@ -22,6 +23,11 @@ func _process(delta: float) -> void:
 	queue_redraw()
 func _draw() -> void:
 	if texture == null: return
+	if faction_id == "consortium":
+		var fit: float = minf(size.x/texture.get_width(),size.y/texture.get_height())
+		var extent: Vector2 = texture.get_size()*fit
+		draw_texture_rect(texture,Rect2((size-extent)*0.5,extent),false)
+		return # Static illustration: no fabricated facial movement over raster art.
 	var factor: float = minf(size.x/400.0,size.y/300.0)
 	var bob: float = sin(clock*1.5)*1.4
 	var origin := Vector2((size.x-400*factor)*0.5,bob)

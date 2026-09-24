@@ -1872,7 +1872,10 @@ func _inventory_action(action: String, panel: String) -> void:
 	_show_popup(panel)
 
 func _show_popup(kind: String) -> void:
-	if kind != "contact" or not popup.visible:
+	var shop_actor: String = _service_representative() if kind == "service" else ""
+	if kind not in ["contact","service"] or not popup.visible or (kind == "service" and shop_actor.is_empty()):
+		_reset_contact_presentation()
+	elif kind == "service" and is_instance_valid(contact_portrait) and contact_portrait.faction_id != shop_actor:
 		_reset_contact_presentation()
 	elif is_instance_valid(contact_portrait):
 		# Keep the actor alive while rebuilding its surrounding controls.
@@ -1897,6 +1900,8 @@ func _show_popup(kind: String) -> void:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
 	if kind == "service" and dock_page == "upgrades" and upgrade_family == "support":
+		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
+	if kind == "service" and not shop_actor.is_empty():
 		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
 	popup.z_index = 30; menu_shade.z_index = 20
@@ -2361,6 +2366,59 @@ func _approach_service(id: String) -> void:
 	_toast("Approaching "+str(model.local_services()[id].name))
 
 func _build_service_panel() -> void:
+	var representative: String = _service_representative()
+	if representative.is_empty():
+		_build_service_contents()
+		return
+	contacted_faction = representative
+	var start: int = popup_body.get_child_count()
+	_build_service_contents()
+	var contents: Array[Node] = popup_body.get_children().slice(start)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation",18)
+	var stage := VBoxContainer.new()
+	stage.custom_minimum_size.x = 280
+	row.add_child(stage)
+	if not is_instance_valid(contact_portrait):
+		contact_portrait = AlienPortrait.new()
+		contact_portrait.faction_id = representative
+		stage.add_child(contact_portrait)
+	else: contact_portrait.reparent(stage)
+	contact_portrait.custom_minimum_size = Vector2(280,320)
+	contact_portrait.show()
+	var identity: Label = _label(campaign.diplomacy.profiles[representative].speaker,20,Instruments.PAPER)
+	stage.add_child(identity)
+	_button("Communications",_show_popup.bind("contact"),stage)
+	_button("Return to flight",_close_popup,stage)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(490,490)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(scroll)
+	var goods := VBoxContainer.new()
+	goods.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	goods.add_theme_constant_override("separation",8)
+	scroll.add_child(goods)
+	for child: Node in contents: child.reparent(goods)
+	popup_body.add_child(row)
+
+func _service_representative() -> String:
+	if campaign == null or not model.local_services().has(selected_service): return ""
+	var owner: String = campaign.owner_of(model.state.planet_id)
+	if owner.is_empty() or not campaign.diplomacy.profiles.has(owner): return ""
+	return owner if campaign.sector.faction_by_id(owner).get("contacted",false) else ""
+
+func _shop_tab(button: Button, selected: bool) -> void:
+	button.disabled = selected
+	if selected:
+		button.add_theme_stylebox_override("disabled",Instruments.box(Instruments.PAPER,true))
+		button.add_theme_color_override("font_disabled_color",Instruments.PAPER)
+		button.tooltip_text = "Current section: "+button.text
+
+func _build_service_contents() -> void:
+	if not model.local_services().has(selected_service):
+		_panel_copy("No dock services are available at this location.",Instruments.PAPER)
+		return
 	var port: Dictionary = model.local_services()[selected_service]
 	_panel_copy(port.name,Instruments.PAPER)
 	if campaign != null:
@@ -2369,7 +2427,7 @@ func _build_service_panel() -> void:
 		popup_body.add_child(tabs)
 		for page: String in ["market","upgrades","energy","warehouse","fleet","climate"]:
 			var tab: Button = _button("Supplies" if page == "energy" else page.capitalize(),func() -> void: dock_page = page; _show_popup("service"),tabs)
-			tab.disabled = dock_page == page
+			_shop_tab(tab,dock_page == page)
 		if dock_page == "market": _build_market_panel(); return
 		if dock_page == "upgrades": _build_upgrade_shop(); return
 		if dock_page == "warehouse": _build_warehouse_panel(); return
@@ -2377,7 +2435,9 @@ func _build_service_panel() -> void:
 		if dock_page == "climate": _build_climate_shop(); return
 	_panel_copy("ENERGY  %d / %d · PACKS  %d / 3" % [model.state.energy,model.max_capacity("energy"),model.state.energy_packs],Instruments.GOLD)
 	var price: int = model.recharge_price(selected_service)
-	var charge: Button = _button("Recharge to full · FREE / HOMEWORLD" if price == 0 else "Recharge to full · %d Marks" % price,_service_action.bind(false),popup_body)
+	var charge_label: String = "Recharge to full · FREE / HOMEWORLD" if model.state.planet_id == model.state.homeworld_id else "Recharge to full · %d Marks" % price
+	if model.state.energy >= model.max_capacity("energy"): charge_label = "Energy full"
+	var charge: Button = _button(charge_label,_service_action.bind(false),popup_body)
 	var reason: String = _dock_service_reason("recharge")
 	charge.disabled = paused or not reason.is_empty()
 	charge.tooltip_text = reason
@@ -2398,8 +2458,8 @@ func _build_service_panel() -> void:
 		var blocked: String = _dock_service_reason(id)
 		button.disabled = paused or not blocked.is_empty()
 		button.tooltip_text = Instruments.tooltip(item.description+("\n"+blocked if not blocked.is_empty() else ""))
-		_panel_copy("%d in stock · %s" % [model.state.repair_stock[selected_service][id],item.description])
 		if not blocked.is_empty(): _panel_copy(blocked)
+		_panel_copy("%d in stock · %s" % [model.state.repair_stock[selected_service][id],"Restores up to 75 hull." if id == "repair_pack" else "Restores all missing hull."])
 	_button("Undock",func() -> void: popup.hide(); audio.play("ui_close"),popup_body)
 
 func _dock_service_reason(action: String) -> String:
@@ -2483,6 +2543,7 @@ func _commerce_action(action: String, item: String = "") -> void:
 	audio.play("error" if not error.is_empty() else "cargo")
 	if error.is_empty(): _save(false)
 	_show_popup("service")
+	if is_instance_valid(contact_portrait): contact_portrait.respond(error.is_empty())
 
 func _build_market_panel() -> void:
 	var commerce: RefCounted = campaign.commerce
@@ -2492,7 +2553,7 @@ func _build_market_panel() -> void:
 	amounts.add_child(_label("Units per trade",15))
 	for amount: int in [1,4,8]:
 		var choice: Button = _button(str(amount),func() -> void: trade_amount = amount; _show_popup("service"),amounts)
-		choice.disabled = trade_amount == amount
+		_shop_tab(choice,trade_amount == amount)
 	if planet == "morrow":
 		var export_button: Button = _button("Load %d alloy · %d colony materials" % [trade_amount,trade_amount*4],_commerce_action.bind("export"),popup_body)
 		var blocked: String = commerce.export_reason(campaign,selected_service,ship.position,trade_amount)
@@ -2529,8 +2590,8 @@ func _build_upgrade_shop() -> void:
 	popup_body.add_child(families)
 	for family: String in ["ship","hull","energy","support"]:
 		var tab: Button = _button({"ship":"Equipment","hull":"Hull","energy":"Reactor","support":"Support"}[family],func() -> void: upgrade_family = family; _show_popup("service"),families)
-		tab.disabled = family == upgrade_family
-		tab.tooltip_text = "Compare installed equipment and available upgrades."
+		_shop_tab(tab,family == upgrade_family)
+		if not tab.disabled: tab.tooltip_text = "Compare installed equipment and available upgrades."
 	if upgrade_family == "ship":
 		var kit_reason: String = campaign.colonies.buy_reason(campaign,selected_service,ship.position)
 		_panel_copy("Colony landing kit · four cargo spaces",Instruments.PAPER)
@@ -2538,6 +2599,7 @@ func _build_upgrade_shop() -> void:
 		var kit: Button = _button("Load colony kit",_commerce_action.bind("kit"),popup_body)
 		kit.disabled = paused or not kit_reason.is_empty()
 		kit.tooltip_text = kit_reason
+		if not kit_reason.is_empty(): _panel_copy(kit_reason)
 	elif upgrade_family == "support":
 		_panel_copy("Activate from the Weapons palette. Energy is spent once; cooldowns persist through travel and loading.")
 	else:
@@ -2626,6 +2688,7 @@ func _build_contact_panel() -> void:
 			introduction.add_child(contact_portrait)
 		else:
 			contact_portrait.reparent(introduction)
+		contact_portrait.custom_minimum_size = Vector2(320,250)
 		contact_portrait.show()
 		var dialogue := VBoxContainer.new()
 		dialogue.add_theme_constant_override("separation",14)
@@ -2663,8 +2726,44 @@ func _build_contact_panel() -> void:
 				button.disabled = paused or not blocked.is_empty()
 				button.tooltip_text = blocked if not blocked.is_empty() else "One goodwill grant per nation. Each completed chart can be licensed to one nation only."
 			_panel_copy("A chart license is exclusive: choose which nation gains your findings.")
-	_button("Approach local dock",func() -> void: popup.hide(); _approach_service("orbit_tender" if model.state.flight_mode == "orbit" else "basin_port"),popup_body)
+	var dock: Dictionary = _contact_dock_context()
+	var dock_button: Button = _button(dock.label,_contact_dock,popup_body)
+	dock_button.disabled = not str(dock.reason).is_empty()
+	dock_button.tooltip_text = dock.reason if not str(dock.reason).is_empty() else "Local services at %s. Communications do not move your ship or grant remote market access." % dock.name
+	if not str(dock.reason).is_empty(): _panel_copy(dock.reason)
 	_button("Colony administration",_show_popup.bind("colonies"),popup_body)
+
+func _contact_dock_context() -> Dictionary:
+	var result: Dictionary = {"id":"", "name":"", "label":"Dock unavailable", "reason":"No dock services at this location.", "docked":false}
+	for id: String in model.local_services():
+		var port: Dictionary = model.local_services()[id]
+		if port.mode != model.state.flight_mode: continue
+		result.id = id; result.name = port.name
+		# Query access at the destination to distinguish a closed port from distance.
+		# The real position is still validated before opening and on every purchase.
+		result.reason = campaign.commerce.access(campaign,id,Model.service_position(id)) if campaign != null else ""
+		if paused: result.reason = "Resume flight before using dock services."
+		if not ship.position.is_finite(): result.reason = "Ship position unavailable."
+		result.docked = ship.position.distance_to(Model.service_position(id)) <= float(port.reach)
+		result.label = ("Dock services · " if result.docked else "Approach dock · ")+str(port.name)
+		return result
+	return result
+
+func _contact_dock() -> void:
+	# Re-evaluate when clicked; a previously rendered quote is not authorization.
+	var dock: Dictionary = _contact_dock_context()
+	if not str(dock.reason).is_empty():
+		_toast(dock.reason)
+		return
+	if dock.docked:
+		if campaign != null:
+			var blocked: String = campaign.commerce.access(campaign,dock.id,ship.position)
+			if not blocked.is_empty(): _toast(blocked); return
+		selected_service = dock.id
+		_show_popup("service")
+	else:
+		popup.hide()
+		_approach_service(dock.id)
 
 func _contact_copy(parent: Control, text: String, tint: Color) -> void:
 	var label: Label = _label(text,16,tint)

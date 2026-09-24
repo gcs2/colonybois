@@ -15,6 +15,8 @@
 
 ## Product constraints
 
+- 24 September portrait exception: the user authorizes existing generated concepts as in-game 2D portraits. Tavi's isolated concept portrait is integrated; cleanup provenance lives in assets/aliens/tavi-portrait-v1.md. This does not reopen 3D modeling, new character design, fish revisions or cast expansion. Do not overlay the old procedural eyes/mouth on raster concept art or claim a static portrait is animated acting.
+
 - Latest evening playtest rejects breadth without playability: clunky UI/combat, cheap audio, slow/jumpy navigation and small landing facades remain unacceptable. Read docs/reviews/PLAYABILITY_REBUILD.md. Prioritize full-screen navigation and responsive travel, an inhabited Morrow with city/port life and expressive communications, and a shared-geography whole-planet pipeline. Explorer badge feedback is the positive reference. Do not resume tool-catalog expansion or compulsory tutorial work ahead of these corrections. Literal Earth size is under discussion, not an approved engine migration.
 
 - 23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.

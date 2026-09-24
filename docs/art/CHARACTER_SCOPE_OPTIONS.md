@@ -1,5 +1,7 @@
 # Character scope and direction options
 
+24 September follow-up: the user authorizes using existing generated concepts as in-game 2D portraits. Tavi's cleaned concept illustration now appears in communications and local commerce. This is a narrow presentation bridge, not resumption of new character design, 3D modeling or corpus production. See the [contact checkpoint](../systems/EXPEDITION_CONTACT.md).
+
 > Asset specification; not evidence of finished or accepted art. The task board decides whether production is active. [Documentation map](../README.md).
 
 User reiterated that the scope question was ignored while art generation continued. Stop the art/model branch now. The recommendation is internal authoring reuse plus an optional small preset selector later; no freeform creature creator. No additional image board or model refinement is the next action without renewed prioritization.

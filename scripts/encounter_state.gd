@@ -123,8 +123,9 @@ func recharge_price(id: String) -> int:
 	return int(ceil(maxf(0,max_capacity("energy")-float(state.energy))*float(local_services()[id].marks_per_energy)))
 
 func service_reason(id: String, at: Vector3, purchase_pack: bool = false) -> String:
-	if not services().has(id): return "Unknown service provider."
-	var port: Dictionary = local_services()[id]
+	var providers: Dictionary = local_services()
+	if not providers.has(id): return "No service provider at this location."
+	var port: Dictionary = providers[id]
 	if state.planet_id != port.planet or state.flight_mode != port.mode: return "Travel to %s first." % port.name
 	if not at.is_finite() or at.distance_to(service_position(id)) > float(port.reach): return "Approach %s to dock." % port.name
 	if purchase_pack:

@@ -1,10 +1,20 @@
 # Personal contact and persistent diplomatic consequences
 
+## Local shop continuity and concept portrait — 24 September 2026
+
+Communications now names the real local dock and distinguishes approach, in-range services and unavailable/embargoed ports. Clicking revalidates access; remote conversations do not teleport the ship or grant market rights. Providerless generated worlds safely refuse even direct recharge queries. Foreign full reactors say “Energy full,” rather than incorrectly claiming homeworld-free service because the quote was zero.
+
+At an encountered alien's local dock, the representative persists between communications and all shop drawers. The character/return controls stay beside an independently scrolling goods column. Selecting a different remote faction never turns the local shop into that faction's shop. Purchases still validate stock, cargo, price and access; the representative's response state changes only on a command result. Selected shop/quantity tabs have a distinct highlight; kit and repair eligibility are visible near the offer.
+
+The user explicitly authorized using existing generated art as portraits. Tavi now uses the [isolated concept-derived 2D portrait](../../assets/aliens/tavi-portrait-v1.md), cleaned from the endorsed left merchant with built-in imagegen. No procedural mouth/eyes or bobbing are overlaid on that static image. Other factions retain temporary vectors. This is not 3D modeling, a rig, voice or authored acting; final portrait acceptance remains open.
+
+Verification: 38 contact/commerce presentation checks; existing commerce 49, diplomacy 45, energy 21, full-screen navigation 67, ship support 61 and HUD 50 checks pass. Actual Market/Supplies/Upgrades captures at 1920×1080 and 2560×1440 are under `artifacts/contact-shop-*.png`. The independent critic compared these with the endorsed contact composition and sampled Spore shop frame: selected state, supply requirements, fixed actor/exit and isolated portrait fit pass this bounded review. An initial alleged horizontal clip was withdrawn after width measurements; longer content requires vertical scrolling. The long upgrades inspector, pictorial commodity browsing, first/repeat greetings, final Field Instruments materials and native motion/audio/playability remain open. Build `20260924-022214` exported and passed isolated pack startup smoke.
+
 ## Contact presentation lifecycle — 24 September 2026
 
 The same representative now survives changes between Agreements, Exchange, Fleet and Conflict drawers, preserving its presentation clock and any response already in progress. Acceptance/refusal starts once after a diplomatic command result. Refreshing a drawer cannot replay it. Closing the panel, leaving communications or choosing another faction clears the old reply and releases that actor; reopening starts with a listening representative.
 
-Verification: 16 new scene-level checks cover actor identity/clock, completed and in-progress reactions, real grant cost, rejected repeat grant without state mutation, faction switching and both explicit/direct dismissal. Existing diplomacy 45, commerce 49, HUD 50 and full-screen navigation 67 checks pass. Test saves are isolated. This is a lifecycle correction, not new character art or a visual acceptance milestone. Persistent actor continuity into the separate commerce screen, first/repeat greetings, authored gestures, final layout/audio and native playability review remain open.
+Earlier verification: 16 scene-level checks covered the first contact-only lifecycle fix; the newer checkpoint above extends continuity into local shops. First/repeat greetings, authored gestures, final layout/audio and native playability review remain open.
 
 > Implementation checkpoint; statements of verification apply to its recorded scope, not final player acceptance. Consult source/tests for later changes. [Documentation map](../README.md).
 
