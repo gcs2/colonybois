@@ -323,14 +323,14 @@ func quote(id: String) -> Dictionary:
 	elif field.state.survey_active: reason = "Wait for the orbital survey to finish."
 	elif field.state.guardian_alert > 0: reason = "Break contact with the custodian before jumping."
 	elif field.state.energy < energy: reason = "Need %d energy. Dock or use a reserve pack." % energy
+	elif field.has_wreck():
+		var at := Vector3(field.state.position[0],field.state.position[1],field.state.position[2])
+		if at.distance_to(Field.WRECK_POSITION) < Field.HAZARD_WARNING: reason = "Leave the defense field before jumping."
 	return {"reason":reason,"energy":energy,"seconds":seconds,"route":route,"distance":separation,"range":commerce.drive_range()}
 
 func begin_travel(id: String) -> String:
 	var offer: Dictionary = quote(id)
 	if not offer.reason.is_empty(): return offer.reason
-	if field.has_wreck():
-		var at := Vector3(field.state.position[0],field.state.position[1],field.state.position[2])
-		if at.distance_to(Field.WRECK_POSITION) < Field.HAZARD_WARNING: return "Leave the defense field before jumping."
 	field.state.energy -= offer.energy
 	field.state.shroud_on = false
 	var ship: Dictionary = sector.state.flagship

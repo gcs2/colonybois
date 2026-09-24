@@ -67,6 +67,8 @@ Independent follow-up critic inspected denied/embargo/survey/atmosphere/defense/
 
 ## Delivery status
 
+Defense preview repair supersedes the mismatch observations above: the same field restriction now appears in quote and commit, with no debit on refusal. Regenerated24-image fixtures remove the obsolete audit-warning line; historical critique remains evidence of why the correction was necessary. Independent critic confirmed the corrected reason,92/100 energy, matching manifest and no unintended composition/clipping change. Production source changed only for this validated refusal repair, not a HUD redesign. See [navigation checkpoint](../systems/GALAXY_NAVIGATION.md). Full visual and native gates remain open.
+
 ### Populated surface study, 24 September
 
 Source: artifacts/references/spore/video/surface-1805-v3.png, paused at 1805.490461 seconds; contextual ecology panel, populated specimen tray, beam and life silhouettes. Current comparison: artifacts/scout_surface_95.png is a dated fixture, not a new build capture. Proposed: artifacts/field-instruments-review/01-surface-populated-v2.png and 01-surface-populated-v3.png. Prompts and input roles are preserved in FIELD_INSTRUMENTS_MOCK_PROMPTS.md.

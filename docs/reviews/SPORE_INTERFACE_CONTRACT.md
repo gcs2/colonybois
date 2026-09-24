@@ -70,7 +70,7 @@ The [boundary evidence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md) supports c
 | Access interrupted | Current campaign returns to departure orbit with spent energy not refunded; explain this outcome without a success animation. |
 | Arrival | Preserve ship resources, reveal only earned information and identify destination. Arrival in orbit never implies automatic landing or a generated surface on an orbital-only body. |
 
-Current implementation audit: `sector_chart.gd` uses select-then-activate and a generic hover tooltip; `system_chart.gd` uses a detached information panel. Both need reviewed state mocks. `expedition_session.gd` currently quotes 3 energy/2 seconds locally; interstellar energy is at least 8 and distance-based, duration 2–4 seconds. These values belong to the simulation, not UI constants. `begin_travel` additionally rejects proximity to the defense field after `quote`; this quote/commit mismatch is an open acceptance gap, not repaired by this specification. The older 12-second capture must not set mock timings.
+Current implementation audit: `sector_chart.gd` uses select-then-activate and a generic hover tooltip; `system_chart.gd` uses a detached information panel. Both need reviewed state mocks. `expedition_session.gd` currently quotes3 energy/2 seconds locally; interstellar energy is at least8 and distance-based, duration2–4 seconds. These values belong to the simulation, not UI constants. Defense-field proximity now appears in `quote` and is revalidated by `begin_travel`; the previously recorded mismatch is repaired in source (see GALAXY_NAVIGATION.md for checks and export limits). The older12-second capture must not set mock timings.
 
 ## Next visual work, before another skin
 

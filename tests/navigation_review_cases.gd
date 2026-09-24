@@ -34,7 +34,7 @@ static func make(kind: String) -> Dictionary:
 	var after: float=game.field.state.energy
 	if kind in ["denied","embargo","survey","atmosphere"]:
 		assert(not commit_reason.is_empty() and commit_reason==str(offer.reason))
-	if kind=="defense": assert(str(offer.reason).is_empty() and commit_reason=="Leave the defense field before jumping.")
+	if kind=="defense": assert(str(offer.reason)==commit_reason and commit_reason=="Leave the defense field before jumping.")
 	if not commit_reason.is_empty(): assert(before==after)
 	elif kind in ["selected","system","transit","arrival"]: assert(is_equal_approx(after,before-float(offer.energy)))
 	var planets: Array[String]=[]

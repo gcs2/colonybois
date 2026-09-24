@@ -16,6 +16,8 @@
 
 ## Verification
 
+Bounded preview repair, 24 September: defense-field proximity is now checked in `quote`, which `begin_travel` revalidates. Previously the preview could advertise available travel before commit refused it. Costs, strict field boundary and earlier refusal precedence are unchanged. `test_travel_preview.gd` passes27 checks covering inside/exact/outside boundary, vertical distance, side-effect-free preview/refusal, changed position between quote and commit, other-world coordinates and energy precedence. The45 interstellar integration checks also pass. The isolated24-image review regenerated with matching preview/commit refusal; no new playable export was produced for this repair.
+
 Final relevant checks passed on 24 September: galaxy 40, full-screen navigation 67, system 41. Exported playable build: `build/versions/20260924-003147/FrontierWorlds.exe`; resource-pack headless flight startup smoke passed using isolated playtest slots. Native interaction/art/audio review remains open.
 
 Final galaxy, full-screen navigation and system checks cover deterministic generation, range/cost rejection, purchased drive progression, legacy migration, saved travel, generated orbital visits, geography IDs, camera/zoom projection, navigation and modal behavior. The wider regression suite passed in staged runs before the last renderer optimization; see the pending-checkpoint record for historical evidence and the final checkpoint for the actual exported build.

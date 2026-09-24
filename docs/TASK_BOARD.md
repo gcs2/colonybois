@@ -25,6 +25,8 @@ V04 evidence correction: navigation review fixtures now invoke actual isolated c
 
 Status meanings: **In progress** = active work; **Next** = near-term work subject to the order above; **Dependency** = prerequisite missing; **Later** = tracked only; **Prototype / integrated pilot** = some behavior exists, not final player acceptance. Rows are an inventory, not an instruction to perform them top-to-bottom. Existing evidence reflects the cited checkpoints and may be narrower than the whole requirement.
 
+V04 bounded repair: defense-field restriction now appears in preview and commit through the same quote validation.27 focused boundary/state-preservation checks and45 interstellar checks pass; review fixtures regenerated. This supersedes earlier open-mismatch notes above. See [navigation checkpoint](systems/GALAXY_NAVIGATION.md). No new playable export or visual-design approval; resume the reference/mock gate.
+
 ## Task register
 
 | ID | Task | Status and current evidence | Gate |
