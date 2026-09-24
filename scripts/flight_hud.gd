@@ -304,12 +304,16 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 		var reason: String = Palette.unavailable(id,model)
 		item_buttons[id].disabled = locked or not reason.is_empty()
 		var hint: String = item.title+"\n"+item.hint
+		if model.planetary != null and model.planetary.ecosystem != null:
+			if id == "seed": hint = "Specimen deployer\nOpen carried specimens, select one, then click a surface habitat. 5 energy; consumes one specimen."
+			if id == "collect": hint = "Tractor cradle\nScan an expedition lifeform, then click it with this tool to collect. 13 m reach; 1.5 s; 5 energy."
 		if locked: hint += "\nClose the current window / resume flight first."
 		elif not reason.is_empty(): hint += "\n"+reason
 		elif Equipment.has_tool(id) and model.state.energy < Equipment.energy(id): hint += "\nInsufficient energy to operate; you can still select this tool."
 		elif id == "lance" and model.state.energy < Palette.Model.LANCE_ENERGY: hint += "\nNeed 10 energy to fire; you can still select this weapon."
 		item_buttons[id].tooltip_text = hint
 		count_labels[id].text = Palette.count(id,model.state)
+		if id == "seed" and model.planetary != null and model.planetary.ecosystem != null: count_labels[id].text = "× %d" % model.planetary.ecosystem.used()
 		var ready_at: float = float(model.state.pack_ready_at) if id == "pack" else (float(model.state.weapon_ready_at) if id == "lance" else 0.0)
 		if Palette.Model.repair_items().has(id): ready_at = float(model.state.last_repair_at)+Palette.Model.REPAIR_COOLDOWN
 		if ready_at > model.state.time:

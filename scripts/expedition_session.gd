@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 12
+const VERSION := 13
+const Biosphere = preload("res://scripts/planet_biosphere.gd")
+var biosphere := Biosphere.new()
 const Climate = preload("res://scripts/planet_climate.gd")
 var climate := Climate.new()
 const Fleet = preload("res://scripts/allied_fleet.gd")
@@ -41,6 +43,7 @@ func tick(threat_distance: float = INF) -> String:
 	var result: String = field.tick(INF if traveling() else threat_distance)
 	combat.resolve(self)
 	climate.tick(self)
+	biosphere.tick(self)
 	if was_surveying and not field.state.survey_active:
 		diplomacy.record(self,"exploration","Completed orbital survey of "+str(field.definition().name)+".","",{"survey_ticks":field.state.survey_ticks},0,"survey:"+str(field.state.planet_id))
 	advance_worlds()
@@ -77,6 +80,7 @@ func import_legacy(path: String) -> Error:
 	combat = SurfaceCombat.new()
 	fleet = Fleet.new()
 	climate = Climate.new()
+	biosphere = Biosphere.new()
 	colonies = Colonies.new()
 	freight = Freight.new()
 	diplomacy = Diplomacy.new()
@@ -91,7 +95,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -117,7 +121,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -158,6 +162,8 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_combat := SurfaceCombat.new()
 	var candidate_fleet := Fleet.new()
 	var candidate_climate := Climate.new()
+	var candidate_biosphere := Biosphere.new()
+	if source.version >= 13 and candidate_biosphere.restore(source.get("biosphere")) != OK: return ERR_INVALID_DATA
 	if source.version >= 12 and candidate_climate.restore(source.get("climate"),candidate_commerce.state.upgrades) != OK: return ERR_INVALID_DATA
 	if source.version >= 11 and candidate_fleet.restore(source.get("fleet"),int(candidate_field.state.time),candidate_sector) != OK: return ERR_INVALID_DATA
 	var fleet_slots: int = mini(3,maxi(candidate_commerce.state.badges.explorer,maxi(candidate_commerce.state.badges.merchant,candidate_commerce.state.badges.defender)))
@@ -187,6 +193,7 @@ func restore_snapshot(source: Variant) -> Error:
 	combat = candidate_combat
 	fleet = candidate_fleet
 	climate = candidate_climate
+	biosphere = candidate_biosphere
 	field.installed_upgrades = commerce.state.upgrades
 	colonies = candidate_colonies
 	freight = candidate_freight

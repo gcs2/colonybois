@@ -48,6 +48,7 @@ var climate_chart: Control
 var climate_ring: MeshInstance3D
 var climate_signature: String = ""
 var ground_material: ShaderMaterial
+var biosphere_view: Node3D
 var fleet_visual: Node3D
 var fleet_strip: HBoxContainer
 var fleet_button: Button
@@ -219,6 +220,8 @@ func _ready() -> void:
 	_build_service_ports()
 	if campaign != null:
 		campaign.climate.bind(campaign)
+		biosphere_view = preload("res://scripts/biosphere_view.gd").new()
+		surface_root.add_child(biosphere_view); biosphere_view.setup(self)
 		var pulse_mesh := TorusMesh.new(); pulse_mesh.inner_radius = 19.0; pulse_mesh.outer_radius = 19.16
 		pulse_mesh.rings = 64; pulse_mesh.ring_segments = 6
 		climate_ring = _mesh(pulse_mesh,orbit.planet.position,_mat(Color("d5dcab"),true),orbit)
@@ -593,6 +596,7 @@ func _make_ui() -> void:
 	if campaign != null:
 		climate_chart = preload("res://scripts/climate_chart.gd").new()
 		climate_chart.position = Vector2(24,125); root.add_child(climate_chart); climate_chart.hide()
+		climate_chart.ecosystem_requested.connect(_show_popup.bind("biosphere"))
 		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(575,24)
 		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
 		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
@@ -664,6 +668,7 @@ func _physics_process(delta: float) -> void:
 	var speed: float = 16.0 if orbital else 12.0
 	var move := Vector3(input_direction.x,0,input_direction.z).rotated(Vector3.UP,yaw).limit_length(1)*speed
 	if not input_direction.is_zero_approx():
+		if biosphere_view != null: biosphere_view.cancel()
 		kit_mode = false; deploy_order = false
 		navigating = false
 		approach_subject = false
@@ -803,6 +808,7 @@ func _process(delta: float) -> void:
 	_operate_surface_attack()
 	if surface_combat_visual != null: surface_combat_visual.refresh(campaign,surface_selected,tick_clock,delta,paused or _inspection_open())
 	if fleet_visual != null: fleet_visual.refresh(campaign,delta,paused or _inspection_open())
+	if biosphere_view != null: biosphere_view.refresh(delta,paused or _inspection_open() or model.state.flight_mode != "surface")
 	if not paused and not _inspection_open():
 		weapon_flash = maxf(0,weapon_flash-delta)
 		enemy_flash = maxf(0,enemy_flash-delta)
@@ -935,6 +941,7 @@ func _hud_action(action: String) -> void:
 		var id: String = action.trim_prefix("item:")
 		if not hud.Palette.unavailable(id,model).is_empty(): return
 		if id == "lance": _select_weapon()
+		elif id == "seed" and campaign != null: _cargo_tab("specimens")
 		elif Climate.data().tools.has(id): _select_climate(id)
 		elif SurfaceCombat.data().weapons.has(id): _select_surface_weapon(id)
 		elif id == "pack": _hud_action("pack")
@@ -1308,6 +1315,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _pick(screen: Vector2) -> void:
 	if paused or _inspection_open(): return
+	if biosphere_view != null and not biosphere_view.deploy_id.is_empty():
+		if biosphere_view.pick(screen): return
 	if not climate_tool.is_empty() and campaign != null:
 		if model.state.flight_mode == "surface":
 			if _surface_point(screen) is Vector2: _apply_climate()
@@ -1366,6 +1375,7 @@ func _pick(screen: Vector2) -> void:
 			var point: Variant = _surface_point(screen)
 			if point is Vector2: _order_surface_attack("",Vector3(point.x,terrain_height(point.x,point.y),point.y))
 			return
+	if biosphere_view != null and biosphere_view.pick(screen): return
 	var closest: float = 48
 	var picked: String = ""
 	for id: String in targets:
@@ -1409,6 +1419,7 @@ func _activate_selected() -> void:
 	else: held = true
 
 func _cancel_orders() -> void:
+	if biosphere_view != null: biosphere_view.cancel()
 	surface_order = false
 	surface_salvage_order = false
 	kit_mode = false
@@ -1531,7 +1542,7 @@ func _refresh_ui() -> void:
 	var orbital: bool = s.flight_mode == "orbit"
 	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
-	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/2" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),s.samples]
+	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/12" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used()]
 	energy_bar.max_value = model.max_capacity("energy")
 	hud.hull_bar.max_value = model.max_capacity("hull")
 	energy_bar.value = s.energy
@@ -1547,7 +1558,7 @@ func _refresh_ui() -> void:
 	hud.refresh_items(model,paused or _inspection_open())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
-	if campaign != null: hud.quick_cargo.tooltip_text = "Freight and kits: %d / %d · Specimens: %d / 2 · Energy packs: %d [I]" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity(),s.samples,s.energy_packs]
+	if campaign != null: hud.quick_cargo.tooltip_text = "Freight and kits: %d / %d · Specimens: %d / 12 · Energy packs: %d [I]" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used(),s.energy_packs]
 	if campaign != null:
 		var pending: int = campaign.diplomacy.unread().size()
 		hud.navigation_actions[1].tooltip_text = "%d incoming transmissions · Communicate [Y]" % pending if pending > 0 else "Communicate · known civilizations and local services [Y]"
@@ -1662,6 +1673,7 @@ func _refresh_ui() -> void:
 	_refresh_surface_combat_ui()
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
+	if biosphere_view != null: biosphere_view.refresh_hud()
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1763,6 +1775,7 @@ func _show_popup(kind: String) -> void:
 	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
 	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
 	titles.fleet = "ALLIED FLEET"
+	titles.biosphere = "PLANET ECOSYSTEM"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -1786,6 +1799,8 @@ func _show_popup(kind: String) -> void:
 		popup_body.add_child(panel)
 	elif kind == "cargo":
 		_build_cargo_panel()
+	elif kind == "biosphere" and biosphere_view != null:
+		biosphere_view.build_ecosystem()
 	elif kind == "systems":
 		_build_systems_panel()
 	elif kind == "service":
@@ -1874,7 +1889,7 @@ func _toggle_planet_map() -> void:
 	if campaign != null and model.state.survey_ticks >= model.definition().survey_seconds:
 		var conditions: Dictionary = campaign.climate.world(model.state.planet_id)
 		planet_map.report.text += "\nT%d climate · temperature %.0f · atmosphere %.0f" % [Climate.score(conditions),conditions.temperature,conditions.atmosphere]
-		if campaign.climate.state.worlds.has(model.state.planet_id): planet_map.report.text += "\nClimate growth capacity %d residents. Unstabilized climate drifts toward native conditions." % campaign.climate.effects(model.state.planet_id).population_cap
+		if campaign.climate.state.worlds.has(model.state.planet_id): planet_map.report.text += "\nEcosystem growth capacity %d residents. Plant-complete tiers resist climate drift." % campaign.climate.effects(model.state.planet_id).population_cap
 
 func _map_travel(site_id: String) -> void:
 	if model.definition().sites.is_empty() or site_id != model.definition().sites[0].id or paused: return
@@ -1913,10 +1928,12 @@ func _build_cargo_panel() -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation",8)
 	popup_body.add_child(tabs)
-	for location: String in ["ship","surface"]:
-		var tab: Button = _button("Onboard" if location == "ship" else "Surface store",_cargo_tab.bind(location),tabs)
+	for location: String in (["ship","specimens","surface"] if campaign != null else ["ship","surface"]):
+		var tab: Button = _button("Onboard" if location == "ship" else "Specimens" if location == "specimens" else "Surface store",_cargo_tab.bind(location),tabs)
 		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
+	if cargo_location == "specimens" and biosphere_view != null:
+		biosphere_view.build_inventory(); return
 	var onboard: bool = cargo_location == "ship"
 	if onboard and campaign != null:
 		_panel_copy("TERRAFORMING LOCKER · %d / 6" % campaign.climate.units(),Instruments.GOLD)
@@ -1938,6 +1955,10 @@ func _build_cargo_panel() -> void:
 		if campaign.commerce.used_space(campaign) == 0: _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
 		_panel_copy("Specimens and ship supplies use separate compartments.")
 	if onboard: _build_supply_inventory()
+	if onboard and biosphere_view != null:
+		_button("Specimens · %d / 12" % campaign.biosphere.used(),_cargo_tab.bind("specimens"),popup_body).icon = Instruments.icon("seed")
+		if model.state.samples > 0: _panel_copy("Local nursery pods: %d / 2. Stored separately from expedition specimens." % model.state.samples)
+		return
 	var amount: int = model.state.samples if onboard else model.state.produce
 	var capacity: int = 2 if onboard else 8
 	cargo_quantity = _label("%d / %d  %s" % [amount,capacity,"SAMPLE CRADLES" if onboard else "SURFACE STORAGE UNITS"],17,Instruments.CARGO)
@@ -2040,6 +2061,7 @@ func _build_systems_panel() -> void:
 
 func _equip_from_panel(id: String) -> void:
 	if id not in TOOLS or paused or model.state.flight_mode != "surface": return
+	if id == "seed" and campaign != null: _cargo_tab("specimens"); return
 	popup.visible = false
 	_select_tool(id)
 	_toast(Equipment.title(id)+" selected")
@@ -2529,7 +2551,7 @@ func _refresh_climate_ui() -> void:
 	hud.action_state.text = "SETTLING" if not local.project.is_empty() else "TERRAFORM"
 	use_button.text = "Apply"; use_button.disabled = paused or _inspection_open() or not blocked.is_empty()
 	use_button.tooltip_text = blocked if not blocked.is_empty() else hud.Palette.entry(climate_tool).hint
-	objective.text = "Temperature %.0f · atmosphere %.0f · unstabilized" % [local.temperature,local.atmosphere]
+	objective.text = "Temperature %.0f · atmosphere %.0f · plants T%d" % [local.temperature,local.atmosphere,campaign.biosphere.plant_tier(planet)]
 
 func _buy_climate(tool_id: String) -> void:
 	if paused or campaign == null: return

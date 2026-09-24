@@ -1,6 +1,8 @@
 # Frontier Worlds
 
-**Planet manipulation:** survey a foreign world, buy climate equipment or finite supplies at a dock, then select an Environment icon and click the globe or terrain. Independent temperature/atmosphere pulses alter appearance, outpost output, utilities, growth capacity and diplomatic relations. Climate is still unstabilized. [Rules, verification and remaining work](docs/PLANET_CLIMATE.md).
+**Specimen expeditions:** scan a visible lifeform, switch to the tractor and click to collect. Open Inventory → Specimens, choose a carried species and click a surface habitat to release it. Plants stabilize climate; complete food chains improve development. Introductions, habitat loss and chosen sites persist. [Controls, rules and limitations](docs/PLANET_BIOSPHERE.md).
+
+**Planet manipulation:** survey a foreign world, buy climate equipment or finite supplies at a dock, then select an Environment icon and click the globe or terrain. Independent temperature/atmosphere pulses alter appearance, outpost output, utilities, growth capacity and diplomatic relations. Plants collected on other worlds can now stabilize climate tiers; complete food chains support further development. [Rules, verification and remaining work](docs/PLANET_CLIMATE.md).
 
 **Allied fleet:** establish an alliance, earn a badge tier and request an escort through Communications → Fleet while in allied orbit. Escorts follow, assist your attacks and retain damage/losses. Use the HUD fleet icon for orders and dock services → Fleet for paid repairs. [Rules, limitations and verification](docs/ALLIED_FLEET.md).
 

@@ -113,7 +113,7 @@ func run() -> void:
 	var terrain: float = Geography.surface_height(game.field.definition(),12,-9)
 	var cells: Dictionary = game.sector.state.colonies.s1p0.cells.duplicate(true)
 	var temperate_power: float = game.sector.state.colonies.s1p0.power_used
-	check(game.climate.effects("s1p0").population_cap == 360 and game.colonies.yield_for("s1p0","alloy",game) == 4,"T3 changes growth capacity and actual export yield")
+	check(game.climate.effects("s1p0").tier == 3 and game.climate.effects("s1p0").population_cap == 120 and game.colonies.yield_for("s1p0","alloy",game) == 2,"T3 climate alone cannot bypass missing ecosystem tiers for population or export yield")
 	game.climate.state.worlds.s1p0.temperature = 0.0; game.climate.state.worlds.s1p0.atmosphere = 0.0
 	game.climate.bind(game); game.colonies.tick(game)
 	check(game.colonies.state.outposts.s1p0.status == "Production suspended · T0 climate" and game.colonies.state.outposts.s1p0.stock.alloy == 0,"T0 suspends real outpost output")

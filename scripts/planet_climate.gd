@@ -5,6 +5,7 @@ const Validation = preload("res://scripts/surface_combat.gd")
 const DURATION := 8
 const HOLD := 6
 static var catalog: Dictionary = {}
+var ecosystem: RefCounted
 var state: Dictionary = {"worlds":{},"charges":{"heat_charge":0,"cool_charge":0,"atmosphere_charge":0,"vacuum_charge":0},"stock":{}}
 static func data() -> Dictionary:
 	if catalog.is_empty(): catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/planet_climate.json"))
@@ -23,7 +24,8 @@ func effects(planet: String) -> Dictionary:
 	var local: Dictionary = world(planet)
 	var severity: float = Vector2(local.temperature-50,local.atmosphere-50).length()
 	var base: float = baseline(planet).distance_to(Vector2(50,50))
-	return {"tier":score(local),"population_cap":40 if score(local) == 0 else score(local)*120,"power_factor":clampf((50+severity)/(50+base),0.5,2.5),"suitability_delta":(base-severity)/100}
+	var ecological: int = mini(score(local),ecosystem.complete_tier(planet)) if ecosystem != null else score(local)
+	return {"tier":score(local),"ecological_tier":ecological,"population_cap":40 if ecological == 0 else ecological*120,"power_factor":clampf((50+severity)/(50+base),0.5,2.5),"suitability_delta":(base-severity)/100}
 func units() -> int:
 	var result: int = 0
 	for amount: int in state.charges.values(): result += amount
@@ -78,6 +80,7 @@ func start(game: RefCounted, tool: String, at: Vector3) -> String:
 	if spec.charge: state.charges[tool] -= 1
 	local.project = {"tool":tool,"from":float(local[spec.axis]),"to":clampf(float(local[spec.axis])+float(spec.delta),0,100),"remaining":DURATION}
 	state.worlds[planet] = local
+	if not game.biosphere.state.worlds.has(planet): game.biosphere.state.worlds[planet] = game.biosphere.world(planet)
 	game.diplomacy.record(game,"terraforming","Deployed "+str(spec.name)+" at "+str(game.field.definition().name)+".","",{"planet":planet,"tool":tool,"energy":spec.energy,"consumed":spec.charge})
 	return ""
 func tick(game: RefCounted) -> void:
@@ -90,15 +93,19 @@ func tick(game: RefCounted) -> void:
 			local[spec.axis] = lerpf(project.from,project.to,1.0-float(project.remaining)/DURATION)
 			local.drift_clock = 0
 			if project.remaining == 0:
-				game.diplomacy.record(game,"terraforming","Climate pulse settled on "+str(Geography.definition(planet).name)+".","",{"planet":planet,"temperature":local.temperature,"atmosphere":local.atmosphere,"tier":score(local)})
+				game.diplomacy.record(game,"terraforming","Climate pulse settled on "+str(Geography.definition(planet).name)+".","",{"planet":planet,"temperature":local.temperature,"atmosphere":local.atmosphere,"tier":score(local)},0,"",planet)
 				local.project = {}
 		else:
 			local.drift_clock += 1
 			if local.drift_clock >= 30:
 				local.drift_clock = 0
 				var native: Vector2 = baseline(planet)
-				local.temperature = move_toward(local.temperature,native.x,1.0)
-				local.atmosphere = move_toward(local.atmosphere,native.y,1.0)
+				var next: Dictionary = local.duplicate(true)
+				next.temperature = move_toward(local.temperature,native.x,1.0)
+				next.atmosphere = move_toward(local.atmosphere,native.y,1.0)
+				var floor_tier: int = mini(score(local),game.biosphere.plant_tier(planet))
+				if score(next) >= floor_tier:
+					local.temperature = next.temperature; local.atmosphere = next.atmosphere
 		if not local.disturbed and Vector2(local.temperature,local.atmosphere).distance_to(baseline(planet)) >= 9.99:
 			local.disturbed = true
 			var owner: String = game.sector.state.planets[planet].owner
@@ -108,10 +115,11 @@ func tick(game: RefCounted) -> void:
 				if penalty == 0: continue
 				faction.relation = maxi(-100,int(faction.relation)-penalty); faction.embargo = int(faction.relation) < -15
 				faction.reason = "Your terraforming altered "+str(Geography.definition(planet).name)+"'s native climate (−%d)." % penalty
-				game.diplomacy.record(game,"diplomacy",faction.reason,faction.id,{"planet":planet,"relation_delta":-penalty},0,"climate_objection:"+planet+":"+str(faction.id))
+				game.diplomacy.record(game,"diplomacy",faction.reason,faction.id,{"planet":planet,"relation_delta":-penalty},0,"climate_objection:"+planet+":"+str(faction.id),planet)
 		game.sector.climate_effects[planet] = effects(planet)
 		if game.sector.state.colonies.has(planet): game.sector.refresh_colony(planet)
 func bind(game: RefCounted) -> void:
+	ecosystem = game.biosphere
 	game.field.planetary = self
 	game.sector.climate_effects.clear()
 	for planet: String in state.worlds:

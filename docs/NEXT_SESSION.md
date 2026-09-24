@@ -1,6 +1,16 @@
 # Resume here
 
-## Personal planet manipulation — latest checkpoint
+## Specimen expeditions and ecosystem stability — latest checkpoint
+
+Read [PLANET_BIOSPHERE.md](PLANET_BIOSPHERE.md). Eighteen original role-covering species now connect scanning, paid tractor collection, a twelve-unit hold and mouse-selected release sites across the three landable worlds. Three plant sizes stabilize each climate ring; two herbivores and a predator complete that ecological tier and unlock the next. Effective ecology bounds real colony capacity and output. Thirty seconds of sustained unsuitable climate removes unsupported life, warns in the HUD and records the actual world in the chronicle. Shared-clock local populations recover within a four-specimen cap. Snapshot v13 validates and preserves cargo, identities, slots, placements, stress and unique milestones.
+
+Inventory → Specimens, and the Environment deployer icon, open the real hold. Model-derived portraits make slots match their surface representatives. Original provisional mesh kit/animation and the portrait bake script follow [BIOSPHERE_ASSET_SPEC.md](BIOSPHERE_ASSET_SPEC.md). Art/audio and native feel remain unapproved; no per-organism simulation was added. Legacy nursery pods remain separate and optional.
+
+Validation: **1,169 assertions plus UI checks** in the full suite, followed by **74 biosphere checks** including one added off-screen chronology check, plus rerun climate/diplomacy suites. Current total: **1,170 assertions plus UI checks**. Tests cover a paid three-world journey through full T3, real mouse picking/arrival/beam/release, cargo and energy, saved placements, cancellation/inspection, stable rings and habitat loss. Actual 1080p/1440p surface, inventory and ecosystem renders inspected. Build **build/versions/20260923-175010/FrontierWorlds.exe** via Play.cmd; exported-pack startup smoke passed.
+
+Next: **V04/I01 system-scale navigation and view hierarchy**, giving the personal ship a coherent planet → system → sector journey, clear destinations and actual travel costs. Preserve surface-only local charts and optional arrows/numpad. Do not deepen nursery cultivation or expand the food-web corpus. Full tool/weapon families, rank/shop progression, sentient/property abduction, ecological disasters, extreme manipulation, empire conflict, human Sol and story remain open. Keep native flight/HUD/audio review gates active.
+
+## Personal planet manipulation — previous checkpoint
 
 Read [PLANET_CLIMATE.md](PLANET_CLIMATE.md). Four purchased energy tools and four finite consumables now manipulate independent temperature/atmosphere axes through hotbar selection and planet/terrain clicks. Eight-second pulses continue off-screen; unstabilized climate drifts back. Climate affects globe/atlas/surface appearance, real colony utility demand, growth limits and export yield, plus known-owner/ecological grievances. Snapshot v12 preserves pulses, inventories and finite dock stock. Native geography and existing structures remain intact. The expanded hotbar has named hover help and actual row-relative shortcuts.
 

@@ -5,7 +5,7 @@ var profiles: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res:
 var state: Dictionary = {"gifts":[],"licenses":{},"events":[],"keys":{},"next_id":1}
 const ACTIONS := ["trade","non_aggression","alliance","gift","chart","reconcile","cancel_trade","cancel_non_aggression","cancel_alliance"]
 
-func record(game: RefCounted, kind: String, summary: String, faction_id: String = "", outcome: Dictionary = {}, cause: int = 0, key: String = "") -> int:
+func record(game: RefCounted, kind: String, summary: String, faction_id: String = "", outcome: Dictionary = {}, cause: int = 0, key: String = "", event_location: String = "") -> int:
 	if not key.is_empty() and state.keys.has(key): return state.keys[key]
 	var actor: Dictionary = {}
 	if profiles.has(faction_id):
@@ -13,7 +13,7 @@ func record(game: RefCounted, kind: String, summary: String, faction_id: String 
 		actor = {"id":faction_id,"name":f.name,"government":f.government,"philosophy":f.philosophy,"speaker":profiles[faction_id].speaker,"species":profiles[faction_id].species}
 	var id: int = state.next_id
 	state.next_id += 1
-	state.events.append({"id":id,"time":int(game.field.state.time),"kind":kind,"location":game.field.state.planet_id,"summary":summary,"actor":actor,"outcome":outcome.duplicate(true),"cause":cause})
+	state.events.append({"id":id,"time":int(game.field.state.time),"kind":kind,"location":game.field.state.planet_id if event_location.is_empty() else event_location,"summary":summary,"actor":actor,"outcome":outcome.duplicate(true),"cause":cause})
 	if not key.is_empty(): state.keys[key] = id
 	return id
 

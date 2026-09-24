@@ -1,0 +1,22 @@
+{
+  "species":{
+    "moss_lantern":{"name":"Moss lantern","role":"small","home":"morrow","color":"93c49c","shape":0},
+    "ribbon_bush":{"name":"Ribbon bush","role":"medium","home":"morrow","color":"bca0cf","shape":1},
+    "hollow_crown":{"name":"Hollow crown","role":"large","home":"morrow","color":"97bac1","shape":2},
+    "pocket_manta":{"name":"Pocket manta","role":"herbivore","home":"morrow","color":"e0ba99","shape":0},
+    "button_strider":{"name":"Button strider","role":"herbivore","home":"morrow","color":"a9bc84","shape":1},
+    "veil_maw":{"name":"Veil maw","role":"predator","home":"morrow","color":"c69daa","shape":2},
+    "glass_moss":{"name":"Glass moss","role":"small","home":"s1p0","color":"a1d9d1","shape":1},
+    "chime_reed":{"name":"Chime reed","role":"medium","home":"s1p0","color":"a4b5df","shape":2},
+    "sleeper_tree":{"name":"Sleeper tree","role":"large","home":"s1p0","color":"bcaccf","shape":0},
+    "snow_bell":{"name":"Snow bell","role":"herbivore","home":"s1p0","color":"d3b9db","shape":2},
+    "velvet_skate":{"name":"Velvet skate","role":"herbivore","home":"s1p0","color":"9bc7d0","shape":0},
+    "lantern_jaw":{"name":"Lantern jaw","role":"predator","home":"s1p0","color":"b9cf9b","shape":1},
+    "ember_button":{"name":"Ember button","role":"small","home":"s2p0","color":"dbad88","shape":2},
+    "sail_thistle":{"name":"Sail thistle","role":"medium","home":"s2p0","color":"b7bc87","shape":0},
+    "cup_spire":{"name":"Cup spire","role":"large","home":"s2p0","color":"cdaa93","shape":1},
+    "dune_hopper":{"name":"Dune hopper","role":"herbivore","home":"s2p0","color":"d9bd8b","shape":1},
+    "sun_kite":{"name":"Sun kite","role":"herbivore","home":"s2p0","color":"bfc89f","shape":2},
+    "hush_beak":{"name":"Hush beak","role":"predator","home":"s2p0","color":"b7a0c8","shape":0}
+  }
+}

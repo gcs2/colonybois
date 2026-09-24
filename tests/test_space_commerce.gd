@@ -114,7 +114,7 @@ func run() -> void:
 			export_found = true; button.pressed.emit(); break
 	check(export_found and scene.campaign.commerce.quantity() == 4,"Actual dock button loads selected bulk quantity")
 	scene._refresh_ui()
-	check("Cargo 4/8" in scene.stats.text and "Specimens 0/2" in scene.stats.text,"HUD distinguishes freight capacity from specimen cradles")
+	check("Cargo 4/8" in scene.stats.text and "Specimens 0/12" in scene.stats.text,"HUD distinguishes freight capacity from the expedition specimen hold")
 	scene._show_popup("cargo"); await process_frame
 	check(scene.popup_body.get_combined_minimum_size().x < 555,"Inventory remains within its supported panel width")
 	scene._show_popup("badges"); await process_frame

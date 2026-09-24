@@ -103,7 +103,7 @@ static func yield_for(planet: String, item: String, game: RefCounted = null) -> 
 	var climate: String = Geography.definition(planet).archetype
 	var output: int = 2 if (climate == "frozen" and item in ["water","alloy"]) or (climate == "arid" and item == "glass") else 1
 	if game != null and game.climate.state.worlds.has(planet):
-		var tier: int = game.climate.score(game.climate.world(planet))
+		var tier: int = mini(game.climate.score(game.climate.world(planet)),game.biosphere.complete_tier(planet))
 		return 0 if tier == 0 else output+maxi(0,tier-1)
 	return output
 

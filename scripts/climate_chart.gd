@@ -1,10 +1,14 @@
 extends Control
+signal ecosystem_requested
 ## Read-only instrument; climate commands remain on mouse-selected ship tools.
 var values: Dictionary = {"temperature":50.0,"atmosphere":50.0,"project":{}}
 var tier: int = 3
 var font: Font = ThemeDB.fallback_font
 func _ready() -> void:
 	custom_minimum_size = Vector2(266,266); mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var button := Button.new(); button.position = Vector2(224,228); button.size = Vector2(34,34)
+	button.icon = preload("res://assets/ui/flight/category_life.svg"); button.tooltip_text = "Planet ecosystem · species slots and climate stability"
+	button.add_theme_constant_override("icon_max_width",26); button.pressed.connect(func() -> void: ecosystem_requested.emit()); add_child(button)
 func present(current: Dictionary, score: int) -> void:
 	values = current; tier = score; queue_redraw()
 func _draw() -> void:
@@ -20,5 +24,5 @@ func _draw() -> void:
 	draw_arc(marker,8,0,TAU,24,Color("e9efe5"),1,true)
 	draw_string(font,Vector2(12,20),"T%d CLIMATE" % tier,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("e9efe5"))
 	draw_string(font,Vector2(145,20),"ATMOSPHERE ↑",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("9bb9df"))
-	draw_string(font,Vector2(35,249),"COLD     TEMPERATURE     HOT",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("d5baa3"))
+	draw_string(font,Vector2(18,249),"COLD   TEMPERATURE   HOT",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("d5baa3"))
 	if not values.project.is_empty(): draw_string(font,Vector2(178,263),"%d s" % values.project.remaining,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("f3cf83"))
