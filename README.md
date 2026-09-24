@@ -1,5 +1,7 @@
 # Frontier Worlds
 
+**System navigation / J:** zoom outward from orbit to see the star and its actual planets. Hover for a quote and click a destination to spend energy and travel; mouse wheel/right-drag and arrows/numpad also work. Zoom farther out to the sector; Escape pauses an active journey for saving. The local terrain chart remains surface-only. [Controls, verified behavior and limits](docs/SYSTEM_NAVIGATION.md).
+
 **Specimen expeditions:** scan a visible lifeform, switch to the tractor and click to collect. Open Inventory → Specimens, choose a carried species and click a surface habitat to release it. Plants stabilize climate; complete food chains improve development. Introductions, habitat loss and chosen sites persist. [Controls, rules and limitations](docs/PLANET_BIOSPHERE.md).
 
 **Planet manipulation:** survey a foreign world, buy climate equipment or finite supplies at a dock, then select an Environment icon and click the globe or terrain. Independent temperature/atmosphere pulses alter appearance, outpost output, utilities, growth capacity and diplomatic relations. Plants collected on other worlds can now stabilize climate tiers; complete food chains support further development. [Rules, verification and remaining work](docs/PLANET_CLIMATE.md).

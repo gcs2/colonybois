@@ -1,5 +1,15 @@
 # Resume here
 
+## System navigation — latest checkpoint
+
+Read [SYSTEM_NAVIGATION.md](SYSTEM_NAVIGATION.md). J or outward orbital zoom now opens the current star and its actual planetary destinations. Mouse destination clicks use the shared travel cost/timer; the marker, energy and progress read that same journey. Known stars in the sector offer View system, and scale controls support arrows/numpad. Real survey/knowledge gates, shared climate globes and surface-only local charts remain intact. Escape/menu guards immediately block departure; restored local travel returns to the correct view. Snapshot v13 is unchanged.
+
+Validation: the final full suite passed **1,211 assertions plus UI checks**, including 41 system checks. Actual 1080p/1440p overview, selection, transit and sector captures were inspected. Corrected caption overlap, undersized icons and false paused transit feedback. This is schematic system navigation, not orbital physics, seamless traversal or native/player presentation approval.
+
+Playable build: **build/versions/20260923-195000/FrontierWorlds.exe** through Play.cmd. Exported-pack flight startup smoke passed.
+
+Next: **P01 progression breadth and master-rank/shop integration**, using the audited reference inventory. Tie the growing set of actual exploration, trade, diplomacy, settlement, collection, terraforming and combat outcomes into persistent badges and visible useful unlocks. Check source conflicts before claiming exact reference thresholds. Preserve alternate peaceful paths and avoid repeat-action farming. Continue weapon/support/world-manipulation families afterward; don't expand the ecology corpus or spend another checkpoint solely reskinning navigation. Native flight/HUD/audio gates remain open.
+
 ## Specimen expeditions and ecosystem stability — latest checkpoint
 
 Read [PLANET_BIOSPHERE.md](PLANET_BIOSPHERE.md). Eighteen original role-covering species now connect scanning, paid tractor collection, a twelve-unit hold and mouse-selected release sites across the three landable worlds. Three plant sizes stabilize each climate ring; two herbivores and a predator complete that ecological tier and unlock the next. Effective ecology bounds real colony capacity and output. Thirty seconds of sustained unsuitable climate removes unsupported life, warns in the HUD and records the actual world in the chronicle. Shared-clock local populations recover within a four-specimen cap. Snapshot v13 validates and preserves cargo, identities, slots, placements, stress and unique milestones.

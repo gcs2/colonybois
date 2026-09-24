@@ -2,6 +2,7 @@ extends PanelContainer
 ## Read-only navigation presentation. The campaign validates and executes travel.
 signal close_requested
 signal travel_requested(planet: String)
+signal system_requested(system: String)
 const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Session = preload("res://scripts/expedition_session.gd")
@@ -15,6 +16,7 @@ var details: Label
 var status: Label
 var travel: Button
 var close: Button
+var inspect_system: Button
 var progress: ProgressBar
 
 class StarGraph extends Control:
@@ -117,6 +119,8 @@ func _ready() -> void:
 	body.add_child(side)
 	worlds = VBoxContainer.new()
 	side.add_child(worlds)
+	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
+	UI.instrument(inspect_system,"system_view",UI.NAV); side.add_child(inspect_system)
 	details = label("")
 	details.custom_minimum_size = Vector2(490,100)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -162,13 +166,15 @@ func refresh() -> void:
 	var offer: Dictionary = campaign.quote(selected_planet)
 	var known_system: Dictionary = campaign.sector.system_by_id(selected_system)
 	var known: bool = known_system.visited or known_system.get("charted",false)
+	inspect_system.disabled = not known or campaign.traveling()
+	inspect_system.tooltip_text = "View the known star and planetary destinations" if known else "Visit or obtain a chart before inspecting this system."
 	var definition: Dictionary = Geography.definition(selected_planet)
 	details.text = (definition.name+" · "+definition.archetype.capitalize()+"\n"+("Landing site available" if not definition.sites.is_empty() else "Orbital visit · surface not available in this build")) if known else "Uncharted system. Arrival reveals its orbital bodies; individual planetary surveys remain separate."
 	travel.text = "Depart · %d energy · %d seconds" % [offer.energy,offer.seconds]
 	travel.disabled = not offer.reason.is_empty()
 	UI.instrument(travel,"ascend",UI.GOLD)
 	travel.tooltip_text = offer.reason if travel.disabled else "Spend drive energy and begin the journey. Time continues during travel."
-	status.text = offer.reason if travel.disabled else "Energy after arrival: %d / 100. Reserve fuel or buy recharge away from home." % (campaign.field.state.energy-offer.energy)
+	status.text = offer.reason if travel.disabled else "Energy after departure: %d / %d. Reserve fuel or buy recharge away from home." % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
 	for item: Node in worlds.get_children():
 		item.disabled = campaign.traveling()
 		UI.instrument(item,"planet_map",UI.NAV,item.get_meta("planet","") == selected_planet)

@@ -5,6 +5,7 @@ var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
 const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
+var system_map: PanelContainer
 var rendered_planet: String = "morrow"
 var world_definition: Dictionary = Geography.definition()
 var changing_planet: bool = false
@@ -252,7 +253,7 @@ func _ready() -> void:
 	_update_camera(1.0)
 	_refresh_ui()
 	get_tree().auto_accept_quit = false
-	if campaign != null and campaign.traveling(): _toggle_sector_map()
+	if campaign != null and campaign.traveling(): _show_travel_view()
 	if persistence_blocked:
 		paused = true
 		_toast("Save could not be restored. Saving disabled to protect your progress: "+error_string(startup_error))
@@ -654,6 +655,13 @@ func _make_ui() -> void:
 	root.add_child(sector_map)
 	sector_map.close_requested.connect(func() -> void: sector_map.hide(); audio.play("ui_close"))
 	sector_map.travel_requested.connect(_launch_journey)
+	sector_map.system_requested.connect(_open_system_view)
+	system_map = preload("res://scripts/system_chart.gd").new(); root.add_child(system_map)
+	system_map.close_requested.connect(_close_system_view)
+	system_map.orbit_requested.connect(_close_system_view)
+	system_map.sector_requested.connect(_toggle_sector_map)
+	system_map.travel_requested.connect(_launch_journey)
+	system_map.ui_cue.connect(func(cue: String) -> void: audio.play(cue))
 	_select_tool("scan")
 
 func _physics_process(delta: float) -> void:
@@ -756,6 +764,7 @@ func _process(delta: float) -> void:
 				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
 				return
 			if sector_map.visible: sector_map.refresh()
+			if system_map.visible: system_map.refresh()
 			if campaign != null: campaign.fleet.prepare(campaign,ship.position)
 			var escorts: Array = campaign.fleet.positions(campaign) if campaign != null else []
 			var attack: String = model.guardian_step(ship.position,escorts) if pulse != "tow" and not (campaign != null and campaign.traveling()) else ""
@@ -856,7 +865,7 @@ func _zoom_camera(steps: float) -> void:
 			_begin_landing()
 			zoom_descent = true
 	elif orbital and camera_distance_target >= ORBIT_ZOOM_MAX and steps > 0:
-		_toggle_sector_map()
+		_toggle_system_view()
 
 func _update_flight_effects(delta: float) -> void:
 	var stopped: bool = paused or _inspection_open()
@@ -961,6 +970,7 @@ func _hud_action(action: String) -> void:
 		"load": _load()
 		"atlas": _toggle_planet_map()
 		"sector": _toggle_sector_map()
+		"system_view": _toggle_system_view()
 		"departure": _departure()
 		"use":
 			if not paused and not _inspection_open():
@@ -1257,6 +1267,17 @@ func _operate(delta: float) -> void:
 		if error.is_empty(): effects.confirm(end,tool)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if system_map != null and system_map.visible and not popup.visible:
+		if event is InputEventKey and event.pressed and not event.echo:
+			match event.physical_keycode:
+				KEY_ESCAPE: _escape_menu()
+				KEY_J: _toggle_system_view()
+				KEY_G: _toggle_sector_map()
+				KEY_SPACE: _toggle_pause()
+				KEY_F5: _save()
+				KEY_F9: _load()
+				_: system_map.key(event.physical_keycode)
+		return
 	if sector_map != null and sector_map.visible and not popup.visible:
 		if event is InputEventKey and event.pressed and not event.echo:
 			match event.physical_keycode:
@@ -1282,6 +1303,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		match event.physical_keycode:
 			KEY_M: _toggle_planet_map()
 			KEY_G: _toggle_sector_map()
+			KEY_J: _toggle_system_view()
 			KEY_I: _toggle_drawer("cargo")
 			KEY_K: _toggle_drawer("systems")
 			KEY_Y: _toggle_drawer("contact")
@@ -1563,7 +1585,7 @@ func _refresh_ui() -> void:
 		var pending: int = campaign.diplomacy.unread().size()
 		hud.navigation_actions[1].tooltip_text = "%d incoming transmissions · Communicate [Y]" % pending if pending > 0 else "Communicate · known civilizations and local services [Y]"
 		hud.navigation_actions[1].modulate = Color("ffe9ac") if pending > 0 else Color.WHITE
-	hud.paused_badge.text = ("GAME PAUSED" if popup.visible and popup_kind == "menu" else "INSPECTION PAUSED") if _inspection_open() else ("FLIGHT PAUSED" if paused else "")
+	hud.paused_badge.text = "GAME PAUSED" if popup.visible and popup_kind == "menu" else "FLIGHT PAUSED" if paused else "INSPECTION PAUSED" if popup.visible else "IN TRANSIT" if campaign != null and campaign.traveling() else "INSPECTION PAUSED" if _inspection_open() else ""
 	hud.navigation.orbital = orbital
 	var service_at: Vector3 = Model.service_position("orbit_tender" if orbital else "basin_port")
 	hud.navigation.service_at = Vector2(service_at.x,service_at.z)
@@ -1674,6 +1696,11 @@ func _refresh_ui() -> void:
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
 	if biosphere_view != null: biosphere_view.refresh_hud()
+	if system_map != null:
+		system_map.locked = paused or popup.visible
+		if system_map.visible: system_map.refresh()
+	var local_view: bool = not orbital and not (system_map != null and system_map.visible) and not (sector_map != null and sector_map.visible)
+	hud.navigation.visible = local_view; hud.chart_backing.visible = local_view; hud.chart_heading.visible = local_view
 	_update_guidance()
 
 func _short_reason(reason: String) -> String:
@@ -1734,6 +1761,9 @@ func _escape_menu() -> void:
 	elif sector_map != null and sector_map.visible:
 		if campaign != null and campaign.traveling(): _show_popup("menu")
 		else: sector_map.hide()
+	elif system_map != null and system_map.visible:
+		if campaign != null and campaign.traveling(): _show_popup("menu")
+		else: _close_system_view()
 	elif planet_map.visible:
 		planet_map.hide()
 	else:
@@ -1742,6 +1772,7 @@ func _escape_menu() -> void:
 
 func _close_popup() -> void:
 	popup.hide()
+	system_map.locked = paused
 	menu_return = false
 	audio.save_settings()
 	audio.play("ui_close")
@@ -1759,6 +1790,7 @@ func _inventory_action(action: String, panel: String) -> void:
 
 func _show_popup(kind: String) -> void:
 	_cancel_orders()
+	system_map.locked = true
 	planet_map.hide()
 	popup_kind = kind
 	if kind == "menu": menu_return = false
@@ -1871,11 +1903,12 @@ func _show_popup(kind: String) -> void:
 		_button("Stop recurring deliveries" if model.state.route else "Agree recurring deliveries",func() -> void: _trade(true),popup_body)
 
 func _inspection_open() -> bool:
-	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible)
+	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible) or (system_map != null and system_map.visible)
 
 func _toggle_planet_map() -> void:
 	if campaign != null and campaign.traveling(): return
 	if sector_map != null: sector_map.hide()
+	if system_map != null: system_map.hide()
 	if planet_map.visible:
 		planet_map.hide()
 		audio.play("ui_close")
@@ -2107,8 +2140,8 @@ func _load() -> void:
 		held = false
 		tick_clock = 0
 		if campaign != null:
-			if campaign.traveling(): sector_map.present(campaign)
-			else: sector_map.hide()
+			sector_map.hide(); system_map.hide()
+			if campaign.traveling(): _show_travel_view()
 		if popup.visible: _show_popup(popup_kind)
 		if planet_map.visible:
 			planet_map.hide()
@@ -2282,16 +2315,41 @@ func _toggle_sector_map() -> void:
 	_cancel_orders()
 	popup.hide()
 	planet_map.hide()
+	if system_map != null: system_map.hide()
 	sector_map.present(campaign)
 	audio.play("ui_open")
+	_refresh_ui()
+
+func _show_travel_view() -> void:
+	if campaign.sector.state.flagship.destination == campaign.sector.state.flagship.system: _open_system_view(campaign.sector.state.flagship.system)
+	else: _toggle_sector_map()
+
+func _toggle_system_view() -> void:
+	if campaign == null: _toast("System navigation requires a flight campaign."); return
+	if system_map.visible:
+		if not campaign.traveling(): _close_system_view()
+		return
+	_open_system_view(campaign.sector.state.flagship.system)
+
+func _open_system_view(id: String) -> void:
+	if campaign == null: return
+	if not system_map.present(campaign,id): _toast("Visit or chart this system first."); return
+	_cancel_orders(); popup.hide(); planet_map.hide(); sector_map.hide()
+	system_map.locked = paused; system_map.refresh(); audio.play("ui_open"); _refresh_ui()
+
+func _close_system_view() -> void:
+	if campaign != null and campaign.traveling(): return
+	system_map.hide(); audio.play("ui_close"); _refresh_ui()
 
 func _launch_journey(id: String) -> void:
+	if popup.visible: return
 	if paused: _toast("Resume flight before departing."); return
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
 	var error: String = campaign.begin_travel(id)
 	if not error.is_empty(): _toast(error); audio.play("error"); return
 	_cancel_orders()
 	sector_map.refresh()
+	if system_map.visible: system_map.refresh()
 	audio.play("departure")
 	_save(false)
 
@@ -2791,5 +2849,5 @@ func _reload_destination() -> void:
 		var incoming: String = campaign.diplomacy.unread()[0]
 		next._toast("Incoming transmission · "+str(campaign.sector.faction_by_id(incoming).name)+" · Communicate [Y]")
 		next.audio.play("ui_open")
-	if campaign.traveling(): next._toggle_sector_map()
+	if campaign.traveling(): next._show_travel_view()
 	queue_free()

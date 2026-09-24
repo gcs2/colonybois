@@ -12,6 +12,7 @@ var IDS: Array[String] = Equipment.ids()
 var GROUPS: Dictionary = Palette.GROUPS.duplicate(true)
 var navigation := Navigation.new()
 var sector_button: Button
+var system_button: Button
 var chart_heading: Label
 var chart_backing: ColorRect
 var navigation_backing: ColorRect
@@ -120,6 +121,7 @@ func _build() -> void:
 	navigation_actions.append(symbol_at("zoom_in",Rect2(354,781,58,58),"zoom_in","Zoom in",Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom in · move camera closer"
 	sector_button = symbol_at("systems",Rect2(354,647,58,58),"sector","Sector chart · select a star and orbital destination [G]",Art.GOLD)
+	system_button = symbol_at("system_view",Rect2(287,647,58,58),"system_view","System view · nearby planets [J]",Art.NAV)
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	tool_title = label_at("",Rect2(772,634,516,26),18)
 	tool_spec = label_at("",Rect2(772,661,516,25),12,Art.MUTED)
@@ -328,6 +330,7 @@ func set_orbital_mode(enabled: bool) -> void:
 	chart_backing.visible = not enabled
 	navigation_backing.position.x = 26 if enabled else 282
 	sector_button.position.x = 98 if enabled else 354
+	system_button.position.x = 31 if enabled else 287
 	var positions := [287,354,287,354]
 	for i: int in range(navigation_actions.size()):
 		navigation_actions[i].position.x = positions[i]-(256 if enabled else 0)
