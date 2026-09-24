@@ -1,5 +1,11 @@
 # Resume here
 
+Latest art review: the surface concept's **environment fidelity is endorsed** and preserved in `art/concepts/surface-fidelity-target-20260923.png`. Its HUD and creatures are not approved. The flat galaxy Jump button/card was explicitly rejected. Read [LIVING_RESOURCES_AND_UI_DIRECTIONS.md](LIVING_RESOURCES_AND_UI_DIRECTIONS.md) for three unselected interface alternatives, creature behavior and proposed ingredient/consumable/equipment loops. Keep these proposals distinct from the two-day scope; start wildlife polish with the existing grazer/reed interaction, not a new ecology corpus.
+
+## Latest: achievable visual targets and real galaxy requirement
+
+Read [TWO_DAY_VISUAL_TARGET.md](TWO_DAY_VISUAL_TARGET.md) first. The user corrected the twelve-node sector premise: the target is a full explorable galaxy, discovery fog and actual parsec-limited jumps improved through engine upgrades. Current travel still uses links; this is an open implementation gap. Two imagegen candidates use actual screenshots and deliberately target a couple of days of practical polish. Exact [prompts](VISUAL_TARGET_PROMPTS_20260923.md) are tracked; candidates are local ignored artifacts, not approved or implemented assets. Next correct galaxy positions/range/fog/travel, then polish one existing surface and HUD. Walking, skill trees and factories are later proposals, not additions to this two-day pass. The full-screen build below remains the latest playable build.
+
 ## Full-screen navigation and evening playtest — latest checkpoint
 
 Read [PLAYABILITY_REBUILD.md](PLAYABILITY_REBUILD.md) before continuing. The user rejected the shallow, slow, awkward overall experience and asks for populated worlds, cities, communications, whole procedural planets and full-screen maps. Planet, system and sector now fill the viewport with overlaid controls; the underlying flight HUD hides. Galaxy wheel zoom/right-drag pan work. Escape appears above maps. Fixed the surface-dock approach runtime exception. Save format remains v18; the unfinished optional-guide work was set aside and is not shipped.

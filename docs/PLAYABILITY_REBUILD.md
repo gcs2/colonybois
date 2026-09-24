@@ -1,5 +1,7 @@
 # Space Stage playability and inhabited-world correction
 
+Latest follow-up: [TWO_DAY_VISUAL_TARGET.md](TWO_DAY_VISUAL_TARGET.md) specifies the full galaxy correction and a bounded two-day visual pass. The current twelve-node sector diagram is not the desired galaxy; engine reach must use parsec distances, not links. Imagegen candidates establish an attainable direction, not implemented features. This corrects the navigation priority below.
+
 23 September 2026, evening playtest. Supersedes the next-tool-family production priority. Full Space Stage breadth remains the eventual goal; more shallow systems cannot establish the requested quality.
 
 The user reports clunky UI, stilted combat, cheap sounds, confusing zoom, slow and jumpy navigation, long transit waits and a tiny stage with little beneath it. Explorer recognition was the positive exception. They want big homeworld cities, clear animated guidance, aliens, communications, inhabited worlds and fully explorable procedural planets. Planet, system and galaxy navigation must occupy the screen.

@@ -1,5 +1,9 @@
 # Production task board
 
+**Art acceptance update:** surface concept environment fidelity endorsed; Jump-card interface rejected, replacement direction unselected. [Living resources and UI directions](LIVING_RESOURCES_AND_UI_DIRECTIONS.md) tracks observable creature behavior and proposed consumable/equipment/appliance recipes. These are design work, not implemented content. Full farming or a new species roster does not displace the galaxy/navigation correction.
+
+**Latest direction — galaxy and bounded art pass:** [TWO_DAY_VISUAL_TARGET.md](TWO_DAY_VISUAL_TARGET.md) supersedes the sector assumption and next-step wording below. Full galaxy, fog of discovery and parsec engine range are required; current twelve-node/hop-count navigation does not meet that target. Two-day imagegen candidates are concepts only. First correct galaxy navigation, then one existing surface/HUD polish pass. Proposed walking, specialization and factory systems are later work. No code or build change in this design checkpoint.
+
 **Latest priority override — evening playtest:** follow [PLAYABILITY_REBUILD.md](PLAYABILITY_REBUILD.md). Full-screen planet/system/sector navigation and the surface docking fix are implemented. Responsive travel, a visibly inhabited homeworld, obvious expressive communications, whole-planet exploration, combat feel and approved audio precede more feature-family expansion. The unshipped tutorial was set aside. Earlier checkpoint inventory below is evidence of mechanics, not an acceptable player experience.
 
 Updated 23 September 2026. This is the current work queue, not a list of finished features. Keep it updated at each checkpoint and when user feedback changes priorities. Long-term requirements remain in [SPACE_STAGE_TARGET.md](SPACE_STAGE_TARGET.md); resume instructions remain in [NEXT_SESSION.md](NEXT_SESSION.md).
