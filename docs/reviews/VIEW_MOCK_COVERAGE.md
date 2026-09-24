@@ -57,6 +57,14 @@ The range ellipse and fixture destination share a projected plane; the 2.4 pc ta
 
 Independent critic contact_shop_critic confirmed compact known/unknown summaries, distinguishable hover/selection, legible refusal, fixed HUD placement and corrected glyph/range/single-ship fixtures; selected1440p introduced no observed clipping. Critique found ambiguous energy units, mixed journey balances, an unlabelled departure-centered range and weak star-to-system continuity. Follow-up renders explicitly label the separate local journey, energy available/after departure and departure reach; the intermediate star is now anchored at the former galaxy target with a collapsed name header. Those follow-up corrections rendered successfully but have not received another independent visual verdict. Flat panel materials and actual transition motion remain unresolved; no complete family coverage is awarded.
 
+### Campaign-backed navigation follow-up
+
+The eight-state arithmetic-only fixture above is superseded by twelve states rendered at1080p/1440p. `tests/navigation_review_cases.gd` creates isolated actual campaigns, obtains quotes, attempts departure and records energy before/after; it never reads or writes player saves. Added states are embargo, active survey, atmosphere and defense-field refusal. Known-world rows now come from the campaign rather than invented three-planet content; unknown rows remain concealed. The range projection uses the actual quoted distance/reach.
+
+Assertions verify matching quote/commit reasons for the four ordinary refusal cases, no energy spent on refusals, and actual debits for successful travel. Local travel now follows real arrival: 92→84→81. Defense reproduces the unresolved mismatch (empty quote reason, commit refusal, unchanged92 energy), explicitly marked as an audit defect in its render. These assertions document current behavior; they do not approve that inconsistency. `navigation-evidence.json` includes each campaign result. No production code or export changed. Native input, all failure permutations, full knowledge security, motion and visual acceptance remain open. The schematic still draws illustrative planetary positions and is not the final world renderer.
+
+Independent follow-up critic inspected denied/embargo/survey/atmosphere/defense/system/intermediate1080p and selected1440p: readable without clipping, manifest balances agree, defense defect honestly exposed, star anchor improved. Remaining major gaps are oversized flat quote cards and missing physical context explaining atmosphere/defense escape. Follow-up source removes irrelevant interstellar reach from local quotes and moves the intermediate system label above its star; these minor changes require subsequent motion/composition acceptance. Critic did not grant art or full-state approval.
+
 ## Delivery status
 
 ### Populated surface study, 24 September

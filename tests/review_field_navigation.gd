@@ -1,5 +1,6 @@
 extends SceneTree
-## Composition/state study only. No game state, saves, travel commands or input.
+## Review only: isolated campaign fixtures; no player saves or native input.
+const Cases = preload("res://tests/navigation_review_cases.gd")
 const OUT := "res://artifacts/field-instruments-review/states"
 
 class Study extends Control:
@@ -9,6 +10,7 @@ class Study extends Control:
 	const LIGHT := Color("f0eee1")
 	const GOLD := Color("edc461")
 	var mode := "known"
+	var case: Dictionary={}
 	var icons: Array[Texture2D]=[]
 	func _ready() -> void:
 		for asset: String in ["scan","inventory","category_weapons","comms"]:
@@ -45,7 +47,8 @@ class Study extends Control:
 		label(Vector2(655,35),"NAVIGATION COMPOSITION STUDY · SCHEMATIC WORLD",16,Color("96aaa6"))
 		var target:=Vector2(1120,450)
 		var origin:=Vector2(730,610)
-		target=origin+Vector2(cos(-0.5)*400,sin(-0.5)*152).rotated(-0.15)
+		var ratio: float=float(case.distance)/maxf(float(case.range),0.01)
+		target=origin+Vector2(cos(-0.5)*500*ratio,sin(-0.5)*190*ratio).rotated(-0.15)
 		if system:
 			var center:=Vector2(800,470)
 			if mode=="intermediate": center=target
@@ -59,10 +62,10 @@ class Study extends Control:
 			draw_circle(center+Vector2(-402,-119)*factor,31*factor,Color("a3a883"))
 			bracket(target,33*factor,GOLD)
 			ship(target+Vector2(60,45) if mode=="arrival" else center+Vector2(70,85))
-			if mode!="intermediate": label(target+Vector2(-30,-46),"Nacre I",21)
+			if mode!="intermediate": label(target+Vector2(-30,-46),case.name,21)
 			else:
-				housing(Rect2(center+Vector2(45,-42),Vector2(148,43)),PAPER)
-				label(center+Vector2(61,-13),"Nacre",23,INK)
+				housing(Rect2(center+Vector2(-70,-80),Vector2(148,43)),PAPER)
+				label(center+Vector2(-54,-51),"Nacre",23,INK)
 		else:
 			orbit(origin,500,Color("6aa698"),2)
 			for i: int in range(28):
@@ -73,23 +76,27 @@ class Study extends Control:
 			if mode!="transit": ship(origin+Vector2(35,-25))
 			if mode in ["selected","denied","transit"]:
 				draw_line(origin,target,GOLD,2,true)
-				label(Vector2(845,501),"2.4 pc",17,GOLD)
+				label(Vector2(845,501),"%.1f pc" % case.distance,17,GOLD)
 			if mode=="transit": ship(origin.lerp(target,0.55))
-			if mode=="transit": label(Vector2(615,842),"Departure reach · 3 pc",17,Color("96aaa6"))
+			if mode=="transit": label(Vector2(615,842),"Departure reach · %.1f pc" % case.range,17,Color("96aaa6"))
 		if mode in ["known","unknown"]:
-			housing(Rect2(1170,408,300,174 if mode=="known" else 95),PAPER)
+			housing(Rect2(1170,408,300,64+case.planets.size()*37 if mode=="known" else 95),PAPER)
 			label(Vector2(1188,439),"Nacre" if mode=="known" else "Uncharted signal",23,INK)
 			if mode=="known":
-				for i: int in range(3):
+				for i: int in range(case.planets.size()):
 					draw_circle(Vector2(1198,468+i*37),7,[Color("8cafb5"),Color("c78f70"),Color("a3a883")][i])
-					label(Vector2(1218,475+i*37),["Nacre I","Nacre II","Nacre III"][i],19,INK)
+					label(Vector2(1218,475+i*37),case.planets[i],19,INK)
 			else: label(Vector2(1188,478),"Worlds not yet charted",18,INK)
-		if mode in ["selected","denied","system"]:
-			housing(Rect2(1170,490,380,150),PAPER)
-			label(Vector2(1188,521),"Nacre I · orbital destination",21,INK)
-			label(Vector2(1188,554),"3 energy · 2 s" if system else "8 energy · 2 s · reach 3 pc",18,INK)
-			label(Vector2(1188,586),"Need 8 energy · dock or use a pack" if mode=="denied" else "Click selected destination to depart",18,Color("943e32") if mode=="denied" else INK)
-			label(Vector2(1188,615),"Energy available: 5/100" if mode=="denied" else ("Energy after departure: 89/100" if system else "Energy after departure: 84/100"),16,INK)
+		if mode in ["selected","denied","system","embargo","survey","atmosphere","defense"]:
+			housing(Rect2(1170,490,560,180),PAPER)
+			label(Vector2(1188,521),case.name+" · orbital destination",21,INK)
+			var cost: String="%d energy · %d s" % [case.quote.energy,case.quote.seconds]
+			if not system: cost+=" · reach %.1f pc" % case.range
+			label(Vector2(1188,554),cost,18,INK)
+			var reason: String=case.commit_reason
+			label(Vector2(1188,586),reason if not reason.is_empty() else "Click selected destination to depart",18,Color("943e32") if not reason.is_empty() else INK)
+			label(Vector2(1188,615),("Energy available: %d/100" % case.before) if not reason.is_empty() else ("Energy after departure: %d/100" % case.after),16,INK)
+			if case.mismatch: label(Vector2(1188,644),"AUDIT: preview omitted this departure restriction",16,Color("943e32"))
 			if system: label(Vector2(32,106),"SEPARATE LOCAL JOURNEY FIXTURE",16,GOLD)
 		if mode in ["transit","arrival"]:
 			housing(Rect2(752,86,416,66),INK)
@@ -102,7 +109,7 @@ class Study extends Control:
 			var box:=Rect2(1340+i*54,981,44,48)
 			housing(box,INK)
 			draw_texture_rect(icons[i],box.grow(-7),false)
-		var energy: int=5 if mode=="denied" else (84 if mode in ["transit","arrival"] else 92)
+		var energy: int=int(case.after if mode in ["transit","arrival"] else case.before)
 		for i: int in range(2):
 			label(Vector2(1590,973+i*42),"HULL  100 / 100" if i==0 else "ENERGY  %d / 100" % energy,15,INK)
 			draw_rect(Rect2(1590,984+i*42,280,8),INK)
@@ -118,19 +125,19 @@ func run() -> void:
 		viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS; viewport.gui_disable_input=true
 		root.add_child(viewport)
 		var study:=Study.new(); viewport.add_child(study)
-		for mode: String in ["known","unknown","selected","denied","intermediate","system","transit","arrival"]:
-			study.mode=mode; study.queue_redraw()
+		for mode: String in ["known","unknown","selected","denied","intermediate","system","transit","arrival","embargo","survey","atmosphere","defense"]:
+			study.mode=mode; study.case=Cases.make(mode); study.queue_redraw()
 			for frame: int in range(3): await process_frame
 			await RenderingServer.frame_post_draw
 			var path: String="%s/navigation-%s-%d.png" % [OUT,mode,resolution.x]
 			var error: Error=viewport.get_texture().get_image().save_png(path)
 			if error!=OK:
 				push_error("Cannot save navigation study: %s" % path); quit(1); return
-			records.append({"state":mode,"resolution":[resolution.x,resolution.y],"image":path})
+			records.append({"state":mode,"resolution":[resolution.x,resolution.y],"image":path,"campaign":study.case})
 		viewport.free()
 	var record:=FileAccess.open(OUT+"/navigation-evidence.json",FileAccess.WRITE)
 	if record==null: quit(1); return
-	var evidence: Dictionary={"kind":"schematic composition study, not playable navigation","limitations":["fixture values, no campaign calls","no input or motion validation","temporary glyphs and schematic world","states are not a continuous voyage"],"records":records}
+	var evidence: Dictionary={"kind":"schematic composition study with isolated campaign commands","limitations":["no input or motion validation","temporary glyphs and schematic world","states are independent fixtures"],"records":records}
 	record.store_string(JSON.stringify(evidence,"\t"))
-	print("Navigation composition study: 16 scripted stills; no input or campaign validation.")
+	print("Navigation composition study: 24 stills; isolated campaign debit/refusal assertions; no native input validation.")
 	quit()
