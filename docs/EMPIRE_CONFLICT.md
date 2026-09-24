@@ -1,6 +1,6 @@
 # Empire hostilities and colony defense
 
-23 September 2026. W01 integrated raid/defense pilot; conquest, territorial surrender and empire destruction remain open. Coloring and sculpting remain skipped.
+23 September 2026. W01 raid/defense checkpoint. The subsequent [territorial checkpoint](TERRITORIAL_COMBAT.md) adds a bounded surrender/capture/destruction pilot and government territorial defeat. Coloring and sculpting remain skipped.
 
 ## Playing this checkpoint
 
@@ -25,6 +25,6 @@ Snapshot v16 validates and restores conflict alongside the field, economy, colon
 
 The complete regression suite passed with the initial 65 conflict checks. The expanded **79-check** conflict suite also passed, including a real paid kit/deployment/construction/freight fixture, offworld port loss, cargo conservation, actual ally recruitment/fire/loss, saved mid-raid state, atomic invalid-save rejection, deterministic continuation, paid repair/peace and real mouse/button wiring. Actual warning, response, combat, weapon and damage screens were captured at 1080p and 1440p using `tools/CaptureConflict.gd`. These verify implementation and layout, not native input feel, balance or AAA presentation acceptance.
 
-This is still missing conquest/surrender, building destruction, war objectives, rival resource-funded fleet production, enemy-vs-enemy wars, allied attack requests, empire extinction and the wider reference weapon/defense catalog. The single-raid cap and fixed warning are scenario staging; no graph-based enemy fleet journey is claimed. The battery is a bounded aggregate installation, not Spore's full turret/Uber Turret behavior. The three faction ships vary hull, color and target priorities; they are not a finished fleet-role roster. Native response-time, economy and combat playtests remain necessary.
+Beyond the subsequent territorial pilot, this is still missing multi-city invasions, war objectives, rival resource-funded fleet production, enemy-vs-enemy wars, allied attack requests, empire extinction and the wider reference weapon/defense catalog. The single-raid cap and fixed warning are scenario staging; no graph-based enemy fleet journey is claimed. The battery is a bounded aggregate installation, not Spore's full turret/Uber Turret behavior. The three faction ships vary hull, color and target priorities; they are not a finished fleet-role roster. Native response-time, economy and combat playtests remain necessary.
 
 Reference research: indexed excerpts from [War](https://spore.fandom.com/wiki/War), [Invasion](https://spore.fandom.com/wiki/Invasion), [Turret](https://spore.fandom.com/wiki/Turret), [Relationship](https://spore.fandom.com/wiki/Relationship) and [Allied Attack](https://spore.fandom.com/wiki/Allied_Attack), checked 23 September 2026, support the links among hostility, colony attacks, defensive installations, paid peace and allied help. This pilot adapts those links; its timings, prices and port-outage rules are original scenario tuning, not verified retail Spore values.

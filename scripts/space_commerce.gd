@@ -24,6 +24,7 @@ func tick_markets(game: RefCounted) -> void:
 	# Bounded aggregate production/consumption; opening a view never replenishes stock.
 	if int(game.sector.state.tick)%4 != 0: return
 	for planet: String in state.markets:
+		if not game.territory.port_reason(game,planet).is_empty(): continue
 		var limits: Dictionary = initial_market(planet)
 		var climate: String = Geography.definition(planet).archetype
 		for item: String in catalog.goods:
@@ -46,18 +47,20 @@ func price(planet: String, item: String, buying: bool, game: RefCounted = null) 
 	var good: Dictionary = catalog.goods[item]
 	var treaty: float = 1.0
 	if game != null:
-		var owner: String = game.sector.system_by_id(game.system_of(planet)).owner
+		var owner: String = game.owner_of(planet)
 		if not owner.is_empty() and owner+":trade" in game.sector.state.agreements: treaty = 0.9 if buying else 1.1
 	return maxi(1,int(ceil(float(good.base)*float(good.factors[Geography.definition(planet).archetype])*(1.2 if buying else 0.8)*treaty)))
 
 func access(game: RefCounted, port: String, at: Vector3) -> String:
+	var destroyed: String = game.territory.port_reason(game,game.field.state.planet_id)
+	if not destroyed.is_empty(): return destroyed
 	var port_damage: String = game.conflict.port_reason(game.field.state.planet_id)
 	if not port_damage.is_empty(): return port_damage
 	if game.traveling(): return "Complete the journey first."
 	var providers: Dictionary = game.field.local_services()
 	if not providers.has(port) or providers[port].mode != game.field.state.flight_mode: return "No dock in reach."
 	if at.distance_to(Field.service_position(port)) > float(providers[port].reach): return "Approach the dock to trade."
-	var owner: String = game.sector.system_by_id(game.sector.state.flagship.system).owner
+	var owner: String = game.owner_of(game.field.state.planet_id)
 	if not owner.is_empty() and game.sector.faction_by_id(owner).get("embargo",false): return "Trade suspended by embargo."
 	return ""
 
@@ -107,7 +110,7 @@ func transact(game: RefCounted, port: String, at: Vector3, item: String, amount:
 			if lot.origin != planet and flow not in state.flows: state.flows.append(flow)
 		state.cargo = state.cargo.filter(func(lot: Dictionary) -> bool: return lot.quantity > 0)
 	game.field.note("commerce_%d" % game.field.state.history.size(),"%s %d %s at %s for %d Marks." % ["Bought" if buying else "Sold",amount,catalog.goods[item].name,Geography.definition(planet).name,total])
-	var owner: String = game.sector.system_by_id(game.system_of(planet)).owner
+	var owner: String = game.owner_of(planet)
 	var agreement_cause: int = game.diplomacy.state.keys.get("pact:"+owner+":trade",0) if owner+":trade" in game.sector.state.agreements else 0
 	game.diplomacy.record(game,"trade","%s %d %s for %d Marks." % ["Bought" if buying else "Sold",amount,catalog.goods[item].name,total],owner,{"item":item,"quantity":amount,"buying":buying,"total":total},agreement_cause)
 	update_badges(game)

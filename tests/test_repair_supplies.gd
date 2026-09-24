@@ -54,6 +54,7 @@ func run() -> void:
 	journey(game,"s1p0")
 	check(game.field.state.repair_packs.repair_pack == 1 and game.field.state.repair_stock.orbit_tender.repair_pack == 2,"Carried supply travels; a new world's stock is separate")
 	game.sector.system_by_id("s1").owner = "consortium"
+	game.sector.state.planets.s1p0.owner = "consortium"
 	var owner: String = "consortium"
 	game.sector.faction_by_id(owner).embargo = true
 	before = game.snapshot()

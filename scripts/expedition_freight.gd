@@ -7,8 +7,9 @@ const DAYS_PER_LINK := 2
 var state: Dictionary = {"routes":{}}
 
 func market_access(game: RefCounted, destination: String) -> String:
+	if not game.territory.port_reason(game,destination).is_empty(): return "Destination colony destroyed."
 	if not game.conflict.port_reason(destination).is_empty(): return "Destination port disabled by raid damage."
-	var owner: String = game.sector.system_by_id(game.system_of(destination)).owner
+	var owner: String = game.owner_of(destination)
 	if owner.is_empty(): return ""
 	var faction: Dictionary = game.sector.faction_by_id(owner)
 	if faction.get("embargo",false): return "Destination market is embargoed."
@@ -108,7 +109,7 @@ func tick(game: RefCounted) -> void:
 					var flow: String = source+">"+route.destination+":"+route.item
 					if sold > 0 and flow not in game.commerce.state.flows: game.commerce.state.flows.append(flow)
 					game.commerce.update_badges(game)
-				var owner: String = game.sector.system_by_id(game.system_of(route.destination)).owner
+				var owner: String = game.owner_of(route.destination)
 				var cause: int = game.diplomacy.state.keys.get("pact:"+owner+":trade",0) if sold > 0 and owner+":trade" in game.sector.state.agreements else 0
 				game.diplomacy.record(game,"trade","Freighter sold %d %s at %s for %d Marks; %d units returning." % [sold,game.commerce.catalog.goods[route.item].name,Geography.definition(route.destination).name,receipts,route.cargo],owner,{"source":source,"destination":route.destination,"item":route.item,"sold":sold,"receipts":receipts,"unsold":route.cargo,"reason":blocked},cause)
 				route.phase = "returning"; route.remaining = route.duration; route.path.reverse()

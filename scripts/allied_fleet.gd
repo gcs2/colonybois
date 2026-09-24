@@ -40,7 +40,7 @@ func reason(game: RefCounted, id: String, action: String, at: Vector3 = Vector3.
 		return "Not enough Marks for repairs." if game.field.marks < repair_cost(id) else ""
 	if action != "recruit": return "Unknown fleet order."
 	if not allied(game,id): return "Requires an active alliance and open relations."
-	if game.field.state.flight_mode != "orbit" or game.sector.system_by_id(game.sector.state.flagship.system).owner != id: return "Request a ship while orbiting in your ally's territory."
+	if game.field.state.flight_mode != "orbit" or game.owner_of(game.field.state.planet_id) != id: return "Request a ship while orbiting in your ally's territory."
 	if ship.get("status") == "active": return "This ally already has a ship in your fleet."
 	if active_ids().size() >= capacity(game): return "No fleet slot available. Earn another Explorer, Merchant or Defender tier."
 	if ship.get("status") == "lost":
@@ -143,6 +143,7 @@ func assist(game: RefCounted, target: String, engaged: bool, ship: Vector3) -> v
 			if target != "guardian" or not game.field.has_guardian() or game.field.state.guardian_disabled: return
 			endpoint = game.field.guardian_position()
 		else:
+			if not game.territory.active_enemy(game,game.field.state.planet_id): return
 			var local: Dictionary = game.combat.world(game.field.state.planet_id)
 			if not local.units.has(target) or local.units[target].hull <= 0: return
 			endpoint = Combat.position(local.units[target].at)

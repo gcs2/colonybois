@@ -23,6 +23,7 @@ func climate_completed(planet: String, tier: int) -> void:
 	if tier > native: state.climate_highs[planet] = maxi(tier,int(state.climate_highs.get(planet,native)))
 func progress(game: RefCounted, badge: String) -> int:
 	match badge:
+		"conqueror": return game.territory.state.captured.size()
 		"captain": return game.signals.completed()
 		"diplomat", "trader":
 			var count: int = 0
@@ -31,8 +32,8 @@ func progress(game: RefCounted, badge: String) -> int:
 			return count
 		"colonist":
 			var count: int = 0
-			for outpost: Dictionary in game.colonies.state.outposts.values():
-				if outpost.online_recorded: count += 1
+			for id: String in game.colonies.state.outposts:
+				if game.colonies.state.outposts[id].online_recorded and id not in game.territory.state.captured: count += 1
 			return count
 		"surveyor":
 			var count: int = 1 if game.field.state.survey_ticks >= game.field.definition().survey_seconds else 0

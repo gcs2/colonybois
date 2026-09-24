@@ -171,7 +171,8 @@
       "requires": {
         "defender": 1,
         "explorer": 1,
-        "colonist": 1
+        "colonist": 1,
+        "conqueror": 1
       }
     },
     "hull_2": {

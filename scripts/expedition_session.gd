@@ -3,7 +3,9 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 16
+const VERSION := 17
+const Territories = preload("res://scripts/territories.gd")
+var territory := Territories.new()
 const Conflict = preload("res://scripts/empire_conflict.gd")
 var conflict := Conflict.new()
 const Signals = preload("res://scripts/space_signals.gd")
@@ -71,6 +73,7 @@ func tick(threat_distance: float = INF) -> String:
 			var faction: Dictionary = sector.faction_by_id(id)
 			if bool(faction.get("embargo",false)) != trade_access[id]:
 				diplomacy.record(self,"diplomacy",str(faction.name)+(" imposed a trade embargo." if faction.embargo else " reopened trade."),id,{"embargo":faction.embargo,"relation":faction.relation,"reason":faction.reason})
+	territory.tick(self)
 	conflict.tick(self)
 	fleet.reconcile(self)
 	return result
@@ -93,6 +96,7 @@ func import_legacy(path: String) -> Error:
 	recognition = Recognition.new()
 	signals = Signals.new()
 	conflict = Conflict.new()
+	territory = Territories.new()
 	colonies = Colonies.new()
 	freight = Freight.new()
 	diplomacy = Diplomacy.new()
@@ -107,7 +111,7 @@ static func newest_save(manual: String, automatic: String) -> String:
 	return automatic if FileAccess.get_modified_time(automatic) > FileAccess.get_modified_time(manual) else manual
 
 func snapshot() -> Dictionary:
-	return {"version":VERSION,"conflict":conflict.state.duplicate(true),"signals":signals.state.duplicate(true),"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
+	return {"version":VERSION,"territory":territory.state.duplicate(true),"conflict":conflict.state.duplicate(true),"signals":signals.state.duplicate(true),"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
 		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
 
 func save_to(path: String) -> Error:
@@ -133,7 +137,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -144,7 +148,7 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_field := Field.new()
 	# Validate owned equipment before hull/energy; a forged capacity cannot admit an overfilled ship.
 	var candidate_commerce := Commerce.new()
-	if source.version >= 3 and candidate_commerce.restore(source.get("commerce"),source.version < 15) != OK: return ERR_INVALID_DATA
+	if source.version >= 3 and candidate_commerce.restore(source.get("commerce"),source.version < 17) != OK: return ERR_INVALID_DATA
 	var candidate_recognition := Recognition.new()
 	if source.version >= 14 and candidate_recognition.restore(source.get("recognition"),candidate_commerce.state.badges) != OK: return ERR_INVALID_DATA
 	candidate_field.installed_upgrades = candidate_commerce.state.upgrades
@@ -175,6 +179,7 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_diplomacy := Diplomacy.new()
 	var candidate_signals := Signals.new()
 	var candidate_conflict := Conflict.new()
+	var candidate_territory := Territories.new()
 	var candidate_combat := SurfaceCombat.new()
 	var candidate_fleet := Fleet.new()
 	var candidate_climate := Climate.new()
@@ -192,6 +197,7 @@ func restore_snapshot(source: Variant) -> Error:
 	if source.version >= 4 and candidate_diplomacy.restore(source.get("diplomacy")) != OK: return ERR_INVALID_DATA
 	if source.version >= 15 and candidate_signals.restore(source.get("signals"),int(candidate_field.state.time),candidate_diplomacy) != OK: return ERR_INVALID_DATA
 	if source.version >= 16 and candidate_conflict.restore(source.get("conflict"),int(candidate_field.state.time),candidate_sector,candidate_diplomacy) != OK: return ERR_INVALID_DATA
+	if source.version >= 17 and candidate_territory.restore(source.get("territory"),int(candidate_field.state.time),candidate_sector,candidate_combat,candidate_colonies,candidate_diplomacy) != OK: return ERR_INVALID_DATA
 	if not candidate_diplomacy.state.events.is_empty() and candidate_diplomacy.state.events.back().time > candidate_field.state.time: return ERR_INVALID_DATA
 	if source.version >= 2:
 		var ship: Dictionary = candidate_sector.state.flagship
@@ -219,6 +225,7 @@ func restore_snapshot(source: Variant) -> Error:
 	diplomacy = candidate_diplomacy
 	signals = candidate_signals
 	conflict = candidate_conflict
+	territory = candidate_territory
 	climate.bind(self)
 	if source.version < 4: diplomacy.record(self,"archive","Detailed chronicle begins here. Earlier activity remains in the expedition log.")
 	if source.version == 1: configure_flagship()
@@ -272,11 +279,15 @@ static func local_id(id: String) -> String:
 func traveling() -> bool:
 	return not str(sector.state.flagship.get("target_planet","")).is_empty()
 
+func owner_of(id: String) -> String:
+	var owner: String = sector.state.planets[Colonies.strategic_id(id)].owner
+	return "" if owner == "player" else owner
+
 func quote(id: String) -> Dictionary:
 	var target: Dictionary = Geography.definition(id)
 	if target.is_empty(): return {"reason":"Unknown destination.","energy":0,"seconds":0,"route":[]}
 	var destination: String = system_of(id)
-	var route: Array = sector.route_between(sector.state.flagship.system,destination,true)
+	var route: Array = sector.route_between(sector.state.flagship.system,destination,true,conflict.at_war(owner_of(id)))
 	var hops: int = maxi(0,route.size()-1)
 	var energy: int = 3 if hops == 0 else hops*8
 	var seconds: int = 6 if hops == 0 else hops*12
@@ -313,7 +324,7 @@ func begin_travel(id: String) -> String:
 
 func advance_travel() -> void:
 	var ship: Dictionary = sector.state.flagship
-	if sector.route_between(ship.system,ship.destination,true).is_empty():
+	if sector.route_between(ship.system,ship.destination,true,conflict.at_war(owner_of(ship.target_planet))).is_empty():
 		field.note("blocked_%d" % field.state.time,"Passage closed. Returned to departure orbit; spent drive energy is not refunded.")
 		ship.target_planet = ""; ship.destination = ""; ship.remaining = 0; ship.route = []
 		return
@@ -334,7 +345,7 @@ func advance_travel() -> void:
 	ship.target_planet = ""; ship.destination = ""; ship.remaining = 0; ship.route = []
 	var system: Dictionary = sector.system_by_id(ship.system)
 	system.visited = true
-	if not str(system.owner).is_empty(): diplomacy.contact(self,system.owner)
+	if not owner_of(target).is_empty(): diplomacy.contact(self,owner_of(target))
 	diplomacy.record(self,"exploration","Reached "+str(Geography.definition(target).name)+".","",{"planet":target},0,"arrival:"+target)
 	field.note("arrival_%d" % field.state.time,"Reached "+Geography.definition(target).name+". Chart its orbit or approach a landing site.")
 

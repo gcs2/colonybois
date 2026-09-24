@@ -8,6 +8,7 @@ var labels: Dictionary = {}
 var missiles: Array[MeshInstance3D] = []
 var zones: Array[MeshInstance3D] = []
 var blasts: Array[MeshInstance3D] = []
+var pennant: MeshInstance3D
 var planet: String
 func material(color: Color, transparent: bool = false) -> StandardMaterial3D:
 	var ink := StandardMaterial3D.new(); ink.albedo_color = color; ink.roughness = 0.85
@@ -26,7 +27,10 @@ func setup(id: String) -> void:
 	for target: String in Combat.profiles(planet):
 		var spec: Dictionary = Combat.profiles(planet)[target]
 		var actor := Node3D.new(); add_child(actor)
-		if spec.kind == "air":
+		if spec.get("civilian",false):
+			var building := preload("res://scripts/colony_structure.gd").new(); actor.add_child(building); building.position.y = -2
+			building.compose(target,spec.color)
+		elif spec.kind == "air":
 			var flyer := Hostile.new(); actor.add_child(flyer)
 			flyer.build({"chase":4,"color":spec.color}); flyer.scale = Vector3.ONE*0.7
 		else:
@@ -36,6 +40,11 @@ func setup(id: String) -> void:
 			for spoke: int in range(3):
 				var at := Vector3(cos(TAU*spoke/3),0,sin(TAU*spoke/3))
 				ball(at*1.7+Vector3(0,-0.8,0),Vector3(0.45,1.15,0.45),material(Color("34464a")),actor)
+		if target == "civic":
+			pennant = MeshInstance3D.new(); var flag := QuadMesh.new(); flag.size = Vector2(1.7,1.0)
+			pennant.mesh = flag; pennant.position = Vector3(1.0,4.8,0)
+			var ink: StandardMaterial3D = material(Color(spec.color)); ink.cull_mode = BaseMaterial3D.CULL_DISABLED
+			pennant.material_override = ink; actor.add_child(pennant)
 		actor.position = Combat.home(planet,target); actors[target] = actor
 		var label := Label3D.new(); label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.position.y = 4; label.font_size = 24; label.pixel_size = 0.025
@@ -77,10 +86,18 @@ func refresh(game: RefCounted, selected: String, fraction: float, delta: float, 
 		var actor: Node3D = actors[id]
 		var at: Vector3 = Combat.position(unit.at)
 		actor.position = actor.position.lerp(at,minf(1,delta*12)) if not stopped else at
-		actor.rotation.z = 0.65 if unit.hull <= 0 else 0.0
+		var civic: bool = Combat.profiles(planet)[id].get("civilian",false)
+		var phase: String = game.territory.world(planet).phase
+		actor.visible = civic or phase not in ["annexed","ruined"] or unit.hull == 0
+		actor.rotation.z = 0.65 if unit.hull <= 0 and not civic else 0.0
+		if id == "civic" and pennant != null:
+			pennant.visible = phase != "ruined"
+			pennant.material_override.albedo_color = Color("f5eedb") if phase == "surrendered" else Color("78d7b8") if phase == "annexed" else Color(Combat.profiles(planet)[id].color)
+		actor.scale.y = 0.2 if civic and (unit.hull <= 0 or phase == "ruined") else 1.0
 		var label: Label3D = labels[id]
 		label.visible = selected == id
 		label.text = ("SALVAGE" if not unit.salvaged else "CLEARED") if unit.hull <= 0 else "%s  %d/%d" % [Combat.profiles(planet)[id].name,unit.hull,Combat.profiles(planet)[id].hull]
+		if civic: label.text = Combat.profiles(planet)[id].name+" · "+("RUINED" if phase == "ruined" or unit.hull == 0 else "SURRENDERED" if phase == "surrendered" else "%d hull" % unit.hull)
 		aims[id].visible = unit.fire_at > game.field.state.time and not stopped
 		aims[id].position = Combat.position(unit.aim)
 		if not stopped and unit.hull > 0:

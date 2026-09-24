@@ -70,6 +70,7 @@ func run() -> void:
 	check(game.field.marks < old_balance and c.state.flows.size() == 3,"Local round trips lose money and cannot farm delivery badges")
 	var owner: Dictionary = game.sector.system_by_id("s1")
 	owner.owner = "consortium"
+	game.sector.state.planets.s1p0.owner = "consortium"
 	game.sector.faction_by_id("consortium")["embargo"] = true
 	before = game.snapshot()
 	check(not c.transact(game,"orbit_tender",orbit,"water",1,true).is_empty() and game.snapshot() == before,"Embargo rejects trade atomically")

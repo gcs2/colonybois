@@ -343,7 +343,7 @@ func tick() -> void:
 	_check_milestones()
 	changed.emit()
 
-func route_between(start: String, end: String, known_only: bool = false) -> Array:
+func route_between(start: String, end: String, known_only: bool = false, hostile_destination: bool = false) -> Array:
 	if system_by_id(start).is_empty() or system_by_id(end).is_empty(): return []
 	var queue: Array = [start]
 	var previous: Dictionary = {start:""}
@@ -361,7 +361,7 @@ func route_between(start: String, end: String, known_only: bool = false) -> Arra
 			if previous.has(next): continue
 			if known_only and not system_by_id(next).visited and not system_by_id(next).get("charted",false) and next != end: continue
 			var owner: String = system_by_id(next).owner
-			if not owner.is_empty() and bool(faction_by_id(owner).get("embargo",false)) and owner+":non_aggression" not in state.agreements: continue
+			if not owner.is_empty() and bool(faction_by_id(owner).get("embargo",false)) and owner+":non_aggression" not in state.agreements and not (hostile_destination and next == end): continue
 			previous[next] = current
 			queue.append(next)
 	return []

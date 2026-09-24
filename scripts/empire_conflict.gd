@@ -22,6 +22,7 @@ func peace_cost(id: String) -> int: return maxi(100,250-nation(id).victories*50)
 func reason(game: RefCounted, id: String, action: String) -> String:
 	if action in ["declare","peace"]:
 		if not data.factions.has(id) or not game.sector.faction_by_id(id).get("contacted",false): return "Establish contact first."
+		if game.territory.eliminated(id): return "This government has no remaining territorial holdings."
 		var n: Dictionary = nation(id)
 		if action == "declare":
 			if n.war: return "Already at war."
@@ -80,7 +81,7 @@ func tick(game: RefCounted) -> void:
 	var now: int = int(game.field.state.time)
 	for id: String in data.factions:
 		var f: Dictionary = game.sector.faction_by_id(id)
-		if not f.get("contacted",false): continue
+		if not f.get("contacted",false) or game.territory.eliminated(id): continue
 		var n: Dictionary = nation(id); state.nations[id] = n
 		if n.war:
 			f.relation = mini(-50,int(f.relation)); f.embargo = true

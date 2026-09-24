@@ -7,6 +7,7 @@ const SectorChart = preload("res://scripts/sector_chart.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
+var territory_panel: RefCounted
 var conflict_view: Node3D
 var signal_view: Node3D
 var recognition_button: Button
@@ -226,6 +227,7 @@ func _ready() -> void:
 	_build_service_ports()
 	if campaign != null:
 		campaign.climate.bind(campaign)
+		territory_panel = preload("res://scripts/territory_panel.gd").new(); territory_panel.setup(self)
 		conflict_view = preload("res://scripts/conflict_view.gd").new()
 		orbit.add_child(conflict_view); conflict_view.setup(self)
 		signal_view = preload("res://scripts/signal_view.gd").new()
@@ -1425,6 +1427,8 @@ func _pick(screen: Vector2) -> void:
 			var gap: float = camera.unproject_position(at).distance_to(screen)
 			if gap < closest_enemy: closest_enemy = gap; enemy = id
 		if not enemy.is_empty():
+			if SurfaceCombat.profiles(model.state.planet_id)[enemy].get("civilian",false) and (surface_weapon.is_empty() or campaign.territory.world(model.state.planet_id).phase != "held"):
+				_show_popup("territory"); return
 			surface_selected = enemy
 			if not surface_weapon.is_empty() or local.units[enemy].hull <= 0: _order_surface_attack(enemy,SurfaceCombat.position(local.units[enemy].at))
 			else: _toast("Hostile surface contact · select a weapon to engage")
@@ -1822,6 +1826,7 @@ func _escape_menu() -> void:
 		_show_popup("menu")
 
 func _close_popup() -> void:
+	if territory_panel != null: territory_panel.confirm_refusal = false
 	popup.hide()
 	system_map.locked = paused
 	menu_return = false
@@ -1855,7 +1860,7 @@ func _show_popup(kind: String) -> void:
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
 	popup.size = Vector2(555,660 if kind in ["service","contact","freight"] and campaign != null else 595)
-	if kind in ["contact","signals","conflict"] and campaign != null:
+	if kind in ["contact","signals","conflict","territory"] and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
@@ -1867,6 +1872,7 @@ func _show_popup(kind: String) -> void:
 	titles.fleet = "ALLIED FLEET"
 	titles.signals = "ORBITAL SIGNALS"
 	titles.conflict = "COLONY DEFENSE"
+	titles.territory = "COLONY TERMS"
 	titles.biosphere = "PLANET ECOSYSTEM"
 	var title: Label = _label(titles.get(kind,"EXPEDITION"),22)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1882,6 +1888,8 @@ func _show_popup(kind: String) -> void:
 		_button("Controls",_menu_page.bind("controls"),popup_body)
 		_button("Audio settings",_menu_page.bind("audio"),popup_body)
 		_button("Return to title",_exit_encounter,popup_body)
+	elif kind == "territory" and territory_panel != null:
+		territory_panel.build()
 	elif kind == "conflict" and conflict_view != null:
 		conflict_view.build_panel()
 	elif kind == "signals" and signal_view != null:
@@ -2536,7 +2544,7 @@ func _build_contact_panel() -> void:
 	var known: Array = []
 	for f: Dictionary in campaign.sector.state.factions:
 		if f.get("contacted",false): known.append(f.id)
-	var local: String = campaign.sector.system_by_id(campaign.sector.state.flagship.system).owner
+	var local: String = campaign.owner_of(model.state.planet_id)
 	if contacted_faction not in known: contacted_faction = local if local in known else str(known[0]) if not known.is_empty() else ""
 	var roster := HBoxContainer.new()
 	popup_body.add_child(roster)
@@ -2811,6 +2819,9 @@ func _update_outpost_visual() -> void:
 			kit_marker.material_override.albedo_color = Color("a4ddb1") if valid else Color("ed8a74")
 		else: kit_marker.visible = false
 	var id: String = campaign.colonies.strategic_id(model.state.planet_id)
+	if campaign.territory.catalog.has(id) and campaign.territory.world(id).phase == "annexed":
+		if outpost_visual != null: outpost_visual.queue_free(); outpost_visual = null
+		return
 	if not campaign.colonies.state.outposts.has(id):
 		if outpost_visual != null: outpost_visual.queue_free(); outpost_visual = null
 		outpost_signature = ""

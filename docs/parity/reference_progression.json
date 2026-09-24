@@ -31,7 +31,7 @@
       "name": "Conqueror",
       "tiers": 5,
       "decision": "retain",
-      "mapping": null
+      "mapping": "scripts/territories.gd:distinct accepted surrenders; original scenario thresholds and paid hull alternate; only tiers 1–2 reachable"
     },
     {
       "id": "warmonger",

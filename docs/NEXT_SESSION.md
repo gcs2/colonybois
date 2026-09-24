@@ -1,5 +1,16 @@
 # Resume here
 
+## Territorial combat — latest checkpoint
+
+Read [TERRITORIAL_COMBAT.md](TERRITORIAL_COMBAT.md). Six alien frontier settlements now support actual surface weapon/guard combat, surrender, capture versus ruins, per-planet ownership, surviving production and finite stock transfer, paid reconstruction, government territorial defeat and Conqueror recognition. The three-player-colony cap remains; larger multi-city invasions and strategic war economies remain open. Snapshot v17 preserves the results and migrates v16 without invented conquests.
+
+Verification: full regression suite passed with 60 territorial checks, followed by the expanded **72-check** suite and 49 colony checks. Added actual paid reconstruction, all six capture/save footprints and deterministic loaded continuation. Actual settlement, surrender, annexation and ruin renders reviewed at 1080p/1440p. Exported-pack flight startup smoke passed. Native input, combat balance and AAA presentation acceptance remain open.
+
+Playable build: **build/versions/20260923-215556/FrontierWorlds.exe** through Play.cmd.
+
+Next: continue **C01/F01 remaining spaceship equipment and support breadth**, with a bounded, consequential weapon/support interaction tied to actual enemies, shop eligibility, inventory, energy and the existing combat model. Consult the reference inventory before choosing the family. Keep native flight/art/audio gates visible; do not claim the remaining military strategy or wider content is complete. Coloring/sculpting remain excluded, further planet modification deferred, and ecology corpus expansion out of scope.
+
+
 ## Empire hostilities and colony defense — latest checkpoint
 
 Read [EMPIRE_CONFLICT.md](EMPIRE_CONFLICT.md). W01 now connects hostile warnings and explicit war to treaty/escort loss, embargo/transit, a visible warned orbital raider, real mouse weapons/allied losses, paid finite batteries, persistent port damage, production/freight disruption and negotiated peace/truces. Distinct defended colonies count once toward Defender. Snapshot v16 owns the state and preserves older campaigns without invented war. Physical ports share actual service positions and the asset spec; visuals/audio remain provisional.

@@ -44,6 +44,7 @@ func reason(game: RefCounted, id: String, action: String) -> String:
 	if not profiles.has(id) or not game.sector.faction_by_id(id).get("contacted",false): return "Make first contact in their territory."
 	if action not in ACTIONS: return "Unknown diplomatic action."
 	var f: Dictionary = game.sector.faction_by_id(id)
+	if game.territory.eliminated(id): return "This government has no remaining territorial holdings."
 	if game.conflict.at_war(id): return "Negotiate peace through Colony defense before signing treaties or exchanging gifts."
 	if action.begins_with("cancel_"):
 		return "" if id+":"+action.trim_prefix("cancel_") in game.sector.state.agreements else "No such agreement is active."

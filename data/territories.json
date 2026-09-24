@@ -1,0 +1,8 @@
+{
+  "s6p0":{"owner":"directorate","name":"Veyr Gate","goods":"alloy","color":"ce9278"},
+  "s7p0":{"owner":"consortium","name":"Orin Exchange","goods":"water","color":"c6b783"},
+  "s7p1":{"owner":"consortium","name":"Orin Foundry","goods":"glass","color":"c6b783"},
+  "s8p0":{"owner":"commune","name":"Reedhaven","goods":"glass","color":"91ba9d"},
+  "s8p1":{"owner":"commune","name":"Quiet Wells","goods":"alloy","color":"91ba9d"},
+  "s8p2":{"owner":"commune","name":"Canopy Anchorage","goods":"water","color":"91ba9d"}
+}

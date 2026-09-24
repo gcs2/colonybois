@@ -95,6 +95,8 @@ func install(game: RefCounted, id: String, item: String) -> String:
 	game.sector.state.colonies[id].materials -= 20
 	game.sector.state.colonies[id].supplies -= 10
 	state.outposts[id].module = item
+	if game.territory.catalog.has(id) and game.territory.world(id).phase == "annexed":
+		game.combat.state.worlds[id].units.industry.hull = float(game.combat.profiles(id).industry.hull)
 	state.outposts[id].status = "Export facility commissioned"
 	game.diplomacy.record(game,"colonies","Commissioned "+str(game.commerce.catalog.goods[item].name)+" production.","",{"planet":id,"item":item,"cost":60})
 	return ""
@@ -115,6 +117,7 @@ func tick(game: RefCounted) -> void:
 			continue
 		if not outpost.online_recorded:
 			outpost.online_recorded = true
+			if game.territory.catalog.has(id): game.territory.reconcile_system(game,id)
 			game.diplomacy.record(game,"colonies","Landing hub operational on "+str(game.sector.state.planets[id].name)+".","",{"planet":id},0,"hub:"+id)
 		if not game.conflict.port_reason(id).is_empty(): outpost.status = "Port disabled · repair through Colony defense"; continue
 		var item: String = outpost.module
@@ -160,7 +163,7 @@ func restore(value: Variant, sector: RefCounted, commerce: RefCounted) -> Error:
 	if not value is Dictionary or not value.has_all(["kit_source","outposts"]) or not value.kit_source is String or not value.outposts is Dictionary or value.outposts.size() > 2: return ERR_INVALID_DATA
 	if not value.kit_source.is_empty() and (not sector.state.colonies.has(value.kit_source) or commerce.quantity()+KIT_SPACE > commerce.capacity()): return ERR_INVALID_DATA
 	for id: Variant in value.outposts:
-		if not id is String or id not in ["s1p0","s2p0"] or (not sector.state.colonies.has(id) and not sector.state.settlements.has(id)): return ERR_INVALID_DATA
+		if not id is String or Geography.definition(id).get("sites",[]).is_empty() or id == "morrow" or (not sector.state.colonies.has(id) and not sector.state.settlements.has(id)): return ERR_INVALID_DATA
 		var outpost: Variant = value.outposts[id]
 		if not outpost is Dictionary or not outpost.has_all(["site","module","stock","status","online_recorded"]): return ERR_INVALID_DATA
 		if not outpost.site is Array or outpost.site.size() != 2 or not outpost.module is String or outpost.module not in ["","alloy","water","glass"] or not outpost.status is String or not outpost.online_recorded is bool: return ERR_INVALID_DATA

@@ -1,11 +1,14 @@
 extends RefCounted
 ## Persistent combat records; visual nodes never own damage or projectile outcomes.
+const Territories = preload("res://scripts/territory_catalog.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 static var catalog: Dictionary = {}
 var state: Dictionary = {"worlds":{},"ready":0,"fired":0}
 var impacts: Array = [] # Cosmetic notifications, deliberately excluded from saves.
 static func data() -> Dictionary:
-	if catalog.is_empty(): catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/surface_combat.json"))
+	if catalog.is_empty():
+		catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/surface_combat.json"))
+		for id: String in Territories.catalog: catalog.worlds[id] = Territories.profiles(id)
 	return catalog
 static func profiles(planet: String) -> Dictionary: return data().worlds.get(planet,{})
 static func position(values: Array) -> Vector3: return Vector3(values[0],values[1],values[2])
@@ -22,14 +25,16 @@ func world(planet: String) -> Dictionary: return state.worlds.get(planet,fresh(p
 func cleared() -> int:
 	var count: int = 0
 	for planet: String in state.worlds:
-		for unit: Dictionary in state.worlds[planet].units.values():
-			if unit.hull == 0: count += 1
+		for id: String in state.worlds[planet].units:
+			if state.worlds[planet].units[id].hull == 0 and not profiles(planet)[id].get("civilian",false): count += 1
 	return count
 static func installed(field: RefCounted, weapon: String) -> bool:
 	if not data().weapons.has(weapon): return false
 	var required: String = data().weapons[weapon].upgrade
 	return required.is_empty() or required in field.installed_upgrades
 func reason(game: RefCounted, weapon: String, target: String, point: Vector3, at: Vector3) -> String:
+	var territory_block: String = game.territory.attack_reason(game,game.field.state.planet_id)
+	if not territory_block.is_empty(): return territory_block
 	if game.traveling() or game.field.state.flight_mode != "surface": return "Enter the atmosphere to use this weapon."
 	if not installed(game.field,weapon): return "Purchase this weapon at a dock."
 	if not at.is_finite() or not point.is_finite(): return "Invalid targeting coordinates."
@@ -69,6 +74,7 @@ func _damage(game: RefCounted, planet: String, target: String, amount: float) ->
 	var unit: Dictionary = state.worlds[planet].units[target]
 	if unit.hull <= 0: return
 	unit.hull = maxf(0,float(unit.hull)-amount)
+	game.territory.assess(game,planet)
 	if unit.hull > 0: return
 	unit.fire_at = 0
 	if profiles(planet)[target].kind == "air":
@@ -99,10 +105,14 @@ func step(game: RefCounted, ship: Vector3) -> String:
 	var local: Dictionary = world(planet)
 	state.worlds[planet] = local
 	var event: String = ""
+	if not game.territory.active_enemy(game,planet):
+		for unit: Dictionary in local.units.values(): unit.fire_at = 0
+		return ""
 	for id: String in local.units:
 		var unit: Dictionary = local.units[id]
 		if unit.hull <= 0: continue
 		var spec: Dictionary = profiles(planet)[id]
+		if spec.get("civilian",false): continue
 		var at: Vector3 = position(unit.at)
 		var target: Vector3 = ship
 		for escort: Vector3 in game.fleet.positions(game):
@@ -136,6 +146,7 @@ func salvage(game: RefCounted, target: String, at: Vector3) -> String:
 	var local: Dictionary = world(planet)
 	if not local.units.has(target) or local.units[target].hull > 0: return "Neutralize this target first."
 	var unit: Dictionary = local.units[target]
+	if profiles(planet)[target].get("civilian",false): return "Civil infrastructure is not ship salvage."
 	if unit.salvaged: return "Cargo already recovered."
 	if not at.is_finite() or at.distance_to(position(unit.at)) > 9: return "Approach the wreck within 9 m."
 	if game.commerce.used_space(game) >= game.commerce.capacity(): return "Cargo hold is full."
