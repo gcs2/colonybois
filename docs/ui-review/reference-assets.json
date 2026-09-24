@@ -1,0 +1,545 @@
+{
+  "schema": 1,
+  "purpose": "Reference/review corpus, not training data or production assets",
+  "notice": "Null capture commit means it was not established. Hashes identify pixels, not acceptance.",
+  "records": [
+    {
+      "view": "surface",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-26.png",
+      "bytes": 2402068,
+      "sha256": "f146df32fe3c64546b2b7ef79107e5b373b46a4cb41e1e42eaa44bd6f695f7d4",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual pp. 46\u201347; video 30:00 inspected"
+    },
+    {
+      "view": "surface",
+      "kind": "implementation",
+      "path": "artifacts/scout_surface_95.png",
+      "bytes": 2759133,
+      "sha256": "39e3e7812065626f35adab9c57b8444daa498986cf2c4ed6770dc1b895f0fee4",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "surface",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/01-surface-v1.png",
+      "bytes": 2261488,
+      "sha256": "89aeb59caa063f7a2020da7cebfb74a39a30197aaab9b9e978819a488eac9989",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "combat",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-combat-01h00m20s-full.png",
+      "bytes": 138347,
+      "sha256": "80c6fbb834ff8b4199d5e075535949479b3d6d32640a68939a0260d352b135cc",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=3620s",
+      "context": "Saved browser frame \u00b7 gameplay ~486px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 45/100). Layout reference only."
+    },
+    {
+      "view": "combat",
+      "kind": "implementation",
+      "path": "artifacts/surface_combat_impact_1080.png",
+      "bytes": 2889295,
+      "sha256": "f8761857ee25a464966263ca748d55cf9b5a68d394a1e06829ae7f865b1a91e3",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "orbit",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-26.png",
+      "bytes": 2402068,
+      "sha256": "f146df32fe3c64546b2b7ef79107e5b373b46a4cb41e1e42eaa44bd6f695f7d4",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual controls; inhabited-planet video sample"
+    },
+    {
+      "view": "orbit",
+      "kind": "implementation",
+      "path": "artifacts/scout_orbit_95.png",
+      "bytes": 257154,
+      "sha256": "0b00fefaa57156eb2682738b66dfc2b98e5f4430078693f4e2555370835ec5a8",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "orbit",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/03-orbit-v1.png",
+      "bytes": 2248171,
+      "sha256": "31a887f0b893ea4247903548e4d3d697478dc00c6b50d4b2a47eaa82b976241d",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "system",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-system-02h00m09s-full.png",
+      "bytes": 38357,
+      "sha256": "649575141b79a2b2458833e0d73909bde1337c585a866e26ce4842094e14b79a",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7209s",
+      "context": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+    },
+    {
+      "view": "system",
+      "kind": "implementation",
+      "path": "artifacts/navigation-fullscreen-system-1920.png",
+      "bytes": 196493,
+      "sha256": "6ab60fe5081de0054ca542f83015801e871ea69a940d15c4432130e1b7085956",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "system",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/04-system-v1.png",
+      "bytes": 1721641,
+      "sha256": "1bb5d3791d384c5d1771d86705094994a21238b5b1c480556cd4105af612c84e",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "galaxy",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-galaxy-01h59m59s-full.png",
+      "bytes": 45867,
+      "sha256": "44213724a4028173961cd9c7f67596fc13cbd4d1a6385bfc3ffa4d7c5d2c8218",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7199s",
+      "context": "Saved browser frame \u00b7 gameplay ~467px high \u00b7 legibility L1/3 \u00b7 exact native resolution at capture unlogged; R unknown (upper bound 43/100). Layout reference only."
+    },
+    {
+      "view": "galaxy",
+      "kind": "implementation",
+      "path": "artifacts/galaxy-local-1920.png",
+      "bytes": 228163,
+      "sha256": "d75f314d04778be4eeca70ef95662627d1aaaffa9e35f28ed62e86692f88c2e0",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "galaxy",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/05-galaxy-local-v1.png",
+      "bytes": 1973297,
+      "sha256": "ca7c870e08f8f2f2e4df5a745ebec98f90a68fe7221816db69d77ed9be9b2029",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "galaxy-overview",
+      "kind": "implementation",
+      "path": "artifacts/galaxy-overview-1920.png",
+      "bytes": 246350,
+      "sha256": "03f137d7015ec92a036779ada608392459fa3636dd98cc705a7c3c6c5e481a4b",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "atlas",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-27.png",
+      "bytes": 2472557,
+      "sha256": "dab3e8f583098708ac455ec163715a6fd93d496a758d98929fd95f6187ae05cf",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual pp. 48\u201349; no matching atlas frame yet"
+    },
+    {
+      "view": "atlas",
+      "kind": "implementation",
+      "path": "artifacts/navigation-fullscreen-planet-1920.png",
+      "bytes": 749703,
+      "sha256": "39db15b93c210b519865f0c6c8f61b4917947ca63e00739fc1b56656f741ea40",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "contact",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-contact-02h00m12s-v2-full.png",
+      "bytes": 87359,
+      "sha256": "94c02f29e8a70a16773a34defc6bb2203f68e248c6266ce7c10f59faf3eca3aa",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7212s",
+      "context": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for service labels, recharge quote and treasury \u00b7 full HUD. Audio unreviewed."
+    },
+    {
+      "view": "contact",
+      "kind": "implementation",
+      "path": "artifacts/contact_consortium.png",
+      "bytes": 311876,
+      "sha256": "23460402e0e9cbffd296516af155d76653776923fe96961934f3c176c4d1432a",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "trade",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-shop-02h00m23s-v2-full.png",
+      "bytes": 100077,
+      "sha256": "4f01f42ccea997e85acf0e1edc5b09bddbc56a108ebb95dcc1fbfa589a3fac79",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7223s",
+      "context": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for displayed cargo quantities/prices \u00b7 full HUD. Exact purchases/lock causes not verified."
+    },
+    {
+      "view": "trade",
+      "kind": "implementation",
+      "path": "artifacts/commerce_market.png",
+      "bytes": 1963325,
+      "sha256": "02cece6195c757a0f86a20c93641dd01a3751a35fb6f09f671ffbe6d6cd3ccc8",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "inventory",
+      "kind": "reference",
+      "path": "artifacts/references/spore/video/singularmix-shop-02h00m23s-v2-full.png",
+      "bytes": 100077,
+      "sha256": "4f01f42ccea997e85acf0e1edc5b09bddbc56a108ebb95dcc1fbfa589a3fac79",
+      "resolution": null,
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": "https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7223s",
+      "context": "Verified 1080p decoder \u00b7 captured gameplay ~1440\u00d7810 \u00b7 R75/100 \u00b7 L3/3 for displayed cargo quantities/prices \u00b7 full HUD. Exact purchases/lock causes not verified."
+    },
+    {
+      "view": "inventory",
+      "kind": "implementation",
+      "path": "artifacts/commerce_cargo.png",
+      "bytes": 1990709,
+      "sha256": "060026f344902ec33f6cf9e1efda88dacb0e05e7a2513c000db4c27d8bafd576",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "systems",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-28.png",
+      "bytes": 2591918,
+      "sha256": "aa4324e48f6d9e8dd38bcc97a4c16751ce2a5ebca7e9d01c766ba8de1ba900b7",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual + inspected equipment grid"
+    },
+    {
+      "view": "systems",
+      "kind": "implementation",
+      "path": "artifacts/capacity_systems_1080.png",
+      "bytes": 2002596,
+      "sha256": "8f695196b9d654ab3bb05e592f24acc06708a8b720eef0b0d63afd6c7cf98609",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "badges",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-28.png",
+      "bytes": 2591918,
+      "sha256": "aa4324e48f6d9e8dd38bcc97a4c16751ce2a5ebca7e9d01c766ba8de1ba900b7",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual pp. 50\u201351; extended reward footage pending"
+    },
+    {
+      "view": "badges",
+      "kind": "implementation",
+      "path": "artifacts/progression_case_1080.png",
+      "bytes": 1663780,
+      "sha256": "00325ce611ef9aa598dad0f5aac12a6db3447bc580f98044a00e5907b1700d76",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "chronicle",
+      "kind": "implementation",
+      "path": "artifacts/contact_chronicle.png",
+      "bytes": 383646,
+      "sha256": "b369e82aec67ff9d14be16d498ec46406e2c4c66cd4130bf2a951b5ce159a485",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "colonies",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-27.png",
+      "bytes": 2472557,
+      "sha256": "dab3e8f583098708ac455ec163715a6fd93d496a758d98929fd95f6187ae05cf",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual + observed city-layout video"
+    },
+    {
+      "view": "colonies",
+      "kind": "implementation",
+      "path": "artifacts/colony_colonies.png",
+      "bytes": 1997506,
+      "sha256": "82b895c1068c613ae12ab7bb3fd392fefdc633ee2013523767425a7da6a10a26",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "freight",
+      "kind": "implementation",
+      "path": "artifacts/freight_contract.png",
+      "bytes": 1932816,
+      "sha256": "3cb98f402d8be26d80d73639ef2debc2f00f65500168367bef1776d9df56f839",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "encounters",
+      "kind": "implementation",
+      "path": "artifacts/territory-terms-1920.png",
+      "bytes": 1458283,
+      "sha256": "ad16a5aabb850377dd6ea5eebdc47266d285b5968c34a9ac0159931dd898d4b6",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "ecosystem",
+      "kind": "reference",
+      "path": "artifacts/references/spore/manual-27.png",
+      "bytes": 2472557,
+      "sha256": "dab3e8f583098708ac455ec163715a6fd93d496a758d98929fd95f6187ae05cf",
+      "resolution": [
+        2400,
+        1855
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": "Manual pp. 48\u201349"
+    },
+    {
+      "view": "ecosystem",
+      "kind": "implementation",
+      "path": "artifacts/biosphere_ecosystem_1080.png",
+      "bytes": 2117011,
+      "sha256": "580c7a889b17e7bd5a69326b305d0f76caf6e993c7503c6707be0d1660e8ad11",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "city",
+      "kind": "implementation",
+      "path": "artifacts/09-city-ledger.png",
+      "bytes": 1140264,
+      "sha256": "4ddaece58eeebc3df6f2b8e998015dc1e5d57d3effc955a99e6cef5231966795",
+      "resolution": [
+        1440,
+        810
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "application",
+      "kind": "implementation",
+      "path": "artifacts/navigation-fullscreen-menu-1920.png",
+      "bytes": 121642,
+      "sha256": "70f0d32022d8717e4a9f7a2339322a51f1a2321b0533f0db044746e149ea6a68",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    },
+    {
+      "view": "motion",
+      "kind": "concept",
+      "path": "artifacts/field-instruments-review/23-motion-storyboard-v1.png",
+      "bytes": 2400953,
+      "sha256": "7b2a11e1dad3fbd92f41bbf1ae608d49acdaabe90e7902b01f2f12c780772411",
+      "resolution": [
+        1672,
+        941
+      ],
+      "approval": "not implied by inclusion",
+      "capture_build_commit": null,
+      "source_url": null,
+      "context": null
+    }
+  ],
+  "missing_files": []
+}

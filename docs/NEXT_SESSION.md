@@ -1,6 +1,30 @@
 # Resume here
 
-Latest art review: the surface concept's **environment fidelity is endorsed** and preserved in `art/concepts/surface-fidelity-target-20260923.png`. Its HUD and creatures are not approved. The flat galaxy Jump button/card was explicitly rejected. Read [LIVING_RESOURCES_AND_UI_DIRECTIONS.md](LIVING_RESOURCES_AND_UI_DIRECTIONS.md) for three unselected interface alternatives, creature behavior and proposed ingredient/consumable/equipment loops. Keep these proposals distinct from the two-day scope; start wildlife polish with the existing grazer/reed interaction, not a new ecology corpus.
+## Current verified checkpoint — 24 September
+
+Galaxy implementation is committed and pushed as **aa0ff3bac4974261c3862ba84a749135652b4953**, with the remote branch hash verified. Final checks: 40 galaxy, 67 full-screen navigation and 41 system assertions; separate export and isolated exported-pack flight smoke passed. **Play.cmd** points to **build/versions/20260924-003147/FrontierWorlds.exe**. The user's older running game was not touched. See [GALAXY_NAVIGATION.md](GALAXY_NAVIGATION.md). Approval access is restored; [GALAXY_CHECKPOINT_PENDING.md](GALAXY_CHECKPOINT_PENDING.md) is an interruption/recovery record, not an active blocker.
+
+The new [PRODUCTION_GOAL.md](PRODUCTION_GOAL.md) is active. This remains an unfinished game: generated destinations are mostly orbital-only, the Field Instruments targets are not the playable HUD, and native playability/art/audio acceptance remains open.
+
+## Next priority: reference synthesis and experiential evidence
+
+The user requires actual Spore / actual project / original target comparisons before further independent mock generation. [Paired atlas](ui-review/references.html) covers 20 comparison families with 5 candidate targets and explicit gaps; [VIEW_MOCK_COVERAGE.md](VIEW_MOCK_COVERAGE.md) inventories every required view/state. In-app browser URL policy blocked local HTML preview: do not bypass via localhost or another browser. Static JavaScript syntax and asset indexing pass; rendered board verification remains pending.
+
+[REFERENCE_COVERAGE_METRICS.md](REFERENCE_COVERAGE_METRICS.md) defines an open 61-workflow denominator. Current evidence: **14/61 visually sampled (23%), 3/61 readable (4.9%), 0 full interaction/presentation/listening passes**. This is research coverage, not game completion. The critic's clearer shop/contact frames use 1080p decoding but approximately 1440×810 actual captured gameplay: conservative R75/100, L3/3 for documented labels and values. [SPORE_EXTENDED_VIDEO_EVIDENCE.md](SPORE_EXTENDED_VIDEO_EVIDENCE.md) records exact frames and limits.
+
+Next inspect actual action→feedback→result and failure sequences; cutscenes/launch, alien reactions, badge/promotion and core sequences need staging, timing and personality review. Muted playback and screenshots cannot establish sound or comic delivery. Listening evidence is zero; no callable audio-understanding tool was found. Obtain a supported listening path or human listening review without claiming that playing audio means the agent heard it. Character/creature customization remains outside this pass; the user's enthusiasm is a later possibility, not a new creator implementation order.
+
+[VISUAL_FIDELITY_FEASIBILITY.md](VISUAL_FIDELITY_FEASIBILITY.md) separates Godot capability from the work needed to achieve fidelity. User endorses this direction. Keep the routine HUD compact; enlarge physical tool artwork roughly **40% in AREA / 18% linearly**, not panel shells. Correct surface candidate's parsec label and galaxy candidate's invalid range geometry. No rendering rewrite/migration is approved.
+
+## Art and gameplay reminders
+
+**Field Instruments** is selected: matte ivory, tactile gauges, restrained functional color, recognizable tool artwork. Cute instrument assembly/catches/communicator shutters are original motion direction; keep routine input immediate, boarding skippable and reduced motion available. No shiny copper, rounded icon wells or floating selected-tool captions. The local terrain chart is surface-only.
+
+The approved surface environment is preserved in `art/concepts/surface-fidelity-target-20260923.png`; approval does not automatically include its HUD/creatures. New orbital art is a higher-detail production target, not a two-day guarantee. Mining and lantern-gel-like harvestables should supply most future crafting; kills may reward resources, nonlethal collection is optional. No new food-web corpus or compulsory ecology opening.
+
+Research/candidate PNGs remain local ignored artifacts. Their index, source timestamps, prompts, critique and hashes are preserved in documentation; they are not shipped artwork or proof of finished gameplay.
+
+## Historical checkpoints — newer instructions above supersede their status
 
 ## Latest: achievable visual targets and real galaxy requirement
 
