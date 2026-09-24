@@ -53,6 +53,28 @@ Do not add any other controls, logo, full-width bottom bar or decorative border.
 
 Implementation reconciliation: scripts/flight_palette.gd currently has Main tools / Environment / Weapons / Inventory and an 18-slot page. The mock's five tabs and mixed twelve-item tray are a proposed capacity fixture, not approved category semantics. scripts/encounter_state.gd defines PACK_ENERGY as 50: the mock's 40 must be corrected in any production specification. Survey buoy, mapping drone, probe, binocular sensor and gripper artwork do not establish implemented equipment. Existing scanner/collector/pack/repair/shield behaviors need their real categories, costs and availability mapped before production. Do not create new equipment merely to match the generated picture.
 
+### Isolated inventory state prototype assets
+
+24 September: tests/review_field_inventory.gd renders real Godot controls over an explicitly static concept background. It is not imported by any game scene. Background and supply atlas were generated with the built-in imagegen tool and copied into artifacts/field-instruments-review; the script requires those local files and reports missing assets rather than fabricating a replacement. Existing category/scanner glyphs remain temporary. The generated supply atlas is sampled in equal thirds with AtlasTexture; no raster editor or paid API was used.
+
+Background: `surface-review-background-v1.png`, edited from 01-surface-populated-v3.png. Exact prompt:
+
+```text
+Edit the supplied original Frontier Worlds mock into a clean environment-only background for a separate UI review prototype. Preserve exact camera, ship, pond, relay, bell-shaped grazers, clay/sage palette, stylized real-time fidelity and landscape composition. REMOVE ALL interface elements: all text, all frames and panels, map, currency, tooltip, selection brackets, arrows, reticles, category tabs, inventory slots, gauges and notification. Reconstruct uninterrupted terrain where they used to be. Keep the ship, its physical exhaust and relay's physical light particles. Make foreground rocks/plants readable and sharp for gameplay, not deliberately blurred. No new characters or objects, no other changes. Output only the clean landscape at the same wide aspect ratio.
+```
+
+Supply atlas: `supply-portraits-v1.png`, original three-column image (energy, repair, full repair). Exact prompt:
+
+```text
+Use case: ui-mockup asset sheet. Original Frontier Worlds Field Instruments inventory object portraits. Create a clean horizontal 3-column by1-row texture atlas, wide3:1 aspect, equal cells. Entire background a perfectly uniform solid charcoal #242b2a. No text, numerals, captions, grids, frames, glow clouds, floor, drop shadows outside objects or extra objects. Each single object centered in its own third, same apparent size, occupies about70% cell width/height, clear margins, no overlap. These are real material object portraits rather than line icons, easy to recognize at54pixels.
+LEFT cell: Energy pack. Squat removable power cell with matte bone outer clamps, graphite rectangular body, two chunky gold terminals on top, transparent amber inset with a single clear zigzag energy motif; industrial simple silhouette, no round blue potion bottle.
+MIDDLE cell: Repair pack. Compact sturdy graphite field repair case, matte bone top carry handle and corner guards, a sage inset bearing a simple mechanical wrench motif. No medical red cross.
+RIGHT cell: Full repair pack. Same repair family, slightly taller double-module case with two bone side latches, muted teal/sage inset and a clear double-chevron motif. Distinguishable from middle at small scale without looking like completely unrelated technology.
+Lighting soft three-quarter upperleft, restrained realistic material depth, stylized miniature engineered tools, no copper ornamental border, no rounded UI wells, no cute faces. Consistent camera and materials, high-quality legible game asset sheet. Use accurate centered thirds; each contains only one item.
+```
+
+Captured outputs: states/inventory-{ready,used,empty,full,repair,keyboard,equipped}-{1920,2560}.png; per-state values and limits in states/inventory-evidence.json. These are review artifacts, not proof of 3D-world fidelity, native input, full category capacity or accepted art. The generated source images and renders remain local; code and prompt/review records are tracked.
+
 ## 02-surface-combat
 
 SURFACE COMBAT. Same ship, terrain, instrument placement. One distinct hostile sentry on rocky rise, one hostile small flyer, clearly telegraphed amber ground impact area; player ship evading sideways with short exhaust. Restrained bright impact sparks. Weapons palette expanded in lower right with laser, seeker, shield, repair pack icons; cooling-down slot visibly swept. Hull '62', energy '41'; damage warning near hull, not covering world. Local surface chart lower left with hostile symbols. Hover tooltip 'Shield · 30 energy'. No cinematic explosions hiding targets.

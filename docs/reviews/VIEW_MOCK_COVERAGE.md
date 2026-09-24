@@ -53,6 +53,26 @@ Selection remains incoherent: scanner has mustard upper and green lower corners,
 
 Required state specification before implementation: one persistent equipped-tool treatment; separate hover/focus/pressed/disabled states; tooltip anchored to the actual hovered item without covering adjacent slots; real inventory packs under Inventory; actual category/page capacity; condition panel distinct from local map; immediate resource count/gauge changes on validated use; zero-count and cooldown refusals. Keep candidate evidence separate from runtime proof. No new complete-family count is awarded.
 
+### Deterministic inventory state study
+
+The isolated tests/review_field_inventory.gd prototype now produces seven states at 1920×1080 and 2560×1440 under artifacts/field-instruments-review/states. It uses the real EncounterState pack commands and real catalog descriptions over a generated static landscape. No game scene, save or export was changed. Palette browsing, scanner persistence, chart geometry and hover/focus input are fixtures; this is not a playable HUD implementation.
+
+| State stem | Visible contract | Evidence limit |
+|---|---|---|
+| inventory-ready | Energy 36, two packs, actual 50-energy effect; white hover distinct from amber equipped scanner | Hover assigned by fixture, not native pointer timing |
+| inventory-used | Actual button-command call gives energy 86, one pack, eight-second cooldown | No audiovisual or animation timing review |
+| inventory-empty | Zero packs; visible reason; rejected command preserves energy 36 | Full cargo/specimen inventory not covered |
+| inventory-full | Full energy; rejected command preserves two packs | No dock/recharge coverage implied |
+| inventory-repair | Real repair description and owned count | Inspection only, no repair-use proof |
+| inventory-keyboard | Strong distinct focus; Enter / Space copy | Focus assigned by fixture, not keyboard navigation proof |
+| inventory-equipped | Named scanner tooltip with real reach | Equipped scanner is a fixture, not validated runtime persistence |
+
+Independent contact_shop_critic inspected all six initial 1920 states and several 2560 counterparts, then verified corrected ready/used/empty/keyboard/equipped at 1920 and ready at 2560. The misleading tooltip triangle was removed; fixture cursor, focus text/contrast, communications inset and named scanner context passed that bounded check. Resource values and refusal logic stayed legible. Other 1440p images were generated but not all independently inspected.
+
+Art gates remain: small intricate supply portraits, inconsistent category/scanner/consumable vocabulary, flat ivory material treatment, schematic chart and static concept world. Fixed tooltip positioning is remote from the scanner. Three consumables do not demonstrate 18-slot capacity, working category changes, the full possessions view or its complete state set. User acceptance remains open; no complete-family percentage changes.
+
+Reproduce locally: `.tools/godot/Godot_v4.7.2-stable_win64_console.exe --path . --script tests/review_field_inventory.gd --rendering-method gl_compatibility`. This requires the locally preserved background and supply atlas identified in FIELD_INSTRUMENTS_MOCK_PROMPTS.md. Images remain ignored local artifacts; tracked code/prompts do not constitute an off-device image backup.
+
 ### Base candidates and remaining gates
 
 - Generated candidates: `artifacts/field-instruments-review/01-surface-v1.png`, `03-orbit-v1.png`, `04-system-v1.png`, `05-galaxy-local-v1.png` `23-motion-storyboard-v1.png` and `10-contact-v2.png` (window/choices endorsed; face and dialogue rejected). `10-contact-v3-face.png` is an unapproved face experiment with the same obsolete dialogue.

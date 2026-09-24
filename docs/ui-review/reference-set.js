@@ -14,11 +14,12 @@ const REFERENCE_SET = {
       "sourceImage": "../../artifacts/references/spore/video/surface-1805-v3.png",
       "sourceLabel": "Paused muted surface state at1805.490461s; 2560x1440 raster from1080p decoder (R100). L3 for cited state claims; no control/motion verification.",
       "current": "scout_surface_95.png",
-      "target": "01-surface-populated-v3.png",
+      "target": "states/inventory-ready-1920.png",
       "observation": "Curved landscape, large flora and creatures; visible beam. Lower left shows conditions/food web in this state, not terrain map. Populated specimen/tool tray remains bottom right.",
       "synthesis": "Compact joined instruments and physical tool art, separate local map/conditions states, real categories and finite counts. Preserve world visibility and item-linked tooltips.",
-      "gap": "V3 shrinks HUD and anchors tooltip, but selection/hover colors remain wrong, foreground blur persists, pack says40 versus actual50, and illustrative mixed twelve-slot fixture differs from four real categories and18-slot pages. Dated current capture; no new runtime proof.",
-      "gate": "Ordinary flight, near/far and rotated views retain terrain continuity and recognizable ship, creatures and targets."
+      "gap": "Layout study only: category/scanner art temporary; supply portraits small; material treatment flatter than concept; schematic map. Three consumables do not demonstrate 18-slot capacity. Hover/focus scripted, not native input. Dated actual-game capture at left.",
+      "gate": "Ordinary flight, near/far and rotated views retain terrain continuity and recognizable ship, creatures and targets.",
+      "targetLabel": "Godot review-only inventory mock over a static generated world. Actual pack values; scripted states. Not the playable HUD. Seven state variants are recorded in VIEW_MOCK_COVERAGE.md."
     },
     {
       "id": "combat",

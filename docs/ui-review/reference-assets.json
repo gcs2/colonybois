@@ -33,12 +33,12 @@
     {
       "view": "surface",
       "kind": "concept",
-      "path": "artifacts/field-instruments-review/01-surface-populated-v3.png",
-      "bytes": 2550771,
-      "sha256": "2e57dbe16817150baa831b7c889f3e238352f44d00030457d3a4867a604e42c2",
+      "path": "artifacts/field-instruments-review/states/inventory-ready-1920.png",
+      "bytes": 3407304,
+      "sha256": "03b0e7cf8b80bb08b388358cbc3c430f640a9050cb57a2862df5db60d6e938a0",
       "resolution": [
-        1672,
-        941
+        1920,
+        1080
       ],
       "approval": "not implied by inclusion",
       "capture_build_commit": null,
