@@ -25,6 +25,7 @@ const AlienPortrait = preload("res://scripts/alien_portrait.gd")
 var contacted_faction: String = ""
 var contact_page: String = "agreements"
 var contact_reply: String = ""
+var contact_portrait: AlienPortrait = null
 var contact_accepted: bool = true
 var chronicle_filter: String = "all"
 var chronicle_page: int = 0
@@ -657,7 +658,9 @@ func _make_ui() -> void:
 	popup_body.add_theme_constant_override("separation",12)
 	popup_scroll.add_child(popup_body)
 	popup.visible = false
-	popup.visibility_changed.connect(func() -> void: menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return))
+	popup.visibility_changed.connect(func() -> void:
+		menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return)
+		if not popup.visible: _reset_contact_presentation())
 	planet_map = PlanetMap.new()
 	planet_map.definition = model.definition()
 	root.add_child(planet_map)
@@ -1869,6 +1872,12 @@ func _inventory_action(action: String, panel: String) -> void:
 	_show_popup(panel)
 
 func _show_popup(kind: String) -> void:
+	if kind != "contact" or not popup.visible:
+		_reset_contact_presentation()
+	elif is_instance_valid(contact_portrait):
+		# Keep the actor alive while rebuilding its surrounding controls.
+		contact_portrait.reparent(self)
+		contact_portrait.hide()
 	_cancel_orders(true)
 	if conflict_view != null: conflict_view.button.hide(); conflict_view.alert.hide()
 	if signal_view != null: signal_view.signal_button.hide()
@@ -2561,6 +2570,7 @@ func _build_badges_panel() -> void:
 	popup_body.add_child(panel)
 
 func _contact_select(id: String) -> void:
+	if id != contacted_faction: _reset_contact_presentation()
 	contacted_faction = id
 	contact_reply = ""
 	_show_popup("contact")
@@ -2574,7 +2584,13 @@ func _contact_action(action: String) -> void:
 	audio.play("ui_confirm" if contact_accepted else "error")
 	if contact_accepted: _save(false)
 	_show_popup("contact")
+	if is_instance_valid(contact_portrait): contact_portrait.respond(contact_accepted)
 	_refresh_ui()
+
+func _reset_contact_presentation() -> void:
+	if is_instance_valid(contact_portrait): contact_portrait.queue_free()
+	contact_portrait = null
+	contact_reply = ""
 
 func _build_contact_panel() -> void:
 	var signal_button: Button = _button("Orbital signals · %d open" % campaign.signals.open_ids().size(),_show_popup.bind("signals"),popup_body)
@@ -2600,12 +2616,17 @@ func _build_contact_panel() -> void:
 		var introduction := HBoxContainer.new()
 		introduction.add_theme_constant_override("separation",18)
 		popup_body.add_child(introduction)
-		var portrait := AlienPortrait.new()
-		portrait.custom_minimum_size = Vector2(320,250)
-		portrait.faction_id = contacted_faction
-		portrait.mood = "wary" if f.get("embargo",false) else "pleased" if f.relation >= 40 else "neutral"
-		introduction.add_child(portrait)
-		if not contact_reply.is_empty(): portrait.respond(contact_accepted)
+		if is_instance_valid(contact_portrait) and contact_portrait.faction_id != contacted_faction:
+			_reset_contact_presentation()
+		if not is_instance_valid(contact_portrait):
+			contact_portrait = AlienPortrait.new()
+			contact_portrait.custom_minimum_size = Vector2(320,250)
+			contact_portrait.faction_id = contacted_faction
+			contact_portrait.mood = "wary" if f.get("embargo",false) else "pleased" if f.relation >= 40 else "neutral"
+			introduction.add_child(contact_portrait)
+		else:
+			contact_portrait.reparent(introduction)
+		contact_portrait.show()
 		var dialogue := VBoxContainer.new()
 		dialogue.add_theme_constant_override("separation",14)
 		dialogue.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -11,7 +11,7 @@ Updated 24 September 2026. **This is the only production queue and feature-statu
 
 **Character decision:** modeling, further character images and cast production are deferred. V1/V2 failed the visual gate; neither is rigged, animated, integrated or accepted. The [postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md) owns the diagnosis and the [scope record](art/CHARACTER_SCOPE_OPTIONS.md) owns future options. No style comparison, fish correction or new sculpt pass is currently queued.
 
-**Latest playable checkpoint:** galaxy build `20260924-003147`; see the handoff for its exact commit and validation. Most generated destinations remain orbital-only. Presentation, sound and native fun acceptance are open. This documentation reorganization does not change game feature status.
+**Latest playable checkpoint:** build `20260924-020400` adds the D01 contact lifecycle correction: actor continuity across conversation drawers, command-linked acceptance/refusal and clearing replies on dismissal. Sixteen focused checks pass alongside diplomacy/commerce/HUD/navigation regressions. See the handoff and [contact checkpoint](systems/EXPEDITION_CONTACT.md). Most generated destinations remain orbital-only. Presentation, sound and native fun acceptance are open; commerce-screen actor continuity is still missing.
 
 Status meanings: **In progress** = active work; **Next** = near-term work subject to the order above; **Dependency** = prerequisite missing; **Later** = tracked only; **Prototype / integrated pilot** = some behavior exists, not final player acceptance. Rows are an inventory, not an instruction to perform them top-to-bottom. Existing evidence reflects the cited checkpoints and may be narrower than the whole requirement.
 

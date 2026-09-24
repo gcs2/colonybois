@@ -1,5 +1,11 @@
 # Personal contact and persistent diplomatic consequences
 
+## Contact presentation lifecycle — 24 September 2026
+
+The same representative now survives changes between Agreements, Exchange, Fleet and Conflict drawers, preserving its presentation clock and any response already in progress. Acceptance/refusal starts once after a diplomatic command result. Refreshing a drawer cannot replay it. Closing the panel, leaving communications or choosing another faction clears the old reply and releases that actor; reopening starts with a listening representative.
+
+Verification: 16 new scene-level checks cover actor identity/clock, completed and in-progress reactions, real grant cost, rejected repeat grant without state mutation, faction switching and both explicit/direct dismissal. Existing diplomacy 45, commerce 49, HUD 50 and full-screen navigation 67 checks pass. Test saves are isolated. This is a lifecycle correction, not new character art or a visual acceptance milestone. Persistent actor continuity into the separate commerce screen, first/repeat greetings, authored gestures, final layout/audio and native playability review remain open.
+
 > Implementation checkpoint; statements of verification apply to its recorded scope, not final player acceptance. Consult source/tests for later changes. [Documentation map](../README.md).
 
 23 September 2026. Integrated pilot for D01, I01, P01 and the personal trade loop. This does not complete Spore diplomacy, alien art or the historical timeline.

@@ -10,7 +10,7 @@ Resume the connected spaceflight/contact/trade experience, with Spore evidence a
 
 ## Playable checkpoint and limits
 
-- Latest recorded playable export: `build/versions/20260924-003147/FrontierWorlds.exe`, selected by `Play.cmd`; galaxy implementation commit `aa0ff3bac4974261c3862ba84a749135652b4953` was pushed and remote-verified. Later character/documentation commits did not export a new game.
+- Latest playable export: `build/versions/20260924-020400/FrontierWorlds.exe`, selected by `Play.cmd`. This adds the [contact lifecycle correction](systems/EXPEDITION_CONTACT.md): tab changes retain the representative, responses fire only on command results, and closing clears stale replies. Sixteen focused checks plus existing diplomacy/commerce/HUD/navigation suites pass; exported-pack startup smoke passed. Native acting/art acceptance remains open. See Git history for the corresponding source checkpoint; the older galaxy checkpoint below remains its navigation baseline.
 - That checkpoint records 40 galaxy, 67 full-screen navigation and 41 system assertions plus exported-pack startup smoke. [Galaxy behavior and limits](systems/GALAXY_NAVIGATION.md). Tests do not establish art or playability acceptance.
 - Most generated galaxy destinations remain orbital-only. Full inhabited worlds, responsive encounters, final HUD/art/audio and native fun review remain open.
 - Preserve the user's running game. Use separate versioned exports and isolated test saves; do not silently restart it.
