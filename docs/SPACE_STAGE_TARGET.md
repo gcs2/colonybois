@@ -1,6 +1,10 @@
 # Space Stage successor: complete target and evidence
 
-## Latest correction: parity before liberties
+## Latest scope correction: planet editing skipped
+
+23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
+
+## Earlier correction: parity before liberties
 
 The user explicitly rejected the custom cockpit and ambiguous labels. [SPORE_INTERFACE_CONTRACT.md](SPORE_INTERFACE_CONTRACT.md) is the active UI contract; [SPORE_BADGE_PARITY.md](SPORE_BADGE_PARITY.md) records progression research. Every base Space Stage feature must be accounted for before claiming success; user-requested exceptions are explicit. Additional content/synergies/story form the next epic after connected core-loop and presentation alignment: [CORE_LOOP_AND_CONTENT_EPIC.md](CORE_LOOP_AND_CONTENT_EPIC.md). Neither gate has passed.
 
@@ -9,7 +13,7 @@ Updated 23 September 2026. The active user goal is feature breadth comparable to
 
 ## Latest playtest changes our priorities
 
-The [working reference inventory](parity/COVERAGE.md) now enumerates individual tool families/variants and progression names, with one task-board owner per responsibility and explicit source uncertainties. Subsequent checkpoints add ship survival upgrades, initial surface weapon roles and allied escorts; global climate pulses now integrate personal tools with colony and diplomatic outcomes; specimen collection and ecological stabilization now connect to those worlds; full weapon/fleet breadth, terrain/color tools, uplift and philosophy powers remain open. Its counts do not establish exhaustive parity or replace native playtests.
+The [working reference inventory](parity/COVERAGE.md) now enumerates individual tool families/variants and progression names, with one task-board owner per responsibility and explicit source uncertainties. Subsequent checkpoints add ship survival upgrades, initial surface weapon roles and allied escorts; global climate pulses now integrate personal tools with colony and diplomatic outcomes; specimen collection and ecological stabilization now connect to those worlds; full weapon/fleet breadth, uplift and philosophy powers remain open; terrain/color tools are now explicit user exclusions. Its counts do not establish exhaustive parity or replace native playtests.
 
 The user rejected the mandatory planting/warming sequence, constant-height flight, F-centric interaction, weak danger and cheap presentation. Ecology supports exploration and supply chains; it must not replace spaceship play. The desired experience includes mouse-first actions, arrows/numpad for a left-handed mouse setup, real vertical flight and planetary departure, health/energy/weapons, satisfying achievements and animation, sound on every meaningful interaction, music, spoken guidance and tutorial pointers. They are willing to pay for quality audio and authorize browser-assisted production. Approve a concrete price/license before purchase; willingness to pay is not a subscription order.
 
@@ -39,7 +43,7 @@ Design consequence: reserve consistent screen regions for ship condition, naviga
 | Colonization, colony design, production, defenses | Ship-carried paid kits, surveyed terrain placement, staged construction and paid export specialization now integrate with personal flight; city planning/defenses remain separate or missing | Full colony design, capacity, workforce and defense integration plus native review |
 | Terraforming climate and atmosphere | Eight personal climate tools, independent axes, paid energy/finite charges, shared-clock drift, colony power/output/growth consequences, visible globe/surface changes and grievances; plant sets now stabilize climate rings and complete food chains determine effective capacity; combined/extreme tool breadth remains open | Planet-wide states, tool effects, ecology support, capacity and consequences |
 | Collection, abduction, deployment, ecological tiers | Eighteen role-covering species, scans, finite twelve-unit hold, mouse tractor/release, saved placements, three plant/animal tiers, climate stabilization, real development effects and habitat loss. Broader abduction/eradication/disaster roles remain missing | Species inventory, habitats/feeding relationships, meaningful interventions |
-| Terrain sculpting, coloring and world decoration | Missing | Usable manipulation tools with persistent visible results |
+| Terrain sculpting, coloring and world decoration | Skipped by user, 23 September 2026 | Explicit exclusion; no delivery claim or automatic rescheduling |
 | Uplift/monolith, tribal/civilization worlds | Missing | Civilizations advance and enter living diplomacy |
 | Planet destruction and extreme tools | Missing | Persistent outcomes and reactions; exhaustive special-tool inventory |
 | Discoveries, artifacts, rare collections, story | Six strategic discoveries; short local journal | Distinct discovery gameplay, useful rewards, ancestor campaign encounters |

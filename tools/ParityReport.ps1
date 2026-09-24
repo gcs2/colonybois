@@ -44,7 +44,7 @@ foreach ($family in $inventory.families) {
     if (@($family.variants).Count -eq 0) { throw "Empty family: $($family.id)" }
     Assert-Unique $family.variants "variant in $($family.id)"
     if ($family.source -notin $inventory.sources.PSObject.Properties.Name) { throw "Missing source: $($family.id)" }
-    if ($family.decision -notin @('retain', 'adapt', 'deferred')) { throw "Invalid decision: $($family.id)" }
+    if ($family.decision -notin @('retain', 'adapt', 'deferred', 'skipped')) { throw "Invalid decision: $($family.id)" }
     foreach ($questionId in $family.open) {
         if ($questionId -notin $inventory.open_questions.id) { throw "Unknown audit question: $questionId" }
     }
@@ -76,6 +76,14 @@ $inventory.families | Group-Object category | ForEach-Object {
     [pscustomobject]@{
         Category = $_.Name
         Owners = ($_.Group.owner | Sort-Object -Unique) -join ', '
+        Families = $_.Count
+        Variants = @($_.Group | ForEach-Object { $_.variants }).Count
+    }
+} | Format-Table -AutoSize
+Write-Output 'User scope decisions (reference entries, not implementation completion):'
+$inventory.families | Group-Object decision | ForEach-Object {
+    [pscustomobject]@{
+        Decision = $_.Name
         Families = $_.Count
         Variants = @($_.Group | ForEach-Object { $_.variants }).Count
     }

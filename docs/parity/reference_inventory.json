@@ -782,7 +782,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "cloud_vacuum",
@@ -794,7 +795,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "refrigeration_ray",
@@ -806,7 +808,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "heat_ray",
@@ -818,7 +821,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": "data/equipment.json:warm only affects a bed; sector projects separate",
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "air_conditioning",
@@ -830,7 +834,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "hot_cloud_seeder",
@@ -842,7 +847,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "hot_cloud_vacuum",
@@ -854,7 +860,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "cold_cloud_vacuum",
@@ -866,7 +873,8 @@
       "source": "climate",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "climate_consumables",
@@ -885,7 +893,8 @@
       "source": "climate",
       "acquisition": "consumable shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "staff",
@@ -897,7 +906,8 @@
       "source": "climate",
       "acquisition": "galactic-core reward",
       "mapping": null,
-      "decision": "retain"
+      "decision": "deferred",
+      "decision_note": "Further planet-modification work deferred by user on 2026-09-23. Existing climate mechanics retained; this is not a removal or completion claim."
     },
     {
       "id": "raise_terrain",
@@ -911,10 +921,11 @@
       "source": "sculpt",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "terrain_unlocks"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "lower_terrain",
@@ -928,10 +939,11 @@
       "source": "sculpt",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "terrain_unlocks"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "level_terrain",
@@ -945,10 +957,11 @@
       "source": "sculpt",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "terrain_unlocks"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "terra",
@@ -968,7 +981,8 @@
       "source": "sculpt",
       "acquisition": "badge/shop",
       "mapping": null,
-      "decision": "retain"
+      "decision": "skipped",
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "gear",
@@ -988,7 +1002,8 @@
       "source": "gear",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain"
+      "decision": "skipped",
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "crystal",
@@ -1007,7 +1022,8 @@
       "source": "crystal",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain"
+      "decision": "skipped",
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "crystal_seas",
@@ -1019,10 +1035,11 @@
       "source": "strategy",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "crystal_seas"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "cute",
@@ -1042,7 +1059,8 @@
       "source": "cute",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain"
+      "decision": "skipped",
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "tentacle",
@@ -1062,10 +1080,11 @@
       "source": "strategy",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "stamp_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "chocolate",
@@ -1085,10 +1104,11 @@
       "source": "strategy",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "open": [
         "stamp_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_blue",
@@ -1102,11 +1122,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_cyan",
@@ -1120,11 +1141,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_green",
@@ -1138,11 +1160,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_orange",
@@ -1156,11 +1179,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_pink",
@@ -1174,11 +1198,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_purple",
@@ -1192,11 +1217,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_red",
@@ -1210,11 +1236,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_yellow",
@@ -1228,11 +1255,12 @@
       "source": "color",
       "acquisition": "discovery pickup",
       "mapping": null,
-      "decision": "retain",
+      "decision": "skipped",
       "normalized_labels": true,
       "open": [
         "color_names"
-      ]
+      ],
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "color_reset",
@@ -1244,7 +1272,8 @@
       "source": "color",
       "acquisition": "unresolved",
       "mapping": null,
-      "decision": "retain"
+      "decision": "skipped",
+      "decision_note": "User explicitly skipped coloring and terrain modification on 2026-09-23. Reference accounting only; no implementation required in agreed scope."
     },
     {
       "id": "power_bard",
@@ -1437,4 +1466,3 @@
     }
   ]
 }
-

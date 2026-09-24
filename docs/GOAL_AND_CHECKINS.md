@@ -2,9 +2,13 @@
 
 23 September 2026. The existing Codex goal remains active and is sufficient to continue. This document clarifies execution; it does not replace the app's goal or declare any milestone complete.
 
+## Latest scope choice
+
+23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
+
 ## Goal wording for a future migration
 
-Build Colonybois into a cohesive, polished, original creepy-cute spiritual successor to Spore's base Space Stage. Make personal spaceship exploration, discovery, collection, trade, diplomacy, colonization, planet manipulation, progression and conflict work together as one satisfying game. Account for every base Space Stage feature and explicitly record user-approved adaptations or deferrals before claiming parity. Preserve mouse-first interaction, optional arrows/numpad controls, meaningful resource costs and danger, expressive aliens, responsive animation, professional readable interfaces, and reviewed sound, music and guidance.
+Build Colonybois into a cohesive, polished, original creepy-cute spiritual successor to Spore's base Space Stage. Make personal spaceship exploration, discovery, collection, trade, diplomacy, colonization, progression and conflict work together as one satisfying game. Account for every base Space Stage feature and explicitly record user-approved adaptations or deferrals before claiming parity. Preserve mouse-first interaction, optional arrows/numpad controls, meaningful resource costs and danger, expressive aliens, responsive animation, professional readable interfaces, and reviewed sound, music and guidance.
 
 Work toward playable end-to-end milestones, starting with one persistent ship exploring three worlds, carrying and trading cargo, contacting a civilization, earning and purchasing an upgrade, facing a consequential challenge, and saving/loading the complete journey. Integrate presentation and feedback into these milestones. Fix pressing defects promptly; keep bounded visual iterations from repeatedly displacing new playable capability. Preserve rejected-art feedback as acceptance constraints, without making criticism the organizing purpose of development.
 

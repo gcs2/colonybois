@@ -156,8 +156,9 @@
       "id": "planet_artiste",
       "name": "Planet Artiste",
       "tiers": 5,
-      "decision": "retain",
-      "mapping": null
+      "decision": "skipped",
+      "mapping": null,
+      "decision_note": "Depends on coloring/sculpting explicitly skipped by user on 2026-09-23."
     },
     {
       "id": "brain_surgeon",

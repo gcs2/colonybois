@@ -10,6 +10,8 @@
 
 ## Product constraints
 
+- 23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
+
 - Latest visual rejection: no rounded icon wells, shiny copper-like borders or persistent selected-tool captions above the palette. Current SVG glyphs remain temporary; typography and planet art are rejected. Preserve named hover tooltips. Do not extend the rejected material style to other screens.
 
 - The local terrain chart appears only on a planet's surface, never in orbital/system/galaxy flight. Use separate maps for those scales. The user endorses the Spore comparison board and requests an original icon/button vocabulary, broad content capacity and 1080p+ support; see docs/UI_ICON_VOCABULARY.md. Do not substitute text-only labels for recognizable controls where symbols work, or claim preview fixtures are playable content.

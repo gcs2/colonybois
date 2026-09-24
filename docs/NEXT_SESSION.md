@@ -1,5 +1,13 @@
 # Resume here
 
+## Latest scope correction — planet editing skipped
+
+23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters.
+
+The uncommitted coloring implementation, icons, tests and snapshot-v15 changes were discarded at the user's request. Latest playable and save format remain the prior badges checkpoint (snapshot v14); no coloring feature shipped. Older next-step instructions below are historical where they conflict with this correction.
+
+Next: **E02 optional space encounters and consequences**, integrated with E01 exploration and D01 diplomacy. Start from the existing wreck and contact systems: discover an optional situation during flight, choose a consequential response with a visible cost/risk, resolve it through ship or diplomatic actions, and preserve its reward/failure/history. Avoid deliveries, compulsory gardening and additional planet-editing tools. Keep connected flight, readable UI, audio and native playtest gates active.
+
 ## Badges and master promotions — latest checkpoint
 
 Read [EXPEDITION_PROGRESSION.md](EXPEDITION_PROGRESSION.md). Ten five-tier families now recognize actual exploration, trade, combat, agreements, completed hubs, surveys, distinct species, ecosystems and climate improvements. Climate maxima prevent oscillation farming; durable agreement/ecosystem IDs prevent repeat awards. Cumulative points drive ten master-rank thresholds and an additional paid-drive eligibility path. Other new alternatives connect distinct activities to hold, hull, reactor and climate equipment. No free items or energy refill. Snapshot v14 preserves recognition, pins and notices with atomic migration/validation.
@@ -8,7 +16,7 @@ The badge case provides tier stars, progress, selected-family explanation, pinni
 
 Validation: **1,262 assertions plus UI checks**, covered by the full-suite run through surface combat, corrected fleet/progression reruns, and the remaining regression suites. Final badge-to-shop sizing changes passed 51 progression, 50 HUD and 49 commerce checks. Actual case/reward/notice renders were inspected at 1080p and 1440p; fixed stale wide-panel bounds and recognition overlapping inspection views. Playable build: **build/versions/20260923-201614/FrontierWorlds.exe** through Play.cmd. Exported-pack flight startup smoke passed.
 
-Next: **T03 planet coloring and discovered tool rewards**, followed by the T02 terrain/stamp family. Connect exploration discoveries to usable personal tools, independent visible globe/surface channels, earned ownership and persistent restoration. Keep R01 source verification active. Don't enlarge ecology content or substitute these graphical tools for remaining civilization/war, fleet, story and progression requirements. Preserve native flight/HUD/audio review gates.
+Superseded next step: T03 coloring and T02 sculpting were skipped by the user. Follow the latest scope correction above.
 
 ## System navigation — latest checkpoint
 

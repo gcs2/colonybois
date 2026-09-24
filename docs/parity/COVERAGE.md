@@ -2,6 +2,10 @@
 
 23 September 2026. Reference audit against implementation commit `305d428`. [TASK_BOARD.md](../TASK_BOARD.md) remains the production queue. These manifests describe what must be accounted for; they do not assign competing task percentages.
 
+## User-approved scope exceptions
+
+23 September 2026 user scope correction: skip coloring and terrain sculpting; further planet-modification tools are not a current priority. Existing climate/ecosystem behavior stays intact. T02/T03 are explicit exclusions from the agreed delivery scope, not missing work to revive automatically or completed features. Further T01 expansion is deferred. Focus next on exploration, trade, diplomacy and consequential spaceship encounters. Reference counts below continue to describe Spore, including skipped features. Report retained/adapted, deferred and skipped families separately; never treat exclusions as completed implementations. Planet Artiste is also skipped because its dependent coloring/sculpting activities are excluded.
+
 ## What is now enumerated
 
 | Reference set | Enumerated entries | Meaning |
@@ -31,8 +35,8 @@ Every tool family has one `owner` from TASK_BOARD.md. Dependencies do not create
 | D01 | Expressive contact, relationship reasons, gifts/bribes/demands, alliances, peace, trade-route purchase offers and usable diplomatic tools. Automatic physical freight does not implement the reference economic-takeover route. |
 | W01 | AI empire wars, raids, defense, territorial surrender/conquest, destruction and responses to extreme acts. A lone neutralized skiff is not an empire war. |
 | T01 | Planet-wide temperature/atmosphere changes, energy versus charge costs, stability, ecological capacity, buildings and diplomatic outcomes. A warmed bed is not planet terraforming. |
-| T02 | Persistent terrain brushes and discovered stamp variants, selection/size/placement, collision/colony consequences and saved geography. |
-| T03 | Independent sky/land/ocean coloring, collectible palettes, reset, saved appearance and consistent surface/orbit maps. |
+| T02 | **Skipped by user.** Terrain brushes and stamps remain reference-only accounting. |
+| T03 | **Skipped by user.** Coloring and reset remain reference-only accounting; unfinished implementation discarded. |
 | L02 | Animal/tribal/civilization/space societies, visible advancement, intervention and emergence into diplomacy. Species, governments and planets remain distinct. |
 | P01 | Badge counters, master ranks, achievement records, alternative unlock paths, prior upgrades and actual purchases; earned recognition and its presentation. |
 | P02 | Archetype identity, nine distinct powers, twelve consequence traits and philosophy changes; our government attribute remains separate. |
@@ -54,9 +58,9 @@ Reference behavior underpinning these boundaries: [Spore research](../SPORE_SPAC
 
 ## Next implementation target
 
-Subsequent [ship capacity](../SHIP_CAPACITY.md), [repair supply](../REPAIR_SUPPLIES.md), [surface combat](../SURFACE_COMBAT.md) and [allied fleet](../ALLIED_FLEET.md) checkpoints implement purchased hull/energy tiers, finite repair stock, three surface weapon roles and persistent allied escorts with real damage/losses. The manifests above retain their stated implementation-comparison commit. The [climate checkpoint](../PLANET_CLIMATE.md) now adds eight personal axis tools with global visuals, costs and consequences. The [biosphere checkpoint](../PLANET_BIOSPHERE.md) now connects collection, release and ecological stabilization. The [system navigation checkpoint](../SYSTEM_NAVIGATION.md) now connects the planet/system/sector hierarchy to persistent paid travel. [Progression](../EXPEDITION_PROGRESSION.md) now connects ten scenario families to master promotion thresholds, persistent awards, pinning and paid shop alternatives. This is not full reference badge/achievement coverage or master-rank fleet capacity. Next prioritize **discovered planet-coloring tools and persistent restoration (T03)**, preserving personal exploration, meaningful costs and persistent outcomes. Avoid deepening nursery cultivation or expanding the food-web corpus before remaining spaceship breadth. No passive energy regeneration; home recharge stays free.
+Subsequent [ship capacity](../SHIP_CAPACITY.md), [repair supply](../REPAIR_SUPPLIES.md), [surface combat](../SURFACE_COMBAT.md) and [allied fleet](../ALLIED_FLEET.md) checkpoints implement purchased hull/energy tiers, finite repair stock, three surface weapon roles and persistent allied escorts with real damage/losses. The manifests above retain their stated implementation-comparison commit. The [climate checkpoint](../PLANET_CLIMATE.md) now adds eight personal axis tools with global visuals, costs and consequences. The [biosphere checkpoint](../PLANET_BIOSPHERE.md) now connects collection, release and ecological stabilization. The [system navigation checkpoint](../SYSTEM_NAVIGATION.md) now connects the planet/system/sector hierarchy to persistent paid travel. [Progression](../EXPEDITION_PROGRESSION.md) now connects ten scenario families to master promotion thresholds, persistent awards, pinning and paid shop alternatives. This is not full reference badge/achievement coverage or master-rank fleet capacity. Next prioritize **optional space encounters and meaningful decisions (E02/E01/D01)**, preserving personal exploration, meaningful costs and persistent outcomes. Avoid deepening nursery cultivation or expanding the food-web corpus before remaining spaceship breadth. No passive energy regeneration; home recharge stays free.
 
-Then continue weapon-family breadth and world-scale manipulation. Keep the native HUD/flight/audio review gates active. This order is scheduling, not permission to omit any reference family or postpone baseline breadth into the enrichment epic.
+Then continue spaceship equipment, diplomacy, trade and empire conflict; additional planet modification is deferred. Keep the native HUD/flight/audio review gates active. User-approved T02/T03 exclusions and T01 deferral supersede the earlier world-manipulation schedule. Other reference families still require explicit accounting.
 
 ## Check-in use
 
