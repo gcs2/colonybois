@@ -15,6 +15,7 @@ class Study extends "res://tests/review_field_navigation.gd".Study:
 	var fixture: bool=false
 	var ids: Array[String]=[]
 	var hover: String=""
+	var embedded: bool=false
 	func prepare() -> void:
 		ids.clear()
 		for id: String in hud.GROUPS[hud.active_group]:
@@ -26,13 +27,18 @@ class Study extends "res://tests/review_field_navigation.gd".Study:
 			if not textures.has(glyph): textures[glyph]=load("res://assets/ui/flight/%s.svg" % glyph)
 		queue_redraw()
 	func _draw() -> void:
-		draw_texture_rect(background,Rect2(0,0,1920,1080),false)
-		label(Vector2(32,48),"Morrow",30)
-		housing(Rect2(430,16,1080,38),INK)
-		label(Vector2(448,42),"REVIEW ONLY · "+title+(" · SYNTHETIC CAPACITY ITEMS" if fixture else " · ACTUAL PALETTE ENTRIES"),17)
+		if background != null: draw_texture_rect(background,Rect2(0,0,1920,1080),false)
+		if not embedded:
+			label(Vector2(32,48),"Morrow",30)
+			housing(Rect2(430,16,1080,38),INK)
+			label(Vector2(448,42),"REVIEW ONLY · "+title+(" · SYNTHETIC CAPACITY ITEMS" if fixture else " · ACTUAL PALETTE ENTRIES"),17)
 		var panel_height: float=(246 if hud.GROUPS[hud.active_group].size()>9 else 174) if hud.palette_expanded else 78
 		var y: float=1056-panel_height
-		housing(Rect2(1056,y,840,panel_height),PAPER)
+		if embedded and hud.palette_expanded:
+			housing(Rect2(1056,y,840,60),PAPER)
+			var tray_width: float=minf(9,ids.size())*69+32
+			housing(Rect2(1056,y+60,tray_width,panel_height-60),PAPER)
+		else: housing(Rect2(1056,y,840,panel_height),PAPER)
 		var index: int=0
 		for category: String in Palette.GROUPS:
 			var r:=Rect2(1072+index*62,y+12,50,42)
@@ -45,8 +51,15 @@ class Study extends "res://tests/review_field_navigation.gd".Study:
 		housing(equipped,INK)
 		draw_texture_rect(hud.item_buttons[hud.selected_tool].icon,equipped.grow(-7),false)
 		bracket(equipped.get_center(),23,GOLD)
-		label(Vector2(1570,y+30),"HULL 100/100",14,INK)
-		label(Vector2(1740,y+30),"ENERGY 65/100",14,INK)
+		label(Vector2(1570,y+30),"HULL %d/%d" % [model.state.hull,model.max_capacity("hull")],14,INK)
+		label(Vector2(1740,y+30),"ENERGY %d/%d" % [model.state.energy,model.max_capacity("energy")],14,INK)
+		if embedded:
+			for i: int in range(2):
+				var family: String="hull" if i==0 else "energy"
+				var bar:=Rect2(1570+i*170,y+40,138,6)
+				draw_rect(bar,INK)
+				bar.size.x*=float(model.state[family])/model.max_capacity(family)
+				draw_rect(bar,Color("df905f") if i==0 else Color("f3c95f"))
 		if not hud.palette_expanded: return
 		for i: int in range(ids.size()):
 			var id: String=ids[i]
