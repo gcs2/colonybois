@@ -29,6 +29,8 @@ V04 bounded repair: defense-field restriction now appears in preview and commit 
 
 ## Task register
 
+Q02 package checkpoint: build20260924-050435 includes the validated defense-field preview repair. `Play.cmd` selects it; exported-pack flight startup and27 focused regression checks pass. No HUD redesign is packaged; prior builds/saves remain. Continue the reference/mock gate, not feature expansion.
+
 | ID | Task | Status and current evidence | Gate |
 | --- | --- | --- | --- |
 | V01 | Spore-faithful HUD and interactions | **Rejected art / correction in progress.** Escape utility menu, inventory consumable use, descriptive map/comms labels and separate weapon selection/targeting now work. Shared adjacent palette, collapse, Tab browsing, current-category slots and counted pack use now work. Original icon vocabulary and 18-slot pagination are implemented; 1080p/1440p captures reviewed and 4K geometry checked. Local chart is surface-only. Rounded/metallic treatment rejected and removed. Font, glyph quality and planet appearance remain rejected. [Ten-state board](ui-review/index.html) and [palette audit](research/SPORE_PALETTE_AUDIT.md) now provide the reference-to-code mapping; static validation only, browser preview blocked. See interface contract. | Annotated state board, reference audit, original icon/palette kit and native/user review; no tests-as-art-approval. |

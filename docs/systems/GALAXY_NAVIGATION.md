@@ -26,6 +26,8 @@ The cached MultiMesh star rendering measured substantially lower map frame cost 
 
 ## Remaining gaps
 
+Package follow-up: `build/versions/20260924-050435/FrontierWorlds.exe` now includes the preview repair and is selected by `Play.cmd`. Exported-pack flight startup with `--field --playtest` exited cleanly after180 frames; the external travel-preview harness also passed27 checks against exported resources. Previous versions and normal saves were retained. This supersedes the no-new-export limitation above; it does not establish native flight feel or visual acceptance. The bundled README also corrects finished colony-kit cost to300 Marks only.
+
 The critic found excessive empty space in local framing, weak distinctions between knowledge states and thin separated galaxy dust arms. The new reference image also contains incorrect range geometry; do not copy it. Whole procedural surfaces, inhabited generated nations, deeper encounters, wormholes/core and polished travel feedback are separate unfinished requirements. Current scripted captures do not prove native flight feel, audio quality or fun.
 
 Galaxy UI rendering still uses a custom perspective-projected control. It is a real navigable star model, but not a seamless physically scaled space scene. No engine/renderer migration occurred.
