@@ -127,6 +127,7 @@ var toolbar: Array[Button] = []
 var labels: Dictionary = {}
 var popup: PanelContainer
 var communicator_shell: Control
+var contact_status_pod: Control
 var popup_kind: String = ""
 var popup_body: VBoxContainer
 var toast_time: float = 0.0
@@ -657,6 +658,11 @@ func _make_ui() -> void:
 	root.add_child(communicator_shell)
 	communicator_shell.z_index = 29
 	communicator_shell.hide()
+	contact_status_pod = preload("res://scripts/contact_status_pod.gd").new()
+	root.add_child(contact_status_pod)
+	contact_status_pod.z_index = 29
+	contact_status_pod.position = Vector2(1090, 785)
+	contact_status_pod.hide()
 	popup.resized.connect(_sync_communicator_shell)
 	var popup_scroll := ScrollContainer.new()
 	popup_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -897,6 +903,13 @@ func _process(delta: float) -> void:
 	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
 
 func _update_camera(delta: float) -> void:
+	if popup != null and popup.visible and popup_kind in ["contact","service"] and model.state.flight_mode == "orbit":
+		var target_pos: Vector3 = orbit.planet.position + Vector3(20, 8, 44)
+		var target_focus: Vector3 = orbit.planet.position + Vector3(24, 0, 0)
+		camera.position = camera.position.lerp(target_pos, minf(1.0, delta * 6.0))
+		camera_focus = camera_focus.lerp(target_focus, minf(1.0, delta * 6.0))
+		camera.look_at(camera_focus)
+		return
 	distance = lerpf(distance,camera_distance_target,minf(1,delta*8))
 	var focus: Vector3 = ship.position+Vector3(0,-1,0)
 	if model.state.flight_mode == "orbit":
@@ -1802,9 +1815,12 @@ func _refresh_ui() -> void:
 	hud.navigation.visible = local_view; hud.chart_backing.visible = local_view; hud.chart_heading.visible = local_view
 	_update_guidance()
 	var map_open: bool = planet_map.visible or system_map.visible or sector_map.visible
-	hud.visible = not map_open
-	guide_arrow.visible = guide_arrow.visible and not map_open
-	guide_caption.visible = guide_caption.visible and not map_open
+	var modal_open: bool = map_open or (popup.visible and popup_kind in ["contact","service"])
+	hud.visible = not modal_open
+	guide_arrow.visible = guide_arrow.visible and not modal_open
+	guide_caption.visible = guide_caption.visible and not modal_open
+	if contact_status_pod != null and contact_status_pod.visible and campaign != null:
+		contact_status_pod.update_status(campaign.field.state.hull, campaign.field.max_capacity("hull"), campaign.field.state.energy, campaign.field.max_capacity("energy"), campaign.field.marks)
 
 func _short_reason(reason: String) -> String:
 	# Keep the full validated reason on hover; the instrument shows one short cause.
@@ -1952,8 +1968,19 @@ func _show_popup(kind: String) -> void:
 	header.add_child(title)
 	var close: Button = _button("×",_escape_menu,header,"ui_close")
 	if instrument:
-		close.custom_minimum_size = Vector2(28,28)
+		close.custom_minimum_size = Vector2(28,24)
 		header.add_theme_constant_override("separation",10)
+		for state: String in ["normal","hover","pressed","disabled","focus"]:
+			var box := StyleBoxFlat.new()
+			box.bg_color = Color("2e3a3c") if state == "hover" else Color("1a2224") if state == "pressed" else Color("20292b")
+			box.border_color = Color("728688") if state == "hover" else Color("435153")
+			box.border_width_left = 1; box.border_width_right = 1
+			box.border_width_top = 1; box.border_width_bottom = 1
+			box.corner_radius_top_left = 3; box.corner_radius_top_right = 3
+			box.corner_radius_bottom_left = 3; box.corner_radius_bottom_right = 3
+			close.add_theme_stylebox_override(state,box)
+		close.add_theme_color_override("font_color",Color("dedad0"))
+		close.add_theme_color_override("font_hover_color",Color.WHITE)
 	else: popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
 	if kind == "menu":
 		_button("Resume game",_close_popup,popup_body)
@@ -2056,9 +2083,14 @@ func _show_popup(kind: String) -> void:
 
 func _sync_communicator_shell() -> void:
 	if communicator_shell == null or popup == null: return
-	communicator_shell.visible = popup.visible and popup_kind in ["contact","service"] and campaign != null
+	var show_shell: bool = popup.visible and popup_kind in ["contact","service"] and campaign != null
+	communicator_shell.visible = show_shell
 	communicator_shell.position = popup.position
 	communicator_shell.size = popup.size
+	if contact_status_pod != null:
+		contact_status_pod.visible = show_shell
+		if show_shell and campaign != null:
+			contact_status_pod.update_status(campaign.field.state.hull, campaign.field.max_capacity("hull"), campaign.field.state.energy, campaign.field.max_capacity("energy"), campaign.field.marks)
 
 func _inspection_open() -> bool:
 	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible) or (system_map != null and system_map.visible)
@@ -2734,7 +2766,9 @@ func _build_contact_panel() -> void:
 	navigation.add_theme_constant_override("separation",8)
 	stage.add_child(navigation)
 	contents[0].reparent(navigation)
-	contents[0].text = "Signals · %d" % campaign.signals.open_ids().size()
+	var open_signals: int = campaign.signals.open_ids().size() if campaign != null else 0
+	contents[0].visible = open_signals > 0
+	contents[0].text = "Orbital signals · %d" % open_signals
 	contents[0].custom_minimum_size.y = 30
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(490,400 if contact_page == "home" else 490)
@@ -2811,13 +2845,28 @@ func _build_contact_contents() -> void:
 		identity.mouse_filter = Control.MOUSE_FILTER_PASS
 		identity.tooltip_text = "%s · %s\nGovernment: %s\nPhilosophy: %s" % [profile.species,profile.role,f.government,f.philosophy]
 		identity_row.add_child(identity)
+		var status_box := VBoxContainer.new()
+		status_box.alignment = BoxContainer.ALIGNMENT_CENTER
+		status_box.add_theme_constant_override("separation",3)
+		identity_row.add_child(status_box)
 		var war: bool = campaign.conflict.at_war(contacted_faction)
 		var attitude: String = "AT WAR" if war else "EMBARGO" if f.get("embargo",false) else "ALLIED" if contacted_faction+":alliance" in campaign.sector.state.agreements else "FRIENDLY" if f.relation >= 40 else "CORDIAL" if f.relation >= 0 else "WARY"
 		var indicator: Label = _label(attitude,13,Color("df977c") if war or f.relation < 0 else Color("a9c9a5"))
 		indicator.set_meta("semantic_color",true)
 		indicator.mouse_filter = Control.MOUSE_FILTER_PASS
 		indicator.tooltip_text = "Relations %+d\n%s" % [f.relation,f.reason]
-		identity_row.add_child(indicator)
+		status_box.add_child(indicator)
+		var relation_bar := Control.new()
+		relation_bar.custom_minimum_size = Vector2(86, 7)
+		var filled_segments: int = int(clampf((f.relation + 100) / 25.0, 0, 8))
+		var is_hostile: bool = war or f.relation < 0
+		var bar_tint: Color = Color("df977c") if is_hostile else Color("77aa8f")
+		relation_bar.draw.connect(func() -> void:
+			for i: int in range(8):
+				var seg_color: Color = bar_tint if i < filled_segments else Color("303b3d")
+				relation_bar.draw_rect(Rect2(i * 11, 0, 8, 6), seg_color)
+		)
+		status_box.add_child(relation_bar)
 		_contact_copy(dialogue,f.name,Instruments.MUTED)
 		var separator := HSeparator.new()
 		dialogue.add_child(separator)
@@ -2893,6 +2942,17 @@ func _contact_tile(caption: String, icon: String, action: Callable, parent: Cont
 	button.add_theme_font_size_override("font_size",19)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.tooltip_text = caption
+	for state: String in ["normal","hover","pressed","disabled","focus"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color("2a3538") if state == "hover" else Color("1e2628") if state == "pressed" else Color("222a2c")
+		box.border_color = Color("687e82") if state == "hover" else Color("3d4b4e")
+		box.border_width_left = 1; box.border_width_right = 1
+		box.border_width_top = 1; box.border_width_bottom = 2 if state == "hover" else 1
+		box.corner_radius_top_left = 4; box.corner_radius_top_right = 4
+		box.corner_radius_bottom_left = 4; box.corner_radius_bottom_right = 4
+		box.content_margin_left = 14; box.content_margin_right = 14
+		box.content_margin_top = 10; box.content_margin_bottom = 10
+		button.add_theme_stylebox_override(state,box)
 	return button
 
 func _contact_dock_context() -> Dictionary:
