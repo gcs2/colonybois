@@ -53,6 +53,25 @@ These are project requirements derived from the evidence, not claims of verified
 | Badges | Collection screen with named accomplishment | Levels, progress, unlock preview, pinning | Achievement event links to a newly available capability and actual shop |
 | Escape menu | Dim world, pause simulation and input | Resume, save/load, settings, history, title | Escape closes current window first; settings returns to menu; pre-existing pause is preserved |
 
+## Navigation state contract — source-informed proposal
+
+The [boundary evidence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md) supports compact contextual system information and stable HUD anchors during a scale change. The following requirements are our design, not proof of source inputs or implemented Field Instruments behavior. No local surface chart appears in galaxy or system views.
+
+| State | Required presentation and action |
+|---|---|
+| Known-star hover | Compact adjacent system identity and known planet rows; support long names/crowding. Immediate information, no travel or cost. Leaving hover dismisses it. |
+| Unknown signal | Reveal only campaign-permitted knowledge; no concealed names, inhabitants, planet list or resources. Distinguish detected from visited/charted. |
+| Selected destination | Distinct from hover. Prospective route, distance, drive reach, energy cost and energy after departure derive from campaign quote. Selection alone spends nothing. |
+| Refused departure | Name the actual reason beside the destination/action: range, energy, access, active survey, hostile contact, atmosphere or existing journey. Include defense-field refusal; never imply a ready journey when commit will reject it. |
+| Scale change | Intermediate and settled compositions retain recognizable origin/destination, ship identity and HUD anchors. Do not add mandatory cinematic delay. Proposed animation timing needs motion review. |
+| Planet hover/selection | Distinguish inspection from committed destination. Expose surveyed versus unknown conditions and surface-capable versus orbital-only access. |
+| Departure/transit | Revalidate and charge once; show actual progress and destination. Viewing another scale must not duplicate travel or spend energy again. |
+| Back/cancel | Dismissing an uncommitted selection is free. Do not imply cancellation/refund after departure: current journey has no voluntary cancel command and locks chart back controls. Any future change needs explicit design and tests. |
+| Access interrupted | Current campaign returns to departure orbit with spent energy not refunded; explain this outcome without a success animation. |
+| Arrival | Preserve ship resources, reveal only earned information and identify destination. Arrival in orbit never implies automatic landing or a generated surface on an orbital-only body. |
+
+Current implementation audit: `sector_chart.gd` uses select-then-activate and a generic hover tooltip; `system_chart.gd` uses a detached information panel. Both need reviewed state mocks. `expedition_session.gd` currently quotes 3 energy/2 seconds locally; interstellar energy is at least 8 and distance-based, duration 2–4 seconds. These values belong to the simulation, not UI constants. `begin_travel` additionally rejects proximity to the defense field after `quote`; this quote/commit mismatch is an open acceptance gap, not repaired by this specification. The older 12-second capture must not set mock timings.
+
 ## Next visual work, before another skin
 
 1. Produce an annotated reference-to-project board for ordinary surface flight, expanded tools, cargo/consumables, contact, shop, planetary conditions, system and galaxy. Label source facts separately from proposed deviations. Preserve original artwork; don't import Spore UI assets.

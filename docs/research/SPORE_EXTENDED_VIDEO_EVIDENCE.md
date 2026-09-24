@@ -112,6 +112,21 @@ Independent review by contact_shop_critic confirmed full-raster gameplay and nar
 
 For our surface candidate, preserve category→item→world targeting, visible finite-item counts and a compact instrument footprint. The surface condition panel, hover identity card and expanded cargo are separate states needing their own mock evidence. A map alone cannot stand for all three. Current comparison uses the dated scout_surface_95.png fixture; it must not be presented as a fresh runtime capture.
 
+## Galaxy-to-system boundary: intermediate states
+
+24 September follow-up on the same [extended gameplay](https://www.youtube.com/watch?v=0NN5fBVEHcA&t=7202s). Local evidence prefix: `artifacts/references/spore/video/navigation-boundary-`; each PNG has a JSON sidecar. Paused, muted samples advanced by 30 YouTube period-key frames between captures. Decoder 1920×1080, captured viewport 2560×1440: effective resolution remains 1080p, R100, not native 1440p detail.
+
+| File suffix | Video time (seconds) | Narrow visible observation |
+|---|---:|---|
+| 7202-a | 7202.137347 | Small bright star below ship/cursor; no system summary |
+| 7202-b | 7202.637346 | Adjacent Maytus summary with four planet rows and differentiated symbols |
+| 7203-a | 7203.137345 | Larger star, separated planets and orbit arcs; summary reduced to Maytus header |
+| 7203-b | 7203.637344 | Expanded system geometry; summary absent |
+
+Independent critic contact_shop_critic confirmed the sequence and persistent bottom/right HUD anchors. Symbol meanings, exact triggering input, full transition duration/easing/fades and sound are not established. Frame spacing is sampling cadence, not transition duration. The manual's printed pp.48–49 corroborate hover information and wheel-based scale navigation; they do not establish which input triggered this recorded sequence. Source workflow counts and complete interaction/presentation/audio flags remain unchanged.
+
+Compared with our candidates, 05 lacks the compact known-system summary; 04 lacks intermediate/refusal states and retains a redundant chart/heavy asteroid foreground. The dated actual system capture's 12-second quote is historical: current code uses two seconds locally and two–four between systems. Follow the [interface contract](../reviews/SPORE_INTERFACE_CONTRACT.md) for our proposed state behavior rather than copying screenshot values.
+
 ## Separate launch source
 
 [SPORE_LAUNCH_SEQUENCE_EVIDENCE.md](SPORE_LAUNCH_SEQUENCE_EVIDENCE.md) documents 19 paused samples from PoketamaVideos’ separate launch clip. Its low native resolution and unreviewed audio must not inherit this recording’s clearer contact/shop scores. Full launch performance remains unverified.

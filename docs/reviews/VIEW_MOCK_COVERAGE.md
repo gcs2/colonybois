@@ -41,6 +41,14 @@ Navigation follow-up: the atlas now uses unobscured full-screen galaxy/system re
 - Target: 03-orbit-v1.png inspected directly. World dominates; small grouped ivory/charcoal controls and pictorial categories. Detailed ship/planet/dock art is a target, not proof of achievable implementation or approved assets. Fictional altitude/currency/energy values are illustration only.
 - Required next evidence: readable extended gameplay before/during/after planet approach and scale changes, plus our corresponding states and a corrected orbital state sheet. Do not implement a new orbital HUD from this one hero image alone.
 
+### Navigation boundary review and missing state sheet
+
+Four readable intermediate source frames now supplement the galaxy/system endpoints; see [source evidence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md). Independent critic confirmed the compact system summary, its collapse as planets spread out, and stable HUD anchors. The earlier statement that the boundary is entirely absent is superseded; continuous motion, triggering input, approach and audio remain unverified. Counters remain 17/61 sampled, 6/61 readable, zero complete interaction/presentation/audio verification.
+
+N07 state sheet must show known-star hover (including crowded/long names), unknown-signal redaction, hover exit without activation, selected route, and each actual refusal reason. N06 must show intermediate/settled scale change, planet hover versus selection, available quote, departure/transit, back/cancel availability, access interruption and orbital arrival. Existing overview/fog/camera-angle requirements remain. These are missing mocks, not newly covered states; the [interface contract](SPORE_INTERFACE_CONTRACT.md) owns their behavior.
+
+Critic comparison: 05 lacks the known-system summary; 04 lacks transition/refusal states and still has redundant chart/foreground clutter. Actual system capture separates the quote into a remote text panel and lacks ship/HUD continuity. Its 12-second quote is outdated; current code quotes 2 seconds locally and 2–4 interstellar. No new view-family completion or user acceptance is awarded.
+
 ## Delivery status
 
 ### Populated surface study, 24 September
