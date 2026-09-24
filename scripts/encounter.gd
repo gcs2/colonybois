@@ -948,6 +948,7 @@ func _update_flight_effects(delta: float) -> void:
 		locator.modulate.a = 1.0-transition_veil.color.a
 
 func _update_visuals() -> void:
+	orbit.landing_marker.visible = landing and model.state.flight_mode == "orbit" and not _inspection_open()
 	if support_visual != null: support_visual.refresh(model,ship.position,0,true)
 	_update_outpost_visual()
 	orbit.show_aim(model,enemy_flash)
@@ -1655,7 +1656,8 @@ func _refresh_ui() -> void:
 	hud.hull_bar.value = s.hull
 	hud.hull_label.text = "HULL   %d / %d" % [s.hull,model.max_capacity("hull")]
 	hud.energy_label.text = "ENERGY   %d / %d" % [s.energy,model.max_capacity("energy")]
-	flight_readout.text = "%s %.0f m  ·  %.0f m/s" % ["Y" if orbital else "ALT",ship.position.y,velocity.length()]
+	flight_readout.text = "ORBIT  ·  %.0f m/s" % velocity.length() if orbital else "ALT %.0f m  ·  %.0f m/s" % [maxf(0,ship.position.y-terrain_height(ship.position.x,ship.position.z)),velocity.length()]
+	flight_readout.tooltip_text = "Orbital flight speed" if orbital else "Height above the terrain directly below your ship; flight speed."
 	var field_distance: float = _wreck_distance()
 	hud.danger_label.text = "PULSE CORE · %d m · NEXT IN %d s" % [field_distance,6-int(s.threat_clock)] if orbital and field_distance < Model.HAZARD_RADIUS else ("PULSE FIELD · %d m · KEEP CLEAR" % field_distance if orbital and field_distance < Model.HAZARD_WARNING else "")
 	hud.guardian_warning.text = "CUSTODIAN LOCKING · %d s" % [3-int(s.guardian_alert)] if orbital and s.guardian_alert > 0 and s.guardian_alert < 3 else ("CUSTODIAN FIRING · %d s TO NEXT SHOT" % maxi(0,int(s.guardian_ready_at)-int(s.time)) if orbital and s.guardian_alert >= 3 and not s.guardian_disabled else "")

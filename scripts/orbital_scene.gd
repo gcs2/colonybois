@@ -14,6 +14,7 @@ var guardian := Node3D.new()
 var guardian_eye: MeshInstance3D
 var hostile_visual: Node3D
 var aim_marker := Node3D.new()
+var landing_marker := MeshInstance3D.new()
 func landing_position() -> Vector3:
 	# Keep entry above the same planet-fixed site shown on the globe and atlas.
 	var direction: Vector3 = planet.site_marker.position.normalized()
@@ -23,6 +24,18 @@ func _ready() -> void:
 	planet.planet_definition = planet_definition
 	planet.position = Vector3(-14,-8,-14)
 	add_child(planet)
+	var landing_ring := TorusMesh.new()
+	landing_ring.inner_radius = 0.85; landing_ring.outer_radius = 1.05
+	landing_ring.rings = 32; landing_ring.ring_segments = 6
+	landing_marker.mesh = landing_ring
+	landing_marker.position = planet.site_marker.position
+	landing_marker.quaternion = Quaternion(Vector3.UP,planet.site_marker.position.normalized())
+	var landing_ink := StandardMaterial3D.new()
+	landing_ink.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	landing_ink.albedo_color = Color("f2dfac")
+	landing_marker.material_override = landing_ink
+	planet.add_child(landing_marker)
+	landing_marker.hide()
 	_build_wreck()
 	_build_guardian()
 	_build_aim_marker()

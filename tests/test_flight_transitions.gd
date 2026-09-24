@@ -25,7 +25,12 @@ func run() -> void:
 	check(scene.landing,"Mouse descent button commands atmospheric approach")
 	scene._refresh_ui()
 	check(scene.hud.action_state.text == "DESCENDING" and scene.use_button.text == "Cancel","Target card explains descent and exposes cancellation")
+	scene._update_visuals()
+	check(scene.orbit.landing_marker.visible and scene.orbit.landing_marker.get_parent() == scene.orbit.planet,"Landing target ring inherits planet rotation")
+	check(scene.flight_readout.text.begins_with("ORBIT") and not "Y " in scene.flight_readout.text,"Orbital readout does not present a scene Y coordinate as altitude")
 	scene._stop()
+	scene._update_visuals()
+	check(not scene.orbit.landing_marker.visible,"Cancelling descent removes the landing target ring")
 	Input.action_press("flight_descend")
 	for i: int in range(30): scene._physics_process(1.0/60)
 	Input.action_release("flight_descend")
@@ -43,6 +48,9 @@ func run() -> void:
 		if scene.model.state.flight_mode == "orbit" and scene.ship.position.distance_to(scene.orbit.planet.position) < 21: collided = true
 	check(scene.model.state.flight_mode == "surface" and not collided,"Far-side entry reaches the surface without becoming stuck against the planet")
 	check(scene.model.state.landings == 1,"A completed multi-waypoint approach records one landing")
+	scene.ship.position.y = scene.terrain_height(scene.ship.position.x,scene.ship.position.z)+10
+	scene._refresh_ui()
+	check(scene.flight_readout.text.begins_with("ALT 10 m"),"Surface altitude measures clearance above local terrain")
 	scene._change_flight_mode("orbit")
 	scene.arrival_fade = 0
 	scene.landing = true; scene.landing_waypoints.clear()

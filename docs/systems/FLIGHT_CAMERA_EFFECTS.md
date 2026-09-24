@@ -1,5 +1,12 @@
 # Wider flight camera and bounded effects
 
+## Landing target and altitude cues (24 September 2026)
+
+During active orbital descent, a restrained ivory ring highlights the actual site and inherits the globe rotation. It disappears on cancellation, inspection and surface arrival. Orbit readout now shows ORBIT and speed instead of misleading signed scene Y. Surface ALT is height above terrain directly below the ship, rather than world-space Y. No new navigation destination or world simulation is implied.
+
+19 transition assertions pass, including ring attachment/cancellation and a ten-unit terrain-clearance readout. Build `20260924-035235`. Independent critic verified the ring and ORBIT readout in refreshed sequence frames 040/050/055/065 with no new blocking regression; terrain-relative accuracy relies on the test, not the still. The broader HUD treatment, site-to-ground landmark continuity and human input/feel acceptance remain open.
+
+
 ## Planet-fixed landing destination (24 September 2026)
 
 The orbital approach previously ended at a hard-coded space position, unrelated to the globe's site marker. Entry now uses the actual marker direction transformed by the planet rotation, at radius plus six units. The final leg follows the moving site as the globe rotates; the same named site remains selected. This is a destination-alignment correction, not generated matching surface terrain.
