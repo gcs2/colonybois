@@ -288,6 +288,8 @@ The isolated proposal (`tests/review_combat_mock.gd`, `tests/combat_study_panel.
 
 Independent critic caught misleading attack/cargo/recovery wording, overlapping incoming warning, duplicate selected-world labels, fixture-driven salvage status and ship/wreck overlap. Corrections add automatic-resume guidance during queued cooldown, corrective refusal guidance, “Cargo available in wreck,” recovery-queued/in-range wording, suppression of the old selected label and a contrasting incoming warning. Static Attack/Recover appearances reflect refusal; static Cancel remains available for queued salvage without a weapon. These drawn controls do not yet handle clicks, hover or focus. Existing world art, glyphs, fonts and stacked aim volumes remain provisional; edge/offscreen targets and native movement/audio remain unverified.
 
+Final independent reinspection of corrected1080p salvage, low-energy and cooldown captures found the prior wording, duplicate-label and ship/wreck separation blockers resolved, with no new visible clipping, overlap or factual blocker in those three states. This is bounded static review, not acceptance of every state or interactive behavior.
+
 Next: extend baseline/mocks to orbital encounters, incoming hit/miss, defeat/tow and civilian refusal. Do not broaden static polish while these workflow gaps remain. The source city destruction is not evidence that our ship-wreck salvage exists in Spore. No production integration or final art acceptance.
 
 ## Motion rules
