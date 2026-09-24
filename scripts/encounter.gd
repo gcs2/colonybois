@@ -733,7 +733,13 @@ func _physics_process(delta: float) -> void:
 			if away_from_guardian.is_zero_approx(): away_from_guardian = Vector3.RIGHT
 			destination = model.guardian_position()+away_from_guardian.normalized()*(8 if model.state.guardian_disabled and not model.has_wreck() else Model.LANCE_RANGE-3)
 		var offset: Vector3 = destination-ship.position
-		move = FlightControls.arrival_velocity(offset,speed)
+		# Intermediate landing waypoints guide a continuous arc, not repeated stops.
+		if landing and not landing_waypoints.is_empty():
+			if offset.length() < 4.0:
+				destination = landing_waypoints.pop_front()
+				offset = destination-ship.position
+			move = offset.normalized()*speed if not landing_waypoints.is_empty() else FlightControls.arrival_velocity(offset,speed)
+		else: move = FlightControls.arrival_velocity(offset,speed)
 		if offset.length() < 0.65:
 			navigating = false
 			move = Vector3.ZERO

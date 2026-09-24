@@ -1,5 +1,12 @@
 # Wider flight camera and bounded effects
 
+## Continuous landing turns (24 September 2026)
+
+Far-side landing previously treated every arc waypoint as a stopping destination. A measured fixture took 12.667 seconds, reaching only 0.84 units/s between intermediate points and spending 470 physics frames below half speed. Intermediate landing waypoints now use continuous travel speed and hand off within four units; only the final destination uses arrival slowdown. The identical fixture completes in 5.983 seconds with minimum intermediate speed 12.53 and zero slow frames. This changes landing guidance only, not ship maximum speed, travel prices or energy.
+
+`tests/test_landing_flow.gd` checks the far-side duration/speed regression and 24 direction/integration-rate cases (30/60/120 Hz), including reaching the surface without touching the globe collision clamp. All pass, alongside 12 transition and 21 flight-presentation assertions. Synthetic native capture `tests/review_landing_motion.gd` samples an eight-second actual physics/camera sequence at 10 fps into artifacts/landing-motion, with trace.csv. This fixture uses standalone flight and isolated saves; it does not prove connected campaign progression or native human feel. Existing world art, transition disguise and sound acceptance remain open. Independent critic confirmed sustained intermediate speed in the sampled sequence, but flagged the black pre-arrival interval with orphaned orbital labels, lost landmark continuity and a small final-braking speed rebound. These are unresolved transition-presentation issues, not proven regressions without an earlier capture. The next descent pass should address these before claiming a smooth orbit-to-surface experience.
+
+
 > Implementation checkpoint; statements of verification apply to its recorded scope, not final player acceptance. Consult source/tests for later changes. [Documentation map](../README.md).
 
 23 September 2026. Candidate V05 implementation, following the first composed HUD. This changes flight presentation and navigation intent, not world simulation scope.
