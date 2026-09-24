@@ -10,6 +10,8 @@ Navigation composition supplement: `tests/review_field_navigation.gd` is a code-
 
 Shared prompt:
 
+Capacity supplement: tests/review_field_capacity.gd draws six palette states at1080p/1440p using existing HUD paging and actual control icons/counts, plus explicitly synthetic palette_fixture.gd entries for18-slot overflow. Reuses surface-review-background-v1.png; no new imagegen call or new playable item. See VIEW_MOCK_COVERAGE.md for limitations.
+
 Projection supplement: tests/review_projected_galaxy.gd uses the actual StarGraph renderer with a compact review-only overlay. No new image generation or raster compositing is involved. Outputs cover known/unknown, rotated and underside views at1080p/1440p; VIEW_MOCK_COVERAGE.md owns evidence and limits. This demonstrates correct projection/footprint while exposing current world-art deficits, not replacing the environmental target.
 
 Use case: ui-mockup. Original Frontier Worlds game interface design mock, NOT a shipped screenshot. One complete 16:9 game screen at 1920x1080 composition, no outer poster border.
