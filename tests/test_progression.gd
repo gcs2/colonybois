@@ -96,7 +96,7 @@ func run() -> void:
 	for node: Node in case.get_children():
 		if node is Button and node.text.begins_with("Pin progress"): pin = node
 	pin.pressed.emit(); await process_frame
-	check(loaded.recognition.state.pinned == "naturalist" and "Naturalist" in scene.recognition_button.text,"Real pin button updates durable HUD tracking")
+	check(loaded.recognition.state.pinned == "naturalist" and scene.recognition_button.text.is_empty() and "Naturalist" in scene.recognition_button.tooltip_text,"Real pin button updates durable icon-only HUD tracking and tooltip")
 	case.shop_requested.emit("hold"); await process_frame
 	var purchases: Array = scene.popup_body.find_children("*","Button",true,false).filter(func(b: Button) -> bool: return b.has_meta("upgrade_id"))
 	check(scene.popup_kind == "service" and purchases[0].get_meta("upgrade_id") == "hold","Badge reward link brings its real shop entry first")

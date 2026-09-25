@@ -90,6 +90,7 @@ var grazers: Array[Node3D] = []
 var grazer_motion: Array[RefCounted] = []
 var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
+var relay_motes: Array[MeshInstance3D] = []
 var ring: MeshInstance3D
 var beam: MeshInstance3D
 var beam_material: StandardMaterial3D
@@ -101,9 +102,9 @@ var latched: bool = false
 var elapsed: float = 0.0
 var tick_clock: float = 0.0
 var yaw: float = 0.0
-var pitch: float = 0.72
-var distance: float = 29.0
-var camera_distance_target: float = 29.0
+var pitch: float = 0.36
+var distance: float = 32.0
+var camera_distance_target: float = 32.0
 var zoom_ascent: bool = false
 var zoom_descent: bool = false
 var landing_waypoints: Array[Vector3] = []
@@ -293,6 +294,17 @@ func terrain_height(x: float, z: float) -> float:
 func _terrain_base(x: float, z: float) -> float:
 	return Geography.surface_base(world_definition,x,z)
 
+func _distant_landform(x: float, z: float) -> float:
+	# Broad, warped bands create a low-contrast far horizon without extending the
+	# locally playable terrain or repeating the close-range procedural ripples.
+	var warp_x: float = sin((x+z)*0.006)*42.0
+	var warp_z: float = cos((x-z)*0.004)*54.0
+	var ridge: float = sin((x+warp_x)*0.018+cos((z+warp_z)*0.009)*1.4)
+	var shoulder: float = sin((z+warp_z)*0.013+sin((x+warp_x)*0.007)*1.1)
+	var broken_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*0.35
+	var amplitude: float = 0.8 if world_definition.archetype == "frozen" else 1.0
+	return (3.0+ridge*6.0+shoulder*2.0+broken_edge)*amplitude
+
 func _mat(color: Color, emissive: bool = false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
@@ -326,29 +338,31 @@ func _make_world() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color("253d59") if world_definition.archetype == "frozen" else Color("543a37") if world_definition.archetype == "arid" else Color("192d48")
-	sky_material.sky_horizon_color = Color("a3a4b9")
-	sky_material.ground_bottom_color = Color("544959")
-	sky_material.ground_horizon_color = Color("a3a4b9")
-	sky_material.sky_curve = 0.25
+	sky_material.sky_top_color = Color("5a7187") if world_definition.archetype == "arid" else Color("28425e") if world_definition.archetype == "frozen" else Color("48647a")
+	sky_material.sky_horizon_color = Color("8291a2") if world_definition.archetype == "arid" else Color("9ab2c2") if world_definition.archetype == "frozen" else Color("8499a8")
+	sky_material.ground_bottom_color = Color("382c30")
+	sky_material.ground_horizon_color = Color("a87b5e")
+	sky_material.sky_curve = 0.2
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("d4d5e9")
-	env.ambient_light_energy = 0.35
-	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	env.ambient_light_color = Color("bfa28d")
+	env.ambient_light_energy = 0.28
+	env.tonemap_mode = Environment.TONE_MAPPER_ACES
+	env.tonemap_exposure = 1.0
 	env.fog_enabled = true
-	env.fog_light_color = Color("69718d")
-	env.fog_density = 0.003
+	env.fog_light_color = Color("b99a83")
+	env.fog_density = 0.0021
 	world_env.environment = env
 	add_child(world_env)
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-42,-28,0)
-	sun.light_color = Color("ffdda7")
+	sun.rotation_degrees = Vector3(-34,-44,0)
+	sun.light_color = Color("ffeacc")
 	sun.light_energy = 0.85
 	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 110
+	sun.shadow_blur = 1.2
+	sun.directional_shadow_max_distance = 180.0
 	add_child(sun)
 	add_child(camera)
 	camera.current = true
@@ -356,22 +370,38 @@ func _make_world() -> void:
 	camera.far = 900
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# Distant scenery shares the height function, with coarse cells outside the basin.
+	# Distant scenery shares the height function, with coarser cells outside the basin.
 	# Playable travel/interaction bounds stay unchanged; this is not new explorable land.
 	var coordinates: Array[float] = []
-	for v: int in range(-1250,-50,60): coordinates.append(float(v))
-	for v: int in range(-50,51): coordinates.append(float(v))
-	for v: int in range(110,1251,60): coordinates.append(float(v))
+	for v: int in range(-1250,-50,20): coordinates.append(float(v))
+	for v: int in range(-50,51,2): coordinates.append(float(v))
+	for v: int in range(70,1251,20): coordinates.append(float(v))
 	for xi: int in range(coordinates.size()-1):
 		for zi: int in range(coordinates.size()-1):
 			for offset: Vector2 in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
 				var px: float = lerpf(coordinates[xi],coordinates[xi+1],offset.x)
 				var pz: float = lerpf(coordinates[zi],coordinates[zi+1],offset.y)
+				var radial_distance: float = Vector2(px,pz).length()
 				var h: float = terrain_height(px,pz)
-				var blend: float = clampf((sin(px*0.16+pz*0.05)+cos(pz*0.21))*0.25+0.5,0,1)
-				var color: Color = Color("666979").lerp(Color("b98e83"),blend).lerp(Color("ddba99"),smoothstep(1.0,4.0,h))
-				if world_definition.archetype == "frozen": color = Color("708f9b").lerp(Color("a9c2cf"),blend).lerp(Color("d1e0e3"),smoothstep(1,5,h))
-				elif world_definition.archetype == "arid": color = Color("735565").lerp(Color("ba8b64"),blend).lerp(Color("dac49c"),smoothstep(1,5,h))
+				# Fade from the authored local geography to larger irregular terrain forms.
+				# The distant shell is visual only; interaction and movement still use
+				# Geography.surface_height() and their existing bounds.
+				var far_blend: float = smoothstep(55.0,155.0,radial_distance)
+				h = lerpf(h,_distant_landform(px,pz),far_blend)
+				# Curve only the distant visual shell away from the local flight area so the
+				# playable surface reads as part of a planet instead of an endless plane.
+				var visual_radius: float = maxf(0.0,radial_distance-50.0)
+				h -= visual_radius*visual_radius/3200.0
+				var local_color_mix: float = clampf((sin(px*0.04+pz*0.015)+cos(pz*0.05))*0.25+0.5,0,1)
+				var far_color_mix: float = clampf(0.52+sin(px*0.006+sin(pz*0.004)*1.8)*0.14+cos(pz*0.007-sin(px*0.003))*0.12,0.25,0.8)
+				var color_mix: float = lerpf(local_color_mix,far_color_mix,far_blend)
+				var color: Color = Color("8c5e4a").lerp(Color("b37d57"),color_mix).lerp(Color("cda077"),smoothstep(1.0,4.0,h))
+				if world_definition.archetype == "temperate":
+					var pond_dist: float = sqrt(pow((px+23.0)/7.2, 2.0) + pow(pz/13.5, 2.0))
+					var shore_factor: float = 1.0 - smoothstep(0.85, 1.35, pond_dist)
+					color = color.lerp(Color("5e4939"), shore_factor * 0.75)
+				elif world_definition.archetype == "frozen": color = Color("708f9b").lerp(Color("a9c2cf"),color_mix).lerp(Color("d1e0e3"),smoothstep(1,5,h))
+				elif world_definition.archetype == "arid": color = Color("735565").lerp(Color("ba8b64"),color_mix).lerp(Color("dac49c"),smoothstep(1,5,h))
 				surface.set_color(color)
 				surface.add_vertex(Vector3(px,h,pz))
 	surface.generate_normals()
@@ -385,13 +415,13 @@ func _make_world() -> void:
 	rock_mesh.rings = 3
 	rock_mesh.radius = 1
 	rock_mesh.height = 2
-	var rock_mat := _mat(Color("857888"))
+	var rock_mat := _mat(Color("52423c"))
 	for i: int in range(65):
 		var a: float = rng.randf()*TAU
 		var r: float = rng.randf_range(24,47)
 		var at := Vector3(cos(a)*r,0,sin(a)*r)
 		at.y = terrain_height(at.x,at.z)-0.4
-		var rock_size := Vector3(rng.randf_range(1,3.8),rng.randf_range(1,5),rng.randf_range(1,2.7))
+		var rock_size := Vector3(rng.randf_range(0.8,2.4),rng.randf_range(0.9,3.2),rng.randf_range(0.8,2.1))
 		var overlaps_defense: bool = false
 		for id: String in SurfaceCombat.profiles(rendered_planet):
 			var site: Vector3 = SurfaceCombat.home(rendered_planet,id)
@@ -405,7 +435,7 @@ func _make_world() -> void:
 	pool.radius = 1
 	pool.height = 2
 	var water_shader := Shader.new()
-	water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){float ripple=sin(wp.x*1.8+TIME*0.7)*sin(wp.z*2.0-TIME*0.5); ALBEDO=mix(vec3(0.15,0.34,0.39),vec3(0.30,0.52,0.53),ripple*0.5+0.5); ROUGHNESS=0.32; METALLIC=0.15;}"
+	water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){vec2 q=wp.xz-vec2(-23.0,0.0); float ring=sin(length(q)*1.35-TIME*0.48+sin(q.x*0.22+q.y*0.17)*0.45); float drift=sin(dot(q,vec2(0.32,0.18))+TIME*0.24); float sheen=clamp(0.62+ring*0.18+drift*0.07,0.0,1.0); ALBEDO=mix(vec3(0.09,0.24,0.30),vec3(0.23,0.47,0.50),sheen); ROUGHNESS=0.24; METALLIC=0.04;}"
 	var water_material := ShaderMaterial.new()
 	water_material.shader = water_shader
 	var water: MeshInstance3D = _mesh(pool,Vector3(-23,-0.6,0),water_material)
@@ -425,6 +455,14 @@ func _make_world() -> void:
 		at.y = terrain_height(at.x,at.z)
 		wild_plants.append(_asset("pod",at,0.9 if i == 0 else 0.7))
 	targets.pod = wild_plants[0]
+	# Additional reed clusters hugging the pond shoreline
+	if world_definition.archetype != "arid":
+		for i: int in range(8):
+			var angle: float = (i / 8.0) * TAU
+			var px: float = -23.0 + cos(angle) * 5.8
+			var pz: float = sin(angle) * 11.5
+			var shore_pod := _asset("pod", Vector3(px, terrain_height(px, pz), pz), rng.randf_range(0.35, 0.65))
+			shore_pod.rotation.y = rng.randf() * TAU
 	for i: int in range(3):
 		var at := Vector3(-9+i*3,6+i*0.4,-3-i*1.2)
 		grazers.append(_asset("grazer",at,0.8 if i == 0 else 0.5))
@@ -439,10 +477,11 @@ func _make_world() -> void:
 	var bed_mesh := CylinderMesh.new()
 	bed_mesh.top_radius = 4.0
 	bed_mesh.bottom_radius = 4.3
-	bed_mesh.height = 0.3
+	bed_mesh.height = 0.08
 	bed_mesh.radial_segments = 40
-	bed_material = _mat(Color("89a7ba"))
-	_mesh(bed_mesh,Vector3.ZERO,bed_material,bed)
+	bed_material = _mat(Color("7e776f"))
+	bed_material.roughness = 0.95
+	_mesh(bed_mesh,Vector3(0,-0.05,0),bed_material,bed)
 	for i: int in range(7):
 		var a: float = i*2.4
 		var plant: Node3D = _asset("pod",bed.position+Vector3(cos(a)*2.3,0.2,sin(a)*2.3),0.01)
@@ -454,14 +493,29 @@ func _make_world() -> void:
 	core.height = 1.1
 	relay_light = _mesh(core,relay.position+Vector3(0,2.8,-0.1),_mat(Color("a8ebce"),true))
 	relay_light.visible = false
+	# Bioluminescent floating motes orbiting the relay
+	var mote_mesh := SphereMesh.new()
+	mote_mesh.radius = 0.22
+	mote_mesh.height = 0.44
+	var mote_mat := StandardMaterial3D.new()
+	mote_mat.albedo_color = Color("7cf5d4")
+	mote_mat.emission_enabled = true
+	mote_mat.emission = Color("7cf5d4")
+	mote_mat.emission_energy_multiplier = 2.5
+	for i: int in range(8):
+		var mote := _mesh(mote_mesh, relay.position + Vector3(0, 1.5 + i * 0.4, 0), mote_mat)
+		relay_motes.append(mote)
 	ship = _asset("scout",Vector3(0,5,17))
 	scout_motion.setup(ship)
 	var torus := TorusMesh.new()
-	torus.inner_radius = 1.9
+	torus.inner_radius = 1.94
 	torus.outer_radius = 2.0
 	torus.rings = 32
 	torus.ring_segments = 8
-	ring = _mesh(torus,Vector3.ZERO,_mat(COLORS[0],true))
+	var ring_mat := StandardMaterial3D.new()
+	ring_mat.albedo_color = Color("cda077", 0.65)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring = _mesh(torus,Vector3.ZERO,ring_mat)
 	var cylinder := CylinderMesh.new()
 	cylinder.top_radius = 0.055
 	cylinder.bottom_radius = 0.14
@@ -697,7 +751,8 @@ func _make_ui() -> void:
 	if conflict_view != null: conflict_view.setup_ui(root)
 	if signal_view != null: signal_view.setup_ui(root)
 	recognition_button = _button("",_show_popup.bind("badges"),root)
-	recognition_button.position = Vector2(1010,80); recognition_button.size = Vector2(550,38)
+	recognition_button.position = Vector2(1536,24); recognition_button.size = Vector2(40,32)
+	recognition_button.add_theme_font_size_override("font_size",11)
 	Instruments.instrument(recognition_button,"log",Instruments.GOLD)
 	recognition_notice = preload("res://scripts/recognition_notice.gd").new(); root.add_child(recognition_notice)
 	recognition_notice.opened.connect(func() -> void: _show_popup("badges"))
@@ -1005,12 +1060,18 @@ func _update_visuals() -> void:
 	for i: int in range(wild_plants.size()):
 		wild_plants[i].scale = Vector3.ONE*(0.9 if i == 0 else (0.7 if i < int(model.state.native_stock) else 0.3))
 		wild_plants[i].rotation.z = sin(elapsed*1.1+i)*0.035
-	bed_material.albedo_color = Color("b08b6b") if model.state.warm else Color("89a7ba")
+	bed_material.albedo_color = Color("7a5d4e") if model.state.warm else Color("6e6962")
 	for i: int in range(grown_plants.size()):
 		grown_plants[i].visible = model.state.seeded
 		grown_plants[i].scale = Vector3.ONE*(0.08+float(model.state.growth)*(0.55+0.06*(i%3)))
 		grown_plants[i].rotation.z = sin(elapsed*1.2+i)*0.045
 	relay_light.visible = "relay" in model.state.scanned or model.state.growth >= 1
+	var relay_pos: Vector3 = targets.relay.position
+	for i: int in range(relay_motes.size()):
+		var m_ang: float = elapsed * 0.85 + (i / float(relay_motes.size())) * TAU
+		var m_rad: float = 1.35 + sin(elapsed * 1.5 + i) * 0.25
+		var m_y: float = 1.6 + sin(elapsed * 2.0 + i * 1.1) * 0.5 + (i * 0.3)
+		relay_motes[i].position = relay_pos + Vector3(cos(m_ang) * m_rad, m_y, sin(m_ang) * m_rad)
 	ring.position = _target_position()+Vector3(0,-0.8,0)
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
 	ring.visible = not kit_mode and not deploy_order and not camera.is_position_behind(_target_position())
@@ -1018,8 +1079,8 @@ func _update_visuals() -> void:
 		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
 		var label: Label = labels[id]
 		label.position = camera.unproject_position(at)-Vector2(label.size.x/2,20)
-		label.visible = not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
-		label.modulate.a = 1.0 if id == selected else 0.65
+		label.visible = id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
+		label.modulate.a = 1.0
 
 func _target_position(id: String = "") -> Vector3:
 	if id.is_empty(): id = selected
@@ -1624,10 +1685,10 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	climate_tool = ""
 	hud.select_tool(tool)
 	hud.set_orbital_mode(orbital)
-	if orbital: hud.show_group("Weapons")
+	if orbital: hud.set_active_group("Weapons")
 	use_button.disabled = orbital
 	if not preserve_zoom:
-		distance = 85 if orbital else 55
+		distance = 85 if orbital else 32
 		camera_distance_target = distance
 	else:
 		# Reference-frame changes keep scale; settle gently instead of snapping.
@@ -1660,7 +1721,7 @@ func _select_tool(value: String) -> void:
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
-	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
+	location_label.text = model.definition().name.capitalize() + (" orbit" if orbital else "")
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
 	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/12" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used()]
 	energy_bar.max_value = model.max_capacity("energy")
@@ -1774,14 +1835,15 @@ func _refresh_ui() -> void:
 	if not orbital and rendered_planet != "morrow": objective.text = model.definition().name+" · survey local life or return to orbit"
 	if orbital and not model.has_wreck() and orbital_target != "guardian":
 		objective.text = "Chart this world, dock for services, or choose your next destination."
-		subject.text = model.definition().name+" / orbit"
-		explanation.text = "Press M for planetary survey or G for the galaxy."
+		subject.text = ""
+		hud.action_state.text = ""
+		explanation.text = ""
 		use_button.disabled = true
 	if orbital and not model.has_wreck() and orbital_target == "guardian" and model.has_guardian():
 		objective.text = "Recover cargo or continue exploring." if s.guardian_disabled else "Hostile contact · dodge the marked strike or retreat."
 	departure_button.disabled = paused or _inspection_open() or (orbital and model.definition().sites.is_empty())
 	departure_button.text = ("Cancel approach" if landing else "Descend") if orbital else "Leave atmosphere"
-	location_label.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / SURFACE")
+	location_label.text = model.definition().name.capitalize() + (" orbit" if orbital else "")
 	if kit_mode or deploy_order:
 		objective.text = "Choose a clear surface site for your colony hub."
 		subject.text = "Colony kit / landing footprint"
@@ -1802,12 +1864,13 @@ func _refresh_ui() -> void:
 		recognition_button.visible = campaign != null and not popup.visible and not planet_map.visible and not system_map.visible and not sector_map.visible
 		if campaign != null:
 			var tiers: Dictionary = campaign.commerce.state.badges
-			recognition_button.text = campaign.Recognition.title(tiers)+" · %d points" % campaign.Recognition.points(tiers)
+			recognition_button.text = ""
 			var pin: String = campaign.recognition.state.pinned
 			if not pin.is_empty():
 				var tier: int = tiers[pin]; var badge: Dictionary = campaign.commerce.catalog.badges[pin]
-				recognition_button.text += " · "+badge.name+" %d/%d" % [campaign.commerce.progress(campaign,pin),badge.levels[mini(tier,4)]]
-			recognition_button.tooltip_text = "Badges and master ranks · click to inspect progress and shop unlocks"
+				recognition_button.tooltip_text = "%s · %d points · %s %d/%d" % [campaign.Recognition.title(tiers),campaign.Recognition.points(tiers),badge.name,campaign.commerce.progress(campaign,pin),badge.levels[mini(tier,4)]]
+			else:
+				recognition_button.tooltip_text = "%s · %d points · badges and shop unlocks" % [campaign.Recognition.title(tiers),campaign.Recognition.points(tiers)]
 	if system_map != null:
 		system_map.locked = paused or popup.visible
 		if system_map.visible: system_map.refresh()
@@ -2417,15 +2480,20 @@ func _build_service_ports() -> void:
 		mesh.ring_segments = 8
 		pad.mesh = mesh
 		pad.position = at-Vector3(0,2.5,0)
-		pad.material_override = _mat(Color("82d9c0"),true)
+		var pad_mat := StandardMaterial3D.new()
+		pad_mat.albedo_color = Color("82d9c0", 0.4)
+		pad_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pad_mat.emission_enabled = true
+		pad_mat.emission = Color("82d9c0") * 0.35
+		pad.material_override = pad_mat
 		parent.add_child(pad)
 		var label := Label3D.new()
 		label.text = "HOME PORT" if model.state.planet_id == model.state.homeworld_id and id == "basin_port" else "SHIP SERVICES"
 		label.position = at+Vector3(0,2,0)
-		label.font_size = 24
-		label.pixel_size = 0.015
+		label.font_size = 18
+		label.pixel_size = 0.012
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		label.modulate = Color("a2dec5")
+		label.modulate = Color("a2dec5", 0.75)
 		parent.add_child(label)
 
 func _approach_service(id: String) -> void:

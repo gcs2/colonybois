@@ -20,8 +20,9 @@ func run() -> void:
 	scene.audio.muted = true
 	var before: Vector3 = scene.ship.position
 	var time: int = scene.model.state.time
+	var initial_camera_distance: float = scene.camera_distance_target
 	wheel(scene,true)
-	check(scene.camera_distance_target > 55 and scene.altitude_order == -1,"Ordinary wheel changes camera scale, not altitude")
+	check(scene.camera_distance_target > initial_camera_distance and scene.altitude_order == -1,"Ordinary wheel changes camera scale, not altitude")
 	check(scene.ship.position == before and scene.model.state.time == time,"Changing camera does not move or tick the ship")
 	wheel(scene,false,true)
 	check(scene.altitude_order > before.y,"Ctrl-wheel retains explicit ascent control")
