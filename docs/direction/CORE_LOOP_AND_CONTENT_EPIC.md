@@ -11,11 +11,19 @@ Latest scope correction: coloring/sculpting are explicitly skipped and further p
 1. **Read a lead in the world.** The galaxy is a full-screen, spatial map with discovery fog, reachable-range constraints and ship-following travel. The system and planet views preserve the same geography and give a clear next place to go.
 2. **Pilot and investigate.** Descend, move freely, approach a landmark, living creature, resource or wreck. Choose a pictorial category and tool, target the world directly, and receive immediate visual, audio and text feedback.
 3. **Make a field decision.** Scan or collect useful cargo, uncover an upgrade or encounter danger. Finite energy, hull, cargo room and scarce finds make retreat, combat, tool choice or leaving something behind meaningful.
-4. **Bring the result into civilization.** Meet a recognizable alien, use a shop or trade relationship, sell or keep goods, and see the price, capacity, attitude and consequence before committing. Colony production and supply routes make later expeditions more capable; they do not replace piloting.
+4. **Bring the result into civilization.** Meet a recognizable alien, use a shop or trade relationship, sell or keep goods, and see the price, capacity, attitude and consequence before committing. Prospect and mine deposits, turn real inputs into useful products, and bring or route those goods to a buyer. Colony production and supply routes make later expeditions more capable; they do not replace piloting.
 5. **Carry consequences forward.** Record discoveries, agreements, losses and decisions in the chronicle. Achievements recognize varied play and unlock purchasable options; the player still pays and chooses what to install.
 6. **Follow a new possibility.** A capability, relationship, map reveal or living-world change opens another route. Story reveals the ancestors through present-day people, contested evidence and consequences, not a chain of recording hunts.
 
 This is the working core-loop target, not a claim that the connected experience is already fun or complete. Avoid compulsory gopher missions, passive energy regeneration and instant free colony establishment. Automate repetitive logistics only after the player has discovered and chosen them.
+
+## Economy direction: extraction, production and interdependence
+
+The user has reaffirmed that the economy must have meaningful mining and production, not just a row of sellable resources. Keep the source boundary honest: Spore's reference economy provides spice, colonies, markets, cargo, purchases and trade routes; **multi-stage manufacturing is our extension**, not a retail-parity claim.
+
+First prove one legible chain: scan a deposit → establish or use an extraction site → move raw material into finite storage → process it using an actual recipe/input and operating cost → use or sell the resulting product to a colony, shipyard or alien buyer. The player's choice should depend on planet specialization, equipment, storage/throughput, energy or labor, route cost, buyer demand and exposure to disruption. Show where stock came from, what was consumed, what was produced and why the outcome mattered.
+
+Keep the first balance pass small: a handful of functionally distinct goods and one or two short chains, with common materials remaining common. Use aggregate rates and bounded inventories; no per-citizen or per-unit world simulation. Add more chains only when the first one creates a satisfying expedition/trade choice. The [resource direction](RESOURCE_AND_UNLOCK_DIRECTION.md) already distinguishes common goods from scarce authored finds.
 
 ## What the Spore evidence changes in the plan
 
@@ -48,7 +56,7 @@ Do not broaden the source denominator or add content corpus while this single lo
 | Planets and geography | Different reasons to visit and different hazards | Shared seeded globe/site generation; generated landing regions still missing |
 | Flora, fauna and ecology | Collection, habitability and valuable interventions | Bounded habitat/trophic aggregates; collection/deployment must affect actual planets |
 | Cargo, commodities and artifacts | Scarce hold space and discovery value | Physical stock, provenance, quantity and capacity; surface store and hold cannot be conflated |
-| Trade and supply chains | Profit, specialization and interdependence | Provider prices, finite demand, real production, access and route costs; optional personal trade plus automation of repetition |
+| Trade and supply chains | Profit, specialization and interdependence | Prospecting/extraction, finite local stock, processing recipes, useful outputs, provider prices, demand, access and route costs; optional personal trade plus automation of repetition |
 | Colonies and cities | Production, services, administration and manpower | Expensive timed founding, aggregate development and finite demand; cities support space play, not a mandatory long opener |
 | Climate and ecological effects | Visible planetary agency and consequential choices | Existing climate/ecology tools remain; further planet editing, terrain brushes and coloring are outside current delivery scope |
 | Diplomacy and civilizations | Access, conflict, allies and expressive encounters | Nations differ from species and planets; government differs from philosophy; ties to trade, uplift, borders and obligations |

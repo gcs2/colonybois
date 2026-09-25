@@ -2,7 +2,7 @@
   "schema": 2,
   "as_of": "2026-09-25",
   "scope": "Base Space Stage experience audit; character/creature customization and Galactic Adventures excluded. Ship/building editor connections reference-only until delivery scope is agreed. Excluded world-editing stays reference-only.",
-  "closure": "OPEN: 61 source-linked workflow rows in ten primary-goal categories. Add a row when source review finds a distinct player action/outcome or meaningful boundary. This working partition is not proof of exhaustive retail feature discovery.",
+  "closure": "OPEN: 64 source-linked workflow rows in eleven provisional MECE categories after a direct Space Stage category census and targeted page reads. New source-found workflows have been added; 221 Space Stage article candidates and linked-category membership are not yet fully triaged, so this denominator remains provisional.",
   "source_video": "https://www.youtube.com/watch?v=0NN5fBVEHcA",
   "categories": [
     {
@@ -54,6 +54,11 @@
       "id": "presentation_application",
       "title": "Cinematics and application flow",
       "owner": "V01"
+    },
+    {
+      "id": "campaigns",
+      "title": "Campaigns, saves and scenario rules",
+      "owner": "S02"
     }
   ],
   "flows": [
@@ -192,7 +197,8 @@
         "black_hole",
         "galactic_core",
         "youtube_singularmix",
-        "youtube_gameplaydump"
+        "youtube_gameplaydump",
+        "star_system"
       ]
     },
     {
@@ -225,7 +231,9 @@
         "black_hole",
         "galactic_core",
         "youtube_singularmix",
-        "youtube_gameplaydump"
+        "youtube_gameplaydump",
+        "star_system",
+        "parsec"
       ]
     },
     {
@@ -315,7 +323,8 @@
         "black_hole",
         "galactic_core",
         "youtube_singularmix",
-        "youtube_gameplaydump"
+        "youtube_gameplaydump",
+        "parsec"
       ]
     },
     {
@@ -865,7 +874,8 @@
         "artifact",
         "rares",
         "natural_landmarks",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "extinction"
       ]
     },
     {
@@ -896,7 +906,9 @@
         "tools",
         "spice",
         "strategy_space",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "city",
+        "colonization"
       ]
     },
     {
@@ -929,7 +941,9 @@
         "tools",
         "spice",
         "strategy_space",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "city",
+        "colonization"
       ]
     },
     {
@@ -960,7 +974,9 @@
         "tools",
         "spice",
         "strategy_space",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "city",
+        "colonization"
       ]
     },
     {
@@ -991,7 +1007,9 @@
         "tools",
         "spice",
         "strategy_space",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "city",
+        "colonization"
       ]
     },
     {
@@ -1022,7 +1040,9 @@
         "tools",
         "spice",
         "strategy_space",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "city",
+        "colonization"
       ]
     },
     {
@@ -1337,7 +1357,9 @@
         "grox",
         "strategy_space",
         "youtube_singularmix",
-        "gamepressure_contact"
+        "gamepressure_contact",
+        "bribe",
+        "gift"
       ]
     },
     {
@@ -1573,7 +1595,8 @@
         "planets",
         "natural_landmarks",
         "galactic_core",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "planetary_threats"
       ]
     },
     {
@@ -1602,7 +1625,9 @@
         "planets",
         "natural_landmarks",
         "galactic_core",
-        "youtube_singularmix"
+        "youtube_singularmix",
+        "planetary_threats",
+        "star_system"
       ]
     },
     {
@@ -1968,7 +1993,8 @@
         "gamepressure_colonies",
         "gamepressure_trade",
         "modapi_ui",
-        "galactic_adventures"
+        "galactic_adventures",
+        "staff_of_life"
       ]
     },
     {
@@ -2037,7 +2063,8 @@
         "gamepressure_colonies",
         "gamepressure_trade",
         "modapi_ui",
-        "galactic_adventures"
+        "galactic_adventures",
+        "saved_game"
       ]
     },
     {
@@ -2076,8 +2103,8 @@
     {
       "id": "RF060",
       "key": "new_continue",
-      "category": "presentation_application",
-      "owner": "V01",
+      "category": "campaigns",
+      "owner": "S02",
       "title": "New/continue flow, scenario identity and sandbox/cheat distinctions",
       "evidence_times": [],
       "visual_sampled": false,
@@ -2103,7 +2130,9 @@
         "gamepressure_colonies",
         "gamepressure_trade",
         "modapi_ui",
-        "galactic_adventures"
+        "galactic_adventures",
+        "cheats",
+        "saved_game"
       ]
     },
     {
@@ -2149,12 +2178,85 @@
         "modapi_ui",
         "galactic_adventures"
       ]
+    },
+    {
+      "id": "RF062",
+      "key": "staff_of_life_reward_use",
+      "category": "living_worlds",
+      "owner": "L01",
+      "title": "Galactic Core reward: limited-use Staff of Life and planetary ecosystem transformation",
+      "evidence_times": [],
+      "visual_sampled": false,
+      "readable_evidence": false,
+      "interaction_verified": false,
+      "presentation_reviewed": false,
+      "audio_reviewed": false,
+      "before_action_result": false,
+      "costs_restrictions_verified": false,
+      "failure_or_boundary_verified": false,
+      "independent_corroboration": false,
+      "adaptation_recorded": false,
+      "note": "Direct wiki reading describes Core contact as the award source and a 42-charge, cooldown-limited T3/ecosystem transformation. The ability, charge UI, use boundary and consequences remain unverified in retail footage.",
+      "source_refs": [
+        "staff_of_life",
+        "galactic_core",
+        "climate",
+        "planets"
+      ]
+    },
+    {
+      "id": "RF063",
+      "key": "cross_save_empires",
+      "category": "campaigns",
+      "owner": "S02",
+      "title": "Other saved games appear as empires with asymmetric interaction and tool restrictions",
+      "evidence_times": [],
+      "visual_sampled": false,
+      "readable_evidence": false,
+      "interaction_verified": false,
+      "presentation_reviewed": false,
+      "audio_reviewed": false,
+      "before_action_result": false,
+      "costs_restrictions_verified": false,
+      "failure_or_boundary_verified": false,
+      "independent_corroboration": false,
+      "adaptation_recorded": false,
+      "note": "Distinct Space Stage cross-save feature found in the Saved game article. Track for parity; project delivery scope remains a separate decision.",
+      "source_refs": [
+        "saved_game",
+        "stage",
+        "space_category"
+      ]
+    },
+    {
+      "id": "RF064",
+      "key": "planetary_hazards",
+      "category": "survival",
+      "owner": "C01",
+      "title": "Planetary hazard telegraph, avoidance and ship damage",
+      "evidence_times": [],
+      "visual_sampled": false,
+      "readable_evidence": false,
+      "interaction_verified": false,
+      "presentation_reviewed": false,
+      "audio_reviewed": false,
+      "before_action_result": false,
+      "costs_restrictions_verified": false,
+      "failure_or_boundary_verified": false,
+      "independent_corroboration": false,
+      "adaptation_recorded": false,
+      "note": "Direct wiki reading identifies storms, geysers, meteors and epic-creature attacks as flight hazards. Warning timing, sound, damage values and avoidance inputs still require gameplay evidence.",
+      "source_refs": [
+        "planetary_threats",
+        "environment",
+        "energy"
+      ]
     }
   ],
   "denominator_contract": {
     "unit": "One distinct player workflow defined by primary goal, action/input, observable result, applicable costs/restrictions, and meaningful failure or boundary conditions.",
-    "workflow_count": 61,
-    "categories": 10,
+    "workflow_count": 64,
+    "categories": 11,
     "partition_rule": "Every current workflow has one stable ID and one primary-goal category. MECE applies to these rows, not to the yet-unproven completeness of the retail game inventory.",
     "expansion_rule": "Add newly discovered workflows instead of merging distinct outcomes or freezing the denominator to protect a percentage.",
     "scope": "Base Spore Space Stage. Galactic Adventures and community content are separately labeled; RF021 world decoration and RF061 editor connection remain reference-only under current user scope.",

@@ -1114,6 +1114,397 @@
       ],
       "evidence": "Official manual used for adjacent SimCity 4 systems research.",
       "limits": "Cross-game urban-simulation source; contributes no Spore parity entry."
+    },
+    "category_achievements": {
+      "url": "https://spore.fandom.com/wiki/Category:Achievements",
+      "title": "Category:Achievements",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 173 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_badge": {
+      "url": "https://spore.fandom.com/wiki/Category:Badge",
+      "title": "Category:Badge",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 42 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_colonization_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Colonization_Tools",
+      "title": "Category:Colonization Tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 0 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The rendered category page displayed zero members; redirect/maintenance status remains to be checked.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_decorations": {
+      "url": "https://spore.fandom.com/wiki/Category:Decorations",
+      "title": "Category:Decorations",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 9 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_galactic_objects": {
+      "url": "https://spore.fandom.com/wiki/Category:Galactic_Objects",
+      "title": "Category:Galactic Objects",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 19 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_grox": {
+      "url": "https://spore.fandom.com/wiki/Category:Grox",
+      "title": "Category:Grox",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 22 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_main_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Main_tools",
+      "title": "Category:Main tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 0 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The rendered category page displayed zero members; redirect/maintenance status remains to be checked.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_permanent_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Permanent_tools",
+      "title": "Category:Permanent tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 31 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_philosophy": {
+      "url": "https://spore.fandom.com/wiki/Category:Philosophy",
+      "title": "Category:Philosophy",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 11 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_planet_atmospheric_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Planet_Atmospheric_tools",
+      "title": "Category:Planet Atmospheric tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 1 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_planet_coloring_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Planet_Coloring_tools",
+      "title": "Category:Planet Coloring tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 10 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_planet_sculpting_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Planet_Sculpting_tools",
+      "title": "Category:Planet Sculpting tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 17 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_planets": {
+      "url": "https://spore.fandom.com/wiki/Category:Planets",
+      "title": "Category:Planets",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 1263 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The page displayed 1,263 total; only its first 200 links were exposed in the reviewed page before pagination.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_planets_by_type": {
+      "url": "https://spore.fandom.com/wiki/Category:Planets_by_type",
+      "title": "Category:Planets by type",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 26 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_rares": {
+      "url": "https://spore.fandom.com/wiki/Category:Rares",
+      "title": "Category:Rares",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 38 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_ship_abilities": {
+      "url": "https://spore.fandom.com/wiki/Category:Ship_abilities",
+      "title": "Category:Ship abilities",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 0 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The rendered category page displayed zero members; redirect/maintenance status remains to be checked.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_ship_weapons": {
+      "url": "https://spore.fandom.com/wiki/Category:Ship_weapons",
+      "title": "Category:Ship weapons",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 1 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_socializing_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Socializing_tools",
+      "title": "Category:Socializing tools",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 0 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The rendered category page displayed zero members; redirect/maintenance status remains to be checked.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_sol": {
+      "url": "https://spore.fandom.com/wiki/Category:Sol",
+      "title": "Category:Sol",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 13 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_space_combat": {
+      "url": "https://spore.fandom.com/wiki/Category:Space_combat",
+      "title": "Category:Space combat",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 5 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_stellar_space": {
+      "url": "https://spore.fandom.com/wiki/Category:Stellar_space",
+      "title": "Category:Stellar space",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 5 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_terraforming": {
+      "url": "https://spore.fandom.com/wiki/Category:Terraforming",
+      "title": "Category:Terraforming",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 35 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_terrain_editor_images": {
+      "url": "https://spore.fandom.com/wiki/Category:Terrain_editor_images",
+      "title": "Category:Terrain editor images",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 0 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count. The rendered category page displayed zero members; redirect/maintenance status remains to be checked.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_trait": {
+      "url": "https://spore.fandom.com/wiki/Category:Trait",
+      "title": "Category:Trait",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 41 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_transportation": {
+      "url": "https://spore.fandom.com/wiki/Category:Transportation",
+      "title": "Category:Transportation",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 1 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_ufo_images": {
+      "url": "https://spore.fandom.com/wiki/Category:UFO_images",
+      "title": "Category:UFO images",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 193 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "category_ufo_shop_images": {
+      "url": "https://spore.fandom.com/wiki/Category:UFO_shop_images",
+      "title": "Category:UFO shop images",
+      "evidence": "Directly opened in browser 2026-09-25; page displayed 2 items.",
+      "limits": "Displayed category membership count; overlaps other categories and is not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "cheats": {
+      "url": "https://spore.fandom.com/wiki/Cheats",
+      "title": "Cheats",
+      "evidence": "Directly read in browser 2026-09-25: advantage cheats can flag a save with Joker and block achievements; utility commands are a separate class.",
+      "limits": "The page mixes stages and community notes; exact retail behavior and our sandbox policy need deliberate verification.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "bribe": {
+      "url": "https://spore.fandom.com/wiki/Bribe",
+      "title": "Bribe",
+      "evidence": "Directly read the Space Stage section 2026-09-25: tribute demands, gifts and relationship penalties vary by attitude and empire archetype.",
+      "limits": "Some amount/rank/difficulty details are described as variable; verify exact behavior in the retail version.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "gift": {
+      "url": "https://spore.fandom.com/wiki/Gift",
+      "title": "Gift",
+      "evidence": "Directly read 2026-09-25: gifting is a deliberate contact action with a relationship effect.",
+      "limits": "The article combines Tribal, Civilization and Space Stage mechanics; exact Space Stage values need corroboration.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "city": {
+      "url": "https://spore.fandom.com/wiki/City",
+      "title": "City",
+      "evidence": "Directly read 2026-09-25: cities/colonies use a bounded ring layout, building classes and adjacency; Space Stage cities produce spice.",
+      "limits": "Mixed-stage user-customized city system; this is a reference mechanic, not approval to copy the city presentation.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "colonization": {
+      "url": "https://spore.fandom.com/wiki/Colonization",
+      "title": "Colonization",
+      "evidence": "Directly read 2026-09-25: charged Colony Incredi-Pak establishes colonies subject to ownership, planet and T-score restrictions; the player colony count is limited.",
+      "limits": "Community-edited summary; exact caps and suitability behavior need retail cross-check.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "star_system": {
+      "url": "https://spore.fandom.com/wiki/Star_system",
+      "title": "Star system",
+      "evidence": "Directly read 2026-09-25: system view exposes orbital bodies and hover information about life, atmosphere and artifacts.",
+      "limits": "The article states that only a bounded subset of bodies is shown; exact scan/control behavior needs video or manual corroboration.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "parsec": {
+      "url": "https://spore.fandom.com/wiki/Parsec",
+      "title": "Parsec",
+      "evidence": "Directly read 2026-09-25: listed Interstellar Drive ranges are 3/5/8/12/20 pc across five levels.",
+      "limits": "The article documents an apparent coordinate-scale discrepancy; treat listed ranges as game UI values, not physical galaxy scale.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "planetary_threats": {
+      "url": "https://spore.fandom.com/wiki/Planetary_Threats",
+      "title": "Planetary Threats",
+      "evidence": "Directly read 2026-09-25: Space Stage hazards include storms, geysers, meteors and epic-creature attacks; warnings and damage are part of survival.",
+      "limits": "Page includes multiple stages and does not verify exact damage, timing, avoidance inputs or audio mix.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "saved_game": {
+      "url": "https://spore.fandom.com/wiki/Saved_game",
+      "title": "Saved game",
+      "evidence": "Directly read 2026-09-25: another save can appear as an empire with one-sided contact/alliance and restrictions on purchase, conquest, routes and world-altering tools.",
+      "limits": "Community-edited feature description; determine separately whether this is in delivery scope or retained as parity-only reference.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "extinction": {
+      "url": "https://spore.fandom.com/wiki/Extinction",
+      "title": "Extinction",
+      "evidence": "Directly read 2026-09-25: Space Stage Species Eradicator can remove a species and permit replacement.",
+      "limits": "The article chiefly discusses Creature Stage extinction; Space Stage consequences require separate corroboration.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
+    },
+    "staff_of_life": {
+      "url": "https://spore.fandom.com/wiki/Staff_of_Life",
+      "title": "Staff of Life",
+      "evidence": "Directly read 2026-09-25: meeting Steve at the Galactic Core awards a limited-use tool that sets T-score to T3 and seeds an ecosystem.",
+      "limits": "The article lists 42 charges and a cooldown; verify acquisition/use presentation and current retail behavior in gameplay.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_SOURCE_REGISTER.md"
+      ]
     }
   },
   "families": [
@@ -2450,19 +2841,19 @@
     },
     {
       "id": "category_scope_filter",
-      "question": "The Space Stage category lists 250 mixed articles. Audit gameplay-relevant pages and record exclusions; cross-stage, Galactic Adventures, user creations/fiction and metadata mean 250 is not a feature count.",
+      "question": "The live Space Stage category displayed 251 mixed entries (221 article links and 30 subcategory links); opened child-index counts overlap and are not features. Triage gameplay-relevant candidates; record cross-stage, Galactic Adventures, user creations/fiction, asset and metadata exclusions. The candidate set remains open.",
       "owner": "R01"
     }
   ],
   "source_census": {
-    "registered_source_records": 106,
-    "sporewiki_pages": 84,
+    "registered_source_records": 144,
+    "sporewiki_pages": 122,
     "strategywiki_pages": 4,
     "youtube_videos": 4,
     "gamepressure_guides": 4,
     "official_ea_maxis_references": 5,
     "community_reverse_engineering_references": 1,
-    "interpretation": "Distinct canonical external pages, videos and visual-reference files cited in maintained documents/evidence. URL host aliases and video timestamp variants are normalized; these counts do not imply full-page reading, feature coverage, or verified behavior.",
+    "interpretation": "Distinct canonical external pages, videos and visual-reference files cited in maintained documents/evidence. URL host aliases and video timestamp variants are normalized; the 30 immediate Space Stage child categories were opened and 11 articles directly read this pass. The register stores links, provenance and short notes, not full article/video copies; counts do not imply exhaustive reading, feature coverage, or verified behavior.",
     "gamepressure_visual_references": 4
   },
   "wiki_category_census": [

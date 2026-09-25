@@ -2,7 +2,7 @@
 
 > Inventory of distinct external references already cited in maintained project documents. This is provenance and audit coverage, not a claim every page was opened or fully read. [Feature denominator](../parity/COVERAGE.md) and [evidence report](../parity/EXPERIENCE_REPORT.md) own the separate measurements.
 
-Updated 25 September 2026. **106 registered references:** 84 SporeWiki (Fandom), 4 StrategyWiki, 4 YouTube, 4 Gamepressure guides, 4 Gamepressure visual references, 5 Official EA/Maxis, 1 Community reverse-engineering reference. The count excludes duplicate timestamp variants of the same video.
+Updated 25 September 2026. **144 registered references:** 122 SporeWiki (Fandom), 4 StrategyWiki, 4 YouTube, 4 Gamepressure guides, 4 Gamepressure visual references, 5 Official EA/Maxis, 1 Community reverse-engineering reference. The register stores URLs, provenance and short evidence notes for retrieval; it does not mirror full articles or video files. The count excludes duplicate timestamp variants of the same video.
 
 ## Primary gameplay-video bookmark
 
@@ -14,19 +14,58 @@ To suggest a moment, pause the video, right-click the picture, choose **Copy vid
 
 ## Live wiki-category census (25 September 2026)
 
-A direct browser inspection of SporeWiki's category indexes gives a candidate-page census, separate from both the 61 gameplay workflows and the 106 unique references cited in project documents:
+A direct browser inspection of SporeWiki's category indexes gives a candidate-page census, separate from both the 64 provisional gameplay workflows and the 144 unique references cited in project documents:
 
 - [Category:Space stage](https://spore.fandom.com/wiki/Category:Space_stage) displayed **251 entries**: 221 article-page links and 30 subcategory links. A search-indexed copy still reported 250, so the live browser count is recorded with that one-entry discrepancy. Membership is broad: it includes cross-stage topics, editor/asset pages, fictional and user pages, and category metadata. It is a discovery index, not 251 gameplay features.
 - [Category:Ship Tools](https://spore.fandom.com/wiki/Category:Ship_Tools) displayed **122 entries**: 110 mixed article/utility/series/template/user-page links and 12 subcategory links. It is not a count of 122 functional equipment items.
 - The directly read [Ship Tools article](https://spore.fandom.com/wiki/Ship_Tools) says “roughly 184 tools” and divides them into eight functional groups and three usage types (permanent, standard equipment, charged). That figure is not directly comparable to the category's page-entry count; exact item, variant, hidden-content and category boundaries remain to be reconciled.
-- The [Space Stage article](https://spore.fandom.com/wiki/Space_Stage) was read directly in the browser this pass. Its coverage includes communication, rare galactic formations, collections, badges and promotions, alien empires, abilities, spice and trade routes, consequence abilities, philosophies, achievements, ship tools, play modes, difficulty/strategy and easter eggs. The existing 61 workflow rows map several of these areas, but the category candidates have not yet all been triaged against them.
-- Therefore **84 SporeWiki records means 84 directly cited page URLs**, not all 221 Space Stage article candidates. The 106-reference register is a traceable citation census of maintained project documents, not an exhaustive page-reading claim.
+- The [Space Stage article](https://spore.fandom.com/wiki/Space_Stage) was read directly in the browser this pass. Its coverage includes communication, rare galactic formations, collections, badges and promotions, alien empires, abilities, spice and trade routes, consequence abilities, philosophies, achievements, ship tools, play modes, difficulty/strategy and easter eggs. The current 64 workflow rows map several of these areas, but the category candidates have not yet all been triaged against them.
+- Therefore **122 SporeWiki records means 122 directly cited page URLs**, not all 221 Space Stage article candidates. The 144-reference register is a traceable citation census of maintained project documents, not an exhaustive page-reading claim.
+
+### Immediate category children opened in the browser
+
+On 25 September 2026, all 30 subcategory links shown by `Category:Space_stage` were opened. The values below are each category page's displayed `All items` count, not distinct Space Stage features. Categories overlap, and several contain every-stage records, user creations, or image galleries. This is a breadth check on the index graph; it does **not** mean each member article was read. `Category:Planets` displayed 1,263 entries; the page exposed its first 200 links and a continuation, so the remaining user-planet list was not enumerated.
+
+| Child category | Displayed entries | Initial triage |
+|---|---:|---|
+| [Achievements](https://spore.fandom.com/wiki/Category:Achievements) | 173 | Cross-stage progression candidates; isolate Space Stage set |
+| [Badge](https://spore.fandom.com/wiki/Category:Badge) | 42 | Cross-stage badge catalogue; reconcile to 30 Space families |
+| [Colonization Tools](https://spore.fandom.com/wiki/Category:Colonization_Tools) | 0 | Empty/redirect/maintenance category; resolve separately |
+| [Decorations](https://spore.fandom.com/wiki/Category:Decorations) | 9 | Asset/content references; check gameplay relevance |
+| [Galactic Objects](https://spore.fandom.com/wiki/Category:Galactic_Objects) | 19 | Navigation/discovery candidates |
+| [Grox](https://spore.fandom.com/wiki/Category:Grox) | 22 | Faction, territory and character references |
+| [Main tools](https://spore.fandom.com/wiki/Category:Main_tools) | 0 | Empty/redirect/maintenance category; resolve separately |
+| [Permanent tools](https://spore.fandom.com/wiki/Category:Permanent_tools) | 31 | Persistent equipment candidates |
+| [Philosophy](https://spore.fandom.com/wiki/Category:Philosophy) | 11 | Civilization identity/power candidates |
+| [Planet Atmospheric tools](https://spore.fandom.com/wiki/Category:Planet_Atmospheric_tools) | 1 | Planet intervention candidate |
+| [Planet Coloring tools](https://spore.fandom.com/wiki/Category:Planet_Coloring_tools) | 10 | Reference-only; delivery excluded by user |
+| [Planet Sculpting tools](https://spore.fandom.com/wiki/Category:Planet_Sculpting_tools) | 17 | Reference-only; delivery excluded by user |
+| [Planets](https://spore.fandom.com/wiki/Category:Planets) | 1,263 | User-authored planet corpus; first 200 links visible, not a feature count |
+| [Planets by type](https://spore.fandom.com/wiki/Category:Planets_by_type) | 26 | Environment and planet-content candidates |
+| [Rares](https://spore.fandom.com/wiki/Category:Rares) | 38 | Collectible/artifact candidates |
+| [Ship abilities](https://spore.fandom.com/wiki/Category:Ship_abilities) | 0 | Empty/redirect/maintenance category; resolve separately |
+| [Ship Tools](https://spore.fandom.com/wiki/Category:Ship_Tools) | 122 | Mixed equipment pages and subcategories; compare with article's ~184 and project 189 rows |
+| [Ship weapons](https://spore.fandom.com/wiki/Category:Ship_weapons) | 1 | Weapon-family index candidate |
+| [Socializing tools](https://spore.fandom.com/wiki/Category:Socializing_tools) | 0 | Empty/redirect/maintenance category; resolve separately |
+| [Sol](https://spore.fandom.com/wiki/Category:Sol) | 13 | Earth/Sol content and scenario candidates |
+| [Space combat](https://spore.fandom.com/wiki/Category:Space_combat) | 5 | Combat and fleet candidates |
+| [Space stage traits](https://spore.fandom.com/wiki/Category:Space_stage_traits) | 12 | Consequence-trait catalogue |
+| [Stellar space](https://spore.fandom.com/wiki/Category:Stellar_space) | 5 | Star/system/navigation candidates |
+| [Terraforming](https://spore.fandom.com/wiki/Category:Terraforming) | 35 | Planet intervention and environment candidates |
+| [Terrain editor images](https://spore.fandom.com/wiki/Category:Terrain_editor_images) | 0 | Reference-only asset category; delivery excluded by user |
+| [Trait](https://spore.fandom.com/wiki/Category:Trait) | 41 | Cross-stage trait catalogue; isolate Space consequences |
+| [Transportation](https://spore.fandom.com/wiki/Category:Transportation) | 1 | Navigation candidate |
+| [UFO images](https://spore.fandom.com/wiki/Category:UFO_images) | 193 | Image gallery, not gameplay feature count |
+| [UFO shop images](https://spore.fandom.com/wiki/Category:UFO_shop_images) | 2 | Image references, not gameplay feature count |
+| [Weapon tools](https://spore.fandom.com/wiki/Category:Weapon_tools) | 18 | Weapon-family and variant candidates |
+
+The next denominator audit should reconcile the **221 article links plus these category families** against (a) the 64 provisional workflows, (b) the separate tool/upgrade variant manifest, (c) badges/ranks/achievements/traits, and (d) named reference-only or excluded material. Add a workflow only when the source reveals a distinct player action/outcome or meaningful boundary; do not turn each catalogue variant, image, user planet, or badge tier into a fake gameplay workflow. Record irrelevant, duplicate, cross-stage, expansion, and undecided candidates explicitly so the denominator can close without pretending every wiki page is an independent feature.
 
 The project's current browser bookmark for the 5:51:00 SingularMix video is the link above and the preserved YouTube tab. YouTube's caption control reports captions unavailable, and transcript export on 25 September returned “No transcript is available.” Exact dialogue must be transcribed from readable frames or supplied timestamps; the muted screenshot samples provide no listening evidence. The browser is signed out, so the video has not been saved to a YouTube account playlist.
 
 ## What the project tracks
 
-- **Gameplay workflows:** 61 rows (`RF001–RF061`) in ten primary-goal categories; each row has one category and registered source IDs. This is a provisional, expandable research partition, not an exhaustive feature claim.
+- **Gameplay workflows:** 64 rows (`RF001–RF064`) in eleven provisional primary-goal categories; each row has one category and registered source IDs. This remains open because 221 Space Stage article candidates and child-category membership are not fully triaged.
 - **Catalogs:** 84 tool/equipment families and 189 normalized variants; 30 badge families / 134 listed tiers (a wiki total of 139 conflicts); ten master ranks; 40 Space Stage achievements; twelve inherited traits. These are separate counts and unresolved catalogs.
 - **Evidence quality:** visual sampling, readable text/state, interaction proof, presentation review and audio review are reported separately per workflow.
 - **Implementation and acceptance:** `docs/TASK_BOARD.md`, mock/view status, tests and native user review are separate measures. There is no defensible single parity percentage.
@@ -35,7 +74,7 @@ The project's current browser bookmark for the 5:51:00 SingularMix video is the 
 
 The table records all unique SporeWiki/StrategyWiki pages and YouTube videos found in the maintained project docs and the machine-readable registry, plus the existing official and guide references. `Evidence recorded` preserves the current confidence note; the citation trail points back to the project file that used the link.
 
-### SporeWiki (Fandom) (84)
+### SporeWiki (Fandom) (122)
 
 | ID | Reference | Evidence recorded | Cited by |
 |---|---|---|---|
@@ -123,6 +162,44 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `trader_philosophy` | [Trader (philosophy)](https://spore.fandom.com/wiki/Trader_%28philosophy%29) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/art/CHARACTER_ARCHETYPES.md` |
 | `turret` | [Turret](https://spore.fandom.com/wiki/Turret) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/systems/EMPIRE_CONFLICT.md`, `docs/systems/TERRITORIAL_COMBAT.md` |
 | `war` | [War](https://spore.fandom.com/wiki/War) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/systems/EMPIRE_CONFLICT.md`, `docs/systems/TERRITORIAL_COMBAT.md` |
+| `category_achievements` | [Category:Achievements](https://spore.fandom.com/wiki/Category:Achievements) | Browser opened 2026-09-25: displayed 173 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_badge` | [Category:Badge](https://spore.fandom.com/wiki/Category:Badge) | Browser opened 2026-09-25: displayed 42 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_colonization_tools` | [Category:Colonization Tools](https://spore.fandom.com/wiki/Category:Colonization_Tools) | Browser opened 2026-09-25: displayed 0 category entries; index only, overlapping membership, not a feature count. Rendered page showed zero members; redirect/maintenance status remains unresolved. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_decorations` | [Category:Decorations](https://spore.fandom.com/wiki/Category:Decorations) | Browser opened 2026-09-25: displayed 9 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_galactic_objects` | [Category:Galactic Objects](https://spore.fandom.com/wiki/Category:Galactic_Objects) | Browser opened 2026-09-25: displayed 19 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_grox` | [Category:Grox](https://spore.fandom.com/wiki/Category:Grox) | Browser opened 2026-09-25: displayed 22 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_main_tools` | [Category:Main tools](https://spore.fandom.com/wiki/Category:Main_tools) | Browser opened 2026-09-25: displayed 0 category entries; index only, overlapping membership, not a feature count. Rendered page showed zero members; redirect/maintenance status remains unresolved. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_permanent_tools` | [Category:Permanent tools](https://spore.fandom.com/wiki/Category:Permanent_tools) | Browser opened 2026-09-25: displayed 31 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_philosophy` | [Category:Philosophy](https://spore.fandom.com/wiki/Category:Philosophy) | Browser opened 2026-09-25: displayed 11 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_planet_atmospheric_tools` | [Category:Planet Atmospheric tools](https://spore.fandom.com/wiki/Category:Planet_Atmospheric_tools) | Browser opened 2026-09-25: displayed 1 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_planet_coloring_tools` | [Category:Planet Coloring tools](https://spore.fandom.com/wiki/Category:Planet_Coloring_tools) | Browser opened 2026-09-25: displayed 10 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_planet_sculpting_tools` | [Category:Planet Sculpting tools](https://spore.fandom.com/wiki/Category:Planet_Sculpting_tools) | Browser opened 2026-09-25: displayed 17 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_planets` | [Category:Planets](https://spore.fandom.com/wiki/Category:Planets) | Browser opened 2026-09-25: 1,263 displayed entries; only first 200 links exposed before pagination. User-generated planet index, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_planets_by_type` | [Category:Planets by type](https://spore.fandom.com/wiki/Category:Planets_by_type) | Browser opened 2026-09-25: displayed 26 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_rares` | [Category:Rares](https://spore.fandom.com/wiki/Category:Rares) | Browser opened 2026-09-25: displayed 38 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_ship_abilities` | [Category:Ship abilities](https://spore.fandom.com/wiki/Category:Ship_abilities) | Browser opened 2026-09-25: displayed 0 category entries; index only, overlapping membership, not a feature count. Rendered page showed zero members; redirect/maintenance status remains unresolved. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_ship_weapons` | [Category:Ship weapons](https://spore.fandom.com/wiki/Category:Ship_weapons) | Browser opened 2026-09-25: displayed 1 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_socializing_tools` | [Category:Socializing tools](https://spore.fandom.com/wiki/Category:Socializing_tools) | Browser opened 2026-09-25: displayed 0 category entries; index only, overlapping membership, not a feature count. Rendered page showed zero members; redirect/maintenance status remains unresolved. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_sol` | [Category:Sol](https://spore.fandom.com/wiki/Category:Sol) | Browser opened 2026-09-25: displayed 13 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_space_combat` | [Category:Space combat](https://spore.fandom.com/wiki/Category:Space_combat) | Browser opened 2026-09-25: displayed 5 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_stellar_space` | [Category:Stellar space](https://spore.fandom.com/wiki/Category:Stellar_space) | Browser opened 2026-09-25: displayed 5 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_terraforming` | [Category:Terraforming](https://spore.fandom.com/wiki/Category:Terraforming) | Browser opened 2026-09-25: displayed 35 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_terrain_editor_images` | [Category:Terrain editor images](https://spore.fandom.com/wiki/Category:Terrain_editor_images) | Browser opened 2026-09-25: displayed 0 category entries; index only, overlapping membership, not a feature count. Rendered page showed zero members; redirect/maintenance status remains unresolved. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_trait` | [Category:Trait](https://spore.fandom.com/wiki/Category:Trait) | Browser opened 2026-09-25: displayed 41 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_transportation` | [Category:Transportation](https://spore.fandom.com/wiki/Category:Transportation) | Browser opened 2026-09-25: displayed 1 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_ufo_images` | [Category:UFO images](https://spore.fandom.com/wiki/Category:UFO_images) | Browser opened 2026-09-25: displayed 193 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `category_ufo_shop_images` | [Category:UFO shop images](https://spore.fandom.com/wiki/Category:UFO_shop_images) | Browser opened 2026-09-25: displayed 2 category entries; index only, overlapping membership, not a feature count. | `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `cheats` | [Cheats](https://spore.fandom.com/wiki/Cheats) | Directly read in browser 2026-09-25: Advantage cheats can flag a save with Joker and block achievements; utility commands are a separate class.<br>Limit: The page mixes stages/community notes; exact retail behavior and our sandbox policy need verification. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `bribe` | [Bribe](https://spore.fandom.com/wiki/Bribe) | Directly read in browser 2026-09-25: Space Stage tribute demands, gifts and relationship penalties vary by attitude and empire archetype.<br>Limit: Some amount/rank/difficulty details vary; verify exact retail behavior. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `gift` | [Gift](https://spore.fandom.com/wiki/Gift) | Directly read in browser 2026-09-25: Gifting is an intentional contact action with a relationship effect.<br>Limit: The article mixes stages; exact Space Stage values need corroboration. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `city` | [City](https://spore.fandom.com/wiki/City) | Directly read in browser 2026-09-25: Cities/colonies have bounded ring layouts, building classes and adjacency; Space Stage cities produce spice.<br>Limit: Mixed-stage user-customized city system; reference mechanic only, not approval to copy its presentation. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `colonization` | [Colonization](https://spore.fandom.com/wiki/Colonization) | Directly read in browser 2026-09-25: A charged Colony Incredi-Pak establishes colonies subject to ownership, planet and T-score restrictions; player colony count is limited.<br>Limit: Community-edited summary; exact caps and suitability need retail cross-check. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `star_system` | [Star system](https://spore.fandom.com/wiki/Star_system) | Directly read in browser 2026-09-25: System view exposes orbital bodies and hover information about life, atmosphere and artifacts.<br>Limit: Exact scan/control behavior needs gameplay or manual corroboration. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `parsec` | [Parsec](https://spore.fandom.com/wiki/Parsec) | Directly read in browser 2026-09-25: Listed Interstellar Drive ranges are 3/5/8/12/20 pc across five levels.<br>Limit: Article notes coordinate-scale discrepancy; treat as game UI values, not physical scale. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `planetary_threats` | [Planetary Threats](https://spore.fandom.com/wiki/Planetary_Threats) | Directly read in browser 2026-09-25: Space Stage hazards include storms, geysers, meteors and epic-creature attacks; warnings and damage are part of survival.<br>Limit: Exact damage, warning timing, avoidance inputs and audio remain unverified. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `saved_game` | [Saved game](https://spore.fandom.com/wiki/Saved_game) | Directly read in browser 2026-09-25: Another save can appear as an empire with one-sided contact/alliance and restrictions on purchases, conquest, routes and world-altering tools.<br>Limit: Community-edited feature description; delivery scope remains separate from parity reference. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `extinction` | [Extinction](https://spore.fandom.com/wiki/Extinction) | Directly read in browser 2026-09-25: Space Stage Species Eradicator can remove a species and allow replacement.<br>Limit: Article chiefly discusses Creature Stage; Space Stage consequences need corroboration. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
+| `staff_of_life` | [Staff of Life](https://spore.fandom.com/wiki/Staff_of_Life) | Directly read in browser 2026-09-25: Meeting Steve at the Galactic Core awards a limited-use tool that sets T-score to T3 and seeds an ecosystem.<br>Limit: Article lists 42 charges and a cooldown; verify presentation and current retail behavior in footage. | `docs/parity/experience_coverage.json`, `docs/research/SPORE_SOURCE_REGISTER.md` |
 ### StrategyWiki (4)
 
 | ID | Reference | Evidence recorded | Cited by |
@@ -172,6 +249,6 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 
 ## Limits
 
-SporeWiki category totals are discovery indexes, not feature counts: the Space Stage category lists 250 mixed articles; the Ship Tools category lists 122 article entries, while the Ship Tools article describes roughly 184 tools. The project has 189 normalized rows. Fandom pages often blocked direct retrieval, so an indexed excerpt or an existing project citation does not imply a full-page re-read. Check the `limits` field in `docs/parity/reference_inventory.json` before using a source claim.
+SporeWiki category totals are discovery indexes, not feature counts: the live Space Stage category displayed 251 mixed entries (221 article links and 30 subcategory links); all 30 immediate child-category indexes were opened, and 11 high-impact articles were read directly. The Ship Tools category displayed 122 mixed entries (110 non-category links and 12 subcategories), while the Ship Tools article describes roughly 184 tools. The project has 189 normalized rows. These counts remain unreconciled. Fandom pages often blocked direct retrieval, so an indexed excerpt or an existing project citation does not imply a full-page re-read. Check the `limits` field in `docs/parity/reference_inventory.json` before using a source claim.
 
 Of the StrategyWiki references, three concern Spore and one is the adjacent SimCity 4 demand reference. The SimCity page contributes no Spore parity. Community reverse-engineering docs are not official Maxis specifications.

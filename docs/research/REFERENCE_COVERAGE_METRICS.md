@@ -2,11 +2,11 @@
 
 > Reference research; observations, proposals and evidence gaps are not implementation status. [Documentation map](../README.md).
 
-24 September 2026. A source catalog, screenshots and feature names are not evidence that we understand playing Spore. This ledger measures research quality separately from game implementation. TASK_BOARD.md remains the single production queue; `parity/experience_coverage.json` is the evidence audit, not a competing backlog.
+25 September 2026 update: the working denominator is now **64 provisional workflows in eleven categories** after a direct category census and targeted article reads. Current machine report: 18/64 sampled (28.1%), 9/64 readable (14.1%), and 0/64 fully interaction-verified, presentation-reviewed or audio-reviewed. Three newly identified workflows were added; 221 candidate article links and category membership still need triage, so the denominator remains open. A source catalog, screenshots and feature names are not evidence that we understand playing Spore. This ledger measures research quality separately from game implementation. TASK_BOARD.md remains the single production queue; `parity/experience_coverage.json` is the evidence audit, not a competing backlog.
 
 ## What is counted
 
-The initial denominator is **61 base-Space-Stage workflows across ten categories**, reconciled at family level against the existing Space Stage target and parity catalog. It is explicitly **open**: newly discovered states/flows enlarge the denominator; they are not hidden to protect a percentage. Character/creature customization and Galactic Adventures are excluded from this research pass. Ship/building editor entry and gameplay connection remain reference coverage; implementation remains deferred. Coloring/sculpting remain reference-only and excluded from delivery. The user's enthusiasm about a creator is a possible later ambition, not authorization to build one now.
+The initial denominator was 61 base-Space-Stage workflows across ten categories; the 25 September audit expanded this to **64 provisional base-Space-Stage workflows across eleven categories**, reconciled at family level against the existing Space Stage target and parity catalog. It is explicitly **open**: newly discovered states/flows enlarge the denominator; they are not hidden to protect a percentage. Character/creature customization and Galactic Adventures are excluded from this research pass. Ship/building editor entry and gameplay connection remain reference coverage; implementation remains deferred. Coloring/sculpting remain reference-only and excluded from delivery. The user's enthusiasm about a creator is a possible later ambition, not authorization to build one now.
 
 The existing **84 tool families / 189 variant entries, 30 badge families, 10 ranks, 40 achievements and 12 inherited traits** are separate catalog dimensions, not fully verified denominators. Workflow coverage cannot close variant/cost/unlock coverage. Those manifest uncertainties remain open in `parity/COVERAGE.md`.
 
@@ -14,10 +14,10 @@ The existing **84 tool families / 189 variant entries, 30 badge families, 10 ran
 
 | Metric | Numerator / denominator | What it does NOT mean |
 |---|---|---|
-| Visual sampling | Workflows with an actually inspected relevant state / 61 | Does not establish inputs, prices, rules, animation or sound. |
-| Readable evidence | Workflows with an archived, context-complete frame at adequate effective resolution and legibility for its claims / 61 | A large screenshot or thumbnail does not automatically qualify. |
-| Interaction verification | Workflows with readable evidence, documented trigger/input → feedback → outcome, cost/restriction and boundary/failure behavior, corroboration and recorded adaptation / 61 | Does not prove our game implements it, or replace a native playtest. |
-| Presentation review | Workflows whose relevant motion, rhythm, camera, character performance and audio (or intentional silence) are actually reviewed / 61 | Still images, transcripts and muted playback cannot pass listening or timing requirements. |
+| Visual sampling | Workflows with an actually inspected relevant state / 64 | Does not establish inputs, prices, rules, animation or sound. |
+| Readable evidence | Workflows with an archived, context-complete frame at adequate effective resolution and legibility for its claims / 64 | A large screenshot or thumbnail does not automatically qualify. |
+| Interaction verification | Workflows with readable evidence, documented trigger/input → feedback → outcome, cost/restriction and boundary/failure behavior, corroboration and recorded adaptation / 64 | Does not prove our game implements it, or replace a native playtest. |
+| Presentation review | Workflows whose relevant motion, rhythm, camera, character performance and audio (or intentional silence) are actually reviewed / 64 | Still images, transcripts and muted playback cannot pass listening or timing requirements. |
 
 Never average these into a reassuring overall 'understanding score'. Show category numerators, denominators and gaps. Implementation, tests, export verification and user acceptance are separate metrics.
 
@@ -29,7 +29,7 @@ The later navigation recapture adds narrowly readable galaxy/system endpoint and
 
 The surface recapture at1805.490461s adds narrowly readable RF001 state evidence, independently checked by root and contact_shop_critic: **6/61 (9.8%)** readable overall. It shows surface composition and populated tools, not steering, altitude, zoom or beam-input mechanics. Source detail is capped at1080p (R100). All interaction/presentation/audio flags remain false.
 
-Latest collection-feedback sequence adds RF018 sampled/readable evidence: **18/61 (29.5%) sampled; 7/61 (11.5%) readable**. Four inspected frames at1804–1808s have1080p source detail (R100), complete world/HUD context and L3 for the cited cargo counts and Brasstax card. Root and contact_shop_critic agree on those narrow observations. Input, cost, release, failure, full motion and audio remain unverified; all complete interaction/presentation/audio totals remain zero. Earlier counts above are dated checkpoints.
+Historical collection-feedback checkpoint (then 61 rows) recorded **18/61 sampled; 7/61 readable**. The current 64-row report is authoritative for the present total; the earlier percentage is a dated checkpoint. Four inspected frames at1804–1808s have1080p source detail (R100), complete world/HUD context and L3 for the cited cargo counts and Brasstax card. Root and contact_shop_critic agree on those narrow observations. Input, cost, release, failure, full motion and audio remain unverified; all complete interaction/presentation/audio totals remain zero. Earlier counts above are dated checkpoints.
 
 ## Resolution and legibility
 

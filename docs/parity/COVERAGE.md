@@ -8,7 +8,7 @@
 
 ## What is now enumerated
 
-The cited-page catalog is indexed in the [Spore and project reference register](../research/SPORE_SOURCE_REGISTER.md). Workflow evidence remains in [experience_coverage.json](experience_coverage.json); the 61-row denominator is open and separate from item-family counts.
+The cited-page catalog is indexed in the [Spore and project reference register](../research/SPORE_SOURCE_REGISTER.md). Workflow evidence remains in [experience_coverage.json](experience_coverage.json); the 64-row provisional denominator across eleven categories is open and separate from item-family counts. It grew after direct page reads; 221 Space Stage article candidates and child-category membership remain untriaged.
 
 | Reference set | Enumerated entries | Meaning |
 | --- | ---: | --- |
