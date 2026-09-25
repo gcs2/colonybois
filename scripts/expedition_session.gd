@@ -252,6 +252,7 @@ func service_reason(port: String, at: Vector3, action: String) -> String:
 	var blocked: String = commerce.access(self,port,at)
 	if not blocked.is_empty(): return blocked
 	if action in ["recharge","pack"]: return field.service_reason(port,at,action == "pack")
+	if action == "repair": return field.dock_repair_reason(port,at)
 	var items: Dictionary = Field.repair_items()
 	if not items.has(action): return "Unknown service."
 	var requirements: Dictionary = items[action].requires
@@ -264,6 +265,9 @@ func service_reason(port: String, at: Vector3, action: String) -> String:
 		return "Requires "+" or ".join(alternatives)+"."
 	return field.repair_purchase_reason(port,at,action)
 
+func dock_repair_price(port: String) -> int:
+	return field.repair_hull_price(port)
+
 func purchase_service(port: String, at: Vector3, action: String) -> String:
 	var blocked: String = service_reason(port,at,action)
 	if not blocked.is_empty(): return blocked
@@ -271,9 +275,10 @@ func purchase_service(port: String, at: Vector3, action: String) -> String:
 	var error: String
 	if action == "recharge": error = field.recharge(port,at)
 	elif action == "pack": error = field.buy_energy_pack(port,at)
+	elif action == "repair": error = field.dock_repair(port,at)
 	else: error = field.buy_repair_pack(port,at,action)
 	if not error.is_empty(): return error
-	var title: String = "Recharge" if action == "recharge" else "Energy pack" if action == "pack" else Field.repair_items()[action].name
+	var title: String = "Recharge" if action == "recharge" else "Energy pack" if action == "pack" else "Hull repair" if action == "repair" else Field.repair_items()[action].name
 	diplomacy.record(self,"equipment","%s · %d Marks at %s." % [title,balance-field.marks,field.local_services()[port].name],"",{"service":action,"cost":balance-field.marks,"port":port,"planet":field.state.planet_id})
 	return ""
 

@@ -1,4 +1,4 @@
 {
-  "basin_port": {"name":"Basin home port", "planet":"morrow", "mode":"surface", "position":[0,5,12], "reach":8.0, "marks_per_energy":0.45, "pack_price":24, "pack_stock":4,"repair_prices":{"repair_pack":60,"mega_repair_pack":260},"repair_stock":{"repair_pack":3,"mega_repair_pack":1}},
-  "orbit_tender": {"name":"Guild service tender", "planet":"morrow", "mode":"orbit", "position":[-32,8,28], "reach":8.0, "marks_per_energy":0.75, "pack_price":38, "pack_stock":2,"repair_prices":{"repair_pack":90,"mega_repair_pack":320},"repair_stock":{"repair_pack":2,"mega_repair_pack":1}}
+  "basin_port": {"name":"Basin home port", "planet":"morrow", "mode":"surface", "position":[0,5,12], "reach":8.0, "marks_per_energy":0.45, "marks_per_hull":0.5, "pack_price":24, "pack_stock":4,"repair_prices":{"repair_pack":60,"mega_repair_pack":260},"repair_stock":{"repair_pack":3,"mega_repair_pack":1}},
+  "orbit_tender": {"name":"Guild service tender", "planet":"morrow", "mode":"orbit", "position":[-32,8,28], "reach":8.0, "marks_per_energy":0.75, "marks_per_hull":0.8, "pack_price":38, "pack_stock":2,"repair_prices":{"repair_pack":90,"mega_repair_pack":320},"repair_stock":{"repair_pack":2,"mega_repair_pack":1}}
 }

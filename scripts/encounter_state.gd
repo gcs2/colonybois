@@ -83,6 +83,7 @@ func local_services() -> Dictionary:
 			result[id].planet = state.planet_id
 			result[id].name = definition().name + (" landing port" if id == "basin_port" else " service tender")
 			result[id].marks_per_energy = 0.6 if definition().archetype == "frozen" else 0.9
+			result[id].marks_per_hull = 0.7 if definition().archetype == "frozen" else 1.0
 			result[id].pack_price = 32 if definition().archetype == "frozen" else 44
 			result[id].repair_prices = {"repair_pack":80,"mega_repair_pack":300} if definition().archetype == "frozen" else {"repair_pack":105,"mega_repair_pack":360}
 	return result
@@ -144,6 +145,36 @@ func recharge(id: String, at: Vector3) -> String:
 	marks -= cost
 	state.energy = max_capacity("energy")
 	note("first_recharge","Docked for a recharge. Homeworld service is free; away from home, shops set their own rates.")
+	return ""
+
+func repair_hull_price(id: String) -> int:
+	if not services().has(id): return -1
+	var missing: float = maxf(0.0, max_capacity("hull") - float(state.hull))
+	if missing <= 0.0: return 0
+	var rate: float = float(local_services()[id].get("marks_per_hull", 0.5))
+	return maxi(1, int(ceil(missing * rate)))
+
+func dock_repair_price(id: String) -> int:
+	return repair_hull_price(id)
+
+func dock_repair_reason(id: String, at: Vector3) -> String:
+	var providers: Dictionary = local_services()
+	if not providers.has(id): return "No service provider at this location."
+	var port: Dictionary = providers[id]
+	if state.planet_id != port.planet or state.flight_mode != port.mode: return "Travel to %s first." % port.name
+	if not at.is_finite() or at.distance_to(service_position(id)) > float(port.reach): return "Approach %s to dock." % port.name
+	if state.hull >= max_capacity("hull"): return "Hull is sound."
+	var price: int = repair_hull_price(id)
+	if marks < price: return "Hull repair costs %d Marks." % price
+	return ""
+
+func dock_repair(id: String, at: Vector3) -> String:
+	var error: String = dock_repair_reason(id, at)
+	if not error.is_empty(): return error
+	var cost: int = repair_hull_price(id)
+	marks -= cost
+	state.hull = max_capacity("hull")
+	note("first_dock_repair", "Docked for hull repairs. Restored hull to full capacity.")
 	return ""
 
 func buy_energy_pack(id: String, at: Vector3) -> String:
