@@ -74,6 +74,7 @@ const SURFACE_ZOOM_MIN := 12.0
 const SURFACE_ZOOM_MAX := 110.0
 const ORBIT_ZOOM_MIN := 18.0
 const ORBIT_ZOOM_MAX := 320.0
+const LANDING_VEIL_OPACITY := 0.62
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam"}
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 var TOOLS: Array[String] = Equipment.ids()
@@ -1064,7 +1065,7 @@ func _update_flight_effects(delta: float) -> void:
 	var outbound: float = 0
 	if not orbital and velocity.y > 0.1: outbound = smoothstep(53,58,ship.position.y)
 	# Cover only the reference-frame swap, not the visible final approach.
-	if orbital and landing and landing_waypoints.is_empty(): outbound = 1-smoothstep(0.65,1.8,ship.position.distance_to(destination))
+	if orbital and landing and landing_waypoints.is_empty(): outbound = LANDING_VEIL_OPACITY*(1-smoothstep(0.65,1.8,ship.position.distance_to(destination)))
 	transition_veil.color.a = maxf(arrival_fade,outbound)
 	transition_caption.text = model.definition().name.to_upper()+(" / ORBIT" if orbital else " / ATMOSPHERE")
 	transition_caption.modulate.a = transition_veil.color.a
@@ -1736,7 +1737,7 @@ func _change_flight_mode(mode: String) -> void:
 	_cancel_orders()
 	_restore_ship()
 	_apply_flight_mode(true)
-	arrival_fade = 1.0
+	arrival_fade = LANDING_VEIL_OPACITY if mode == "surface" else 1.0
 	audio.play("arrival")
 	_toast(model.definition().name+" orbit reached" if mode == "orbit" else "Atmospheric entry complete")
 	_save(false)

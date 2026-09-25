@@ -49,6 +49,11 @@ The surface screenshot keeps the local chart on the surface; the orbital screens
 
 This was root inspection only; an independent visual critic was not available, so no independent re-review or mock acceptance is claimed. These new captures do not close any family or change the source metrics. Preserve the larger orbital/surface comparison gate and inspect before/during/after transitions when the capture path can produce them.
 
+### Orbit-to-surface transition recapture — 25 September 2026
+
+The actual encounter scene was rerun through `tests/review_landing_motion.gd`: 80 rendered frames across eight seconds, sampled at 10 fps with an isolated scripted flight/save. Root inspected frames 050, 053, 055, 057, 059, 060, 061 and 065. With a 0.62 cap on the inbound/outbound landing veil, the planet remains visible at 055/057, surface detail reads by 059 and the arrival view is mostly clear by 061. The scripted route remains 5.9 seconds; the 24 landing-flow cases and 21 flight-presentation assertions pass.
+
+This is runtime sequence evidence, not a native-input playtest or source-matched transition. Root still sees sparse, overexposed terrain and an abrupt change in orbital/surface imagery; the HUD and full composition remain far below the selected mock. No independent critic reviewed this recapture, and the candidate is not accepted. No source-readability, workflow, mock-family or acceptance credit changes: matched Spore moments, current runtime states and coordinated mock states before/during/after approach remain open. The 17 earlier stills and this sequence do not close that gate.
 ### Navigation boundary review and missing state sheet
 
 Four readable intermediate source frames now supplement the galaxy/system endpoints; see [source evidence](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md). Independent critic confirmed the compact system summary, its collapse as planets spread out, and stable HUD anchors. The earlier statement that the boundary is entirely absent is superseded; continuous motion, triggering input, approach and audio remain unverified. Counters remain 17/61 sampled, 6/61 readable, zero complete interaction/presentation/audio verification.

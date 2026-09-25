@@ -1,5 +1,14 @@
 # Wider flight camera and bounded effects
 
+## Landing veil cap and recapture (25 September 2026)
+
+The earlier approach hid the planet before the orbital-to-surface reference-frame swap, then held a full black fade after it. Landing now caps both the pre-swap outbound veil and the initial surface arrival fade at 0.62 opacity. This narrows the presentation blackout without changing the landing route, destination, speed or 5.9-second scripted completion.
+
+`tests/review_landing_motion.gd` rendered 80 frames over the standalone eight-second flight at 10 fps, with isolated review state/save output. In the refreshed sequence, the planet remains discernible at frames 055 and 057 (about 5.5–5.7 seconds); surface detail is legible by frame 059 (about 5.9 seconds), and the surface view is mostly clear by frame 061 (about 6.1 seconds). `tests/test_landing_flow.gd` passes the 24 direction/rate cases and `tests/test_flight_presentation.gd` passes 21 assertions. These establish route behavior and the sampled rendering only.
+
+Root inspection still finds broad, bright, sparse terrain, a small landing marker, and a conspicuous change between orbital and surface imagery. The HUD and whole scene remain well below the approved Field Instruments/populated-Morrow target. This capture had no native input, connected campaign, motion-feel review or independent visual-critic verdict; the veil is a bounded candidate, not accepted presentation. See the current sequence record in [the coverage review](../reviews/VIEW_MOCK_COVERAGE.md#orbit-to-surface-transition-recapture--25-september-2026).
+
+
 ## Landing target and altitude cues (24 September 2026)
 
 During active orbital descent, a restrained ivory ring highlights the actual site and inherits the globe rotation. It disappears on cancellation, inspection and surface arrival. Orbit readout now shows ORBIT and speed instead of misleading signed scene Y. Surface ALT is height above terrain directly below the ship, rather than world-space Y. No new navigation destination or world simulation is implied.
