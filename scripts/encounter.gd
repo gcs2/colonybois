@@ -495,12 +495,7 @@ func _make_world() -> void:
 	vein.rotation.y = 0.43
 	add_child(vein)
 	targets.vein = vein
-	var seam_rock := SphereMesh.new()
-	seam_rock.radius = 1.0
-	seam_rock.height = 1.5
-	for i: int in range(4):
-		var rock := _mesh(seam_rock,Vector3(-1.35+i*0.82,0.24,(i%2)*0.62-0.3),_mat(Color("5b5351")),vein)
-		rock.scale = Vector3(1.0,0.62,0.82)
+	# Each mineable lode owns its socket and three shards. Oversized rocks at the same coordinates hid depletion when a lode disappeared.
 	var crystal := CylinderMesh.new()
 	crystal.top_radius = 0.015
 	crystal.bottom_radius = 0.17
