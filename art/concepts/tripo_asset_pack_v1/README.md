@@ -1,10 +1,10 @@
 # Tripo asset pack v1 — source concepts and Spore mapping
 
-Generated source art for a small, traceable Frontier Worlds → Tripo → Godot experiment. These are concepts, not approved final game assets. The nine batch inputs live by themselves in `batch_01_props/`; the orbital composition mock and exploratory character live in `reference_only/` and are excluded from the prop batch.
+Generated source art for a small, traceable Frontier Worlds → Tripo → Godot experiment. These are concepts, not approved final game assets. The nine batch inputs live by themselves in `batch_01_props/`; the orbital composition mock in `reference_only/` is excluded from the prop batch.
 
 ## Where the images are
 
-Each PNG is under 5 MB. Open `batch_01_props/` to select all nine isolated prop concepts in one upload. The two excluded images are kept in `reference_only/`.
+Each PNG is under 5 MB. Open `batch_01_props/` to select all nine isolated prop concepts in one upload. The excluded orbit mock is kept in `reference_only/`.
 
 | File | Purpose in our game | Relationship to Spore Space Stage | Tripo target |
 |---|---|---|---|
@@ -18,12 +18,6 @@ Each PNG is under 5 MB. Open `batch_01_props/` to select all nine isolated prop 
 | `batch_01_props/cultural-collectible-v1.png` | Scannable/recoverable alien object | **Echoes Spore's collectible artifacts and discovery**, but the object's acquisition, scarcity and journal entry are our design. It has no effect until a real collection command exists. | Small world prop, 3k faces; about 0.5 × 0.5 × 0.4 m; center pivot. |
 | `batch_01_props/alien-civic-hall-v1.png` | Alien colony administration landmark | **Closest to Spore colony Town Hall/city buildings**, with a distinct Frontier Worlds civic silhouette. Not a ship tool. | Building prop, 12k faces; about 24 × 18 × 22 m; ground-level origin. |
 | `reference_only/orbit-context-mock-v1.png` | Composition reference: planet, service vessel, scout | **Never upload.** This is a view mock, not a single object; Tripo would merge or reinterpret its contents. | No mesh. |
-| `reference_only/abyssal-descendant-character-v1.png` | Exploratory portrait direction for a possible post-human, ocean-adapted people | **Not a tool and not in this batch.** Character modeling is deferred; this concept only explores the story question. | Do not submit to Tripo until the user chooses to reopen the character art gate. |
-
-## What “Cthulians” could mean in our story
-
-An original cephalopod-like human descendant is a strong fit for a forgotten Earth colony: a human seed population was deliberately adapted to a high-pressure ocean habitat before the outpost went dark. Their mantle, sensory tendrils and aquatic culture would be inherited design, while their languages, governments and rivalries develop on their own. They are neither ancient monsters nor a unified planetary utopia. This keeps the outpost's abandonment in the scale of thousands of years; ordinary evolution into this body plan would instead require moving the timeline out by millions of years. The image above is exploratory and makes no canon decision.
-
 ## Tripo batch recipe
 
 1. Open **Generate Smart Mesh** in Tripo Studio, select **Triangle**, and use **Batch 3D Gen** / batch upload for separate objects. Tripo's Smart Mesh tutorial documents up to ten separate images per batch; its newer Batch-to-3D announcement says up to thirty in that workflow. This folder has nine eligible isolated objects, so it fits the documented ten-image Smart Mesh path. If the live Studio presents different controls, follow the live limit.
