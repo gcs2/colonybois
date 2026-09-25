@@ -4,13 +4,17 @@ Updated 25 September 2026. This operational handoff does not cap the self-direct
 
 ## Current checkpoint
 
-The current worktree is `C:\Users\zephy\.codex\worktrees\frontier-morrow-economy\New project` on `codex/morrow-mining-production`, based on the verified surface-pass commit `9fb5fe155e7b25c1477cddca65f638af4790b994`. Check the branch and `git ls-remote` before relying on a saved hash; this handoff stays valid if the branch advances.
+The active review worktree is C:\Users\zephy\.codex\worktrees\orbit-surface-gate\New project on codex/orbital-transition-gate, started from local checkpoint 63ed372343e7bdc975a4982c5b7893c7cc913286. The existing frontier-morrow-economy worktree at that checkpoint has four uncommitted source-audit document edits; preserve it. The isolated review branch has a new designer brief and no game-code changes. A git ls-remote attempt for the new branch failed because GitHub was unreachable; verify network and remote state before claiming a push.
 
 The bounded economy slice now connects finite seam mining to a useful manufactured ship item. Survey and extract Resonant glass, carry two units plus two traded Alloy billets to a completed owned Glassworks outpost, and fabricate a Resonance focusing head with one local supply. It costs no Marks, installs on the shared ship, records in the chronicle, persists with the campaign, and reduces subsequent mining from 8 to 5 energy. The HUD shows the changed cost; the upgrade shop cannot sell the crafted-only item. This is one recipe, not broad manufacturing. Details: [commerce](systems/SHIP_COMMERCE.md) and [colonies](systems/EXPEDITION_COLONIES.md).
 
 Focused Godot 4.7.2 suites pass: 67 colony, 54 encounter, 48 expedition-session, 49 commerce, 50 flight-HUD and 27 equipment checks. Run Godot with access to write ignored save fixtures and logs in this isolated worktree; sandboxed runs produced false save failures. These checks cover behavior and persistence, not fun or visual acceptance.
 
 ## Open visual gate
+
+### User-selected Morrow target and designer handoff — 25 September 2026
+
+The pinned image matches artifacts/field-instruments-review/01-surface-populated-v3.png byte-for-byte (SHA-256 2E57DBE16817150BAA831B7C889F3E238352F44D00030457D3A4867A604E42C2). Treat it as the current user-selected Morrow environment and HUD target. The user rejected the four Codex-generated transition boards; do not reuse them. The user has authorized a designer agent to generate three proposals from the self-contained brief; shared outputs belong in artifacts/designer-mocks/R01-V01-V04/ in this review worktree and remain unreviewed. The designer intake is [MORROW_ORBIT_APPROACH_SURFACE.md](art/mock-requests/MORROW_ORBIT_APPROACH_SURFACE.md), linked from the task board. It requests a player-follow orbital gameplay view, a distinct solar-system map, and an approach/arrival view, using the existing surface image as endpoint. Keep any ALT value small, retain the full inventory, Marks and notification anchors, and preserve scale-specific maps. No source transition, runtime match, or mock acceptance is claimed until the designer set and matched source/runtime evidence are reviewed.
 
 The latest independent review of earlier gameplay captures found mining success readable through the ring, target card, beam, cargo receipt and energy decrement, but the Tripo outcrop itself looked unchanged; depletion read mainly from `3 / 4` text. It also found the full scene/HUD substantially below the approved populated Morrow target. See [the review](systems/SHIP_COMMERCE.md#visual-critic-review-25-september-2026).
 

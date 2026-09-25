@@ -166,6 +166,18 @@
       "title": "Character scope and direction options"
     },
     {
+      "path": "docs/art/mock-requests/README.md",
+      "category": "art",
+      "status": "specification",
+      "title": "Mock request intake"
+    },
+    {
+      "path": "docs/art/mock-requests/MORROW_ORBIT_APPROACH_SURFACE.md",
+      "category": "art",
+      "status": "proposal",
+      "title": "Morrow orbit, system map, approach and surface mock request"
+    },
+    {
       "path": "docs/art/README.md",
       "category": "art",
       "status": "generated",

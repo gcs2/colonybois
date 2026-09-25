@@ -4,6 +4,12 @@
 
 Field Instruments is the approved direction, not blanket approval of new images. This is an open working inventory derived from `encounter.gd` and `main.gd`; dispatch inspection does not establish exhaustiveness. Delegated signal, conflict, chart, city and other panel modules still need a complete state audit. Each state below needs an explicit visual in the review board. An existing prompt, a tab label, or a hero image with a hidden state does not count as coverage.
 
+## Latest user direction — 25 September 2026
+
+The user pinned a Morrow surface image that is byte-identical to the local 01-surface-populated-v3.png candidate; that specific image is now the user-selected surface target. The user rejected all four Codex-generated triptychs from this continuation. The prior critic’s conditional review of those triptychs is superseded and their presence does not count toward mock coverage.
+
+For missing mock states, use the user-authorized designer agent and linked brief to create separate mock proposals. The brief in [mock request intake](../art/mock-requests/MORROW_ORBIT_APPROACH_SURFACE.md) requests separate orbital gameplay, solar-system navigation, and approach/arrival screens around the selected surface endpoint. The gameplay camera must follow the player at a practical distance; the ship should remain small at the selected image’s broad world scale. Keep ALT secondary, retain the full equipment/cargo tray and top-corner status anchors, and keep solar-system, galaxy, and surface maps separate. The source target is design direction, not Spore footage or runtime evidence. Source/current/mock coverage and user acceptance remain open.
+
 ## Coverage audit - 24 September 2026
 
 The user challenged the implementation-first drift. Small functional corrections and critic checks for clipping did not satisfy the required source/current/mock comparison. No claim of 100% source fidelity or mock coverage is supported.
