@@ -3,3 +3,15 @@
 build/
 artifacts/
 *.tmp
+
+# Raw Tripo exports stay local until their mesh and runtime presentation pass review.
+/assets/tripo_inbox/*.glb
+/assets/tripo_inbox/*.gltf
+/assets/tripo_inbox/*.bin
+/assets/tripo_inbox/*.fbx
+/assets/tripo_inbox/*.obj
+/assets/tripo_inbox/*.mtl
+/assets/tripo_inbox/*.png
+/assets/tripo_inbox/*.jpg
+/assets/tripo_inbox/*.jpeg
+/assets/tripo_inbox/*.webp
