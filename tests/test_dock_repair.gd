@@ -138,5 +138,72 @@ func run() -> void:
 	check(loaded.purchase_service("orbit_tender", orbit, "repair").is_empty(), "Restored session can execute dock repair")
 	check(loaded.field.state.hull == 225.0, "Restored session repairs to full purchased capacity")
 
+	# 11. Real UI encounter test
+	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	scene.campaign = game
+	root.add_child(scene)
+	scene.set_process(false)
+	scene.set_physics_process(false)
+	scene.audio.muted = true
+	scene.save_path = "res://artifacts/dock_repair_ui.fw"
+
+	# Set up damaged ship in orbit at orbit_tender
+	game.field.state.hull = 175.0 # missing 50 hull out of 225 capacity
+	game.field.marks = 0
+	scene.ship.position = orbit
+	scene.selected_service = "orbit_tender"
+	scene.dock_page = "energy"
+	scene._show_popup("service")
+	await process_frame
+
+	var repair_btn: Button = null
+	for btn: Button in scene.popup_body.find_children("*", "Button", true, false):
+		if btn.get_meta("dock_action", "") == "repair":
+			repair_btn = btn
+			break
+
+	check(repair_btn != null, "Dock service popup contains direct hull repair button")
+	check(repair_btn.text.contains("+50") and repair_btn.text.contains("40 Marks"), "UI button displays exact missing hull (+50) and quoted price (40 Marks)")
+	check(repair_btn.disabled, "UI button is disabled when player has insufficient Marks")
+	check(repair_btn.tooltip_text.contains("costs 40 Marks"), "Tooltip communicates price shortfall reason")
+
+	# Fund Marks and check button enabled
+	game.field.marks = 500
+	scene._show_popup("service")
+	await process_frame
+	for btn: Button in scene.popup_body.find_children("*", "Button", true, false):
+		if btn.get_meta("dock_action", "") == "repair":
+			repair_btn = btn
+			break
+
+	check(not repair_btn.disabled, "UI button is enabled when player has sufficient Marks")
+
+	# Invariant checks before click
+	energy_before = game.field.state.energy
+	packs_before = game.field.state.repair_packs.duplicate(true)
+	energy_packs_before = game.field.state.energy_packs
+	marks_before = game.field.marks
+
+	# Click the repair button
+	repair_btn.pressed.emit()
+	await process_frame
+
+	check(game.field.state.hull == 225.0, "UI button click repairs hull to full purchased capacity (225)")
+	check(game.field.marks == marks_before - 40, "UI button click debits exact quoted 40 Marks")
+	check(game.field.state.energy == energy_before, "UI dock repair leaves energy completely unchanged")
+	check(game.field.state.repair_packs == packs_before, "UI dock repair leaves carried repair supplies completely unchanged")
+	check(game.field.state.energy_packs == energy_packs_before, "UI dock repair leaves energy packs completely unchanged")
+
+	# Check UI refreshed to sound state
+	for btn: Button in scene.popup_body.find_children("*", "Button", true, false):
+		if btn.get_meta("dock_action", "") == "repair":
+			repair_btn = btn
+			break
+
+	check(repair_btn != null and repair_btn.text == "Hull sound" and repair_btn.disabled, "After repair, UI updates to 'Hull sound' and disables button")
+	check(scene.popup_body.get_combined_minimum_size().x < 555, "Dock service popup fits supported width")
+
+	scene.free()
+
 	print("Dock repair assertions: %d; failures: %d" % [checks, failures])
 	quit(1 if failures else 0)

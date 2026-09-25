@@ -2546,6 +2546,16 @@ func _build_service_contents() -> void:
 	pack.disabled = paused or not reason.is_empty()
 	pack.tooltip_text = reason
 	_panel_copy("+50 energy · %d in stock · excess energy is lost." % model.state.service_stock[selected_service])
+	_panel_copy("HULL  %d / %d · DOCK REPAIR" % [int(model.state.hull),int(model.max_capacity("hull"))],Color("a5e4c2"))
+	var missing_hull: int = int(ceil(maxf(0.0,model.max_capacity("hull")-float(model.state.hull))))
+	var repair_cost: int = model.repair_hull_price(selected_service)
+	var repair_label: String = "Repair hull to full (+%d) · %d Marks" % [missing_hull,repair_cost] if missing_hull > 0 else "Hull sound"
+	var repair_btn: Button = _button(repair_label,_dock_repair_action,popup_body)
+	repair_btn.set_meta("dock_action","repair")
+	var repair_reason: String = _dock_service_reason("repair")
+	repair_btn.disabled = paused or not repair_reason.is_empty()
+	repair_btn.tooltip_text = Instruments.tooltip("Restore missing hull to full capacity at dock facility."+("\n"+repair_reason if not repair_reason.is_empty() else ""))
+	if not repair_reason.is_empty() and missing_hull > 0: _panel_copy(repair_reason)
 	_panel_copy("REPAIR LOCKER  %d / 3 · shared 20 s repair cooldown" % model.repair_pack_count(),Color("a5e4c2"))
 	for id: String in Model.repair_items():
 		var item: Dictionary = Model.repair_items()[id]
@@ -2562,7 +2572,16 @@ func _build_service_contents() -> void:
 
 func _dock_service_reason(action: String) -> String:
 	if campaign != null: return campaign.service_reason(selected_service,ship.position,action)
+	if action == "repair": return model.dock_repair_reason(selected_service,ship.position)
 	return model.service_reason(selected_service,ship.position,action == "pack") if action in ["recharge","pack"] else model.repair_purchase_reason(selected_service,ship.position,action)
+
+func _dock_repair_action() -> void:
+	if paused: return
+	var error: String = campaign.purchase_service(selected_service,ship.position,"repair") if campaign != null else model.dock_repair(selected_service,ship.position)
+	_toast(error if not error.is_empty() else "Hull repaired to full capacity · %d hull" % int(model.max_capacity("hull")))
+	audio.play("error" if not error.is_empty() else "cargo")
+	if error.is_empty(): _save(false)
+	_show_popup("service")
 
 func _repair_purchase(item: String) -> void:
 	if paused: return
