@@ -66,7 +66,23 @@ func rebuild() -> void:
 		var hold: Button = action("Resume departures" if route.paused else "Pause departures","ascend" if route.paused else "brake",func() -> void: finish(freight.pause(campaign,source)))
 		hold.disabled = locked
 		hold.tooltip_text = "Existing shipments finish. Pausing only stops new departures."
-		if route.phase == "outbound":
+		if not route.incident.is_empty() and not route.incident.get("resolved", false):
+			var inc: Dictionary = route.incident
+			var sys_name: String = campaign.sector.system_by_id(inc.system).name
+			copy("INTERCEPTED by %s in %s" % [inc.risk.replace("_", " ").to_upper(), sys_name], UI.GOLD)
+			var toll_err: String = freight.can_resolve(campaign, source, "pay_toll")
+			var toll_btn: Button = action("Pay transit toll · %d Marks" % freight.TOLL_MARKS, "cargo", func() -> void: finish(freight.resolve(campaign, source, "pay_toll")))
+			toll_btn.disabled = locked or not toll_err.is_empty()
+			toll_btn.tooltip_text = UI.tooltip(toll_err if not toll_err.is_empty() else "Pay safe passage toll to appease forces and allow the carrier to proceed.")
+			var divert_err: String = freight.can_resolve(campaign, source, "divert")
+			var divert_btn: Button = action("Divert carrier to return home", "descend", func() -> void: finish(freight.resolve(campaign, source, "divert")))
+			divert_btn.disabled = locked or not divert_err.is_empty()
+			divert_btn.tooltip_text = UI.tooltip(divert_err if not divert_err.is_empty() else "Order carrier to reverse course and bring cargo back to home warehouse.")
+			var escort_err: String = freight.can_resolve(campaign, source, "escort")
+			var escort_btn: Button = action("Flagship intervention · claim salvage", "defense", func() -> void: finish(freight.resolve(campaign, source, "escort")))
+			escort_btn.disabled = locked or not escort_err.is_empty()
+			escort_btn.tooltip_text = UI.tooltip(escort_err if not escort_err.is_empty() else "Deploy flagship to defeat hostile forces, claim salvage Marks, and release carrier.")
+		elif route.phase == "outbound":
 			var recall: Button = action("Recall with cargo","descend",func() -> void: finish(freight.recall(campaign,source)))
 			recall.disabled = locked
 			recall.tooltip_text = UI.tooltip("Reverse the current journey without selling and pause future departures. Closed transit borders can still hold the carrier. Prepaid transport is not refunded.")

@@ -4,6 +4,8 @@ const Geography = preload("res://scripts/planet_geography.gd")
 const CHARTER := 80
 const CAPACITY := 4
 const DAYS_PER_LINK := 2
+const TOLL_MARKS := 50
+const SALVAGE_MARKS := 60
 var state: Dictionary = {"routes":{}}
 
 func market_access(game: RefCounted, destination: String) -> String:
@@ -123,9 +125,114 @@ func recall(game: RefCounted, source: String) -> String:
 	game.diplomacy.record(game,"trade","Recalled freight to "+Geography.definition(source).name+"; departures paused.","",{"source":source,"cargo":route.cargo})
 	return ""
 
-func path_open(game: RefCounted, path: Array) -> bool:
-	# Recheck the booked itinerary; do not silently teleport onto a cheaper detour.
-	for id: String in path:
+func can_resolve(game: RefCounted, source: String, action: String) -> String:
+	if not state.routes.has(source): return "No carrier assigned."
+	var route: Dictionary = state.routes[source]
+	if route.get("incident", {}).is_empty() or route.incident.get("resolved", false):
+		return "No active incident to resolve."
+	match action:
+		"toll", "pay_toll":
+			if game.field.marks < TOLL_MARKS:
+				return "Requires %d Marks to pay safe passage toll." % TOLL_MARKS
+			return ""
+		"divert":
+			return ""
+		"escort", "intercept":
+			if game.traveling():
+				return "Wait until travel completes."
+			if game.sector.state.flagship.system != route.incident.system:
+				return "Flagship must be present in %s." % game.sector.system_by_id(route.incident.system).name
+			return ""
+		_:
+			return "Unknown convoy order."
+
+func resolve(game: RefCounted, source: String, action: String) -> String:
+	var blocked: String = can_resolve(game, source, action)
+	if not blocked.is_empty(): return blocked
+	var route: Dictionary = state.routes[source]
+	var inc: Dictionary = route.incident
+	var sys_name: String = game.sector.system_by_id(inc.system).name
+	var faction_id: String = inc.faction
+	var item_name: String = game.commerce.catalog.goods[route.item].name
+	var source_name: String = Geography.definition(source).name
+	match action:
+		"toll", "pay_toll":
+			_money(game, source, 0, TOLL_MARKS)
+			inc.resolved = true
+			inc.resolution = "toll"
+			var faction: Dictionary = game.sector.faction_by_id(faction_id)
+			if not faction.is_empty():
+				faction.relation = mini(100, int(faction.get("relation", 0)) + 5)
+			var summary: String = "%s carrier paid %d Marks transit toll in %s; proceeding with %d %s." % [
+				source_name, TOLL_MARKS, sys_name, route.cargo, item_name
+			]
+			route.status = "%s · %d days" % ["Outbound" if route.phase == "outbound" else "Returning", route.remaining]
+			game.diplomacy.record(game, "trade", summary, faction_id, {
+				"carrier": source,
+				"action": "pay_toll",
+				"marks_delta": -TOLL_MARKS,
+				"cargo": route.cargo,
+				"system": inc.system,
+				"incident_id": inc.id
+			}, 0, "resolve:" + inc.id, source)
+			game.field.note("resolve_" + inc.id, summary)
+		"divert":
+			inc.resolved = true
+			inc.resolution = "divert"
+			route.phase = "returning"
+			route.remaining = route.duration - route.remaining
+			route.path.reverse()
+			route.paused = true
+			route.status = "Returning with retained cargo"
+			var faction: Dictionary = game.sector.faction_by_id(faction_id)
+			if not faction.is_empty() and not game.conflict.at_war(faction_id):
+				faction.relation = maxi(-100, int(faction.get("relation", 0)) - 2)
+			var summary: String = "%s carrier diverted from %s to return home; %d %s safely retained." % [
+				source_name, sys_name, route.cargo, item_name
+			]
+			game.diplomacy.record(game, "trade", summary, faction_id, {
+				"carrier": source,
+				"action": "divert",
+				"cargo": route.cargo,
+				"system": inc.system,
+				"incident_id": inc.id
+			}, 0, "resolve:" + inc.id, source)
+			game.field.note("resolve_" + inc.id, summary)
+		"escort", "intercept":
+			_money(game, source, SALVAGE_MARKS, 0)
+			inc.resolved = true
+			inc.resolution = "escorted"
+			if game.conflict.at_war(faction_id):
+				var n: Dictionary = game.conflict.nation(faction_id)
+				n.victories += 1
+				game.conflict.state.nations[faction_id] = n
+			else:
+				var faction: Dictionary = game.sector.faction_by_id(faction_id)
+				if not faction.is_empty():
+					faction.relation = maxi(-100, int(faction.get("relation", 0)) - 10)
+			var summary: String = "Flagship intervened in %s, defeating hostile forces (+%d Marks salvage); carrier resumes with %d %s." % [
+				sys_name, SALVAGE_MARKS, route.cargo, item_name
+			]
+			route.status = "%s · %d days" % ["Outbound" if route.phase == "outbound" else "Returning", route.remaining]
+			game.diplomacy.record(game, "trade", summary, faction_id, {
+				"carrier": source,
+				"action": "escort",
+				"marks_delta": SALVAGE_MARKS,
+				"cargo": route.cargo,
+				"system": inc.system,
+				"incident_id": inc.id
+			}, 0, "resolve:" + inc.id, source)
+			game.field.note("resolve_" + inc.id, summary)
+	return ""
+
+func path_open(game: RefCounted, path: Array, remaining: int = -1, duration: int = -1) -> bool:
+	if path.is_empty(): return true
+	var nodes_to_check: Array = path
+	if remaining >= 0 and duration > 0:
+		var links_ahead: int = mini(path.size() - 1, ceili(float(remaining) / DAYS_PER_LINK))
+		var start_idx: int = maxi(0, path.size() - 1 - links_ahead)
+		nodes_to_check = path.slice(start_idx)
+	for id: String in nodes_to_check:
 		var owner: String = game.sector.system_by_id(id).owner
 		if not owner.is_empty() and game.sector.faction_by_id(owner).get("embargo",false) and owner+":non_aggression" not in game.sector.state.agreements: return false
 	return true
@@ -193,7 +300,7 @@ func tick(game: RefCounted) -> void:
 				}, 0, "incident:" + inc_id, source)
 				game.field.note("incident_" + inc_id, summary)
 				continue
-			if not path_open(game,route.path): _status(game,source,"Blocked · transit border closed; cargo retained"); continue
+			if not path_open(game,route.path,route.remaining,route.duration): _status(game,source,"Blocked · transit border closed; cargo retained"); continue
 			route.remaining = maxi(0,route.remaining-1)
 			if route.remaining > 0:
 				route.status = "%s · %d days" % ["Outbound" if route.phase == "outbound" else "Returning",route.remaining]
@@ -275,6 +382,7 @@ func restore(value: Variant, sector: RefCounted, colonies: RefCounted) -> Error:
 			if not incident.cargo is int or incident.cargo < 0 or incident.cargo > CAPACITY: return ERR_INVALID_DATA
 			if incident.item not in ["alloy","water","glass"] or not incident.time is int or not incident.route is Array or not incident.resolved is bool: return ERR_INVALID_DATA
 			if incident.phase not in ["outbound","returning"] or incident.carrier != source: return ERR_INVALID_DATA
+			if incident.has("resolution") and not incident.resolution is String: return ERR_INVALID_DATA
 		var incident_count: Variant = route.get("incident_count", 0)
 		if not incident_count is int or incident_count < 0: return ERR_INVALID_DATA
 		var incidents_this_trip: Variant = route.get("incidents_this_trip", 0)

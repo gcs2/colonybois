@@ -201,5 +201,106 @@ func run() -> void:
 	check(h_route.incident.risk in ["hostile_patrol","raider"],"Hostile relations yield hostile patrol or raider risk")
 	check(h_route.incident.cargo == 4,"Hostile patrol incident preserves all 4 cargo units")
 
+	# 10. MEANINGFUL RESOLUTION: PAY TOLL
+	# Test insufficient marks rejection
+	game_hostile.field.marks = 10
+	check(not game_hostile.freight.can_resolve(game_hostile,"s1p0","pay_toll").is_empty(),"Insufficient Marks rejects toll payment")
+	game_hostile.field.marks = 500
+	var marks_before_toll: int = int(game_hostile.field.marks)
+	var rel_before_toll: int = int(game_hostile.sector.faction_by_id("consortium").relation)
+	var upkeep_before_toll: float = game_hostile.sector.state.ledger.upkeep
+	check(game_hostile.freight.can_resolve(game_hostile,"s1p0","pay_toll").is_empty(),"Affordable toll is valid")
+	check(game_hostile.freight.resolve(game_hostile,"s1p0","pay_toll").is_empty(),"Pay toll resolves incident")
+	check(h_route.incident.resolved and h_route.incident.resolution == "toll","Incident marked resolved with toll")
+	check(game_hostile.field.marks == marks_before_toll - 50,"Exactly 50 Marks deducted for toll")
+	check(game_hostile.sector.state.ledger.upkeep == upkeep_before_toll + 50,"Ledger upkeep records 50 Mark toll")
+	check(game_hostile.sector.faction_by_id("consortium").relation == rel_before_toll + 5,"Paying toll improves faction relation by +5")
+	# Continue voyage after toll resolution
+	var toll_events: int = game_hostile.diplomacy.state.events.size()
+	for day: int in range(h_route.remaining):
+		game_hostile.freight.tick(game_hostile)
+	check(h_route.phase == "returning" and h_route.cargo == 0,"Carrier safely delivers after paying toll")
+
+	# 11. MEANINGFUL RESOLUTION: DIVERT (RETURN HOME SAFELY)
+	var game_divert: RefCounted = fixture()
+	game_divert.colonies.state.outposts.s1p0.stock.water = 12
+	game_divert.diplomacy.contact(game_divert,"consortium")
+	game_divert.diplomacy.act(game_divert,"consortium","trade")
+	game_divert.freight.configure(game_divert,"s1p0","s7p0","water",4)
+	var d_route: Dictionary = game_divert.freight.state.routes.s1p0
+	game_divert.freight.tick(game_divert)
+	game_divert.conflict.declare(game_divert,"consortium","Trade embargo breach")
+	for day: int in range(d_route.duration):
+		game_divert.freight.tick(game_divert)
+		if not d_route.incident.is_empty(): break
+	check(not d_route.incident.is_empty() and not d_route.incident.resolved,"Carrier intercepted for divert test")
+	check(game_divert.freight.resolve(game_divert,"s1p0","divert").is_empty(),"Divert orders carrier to return")
+	check(d_route.phase == "returning" and d_route.paused,"Carrier reversed to returning phase and departures paused")
+	check(d_route.cargo == 4,"All 4 cargo units preserved aboard carrier during divert")
+	check(d_route.incident.resolved and d_route.incident.resolution == "divert","Incident marked resolved via divert")
+	for day: int in range(10):
+		if d_route.phase == "waiting": break
+		game_divert.freight.tick(game_divert)
+	check(d_route.phase == "waiting" and d_route.cargo == 0,"Diverted carrier returns to base")
+	check(game_divert.colonies.state.outposts.s1p0.stock.water == 12,"All 12 warehouse units fully restored without loss")
+
+	# 12. MEANINGFUL RESOLUTION: FLAGSHIP CONVOY DEFENSE (ESCORT / SALVAGE)
+	var game_escort: RefCounted = fixture()
+	game_escort.colonies.state.outposts.s1p0.stock.water = 12
+	game_escort.diplomacy.contact(game_escort,"consortium")
+	game_escort.diplomacy.act(game_escort,"consortium","trade")
+	game_escort.freight.configure(game_escort,"s1p0","s7p0","water",4)
+	var e_route: Dictionary = game_escort.freight.state.routes.s1p0
+	game_escort.freight.tick(game_escort)
+	game_escort.conflict.declare(game_escort,"consortium","Escort trial")
+	for day: int in range(e_route.duration):
+		game_escort.freight.tick(game_escort)
+		if not e_route.incident.is_empty(): break
+	check(not e_route.incident.is_empty(),"Carrier intercepted for escort test")
+	# Flagship is in s1 (not s7) -> escort must be rejected
+	check(not game_escort.freight.can_resolve(game_escort,"s1p0","escort").is_empty(),"Escort rejected when flagship is absent from incident system")
+	# Move flagship to incident system (s7)
+	game_escort.sector.state.flagship.system = "s7"
+	game_escort.field.state.planet_id = "s7p0"
+	var marks_before_escort: float = game_escort.field.marks
+	var exports_before_escort: float = game_escort.sector.state.ledger.exports
+	var victories_before: int = game_escort.conflict.nation("consortium").victories
+	check(game_escort.freight.can_resolve(game_escort,"s1p0","escort").is_empty(),"Escort allowed when flagship is present in-system")
+	var escort_err: String = game_escort.freight.resolve(game_escort,"s1p0","escort")
+	check(escort_err.is_empty(),"Flagship intervention succeeds")
+	check(is_equal_approx(game_escort.field.marks, marks_before_escort + 60.0),"Flagship intervention awards 60 Marks salvage")
+	check(is_equal_approx(game_escort.sector.state.ledger.exports, exports_before_escort + 60.0),"Ledger records 60 Marks salvage")
+	check(game_escort.conflict.nation("consortium").victories == victories_before + 1,"Naval victory credited against hostile nation")
+	check(e_route.incident.resolved and e_route.incident.resolution == "escorted","Incident recorded as escorted")
+	check(e_route.cargo == 4,"Carrier retains cargo after escort victory")
+
+	# 13. UI DRAWER INTEGRATION
+	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	scene.campaign = game_escort; root.add_child(scene)
+	scene.set_process(false); scene.set_physics_process(false); scene.audio.muted = true
+	# Put carrier in an active intercepted state for UI inspection
+	e_route.incident.resolved = false
+	e_route.incident.erase("resolution")
+	scene._show_popup("freight")
+	await process_frame
+	check(scene.popup_body.get_combined_minimum_size().x < 535,"Freight panel with incident controls fits drawer width")
+	var panel: Node = scene.popup_body.get_children().back()
+	var button_texts: Array = []
+	for child in panel.get_children():
+		if child is Button:
+			button_texts.append(child.text)
+	check(button_texts.any(func(t: String) -> bool: return t.contains("transit toll")),"UI displays pay toll button")
+	check(button_texts.any(func(t: String) -> bool: return t.contains("Divert carrier")),"UI displays divert button")
+	check(button_texts.any(func(t: String) -> bool: return t.contains("Flagship intervention")),"UI displays flagship escort button")
+	# Commit pay_toll from UI
+	var toll_btn: Button
+	for child in panel.get_children():
+		if child is Button and child.text.contains("transit toll"):
+			toll_btn = child; break
+	check(toll_btn != null and not toll_btn.disabled,"Toll button is active and clickable")
+	toll_btn.pressed.emit()
+	check(e_route.incident.resolved and e_route.incident.resolution == "toll","UI button execution successfully resolves incident")
+	scene.free()
+
 	print("Freight piracy assertions: %d; failures: %d" % [checks,failures])
 	quit(1 if failures else 0)
