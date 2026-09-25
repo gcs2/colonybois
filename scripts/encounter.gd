@@ -125,6 +125,7 @@ var objective: Label
 var subject: Label
 var explanation: Label
 var status: Label
+var status_backing: ColorRect
 var status_icon: TextureRect
 var toast_item_icon: String = ""
 var progress_bar: ProgressBar
@@ -692,22 +693,28 @@ func _make_ui() -> void:
 	hud.navigation.landing_requested.connect(func() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",18,Color("ffe0a8"))
-	status.position = Vector2(390,676)
-	status.size = Vector2(530,58)
+	status_backing = ColorRect.new()
+	status_backing.position = Vector2(28,116)
+	status_backing.size = Vector2(406,56)
+	status_backing.color = Color("1c2426",0.9)
+	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_backing.hide()
+	root.add_child(status_backing)
+	status.position = Vector2(36,120)
+	status.size = Vector2(390,48)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(390,677)
-	status_icon.size = Vector2(48,48)
+	status_icon.position = Vector2(36,120)
+	status_icon.size = Vector2(40,40)
 	status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png")
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_icon.hide()
 	root.add_child(status_icon)
-	status_icon.size = Vector2(40,40)
 	guide_caption = _label("",16,Color("b7d2e0"))
 	guide_caption.position = Vector2(390,605)
 	guide_caption.size = Vector2(530,58)
@@ -1004,6 +1011,7 @@ func _process(delta: float) -> void:
 		_refresh_ui()
 	toast_time -= delta
 	status.visible = toast_time > 0 or paused
+	if is_instance_valid(status_backing): status_backing.visible = status.visible
 	if is_instance_valid(status_icon): status_icon.visible = toast_time > 0 and toast_item_icon == "glass" and not paused
 	if paused: status.text = "Paused — Space to resume"
 	if "--field-capture" in OS.get_cmdline_user_args(): _capture(delta)
@@ -2007,11 +2015,11 @@ func _toast(text: String, item_icon: String = "") -> void:
 	toast_item_icon = item_icon
 	if is_instance_valid(status_icon):
 		status_icon.visible = item_icon == "glass"
-		status_icon.size = Vector2(48,48)
+		status_icon.size = Vector2(40,40)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(438,676) if item_icon == "glass" else Vector2(390,676)
-		status.size = Vector2(482,58) if item_icon == "glass" else Vector2(530,58)
-		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if item_icon == "glass" else HORIZONTAL_ALIGNMENT_CENTER
+		status.position = Vector2(82,120) if item_icon == "glass" else Vector2(36,120)
+		status.size = Vector2(344,48) if item_icon == "glass" else Vector2(390,48)
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	status.text = text
 	toast_time = 6
 

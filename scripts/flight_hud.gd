@@ -43,6 +43,7 @@ var tool_spec: Label
 var quick_cargo: Button
 var location_label: Label
 var stats: Label
+var treasury_backing: ColorRect
 var objective: Label
 var subject: Label
 var explanation: Label
@@ -116,7 +117,7 @@ func _build() -> void:
 	add_child(chart_backing)
 
 	console_pod = ConsolePod.new()
-	console_pod.position = Vector2(1312, 744)
+	console_pod.position = Vector2(1304, 744)
 	console_pod.size = Vector2(268, 117)
 	add_child(console_pod)
 
@@ -134,7 +135,14 @@ func _build() -> void:
 	navigation_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation_backing)
 
-	stats = label_at("", Rect2(1090, 31, 430, 25), 14, Art.PAPER)
+	# Treasury and cargo stay in a distinct, high-contrast corner anchor in both views.
+	treasury_backing = ColorRect.new()
+	treasury_backing.position = Vector2(1146, 18)
+	treasury_backing.size = Vector2(434, 38)
+	treasury_backing.color = Color("dedad0")
+	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(treasury_backing)
+	stats = label_at("", Rect2(1160, 25, 404, 24), 14, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stats.clip_text = true
 
@@ -189,7 +197,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1324,692,240,21),13)
+	flight_readout = label_at("",Rect2(1318,722,246,18),11,Color("1c2426"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -412,6 +420,7 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 				var pos := Vector3(s.position[0], s.position[1], s.position[2])
 				alt_km = maxi(80, int(pos.length() * 15.0))
 			nav_pod.set_mode(true, "%d km" % alt_km)
+			flight_readout.text = "ALT %d km" % alt_km
 	if context_card != null:
 		var has_order: bool = not subject.text.is_empty()
 		context_card.visible = has_order
@@ -424,17 +433,21 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
 	navigation.visible = not enabled
+	# The orbital dial is replaced by a small ALT line beside the condition panel;
+	# the local terrain chart itself remains surface-only.
+	if nav_pod != null: nav_pod.visible = not enabled
 	chart_heading.visible = not enabled
 	chart_backing.visible = not enabled
 	if nav_pod != null:
 		nav_pod.set_mode(enabled, "420 km" if enabled else "")
 	if console_pod != null:
-		console_pod.set_orbital(enabled)
+		# Keep the same compact condition readout beside the item grid in both scales.
+		console_pod.set_orbital(false)
 
 	if enabled:
 		if console_pod != null:
-			console_pod.position = Vector2(960, 770)
-			console_pod.size = Vector2(610, 96)
+			console_pod.position = Vector2(1304, 744)
+			console_pod.size = Vector2(268, 117)
 		hull_bar.position = Vector2(1032, 796)
 		hull_bar.size = Vector2(110, 10)
 		energy_bar.position = Vector2(1032, 828)
@@ -444,28 +457,24 @@ func set_orbital_mode(enabled: bool) -> void:
 		hull_label.visible = false
 		energy_label.visible = false
 		quick_cargo.visible = false
-		flight_readout.visible = false
-		stats.visible = false
+		flight_readout.visible = true
+		stats.visible = true
+		treasury_backing.visible = true
 		if scout_label != null: scout_label.visible = false
 		if equipment_button != null: equipment_button.visible = false
 		if rise_button != null: rise_button.visible = false
 		if lower_button != null: lower_button.visible = false
 		if brake_button != null: brake_button.visible = false
-		collapse_button.visible = false
-		page_previous.visible = false
-		page_next.visible = false
-		page_label.visible = false
-		palette_backing.visible = false
-		for id: String in item_buttons:
-			item_buttons[id].visible = false
+		collapse_button.visible = true
 		for i: int in range(GROUPS.size()):
 			var grp: String = GROUPS.keys()[i]
-			category_buttons[grp].position = Vector2(1210 + i * 54, 788)
-			category_buttons[grp].size = Vector2(46, 46)
+			category_buttons[grp].position = Vector2(772 + i * 74, 686)
+			category_buttons[grp].size = Vector2(64, 54)
 			category_buttons[grp].visible = true
+		show_group(active_group)
 	else:
 		if console_pod != null:
-			console_pod.position = Vector2(1312, 744)
+			console_pod.position = Vector2(1304, 744)
 			console_pod.size = Vector2(268, 117)
 		hull_bar.position = Vector2(1324, 758)
 		hull_bar.size = Vector2(240, 10)
@@ -478,8 +487,9 @@ func set_orbital_mode(enabled: bool) -> void:
 		hull_label.visible = false
 		energy_label.visible = false
 		quick_cargo.visible = false
-		flight_readout.visible = false
+		flight_readout.visible = true
 		stats.visible = true
+		treasury_backing.visible = true
 		if scout_label != null: scout_label.visible = false
 		if equipment_button != null: equipment_button.visible = false
 		if rise_button != null: rise_button.visible = false
