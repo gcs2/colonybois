@@ -446,13 +446,13 @@ func reason(action: String, target: String, distance: float) -> String:
 		if not state.warm: return "Warm the bed before planting."
 		if state.seeded: return "Already planted. Watch the canopy develop."
 	if state.samples < Equipment.samples(action): return "Collect a seed pod first."
-	if state.energy < Equipment.energy(action): return "Need %s energy. Use an energy pack or dock for recharge." % Equipment.amount(Equipment.energy(action))
+	if state.energy < Equipment.energy(action,installed_upgrades): return "Need %s energy. Use an energy pack or dock for recharge." % Equipment.amount(Equipment.energy(action,installed_upgrades))
 	return ""
 
 func act(action: String, target: String, distance: float) -> String:
 	var error: String = reason(action,target,distance)
 	if not error.is_empty(): return error
-	state.energy -= Equipment.energy(action)
+	state.energy -= Equipment.energy(action,installed_upgrades)
 	state.samples -= Equipment.samples(action)
 	match action:
 		"scan":
@@ -464,7 +464,7 @@ func act(action: String, target: String, distance: float) -> String:
 			note("first_sample","Collected a living seed; retained a native feeding reserve.")
 		"warm":
 			state.warm = true
-			note("warm_bed","Spent %s ship energy warming the mineral bed." % Equipment.amount(Equipment.energy(action)))
+			note("warm_bed","Spent %s ship energy warming the mineral bed." % Equipment.amount(Equipment.energy(action,installed_upgrades)))
 		"seed":
 			state.seeded = true
 			note("seed_bed","Established lantern pods in the prepared bed.")

@@ -373,6 +373,9 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 		chip.tooltip_text = Art.tooltip(Palette.entry(id).title+" active\n"+Palette.entry(id).hint)
 		chip.disabled = locked
 	var selected: Dictionary = Palette.entry(selected_tool)
+	if Equipment.has_tool(selected_tool):
+		selected.summary = Equipment.summary(selected_tool,model.installed_upgrades)
+		selected.hint = Equipment.hint(selected_tool,model.installed_upgrades)
 	tool_spec.text = selected.summary if selected.view == model.state.flight_mode else Palette.unavailable(selected_tool,model)
 	for button: Button in category_buttons.values(): button.disabled = locked
 	collapse_button.disabled = locked
@@ -388,7 +391,7 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 			if id == "collect": hint = "Tractor cradle\nScan an expedition lifeform, then click it with this tool to collect. 13 m reach; 1.5 s; 5 energy."
 		if locked: hint += "\nClose the current window / resume flight first."
 		elif not reason.is_empty(): hint += "\n"+reason
-		elif Equipment.has_tool(id) and model.state.energy < Equipment.energy(id): hint += "\nInsufficient energy to operate; you can still select this tool."
+		elif Equipment.has_tool(id) and model.state.energy < Equipment.energy(id,model.installed_upgrades): hint += "\nInsufficient energy to operate; you can still select this tool."
 		elif id == "lance" and model.state.energy < Palette.Model.LANCE_ENERGY: hint += "\nNeed 10 energy to fire; you can still select this weapon."
 		item_buttons[id].tooltip_text = hint
 		count_labels[id].text = Palette.count(id,model.state)

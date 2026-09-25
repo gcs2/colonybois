@@ -2,6 +2,7 @@ extends SceneTree
 const Session = preload("res://scripts/expedition_session.gd")
 const Field = preload("res://scripts/encounter_state.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
+const Equipment = preload("res://scripts/equipment_catalog.gd")
 var checks: int = 0
 var failures: int = 0
 func check(ok: bool, title: String) -> void:
@@ -145,5 +146,60 @@ func run() -> void:
 	scene._process(0.01)
 	check(placing.colonies.reserved_space() == 0 and placing.sector.state.settlements.has("s1p0") and not scene.deploy_order,"Arrival unloads exactly once through the actual scene process")
 	scene.free()
+	var manufacturing := Session.new()
+	check(manufacturing.restore_snapshot(game.snapshot()) == OK,"Start manufacturing from the saved multi-world colony campaign")
+	manufacturing.field.marks = 500
+	manufacturing.commerce.state.cargo.clear()
+	manufacturing.sector.state.colonies.s1p0.materials = 100
+	manufacturing.sector.state.colonies.s1p0.supplies = 100
+	check(manufacturing.colonies.install_reason(manufacturing,"s1p0","glass").is_empty() and manufacturing.colonies.install(manufacturing,"s1p0","glass").is_empty(),"A completed outpost can commission the Glassworks production module")
+	manufacturing.field.change_flight_mode("orbit")
+	travel(manufacturing,"morrow")
+	var tender_at: Vector3 = Field.service_position("orbit_tender")
+	var alloy_purchase: String = manufacturing.commerce.transact(manufacturing,"orbit_tender",tender_at,"alloy",2,true)
+	check(alloy_purchase.is_empty(),"The ship can buy two real alloy inputs at Morrow: "+alloy_purchase)
+	manufacturing.field.change_flight_mode("surface")
+	check(manufacturing.field.act("scan","vein",4).is_empty(),"The ship scans Morrow's finite crystal seam before mining")
+	check(manufacturing.extract_surface_crystal(4).is_empty() and manufacturing.extract_surface_crystal(4).is_empty(),"Two successful cutter cycles create two actual glass cargo units")
+	check(manufacturing.commerce.quantity("glass") == 2 and manufacturing.commerce.quantity("alloy") == 2,"Manufacturing inputs occupy real cargo space")
+	manufacturing.field.change_flight_mode("orbit")
+	travel(manufacturing,"s1p0")
+	manufacturing.field.change_flight_mode("surface")
+	var factory_site: Array = manufacturing.colonies.state.outposts.s1p0.site
+	var factory_ground := Vector3(float(factory_site[0]),Geography.surface_height(manufacturing.field.definition(),float(factory_site[0]),float(factory_site[1])),float(factory_site[1]))
+	var factory_approach: Vector3 = factory_ground+Vector3(0,4,0)
+	manufacturing.field.state.position = [factory_approach.x,factory_approach.y,factory_approach.z]
+	check(manufacturing.colonies.cutter_head_reason(manufacturing,"s1p0",factory_approach).is_empty(),"The physically approached Glassworks quotes the recipe from cargo and local supplies")
+	var local_supplies_before_fabrication: float = manufacturing.sector.state.colonies.s1p0.supplies
+	var production_scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	production_scene.campaign = manufacturing
+	root.add_child(production_scene)
+	production_scene.set_process(false); production_scene.set_physics_process(false); production_scene.audio.muted = true
+	production_scene.save_path = "res://artifacts/mining_manufacture_test.fw"
+	production_scene.ship.position = factory_approach
+	production_scene.selected_colony = "s1p0"
+	production_scene._update_outpost_visual()
+	production_scene._show_popup("colonies")
+	await process_frame
+	var fabrication_button: Button
+	for child: Node in production_scene.popup_body.get_children():
+		if child is Button and child.text == "Fabricate Resonance focusing head": fabrication_button = child
+	check(fabrication_button != null and not fabrication_button.disabled,"Colony administration exposes an enabled pictured fabrication action")
+	if fabrication_button != null: fabrication_button.emit_signal("pressed")
+	check("resonant_cutter_head" in manufacturing.commerce.state.upgrades and "resonant_cutter_head" in manufacturing.field.installed_upgrades,"The button fabricates and installs the useful cutter head")
+	production_scene._close_popup()
+	production_scene._select_tool("mine")
+	production_scene._refresh_ui()
+	check(production_scene.hud.tool_spec.text.contains("5 energy"),"Flight tool details reflect the manufactured cutter's real energy cost")
+	check(manufacturing.commerce.quantity("glass") == 0 and manufacturing.commerce.quantity("alloy") == 0,"Fabrication consumes both cargo ingredients")
+	check(is_equal_approx(manufacturing.sector.state.colonies.s1p0.supplies,local_supplies_before_fabrication-1.0),"Fabrication consumes one local supply after normal colony upkeep")
+	var upgraded_energy: float = manufacturing.field.state.energy
+	check(manufacturing.field.act("scan","vein",4).is_empty() and manufacturing.extract_surface_crystal(4).is_empty(),"The manufactured head operates on a second world's scanned seam")
+	check(is_equal_approx(manufacturing.field.state.energy,upgraded_energy-5.0),"Installed focusing head reduces a real mining cut from 8 to 5 energy")
+	var production_save: String = "res://artifacts/mining_manufacture_test.fw"
+	check(manufacturing.save_to(production_save) == OK,"Manufactured ship equipment and output save through the shared campaign")
+	var production_loaded := Session.new()
+	check(production_loaded.load_from(production_save) == OK and "resonant_cutter_head" in production_loaded.commerce.state.upgrades and is_equal_approx(Equipment.energy("mine",production_loaded.field.installed_upgrades),5.0),"Load restores the manufactured item and its actual tool effect")
+	production_scene.free()
 	print("Expedition colony assertions: %d; failures: %d" % [checks,failures])
 	quit(1 if failures else 0)

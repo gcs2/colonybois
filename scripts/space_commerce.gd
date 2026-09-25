@@ -88,6 +88,19 @@ func add_cargo(item: String, amount: int, origin: String) -> void:
 			return
 	state.cargo.append({"item":item,"quantity":amount,"origin":origin})
 
+func consume_cargo(item: String, amount: int) -> bool:
+	if not catalog.goods.has(item) or amount <= 0 or quantity(item) < amount: return false
+	var remaining: int = amount
+	for index: int in range(state.cargo.size()-1,-1,-1):
+		var lot: Dictionary = state.cargo[index]
+		if lot.item != item: continue
+		var taken: int = mini(remaining,int(lot.quantity))
+		lot.quantity -= taken
+		remaining -= taken
+		if lot.quantity <= 0: state.cargo.remove_at(index)
+		if remaining == 0: break
+	return remaining == 0
+
 func transact(game: RefCounted, port: String, at: Vector3, item: String, amount: int, buying: bool) -> String:
 	var blocked: String = reason(game,port,at,item,amount,buying)
 	if not blocked.is_empty(): return blocked
@@ -161,6 +174,7 @@ func update_badges(game: RefCounted) -> void:
 
 func eligible(id: String) -> bool:
 	if not catalog.upgrades.has(id): return false
+	if catalog.upgrades[id].get("acquisition","") == "glassworks": return false
 	var prior: String = catalog.upgrades[id].get("prior", "")
 	if not prior.is_empty() and prior not in state.upgrades: return false
 	if catalog.upgrades[id].has("rank") and Recognition.rank(state.badges) >= int(catalog.upgrades[id].rank): return true
@@ -173,6 +187,7 @@ func upgrade_reason(game: RefCounted, port: String, at: Vector3, id: String) -> 
 	if not blocked.is_empty(): return blocked
 	if not catalog.upgrades.has(id): return "Unknown upgrade."
 	if id in state.upgrades: return "Installed."
+	if catalog.upgrades[id].get("acquisition","") == "glassworks": return "Fabricate at an owned glassworks; this item cannot be purchased."
 	var prior: String = catalog.upgrades[id].get("prior", "")
 	if not prior.is_empty() and prior not in state.upgrades: return "Install %s first." % catalog.upgrades[prior].name
 	if not eligible(id): return "Earn either of the listed badge tiers first."

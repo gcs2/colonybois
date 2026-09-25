@@ -1898,7 +1898,7 @@ func _refresh_ui() -> void:
 			explanation.text = _short_reason(reason)
 		else:
 			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-			explanation.text = ("%.0f m · 8 energy · 1 cargo" % gap) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
+			explanation.text = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
@@ -1964,7 +1964,7 @@ func _short_reason(reason: String) -> String:
 	# Keep the full validated reason on hover; the instrument shows one short cause.
 	if reason.begins_with("Already catalogued"): return "Survey recorded. Select another tool."
 	if reason.begins_with("Sample cradle full"): return "Sample cradles full: 2 / 2."
-	if reason.begins_with("Need ") and "energy" in reason: return "Insufficient energy: %s required." % Equipment.amount(Equipment.energy(tool))
+	if reason.begins_with("Need ") and "energy" in reason: return "Insufficient energy: %s required." % Equipment.amount(Equipment.energy(tool,model.installed_upgrades))
 	if reason.begins_with("The thermal tool"): return "Requires a cold mineral bed."
 	if reason.begins_with("Sample the seed pods"): return "Requires a scanned lantern pod."
 	if reason.begins_with("Keep the last native"): return "Native reserve protected."
@@ -2425,7 +2425,7 @@ func _build_systems_panel() -> void:
 		var button: Button = _button(Equipment.title(id),_inspect_system.bind(id),modules)
 		button.custom_minimum_size = Vector2(232,62)
 		button.add_theme_font_size_override("font_size",14)
-		button.tooltip_text = Equipment.hint(id)
+		button.tooltip_text = Equipment.hint(id,model.installed_upgrades)
 		Instruments.instrument(button,id,COLORS[i],inspected_system == id)
 		system_buttons[id] = button
 	var index: int = TOOLS.find(inspected_system)
@@ -2865,6 +2865,7 @@ func _build_upgrade_shop() -> void:
 		shop.offers.append({"id":"colony_kit","title":"Colony landing kit","price":300,"flavor":"A shelter and landing gear, folded into one freight cradle.","description":"Carries a new colony in four cargo spaces. Deploy on a surveyed, unclaimed surface; construction takes 18 colony days.","requirements":"Purchase includes the construction materials and supplies.","reason":campaign.colonies.buy_reason(campaign,selected_service,ship.position),"owned":false,"action":"kit","icon":"badge_colonist"})
 	for id: String in campaign.commerce.catalog.upgrades:
 		var upgrade: Dictionary = campaign.commerce.catalog.upgrades[id]
+		if upgrade.get("acquisition","") == "glassworks" and id not in campaign.commerce.state.upgrades: continue
 		if upgrade.get("family","ship") != upgrade_family: continue
 		var symbol: String = id
 		if id.begins_with("hull_"): symbol = "defense"
@@ -3421,6 +3422,14 @@ func _install_export(item: String) -> void:
 	if error.is_empty(): _save(false)
 	_show_popup("colonies")
 
+func _fabricate_cutter_head() -> void:
+	if paused or campaign == null: return
+	var error: String = campaign.colonies.fabricate_cutter_head(campaign,selected_colony,ship.position)
+	_toast(error if not error.is_empty() else "Resonance focusing head installed · mining now costs 5 energy")
+	audio.play("error" if not error.is_empty() else "ui_confirm")
+	if error.is_empty(): _save(false)
+	_show_popup("colonies")
+
 func _build_colonies_panel() -> void:
 	var defense_button: Button = _button("Colony defense",_show_popup.bind("conflict"),popup_body)
 	Instruments.instrument(defense_button,"defense",Instruments.CARGO)
@@ -3452,6 +3461,14 @@ func _build_colonies_panel() -> void:
 		button.tooltip_text = blocked
 	_panel_copy("Per production cycle: 0.5 local supplies and %d Marks. Output pauses when storage is full or reserves run short." % (2 if Geography.definition(selected_colony).archetype == "frozen" else 1))
 	for item: String in record.stock: _panel_copy("%s: %d stored" % [campaign.commerce.catalog.goods[item].name,record.stock[item]])
+	var head_installed: bool = "resonant_cutter_head" in campaign.commerce.state.upgrades
+	if record.module == "glass" or head_installed:
+		_panel_copy("GLASSWORKS FABRICATION · 2 Resonant glass + 2 Alloy billets + 1 local supply. The finished head lowers future seam cuts from 8 to 5 energy.",Instruments.PAPER)
+		var head_reason: String = campaign.colonies.cutter_head_reason(campaign,selected_colony,ship.position)
+		var head_button: Button = _button("Resonance focusing head · Installed" if head_installed else "Fabricate Resonance focusing head",_fabricate_cutter_head,popup_body)
+		Instruments.instrument(head_button,"mine",Instruments.GOLD)
+		head_button.disabled = paused or head_installed or not head_reason.is_empty()
+		head_button.tooltip_text = head_reason if not head_reason.is_empty() else "Fabricates and installs the mined-crystal cutter upgrade."
 
 func _reload_destination() -> void:
 	var parent: Node = get_parent()

@@ -4,6 +4,7 @@ const Geography = preload("res://scripts/planet_geography.gd")
 const Settlement = preload("res://scripts/settlement_projects.gd")
 const KIT_SPACE := 4
 const STORAGE := 16
+const CUTTER_HEAD := "resonant_cutter_head"
 var state: Dictionary = {"kit_source":"","outposts":{}}
 
 func reserved_space() -> int:
@@ -154,6 +155,35 @@ func collect(game: RefCounted, port: String, at: Vector3, item: String, amount: 
 	var id: String = strategic_id(game.field.state.planet_id)
 	state.outposts[id].stock[item] -= amount
 	game.commerce.add_cargo(item,amount,game.field.state.planet_id)
+	return ""
+
+func cutter_head_reason(game: RefCounted, id: String, ship: Vector3) -> String:
+	if not state.outposts.has(id) or not game.sector.state.colonies.has(id): return "Complete a colony hub first."
+	if game.traveling(): return "Finish the journey first."
+	if game.field.state.flight_mode != "surface" or game.field.state.planet_id != id: return "Land on this colony world to use its Glassworks."
+	if state.outposts[id].module != "glass": return "Commission the Glassworks at this outpost first."
+	var coordinates: Array = state.outposts[id].site
+	var ground := Vector3(float(coordinates[0]),Geography.surface_height(game.field.definition(),float(coordinates[0]),float(coordinates[1])),float(coordinates[1]))
+	if not ship.is_finite() or ship.distance_to(ground) > 12.0: return "Approach within 12 m of the Glassworks."
+	if CUTTER_HEAD in game.commerce.state.upgrades: return "Already installed."
+	if game.commerce.quantity("glass") < 2: return "Bring 2 Resonant glass from a surveyed seam or local market."
+	if game.commerce.quantity("alloy") < 2: return "Bring 2 Alloy billets to the Glassworks."
+	if game.sector.state.colonies[id].supplies < 1.0: return "The Glassworks needs 1 local supply for fabrication."
+	return ""
+
+func fabricate_cutter_head(game: RefCounted, id: String, ship: Vector3) -> String:
+	var blocked: String = cutter_head_reason(game,id,ship)
+	if not blocked.is_empty(): return blocked
+	var cargo_before: Array = game.commerce.state.cargo.duplicate(true)
+	if not game.commerce.consume_cargo("glass",2): return "Bring 2 Resonant glass from a surveyed seam or local market."
+	if not game.commerce.consume_cargo("alloy",2):
+		game.commerce.state.cargo = cargo_before
+		return "Bring 2 Alloy billets to the Glassworks."
+	game.sector.state.colonies[id].supplies -= 1.0
+	game.commerce.state.upgrades.append(CUTTER_HEAD)
+	game.field.installed_upgrades = game.commerce.state.upgrades
+	game.field.note("fabricated_resonant_cutter_head","Built a Resonance focusing head at the Glassworks; each future seam cut costs 5 instead of 8 energy.")
+	game.diplomacy.record(game,"equipment","Fabricated a Resonance focusing head at the Glassworks on "+str(game.sector.state.planets[id].name)+".","",{"upgrade":CUTTER_HEAD,"planet":id,"ingredients":{"glass":2,"alloy":2},"local_supplies":1,"energy_saved_per_cut":3})
 	return ""
 
 func restore(value: Variant, sector: RefCounted, commerce: RefCounted) -> Error:

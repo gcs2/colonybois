@@ -28,7 +28,7 @@ static func money(amount: int, font_size: int = 18) -> HBoxContainer:
 static func equipment_icon(id: String) -> Texture2D:
 	if id == "glass": return preload("res://assets/ui/resonant-glass-v1.png")
 	var ids: Array = ["colony_kit","shield","rally_call","heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","seeker","ground_bomb","hold","emitter","drive","hull","energy","water","alloy"]
-	var key: String = "hull" if id.begins_with("hull_") else "energy" if id.begins_with("energy_") else "drive" if id.begins_with("drive") else id
+	var key: String = "hull" if id.begins_with("hull_") else "energy" if id.begins_with("energy_") else "drive" if id.begins_with("drive") else "glass" if id == "resonant_cutter_head" else id
 	var index: int = ids.find(key)
 	if index < 0: return action_icon(0)
 	var icon := AtlasTexture.new()

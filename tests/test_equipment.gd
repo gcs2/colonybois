@@ -11,7 +11,7 @@ func check(value: bool, message: String) -> void:
 func run() -> void:
 	var source: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(Equipment.PATH))
 	check(Equipment.validate(source).is_empty(),"Authored catalog resolves its actual icons and handlers")
-	check(Equipment.ids() == ["scan","collect","warm","seed"],"Existing hotbar order remains stable")
+	check(Equipment.ids() == ["scan","collect","warm","seed","mine"],"Existing tool order remains stable with mining appended")
 	for broken: Variant in [null, [], {"version":2,"tools":[]}, {"version":1,"tools":[null]}]:
 		check(not Equipment.validate(broken).is_empty(),"Malformed document is rejected without a parser crash")
 	for change: Dictionary in [{"id":"scan"},{"id":"fake_weapon"},{"seconds":0},{"reach":-1},{"energy":"free"},{"samples":0.5},{"icon":"res://missing.svg"},{"color":"no-color"},{"targets":["unknown"]},{"requires_scan":"yes"}]:
@@ -23,7 +23,7 @@ func run() -> void:
 	copy.energy = 90
 	var groups: Dictionary = Equipment.groups()
 	groups.Survey.clear()
-	check(Equipment.value("scan","targets").size() == 4 and Equipment.energy("scan") == 0 and Equipment.groups().Survey.size() == 1,"Public catalog data cannot mutate cached rules")
+	check(Equipment.value("scan","targets").size() == 5 and Equipment.energy("scan") == 0 and Equipment.groups().Survey.size() == 1,"Public catalog data cannot mutate cached rules")
 	var model := Model.new()
 	var before: Dictionary = model.state.duplicate(true)
 	check(not model.act("fake_weapon","relay",1).is_empty() and model.state == before,"Unsupported tools cannot mutate saves or spend resources")

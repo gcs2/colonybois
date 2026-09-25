@@ -171,6 +171,16 @@
       },
       "flavor": "Standard freight cradles replace the awkward corners of a scout hold."
     },
+    "resonant_cutter_head": {
+      "name": "Resonance focusing head",
+      "price": 0,
+      "description": "Reduces each Resonance cutter cut from 8 to 5 energy. Manufactured only at a commissioned Glassworks.",
+      "requires": {},
+      "family": "ship",
+      "acquisition": "glassworks",
+      "ingredients": { "glass": 2, "alloy": 2, "local_supplies": 1 },
+      "flavor": "Mined crystal and alloy form a tightly tuned focusing element."
+    },
     "emitter": {
       "name": "Focused arc emitter",
       "price": 180,

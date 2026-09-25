@@ -14,6 +14,12 @@
 6. A facility produces every two colony days (60 active seconds). Frozen worlds produce two alloy or water units; arid worlds produce two glass units; other combinations produce one. Each cycle consumes half a local supply and two Marks on frozen worlds, one elsewhere. Output pauses at insufficient reserves or the 16-unit warehouse cap.
 7. At that world's dock, open **Warehouse**, load real output into the ship and trade it at another world's market. Quantities and origin are conserved. Automated freight is the next integration, not part of this checkpoint.
 
+## Glassworks manufacturing pilot — 25 September 2026
+
+At a completed owned outpost, commission the Glassworks module, then land on that colony's surface and park within 12 m of its hub. Bring two Resonant glass and two Alloy billets in the shared ship cargo, plus at least one local colony supply. The pictured **Fabricate Resonance focusing head** action consumes those inputs and installs one permanent ship upgrade without charging Marks. It records the recipe in the campaign chronicle. Each later mine cut then costs 5 energy instead of 8, and the flight HUD reports the reduced cost. The item is crafted-only; the upgrade shop cannot sell it.
+
+The first connected route is to survey and mine a finite seam, acquire alloy through the existing market, then return to the Glassworks. This is one intentionally bounded recipe, not a general factory network, additional commodity family, or visual acceptance of the provisional lode models. The colony suite covers the recipe, supply debit, live ship effect and save/load; staged lode captures and independent visual review remain outstanding.
+
 Only the landing hub exists at completion: no instant town or invented population. Its remaining construction cargo follows the existing settlement model (70 materials, 60 supplies). Full settlement design, workforce requirements, defenses, terraforming-dependent capacity and planet-wide sites remain incomplete. The source city's aggregate economy remains authoritative.
 
 ## Persistence and presentation

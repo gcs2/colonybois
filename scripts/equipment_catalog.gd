@@ -83,7 +83,10 @@ static func value(id: String, key: String) -> Variant:
 static func title(id: String) -> String: return str(value(id, "name"))
 static func reach(id: String) -> float: return float(value(id, "reach"))
 static func seconds(id: String) -> float: return float(value(id, "seconds"))
-static func energy(id: String) -> float: return float(value(id, "energy"))
+static func energy(id: String, installed_upgrades: Array = []) -> float:
+	var base: float = float(value(id, "energy"))
+	if id == "mine" and "resonant_cutter_head" in installed_upgrades: return 5.0
+	return base
 static func samples(id: String) -> int: return int(value(id, "samples"))
 static func tint(id: String) -> Color: return Color.html(value(id, "color"))
 static func effect_tint(id: String) -> Color: return Color.html(value(id, "effect_color"))
@@ -96,10 +99,10 @@ static func colors() -> Array[Color]:
 static func amount(number: float) -> String:
 	return str(int(number)) if number == floor(number) else String.num(number,2)
 
-static func summary(id: String) -> String:
-	var cost: String = "%s energy" % amount(energy(id)) if energy(id) > 0 else "no energy cost"
+static func summary(id: String, installed_upgrades: Array = []) -> String:
+	var cost: String = "%s energy" % amount(energy(id,installed_upgrades)) if energy(id,installed_upgrades) > 0 else "no energy cost"
 	if samples(id) > 0: cost += " · %d specimen" % samples(id)
 	return "%s m reach · %s" % [amount(reach(id)), cost]
 
-static func hint(id: String) -> String:
-	return "%s %s. %s" % [value(id,"description"), summary(id), value(id,"constraint")]
+static func hint(id: String, installed_upgrades: Array = []) -> String:
+	return "%s %s. %s" % [value(id,"description"), summary(id,installed_upgrades), value(id,"constraint")]
