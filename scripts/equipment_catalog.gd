@@ -1,8 +1,8 @@
 extends RefCounted
 ## Authored tool contract shared by commands, HUD and effects. State stays in the model.
 const PATH := "res://data/equipment.json"
-const HANDLERS := ["scan", "collect", "warm", "seed"]
-const TARGETS := ["pod", "grazer", "bed", "relay"]
+const HANDLERS := ["scan", "collect", "warm", "seed", "mine"]
+const TARGETS := ["pod", "grazer", "bed", "relay", "vein"]
 static var _entries: Dictionary = {}
 
 static func validate(document: Variant) -> PackedStringArray:

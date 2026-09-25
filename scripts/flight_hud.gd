@@ -244,7 +244,7 @@ func _build() -> void:
 	context_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	context_card.visible = false
 	add_child(context_card)
-	subject = label_at("",Rect2(462,752,266,22),15)
+	subject = label_at("",Rect2(462,752,164,22),15)
 	subject.visible = false
 	action_state = label_at("",Rect2(635,752,95,20),11,Art.GOLD)
 	action_state.visible = false

@@ -1,5 +1,6 @@
 extends SceneTree
 const Model = preload("res://scripts/encounter_state.gd")
+const Equipment = preload("res://scripts/equipment_catalog.gd")
 var failures: int = 0
 var checks: int = 0
 
@@ -27,6 +28,13 @@ func run() -> void:
 	check(model.state == initial,"Rejected actions do not mutate anything")
 	check(model.act("scan","pod",4).is_empty(),"Scan succeeds in range")
 	check(not model.act("scan","pod",4).is_empty() and model.state.history.size() == 1,"Repeat scan cannot duplicate chronicle rewards")
+	check(not model.act("mine","vein",4).is_empty() and model.state.ore_remaining == Model.MINERAL_DEPOSIT_UNITS,"Unscanned mineral seams reject extraction without depletion")
+	check(model.act("scan","vein",4).is_empty(),"Scanner catalogs an exposed mineral seam")
+	var energy_before_mining: float = model.state.energy
+	for i: int in range(Model.MINERAL_DEPOSIT_UNITS): check(model.act("mine","vein",4).is_empty(),"One cutter cycle extracts a finite crystal")
+	check(model.state.ore_remaining == 0 and model.state.energy == energy_before_mining-Model.MINERAL_DEPOSIT_UNITS*Equipment.energy("mine"),"Mining spends energy and depletes the local seam")
+	var exhausted_state: Dictionary = model.state.duplicate(true)
+	check(not model.act("mine","vein",4).is_empty() and model.state == exhausted_state,"An exhausted seam cannot be farmed again")
 	model.act("collect","pod",4)
 	model.act("collect","pod",4)
 	check(model.state.samples == 2 and model.state.native_stock == 1,"Sampling conserves seed stock")

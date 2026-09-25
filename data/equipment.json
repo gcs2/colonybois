@@ -4,7 +4,7 @@
     {
       "id": "scan", "name": "Survey scanner", "category": "Survey",
       "description": "Catalogue a lifeform or site.", "constraint": "Each subject can be catalogued once.",
-      "targets": ["pod", "grazer", "bed", "relay"], "requires_scan": false,
+      "targets": ["pod", "grazer", "bed", "relay", "vein"], "requires_scan": false,
       "target_error": "Select a lifeform or a site.",
       "reach": 13, "seconds": 1.3, "energy": 0, "samples": 0,
       "color": "86cf9a", "effect_color": "9cdeb2",
@@ -36,6 +36,15 @@
       "reach": 13, "seconds": 1.2, "energy": 0, "samples": 1,
       "color": "b9a0eb", "effect_color": "c3a8fa",
       "icon": "res://assets/ui/flight/seed.svg", "acquisition": "Installed on the starting expedition ship."
+    },
+    {
+      "id": "mine", "name": "Resonance cutter", "category": "Mining",
+      "description": "Cut one resonant crystal from a scanned surface seam.", "constraint": "Finite seam · one cargo space and 8 energy per crystal.",
+      "targets": ["vein"], "requires_scan": true,
+      "target_error": "The cutter is calibrated for exposed crystal seams.",
+      "reach": 13, "seconds": 2.4, "energy": 8, "samples": 0,
+      "color": "79b9b5", "effect_color": "a2e4dc",
+      "icon": "res://assets/ui/flight/mine.svg", "acquisition": "Installed on the starting expedition ship."
     }
   ]
 }

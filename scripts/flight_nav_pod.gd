@@ -16,7 +16,9 @@ var needle_angle: float = -1.75 # Pointing ~11:30 o'clock
 func _ready() -> void:
 	custom_minimum_size = Vector2(250, 130)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tooltip_text = "Local chart · 80 m across. Click a contact to approach with the selected tool."
 	resized.connect(queue_redraw)
+
 
 func set_mode(is_orbit: bool, alt_str: String = "", angle: float = -1.9) -> void:
 	orbital = is_orbit
@@ -120,6 +122,6 @@ func _draw() -> void:
 		draw_line(star_p - Vector2(-3, 3), star_p + Vector2(-3, 3), Color("4a545a"), 1.0)
 
 		# Range scale readout on the right
-		draw_string(FONT, Vector2(130, size.y * 0.5 + 6), "2.4 pc", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, CHARCOAL)
+		draw_string(FONT, Vector2(130, size.y * 0.5 + 6), "80 m", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, CHARCOAL)
 		draw_line(Vector2(120, size.y * 0.5), Vector2(126, size.y * 0.5), CHARCOAL, 1.5)
 		draw_line(Vector2(120, size.y * 0.5 - 6), Vector2(120, size.y * 0.5 + 6), CHARCOAL, 1.5)

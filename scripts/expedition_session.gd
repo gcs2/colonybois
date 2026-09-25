@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 19
+const VERSION := 20
 const Galaxy = preload("res://scripts/galaxy_catalog.gd")
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
@@ -30,7 +30,7 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
-const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock"]
+const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock","ore_remaining"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
 var sector := Sector.new()
@@ -139,7 +139,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -171,6 +171,7 @@ func restore_snapshot(source: Variant) -> Error:
 			saved_worlds[id].merge({"guardian_aim":[0.0,8.0,0.0],"guardian_fire_at":0,"guardian_salvaged":false})
 			if id != "morrow" and not saved_worlds[id].get("guardian_disabled",false): saved_worlds[id].guardian_hull = Field.Encounters.hull(id)
 		if source.version < 9 and not saved_worlds[id].has("repair_stock"): saved_worlds[id].repair_stock = Field.initial_repair_stock()
+		if source.version < 20 and not saved_worlds[id].has("ore_remaining"): saved_worlds[id].ore_remaining = Field.MINERAL_DEPOSIT_UNITS
 		if saved_worlds[id].size() != LOCAL_KEYS.size(): return ERR_INVALID_DATA
 		var probe: Dictionary = Field.fresh()
 		probe.planet_id = id
@@ -395,6 +396,27 @@ func fire_weapon(at: Vector3) -> String:
 		diplomacy.record(self,"combat",field.enemy_profile().name+" neutralized at "+field.definition().name+".","",{"planet":field.state.planet_id,"enemy":field.enemy_profile().name,"nonlethal":field.has_wreck()},0,"defeat:"+field.state.planet_id)
 		commerce.update_badges(self)
 	return error
+
+func mining_reason(distance: float) -> String:
+	if traveling(): return "Finish the journey before mining."
+	if field.state.flight_mode != "surface": return "Land before using the resonance cutter."
+	var blocked: String = field.reason("mine","vein",distance)
+	if not blocked.is_empty(): return blocked
+	if commerce.used_space(self) >= commerce.capacity(): return "Cargo hold full. Sell or unload freight before cutting another crystal."
+	return ""
+
+func extract_surface_crystal(distance: float) -> String:
+	var blocked: String = mining_reason(distance)
+	if not blocked.is_empty(): return blocked
+	var planet: String = field.state.planet_id
+	var before: int = Field.MINERAL_DEPOSIT_UNITS-int(field.state.ore_remaining)
+	blocked = field.act("mine","vein",distance)
+	if not blocked.is_empty(): return blocked
+	commerce.add_cargo("glass",1,planet)
+	var remain: int = int(field.state.ore_remaining)
+	var summary: String = "Cut one resonant glass crystal at %s; %d of %d remain." % [Geography.definition(planet).name,remain,Field.MINERAL_DEPOSIT_UNITS]
+	diplomacy.record(self,"discovery",summary,"",{"item":"glass","quantity":1,"remaining":remain},0,"mining:%s:%d" % [planet,before+1])
+	return ""
 
 func salvage_enemy(at: Vector3) -> String:
 	if traveling() or field.state.flight_mode != "orbit" or not field.has_guardian() or field.has_wreck(): return "No recoverable enemy cargo here."

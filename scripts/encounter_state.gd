@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 9
+const VERSION := 10
 const Support = preload("res://scripts/ship_support.gd")
 var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
@@ -8,7 +8,8 @@ var installed_upgrades: Array = []
 var planetary: RefCounted
 const Geography = preload("res://scripts/planet_geography.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
-const TARGETS := ["pod", "grazer", "bed", "relay"]
+const TARGETS := ["pod", "grazer", "bed", "relay", "vein"]
+const MINERAL_DEPOSIT_UNITS := 4
 const HAZARD_WARNING := 31.0
 const HAZARD_RADIUS := 19.0
 const SALVAGE_REACH := 10.0
@@ -240,7 +241,7 @@ func use_repair_pack(item: String) -> String:
 
 
 static func fresh(planet: String = "morrow") -> Dictionary:
-	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3,
+	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3, "ore_remaining":MINERAL_DEPOSIT_UNITS,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
 		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
@@ -435,6 +436,7 @@ func reason(action: String, target: String, distance: float) -> String:
 		if target in state.scanned: return "Already catalogued. Try another tool or another subject."
 	if Equipment.value(action,"requires_scan") and target not in state.scanned: return "Scan this subject first."
 	if target not in Equipment.value(action,"targets"): return str(Equipment.value(action,"target_error"))
+	if action == "mine" and state.ore_remaining <= 0: return "This seam is exhausted. Prospect another world."
 	if action == "collect":
 		if state.native_stock <= 1: return "Keep the last native pod for the grazers. Cultivate more in the bed."
 		if state.samples >= 2: return "Sample cradle full (2). Plant one in the warmed bed."
@@ -455,7 +457,7 @@ func act(action: String, target: String, distance: float) -> String:
 	match action:
 		"scan":
 			state.scanned.append(target)
-			note("scan_"+target,"Catalogued " + {"pod":"lantern pods: seeds need warm mineral soil.","grazer":"bell grazers: they feed on native pods; preserve a wild reserve.","bed":"a cold mineral bed: suitable for optional cultivation.","relay":"an orbital navigation relay. Its signal continues above the clouds."}[target])
+			note("scan_"+target,"Catalogued " + {"pod":"lantern pods: seeds need warm mineral soil.","grazer":"bell grazers: they feed on native pods; preserve a wild reserve.","bed":"a cold mineral bed: suitable for optional cultivation.","relay":"an orbital navigation relay. Its signal continues above the clouds.","vein":"resonant glass: exposed crystals grew under repeated thermal stress. The seam holds four recoverable pieces."}[target])
 		"collect":
 			state.samples += 1
 			state.native_stock -= 1
@@ -466,6 +468,9 @@ func act(action: String, target: String, distance: float) -> String:
 		"seed":
 			state.seeded = true
 			note("seed_bed","Established lantern pods in the prepared bed.")
+		"mine":
+			state.ore_remaining -= 1
+			note("cut_glass_%d" % (MINERAL_DEPOSIT_UNITS-state.ore_remaining),"Cut a resonant crystal from the exposed seam. %d pieces remain." % state.ore_remaining)
 	return ""
 
 func tick(threat_distance: float = INF) -> String:
@@ -588,8 +593,11 @@ func restore_snapshot(source: Variant) -> Error:
 		value.repair_packs = {"repair_pack":0,"mega_repair_pack":0}
 		value.repair_stock = initial_repair_stock()
 	if value.get("version") == 8:
-		value.version = VERSION
+		value.version = 9
 		value.support = Support.fresh()
+	if value.get("version") == 9:
+		value.version = VERSION
+		value.ore_remaining = MINERAL_DEPOSIT_UNITS
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -597,7 +605,7 @@ func restore_snapshot(source: Variant) -> Error:
 			if not (typeof(value[key]) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(value[key])): return ERR_INVALID_DATA
 		elif typeof(defaults[key]) != typeof(value[key]): return ERR_INVALID_DATA
 	if not Support.validate(value.support,int(value.time),installed_upgrades): return ERR_INVALID_DATA
-	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3: return ERR_INVALID_DATA
+	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3 or value.ore_remaining < 0 or value.ore_remaining > MINERAL_DEPOSIT_UNITS: return ERR_INVALID_DATA
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.homeworld_id.is_empty() or value.homeworld_id.length() > 64: return ERR_INVALID_DATA
 	if value.energy_packs < 0 or value.energy_packs > PACK_CAPACITY or value.pack_ready_at < 0 or value.pack_ready_at > value.time+PACK_COOLDOWN: return ERR_INVALID_DATA

@@ -30,6 +30,30 @@ func run() -> void:
 	check(game.sector.state.tick == 1 and game.field.state.time == 30 and game.sector_clock == 0,"Exactly one colony tick per 30 active seconds")
 	check(game.field.state.energy == 11,"Background economy never regenerates energy")
 	check(game.field.marks == game.sector.state.ledger.closing,"Colony ledger and ship show the same closing balance")
+	game.field.state.energy = 100.0
+	check(not game.mining_reason(4).is_empty() and game.field.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS,"Mining requires a scan and leaves the deposit untouched on refusal")
+	check(game.field.act("scan","vein",4).is_empty(),"Surface scanner can locate the resonant seam")
+	game.commerce.add_cargo("alloy",game.commerce.capacity(),"test")
+	var full_hold_energy: float = game.field.state.energy
+	check(not game.extract_surface_crystal(4).is_empty() and game.field.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS and game.field.state.energy == full_hold_energy,"A full hold blocks the cut before charging energy or depleting the seam")
+	game.commerce.state.cargo.clear()
+	for i: int in range(Field.MINERAL_DEPOSIT_UNITS): check(game.extract_surface_crystal(4).is_empty(),"Valid cutter cycle returns one crystal to real ship cargo")
+	check(game.commerce.quantity("glass") == Field.MINERAL_DEPOSIT_UNITS and game.field.state.ore_remaining == 0,"Four finite pieces enter the shared cargo ledger")
+	var mined_energy: float = game.field.state.energy
+	var mined_snapshot: Dictionary = game.snapshot()
+	check(not game.extract_surface_crystal(4).is_empty() and game.field.state.energy == mined_energy and game.snapshot() == mined_snapshot,"Spent mineral seam cannot be harvested twice")
+	var mined_restore := Session.new()
+	check(mined_restore.restore_snapshot(mined_snapshot) == OK and mined_restore.snapshot() == mined_snapshot,"Campaign save/load preserves cargo, extracted resource, and chronicle")
+	var marks_before_sale: float = game.field.marks
+	var demand_before_sale: int = game.commerce.market("morrow").glass.demand
+	check(game.commerce.transact(game,"basin_port",Field.service_position("basin_port"),"glass",1,false).is_empty(),"Mined crystals can be sold at the real planetary market")
+	check(game.commerce.quantity("glass") == Field.MINERAL_DEPOSIT_UNITS-1 and game.field.marks > marks_before_sale and game.commerce.market("morrow").glass.demand == demand_before_sale-1,"Sale pays the shared Marks treasury and consumes finite market demand")
+	var legacy_campaign_snapshot: Dictionary = Session.new().snapshot()
+	legacy_campaign_snapshot.version = 19
+	legacy_campaign_snapshot.field.version = 9
+	legacy_campaign_snapshot.field.erase("ore_remaining")
+	var legacy_campaign_restore := Session.new()
+	check(legacy_campaign_restore.restore_snapshot(legacy_campaign_snapshot) == OK and legacy_campaign_restore.field.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS,"Version 19 campaign save gains the unmined deposit when loading the new feature")
 	var before_view: Dictionary = game.snapshot()
 	game.field.change_flight_mode("orbit")
 	game.field.change_flight_mode("surface")
@@ -110,6 +134,24 @@ func run() -> void:
 	check(scene.campaign.snapshot() == saved and scene.model == scene.campaign.field,"Flight save/load keeps the scene attached to the shared campaign")
 	scene._refresh_ui()
 	check(scene.stats.text.begins_with("%d Marks" % scene.campaign.sector.state.credits),"HUD reads the authoritative balance")
+	var seam: Vector3 = scene._target_position("vein")
+	scene.ship.position = seam+Vector3(0,3,3)
+	scene.selected = "vein"
+	scene._select_tool("scan")
+	scene.held = true
+	scene._operate(2)
+	check("vein" in scene.model.state.scanned,"Surface HUD scan action can identify the resource node")
+	scene._select_tool("mine")
+	scene.held = true
+	scene._operate(3)
+	scene._update_visuals()
+	scene._refresh_ui()
+	check(scene.campaign.commerce.quantity("glass") == 1 and scene.model.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS-1,"Mouse-selected cutter visibly transfers one mineral into cargo")
+	check(scene.mineral_crystals.filter(func(gem: MeshInstance3D) -> bool: return gem.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Collected crystal disappears from the finite surface seam")
+	check(scene.operation_feedback == "SECURED" and scene.status_icon.visible and scene.status.text.begins_with("+1 Resonant glass"),"Mining reward uses the item icon and concise cargo receipt")
+	check(scene.status_icon.size.x <= 56 and scene.status_icon.size.y <= 56,"Reward icon remains a small HUD pictogram, not a full-size image")
+	check(scene.subject.text == "Resonant glass seam" and scene.hud.action_state.text == "SECURED" and scene.explanation.text.begins_with("+1 Resonant glass"),"Target card reports the delivered item without distance/status overlap")
+	check(scene.ring.position.y > scene.terrain_height(scene.ring.position.x,scene.ring.position.z),"Selected target ring sits visibly above the surface")
 	scene.persistence_blocked = true
 	var safe_bytes: PackedByteArray = FileAccess.get_file_as_bytes(scene._campaign_path(false))
 	scene.model.marks = 999

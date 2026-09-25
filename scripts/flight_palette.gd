@@ -9,7 +9,7 @@ const CATEGORY_ICONS := {"Main tools":"category_tools", "Environment":"category_
 static func slot_rect(slot: int) -> Rect2:
 	return Rect2(766+(slot%9)*59,748+(slot/9)*56,56,54)
 const GROUPS := {
-	"Main tools": ["scan", "collect"],
+	"Main tools": ["scan", "collect", "mine"],
 	"Environment": ["heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","heat_charge","cool_charge","atmosphere_charge","vacuum_charge","warm", "seed"],
 	"Weapons": ["lance","surface_laser","seeker","ground_bomb","shield","rally_call"],
 	"Inventory": ["pack","repair_pack","mega_repair_pack"],

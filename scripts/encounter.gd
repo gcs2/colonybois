@@ -74,7 +74,7 @@ const SURFACE_ZOOM_MIN := 12.0
 const SURFACE_ZOOM_MAX := 110.0
 const ORBIT_ZOOM_MIN := 18.0
 const ORBIT_ZOOM_MAX := 320.0
-const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay"}
+const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam"}
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 var TOOLS: Array[String] = Equipment.ids()
 var COLORS: Array[Color] = Equipment.colors()
@@ -88,6 +88,7 @@ var grown_plants: Array[Node3D] = []
 var wild_plants: Array[Node3D] = []
 var grazers: Array[Node3D] = []
 var grazer_motion: Array[RefCounted] = []
+var mineral_crystals: Array[MeshInstance3D] = []
 var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
 var relay_motes: Array[MeshInstance3D] = []
@@ -123,6 +124,8 @@ var objective: Label
 var subject: Label
 var explanation: Label
 var status: Label
+var status_icon: TextureRect
+var toast_item_icon: String = ""
 var progress_bar: ProgressBar
 var toolbar: Array[Button] = []
 var labels: Dictionary = {}
@@ -486,6 +489,31 @@ func _make_world() -> void:
 		var a: float = i*2.4
 		var plant: Node3D = _asset("pod",bed.position+Vector3(cos(a)*2.3,0.2,sin(a)*2.3),0.01)
 		grown_plants.append(plant)
+	var vein := Node3D.new()
+	vein.position = Vector3(18,terrain_height(18,16),16)
+	vein.rotation.y = 0.43
+	add_child(vein)
+	targets.vein = vein
+	var seam_rock := SphereMesh.new()
+	seam_rock.radius = 1.0
+	seam_rock.height = 1.5
+	for i: int in range(4):
+		var rock := _mesh(seam_rock,Vector3(-1.35+i*0.82,0.24,(i%2)*0.62-0.3),_mat(Color("5b5351")),vein)
+		rock.scale = Vector3(1.0,0.62,0.82)
+	var crystal := CylinderMesh.new()
+	crystal.top_radius = 0.08
+	crystal.bottom_radius = 0.48
+	crystal.height = 2.35
+	crystal.radial_segments = 6
+	for i: int in range(Model.MINERAL_DEPOSIT_UNITS):
+		var gem_material := _mat([Color("64aaa4"),Color("a9bdb0"),Color("53a79b"),Color("8baab5")][i],true)
+		gem_material.roughness = 0.48
+		gem_material.metallic = 0.12
+		gem_material.emission_energy_multiplier = 0.8
+		var gem := _mesh(crystal,Vector3(-1.1+i*0.73,1.18,(i%2)*0.58-0.28),gem_material,vein)
+		gem.rotation = Vector3((i%2)*0.08,0.4+i*0.63,(i%3-1)*0.1)
+		gem.scale = Vector3(0.86+0.12*(i%2),0.82+0.12*((i+1)%3),0.84)
+		mineral_crystals.append(gem)
 	var relay: Node3D = _asset("relay",Vector3(9,terrain_height(9,-13),-13))
 	targets.relay = relay
 	var core := SphereMesh.new()
@@ -513,8 +541,12 @@ func _make_world() -> void:
 	torus.rings = 32
 	torus.ring_segments = 8
 	var ring_mat := StandardMaterial3D.new()
-	ring_mat.albedo_color = Color("cda077", 0.65)
+	ring_mat.albedo_color = Color("f3c567", 0.94)
 	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color("f3c567")
+	ring_mat.emission_energy_multiplier = 0.35
 	ring = _mesh(torus,Vector3.ZERO,ring_mat)
 	var cylinder := CylinderMesh.new()
 	cylinder.top_radius = 0.055
@@ -657,6 +689,17 @@ func _make_ui() -> void:
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(status)
+	status_icon = TextureRect.new()
+	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	status_icon.custom_minimum_size = Vector2.ZERO
+	status_icon.position = Vector2(390,677)
+	status_icon.size = Vector2(48,48)
+	status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png")
+	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	status_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_icon.hide()
+	root.add_child(status_icon)
+	status_icon.size = Vector2(40,40)
 	guide_caption = _label("",16,Color("b7d2e0"))
 	guide_caption.position = Vector2(390,605)
 	guide_caption.size = Vector2(530,58)
@@ -953,6 +996,7 @@ func _process(delta: float) -> void:
 		_refresh_ui()
 	toast_time -= delta
 	status.visible = toast_time > 0 or paused
+	if is_instance_valid(status_icon): status_icon.visible = toast_time > 0 and toast_item_icon == "glass" and not paused
 	if paused: status.text = "Paused — Space to resume"
 	if "--field-capture" in OS.get_cmdline_user_args(): _capture(delta)
 	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
@@ -1065,6 +1109,10 @@ func _update_visuals() -> void:
 		grown_plants[i].visible = model.state.seeded
 		grown_plants[i].scale = Vector3.ONE*(0.08+float(model.state.growth)*(0.55+0.06*(i%3)))
 		grown_plants[i].rotation.z = sin(elapsed*1.2+i)*0.045
+	for i: int in range(mineral_crystals.size()):
+		mineral_crystals[i].visible = i < int(model.state.ore_remaining)
+		var gem_material: StandardMaterial3D = mineral_crystals[i].material_override
+		gem_material.emission_energy_multiplier = 0.62+0.12*sin(elapsed*0.7+i*0.9)
 	relay_light.visible = "relay" in model.state.scanned or model.state.growth >= 1
 	var relay_pos: Vector3 = targets.relay.position
 	for i: int in range(relay_motes.size()):
@@ -1072,12 +1120,13 @@ func _update_visuals() -> void:
 		var m_rad: float = 1.35 + sin(elapsed * 1.5 + i) * 0.25
 		var m_y: float = 1.6 + sin(elapsed * 2.0 + i * 1.1) * 0.5 + (i * 0.3)
 		relay_motes[i].position = relay_pos + Vector3(cos(m_ang) * m_rad, m_y, sin(m_ang) * m_rad)
-	ring.position = _target_position()+Vector3(0,-0.8,0)
+	ring.position = targets[selected].position+Vector3(0,0.08,0)
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
 	ring.visible = not kit_mode and not deploy_order and not camera.is_position_behind(_target_position())
 	for id: String in labels:
 		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
 		var label: Label = labels[id]
+		if id == "vein": label.text = "RESONANT SEAM · %d / %d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if model.state.ore_remaining > 0 else "DEPLETED CRYSTAL SEAM"
 		label.position = camera.unproject_position(at)-Vector2(label.size.x/2,20)
 		label.visible = id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
 		label.modulate.a = 1.0
@@ -1389,7 +1438,8 @@ func _operate(delta: float) -> void:
 	if paused or _inspection_open() or model.state.flight_mode == "orbit" or not held or latched:
 		progress = 0
 		return
-	var error: String = model.reason(tool,selected,ship.position.distance_to(_target_position()))
+	var gap: float = ship.position.distance_to(_target_position())
+	var error: String = _tool_reason(tool,selected,gap)
 	if not error.is_empty():
 		_toast(error)
 		audio.play("error")
@@ -1397,7 +1447,7 @@ func _operate(delta: float) -> void:
 		progress = 0
 		return
 	if progress == 0:
-		audio.play(tool)
+		audio.play("collect" if tool == "mine" else tool)
 		for motion: RefCounted in grazer_motion: motion.react(tool,_target_position())
 	progress += delta/Equipment.seconds(tool)
 	var end: Vector3 = _target_position()
@@ -1409,15 +1459,28 @@ func _operate(delta: float) -> void:
 	if side.length() < 0.1: side = axis.cross(Vector3.RIGHT).normalized()
 	beam.basis = Basis(side,axis*origin.distance_to(end),side.cross(axis))
 	if progress >= 1:
-		error = model.act(tool,selected,ship.position.distance_to(end))
-		_toast(error if not error.is_empty() else ("Survey complete" if tool == "scan" else "Operation complete"))
+		var operation_distance: float = ship.position.distance_to(end)
+		error = _commit_tool_action(tool,selected,operation_distance)
+		var completed: String = "+1 Resonant glass · cargo %d / %d" % [campaign.commerce.quantity("glass"),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
+		_toast(error if not error.is_empty() else completed,"glass" if error.is_empty() and tool == "mine" else "")
 		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
 		held = false
 		progress = 0
-		operation_feedback = "COMPLETE" if error.is_empty() else "FAILED"
+		operation_feedback = ("SECURED" if tool == "mine" else "COMPLETE") if error.is_empty() else "FAILED"
 		operation_feedback_until = elapsed+3
 		if error.is_empty(): effects.confirm(end,tool)
+		if error.is_empty() and tool == "mine": _save(false)
+
+func _tool_reason(action: String, target: String, gap: float) -> String:
+	if action == "mine":
+		return campaign.mining_reason(gap) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
+	return model.reason(action,target,gap)
+
+func _commit_tool_action(action: String, target: String, gap: float) -> String:
+	if action == "mine":
+		return campaign.extract_surface_crystal(gap) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
+	return model.act(action,target,gap)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if system_map != null and system_map.visible and not popup.visible:
@@ -1587,7 +1650,7 @@ func _navigate(at: Vector3) -> void:
 func _activate_selected() -> void:
 	if held or approach_subject: _stop(); return
 	if model.state.flight_mode == "orbit": return
-	var error: String = model.reason(tool,selected,0)
+	var error: String = _tool_reason(tool,selected,0)
 	if not error.is_empty(): _toast(error); audio.play("error"); return
 	_cancel_orders()
 	audio.play("target_lock")
@@ -1716,7 +1779,7 @@ func _select_tool(value: String) -> void:
 	beam_material.emission = COLORS[index]
 	hud.select_tool(value)
 	Instruments.meter(progress_bar,COLORS[index])
-	audio.play("equip_"+value)
+	audio.play("equip_collect" if value == "mine" else "equip_"+value)
 
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
@@ -1807,8 +1870,8 @@ func _refresh_ui() -> void:
 			use_button.tooltip_text = "Approach the wreck; recovering its pulse ward takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
-		var reason: String = model.reason(tool,selected,0)
-		subject.text = "%s   /   %.0f m" % [TITLES[selected],gap]
+		var reason: String = _tool_reason(tool,selected,0)
+		subject.text = TITLES[selected]
 		if approach_subject:
 			hud.action_state.text = "APPROACHING"
 			explanation.text = "Moving into tool range."
@@ -1817,21 +1880,23 @@ func _refresh_ui() -> void:
 			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)]
 		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
 			hud.action_state.text = operation_feedback
-			explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
+			if operation_feedback == "SECURED" and tool == "mine":
+				explanation.text = "+1 Resonant glass · %d / %d remain" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS]
+			else: explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
 		elif not reason.is_empty():
 			hud.action_state.text = "UNAVAILABLE"
 			explanation.text = _short_reason(reason)
 		else:
 			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-			explanation.text = "Click Use to operate." if gap <= Equipment.reach(tool) else "Click Use to approach."
+			explanation.text = ("%.0f m · 8 energy · 1 cargo" % gap) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
-	if operation_feedback == "COMPLETE" and elapsed < operation_feedback_until: progress_bar.value = 1
+	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
 	if not orbital:
 		use_button.text = "Cancel" if (held and not latched) or approach_subject else "Use"
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
-			use_button.disabled = use_button.disabled or not model.reason(tool,selected,0).is_empty()
+			use_button.disabled = use_button.disabled or not _tool_reason(tool,selected,0).is_empty()
 	if not orbital and rendered_planet != "morrow": objective.text = model.definition().name+" · survey local life or return to orbit"
 	if orbital and not model.has_wreck() and orbital_target != "guardian":
 		objective.text = "Chart this world, dock for services, or choose your next destination."
@@ -1932,7 +1997,15 @@ func _update_guidance() -> void:
 	caption_time = maxf(6,line.length()/14.0)
 	audio.guide(id,line)
 
-func _toast(text: String) -> void:
+func _toast(text: String, item_icon: String = "") -> void:
+	toast_item_icon = item_icon
+	if is_instance_valid(status_icon):
+		status_icon.visible = item_icon == "glass"
+		status_icon.size = Vector2(48,48)
+		status_icon.custom_minimum_size = Vector2.ZERO
+		status.position = Vector2(438,676) if item_icon == "glass" else Vector2(390,676)
+		status.size = Vector2(482,58) if item_icon == "glass" else Vector2(530,58)
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if item_icon == "glass" else HORIZONTAL_ALIGNMENT_CENTER
 	status.text = text
 	toast_time = 6
 
@@ -2364,7 +2437,7 @@ func _preview_tools() -> void:
 	if previewing_audio: return
 	previewing_audio = true
 	for item: String in TOOLS:
-		audio.play("equip_"+item)
+		audio.play("equip_collect" if item == "mine" else "equip_"+item)
 		await get_tree().create_timer(0.45).timeout
 	previewing_audio = false
 
