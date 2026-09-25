@@ -3,6 +3,7 @@
 build/
 artifacts/
 *.tmp
+/override.cfg
 
 # Raw Tripo exports stay local until their mesh and runtime presentation pass review.
 /assets/tripo_inbox/*.glb
