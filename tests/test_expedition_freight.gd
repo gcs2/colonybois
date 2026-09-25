@@ -151,14 +151,17 @@ func run() -> void:
 	game.field.marks = 500
 	game.commerce.state.markets.s2p0.water.demand = 16
 	var flows_before: int = game.commerce.state.flows.size()
+	var receipts_before_supply: int = route.receipts
+	var marks_before_supply: int = game.field.marks
 	freight.tick(game)
 	check(route.phase == "outbound" and route.cargo == 4 and game.colonies.state.outposts.s1p0.stock.water == 4,"Dispatch moves 4 units from source warehouse for supply shipment")
+	check(game.field.marks == marks_before_supply - supply_quote.fee,"Supply dispatch charges the quoted round-trip transport fee exactly once")
 
 	# Travel outbound
 	for i: int in range(supply_quote.days): freight.tick(game)
 	check(route.phase == "returning" and route.cargo == 0 and route.delivered == 13,"Supply delivery unloads completely at destination warehouse")
 	check(game.colonies.state.outposts.s2p0.stock.water == 4,"Destination warehouse receives delivered goods")
-	check(route.receipts == 4*expected_receipt/4 + 4*game.commerce.price("s7p0","water",false,game) or true,"Delivery creates 0 sale receipts")
+	check(route.receipts == receipts_before_supply,"Supply delivery adds no sale receipts")
 	check(game.commerce.state.flows.size() == flows_before,"Supply delivery does not create Merchant badge flow")
 	check(game.commerce.market("s2p0").water.demand == 16,"Supply delivery does not consume market demand")
 
