@@ -88,7 +88,7 @@ var grown_plants: Array[Node3D] = []
 var wild_plants: Array[Node3D] = []
 var grazers: Array[Node3D] = []
 var grazer_motion: Array[RefCounted] = []
-var mineral_crystals: Array[MeshInstance3D] = []
+var mineral_crystals: Array[Node3D] = []
 var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
 var relay_motes: Array[MeshInstance3D] = []
@@ -501,19 +501,31 @@ func _make_world() -> void:
 		var rock := _mesh(seam_rock,Vector3(-1.35+i*0.82,0.24,(i%2)*0.62-0.3),_mat(Color("5b5351")),vein)
 		rock.scale = Vector3(1.0,0.62,0.82)
 	var crystal := CylinderMesh.new()
-	crystal.top_radius = 0.08
-	crystal.bottom_radius = 0.48
-	crystal.height = 2.35
-	crystal.radial_segments = 6
+	crystal.top_radius = 0.015
+	crystal.bottom_radius = 0.17
+	crystal.height = 0.62
+	crystal.radial_segments = 5
+	var socket_mesh := SphereMesh.new()
+	socket_mesh.radius = 0.36
+	socket_mesh.height = 0.3
 	for i: int in range(Model.MINERAL_DEPOSIT_UNITS):
-		var gem_material := _mat([Color("64aaa4"),Color("a9bdb0"),Color("53a79b"),Color("8baab5")][i],true)
-		gem_material.roughness = 0.48
-		gem_material.metallic = 0.12
-		gem_material.emission_energy_multiplier = 0.8
-		var gem := _mesh(crystal,Vector3(-1.1+i*0.73,1.18,(i%2)*0.58-0.28),gem_material,vein)
-		gem.rotation = Vector3((i%2)*0.08,0.4+i*0.63,(i%3-1)*0.1)
-		gem.scale = Vector3(0.86+0.12*(i%2),0.82+0.12*((i+1)%3),0.84)
-		mineral_crystals.append(gem)
+		var lode := Node3D.new()
+		lode.position = Vector3(-1.1+i*0.73,0.0,(i%2)*0.56-0.28)
+		lode.rotation.y = 0.4+i*0.63
+		vein.add_child(lode)
+		var socket_material := _mat(Color("514c4d"))
+		var socket := _mesh(socket_mesh,Vector3(0,0.04,0),socket_material,lode)
+		socket.scale = Vector3(1.0,0.52,0.86)
+		var shard_colors: Array[Color] = [Color("64aaa4"),Color("a9bdb0"),Color("53a79b"),Color("8baab5")]
+		for shard_index: int in range(3):
+			var gem_material := _mat(shard_colors[i] if shard_index == 0 else shard_colors[(i+shard_index+1)%shard_colors.size()],true)
+			gem_material.roughness = 0.48
+			gem_material.metallic = 0.12
+			gem_material.emission_energy_multiplier = 0.62 if shard_index == 0 else 0.36
+			var shard := _mesh(crystal,Vector3((shard_index-1)*0.2,0.31+0.05*(shard_index%2),0.04*(shard_index-1)),gem_material,lode)
+			shard.rotation = Vector3(0.04*(shard_index-1),0.6*shard_index,0.16*(shard_index-1))
+			shard.scale = Vector3(0.84 if shard_index == 0 else 0.58,1.0 if shard_index == 0 else 0.72,0.82)
+		mineral_crystals.append(lode)
 	var relay: Node3D = _asset("relay",Vector3(9,terrain_height(9,-13),-13))
 	targets.relay = relay
 	var core := SphereMesh.new()
@@ -1111,8 +1123,6 @@ func _update_visuals() -> void:
 		grown_plants[i].rotation.z = sin(elapsed*1.2+i)*0.045
 	for i: int in range(mineral_crystals.size()):
 		mineral_crystals[i].visible = i < int(model.state.ore_remaining)
-		var gem_material: StandardMaterial3D = mineral_crystals[i].material_override
-		gem_material.emission_energy_multiplier = 0.62+0.12*sin(elapsed*0.7+i*0.9)
 	relay_light.visible = "relay" in model.state.scanned or model.state.growth >= 1
 	var relay_pos: Vector3 = targets.relay.position
 	for i: int in range(relay_motes.size()):

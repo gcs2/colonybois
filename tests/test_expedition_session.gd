@@ -147,7 +147,7 @@ func run() -> void:
 	scene._update_visuals()
 	scene._refresh_ui()
 	check(scene.campaign.commerce.quantity("glass") == 1 and scene.model.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS-1,"Mouse-selected cutter visibly transfers one mineral into cargo")
-	check(scene.mineral_crystals.filter(func(gem: MeshInstance3D) -> bool: return gem.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Collected crystal disappears from the finite surface seam")
+	check(scene.mineral_crystals.filter(func(lode: Node3D) -> bool: return lode.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Collected lode disappears from the finite surface seam")
 	check(scene.operation_feedback == "SECURED" and scene.status_icon.visible and scene.status.text.begins_with("+1 Resonant glass"),"Mining reward uses the item icon and concise cargo receipt")
 	check(scene.status_icon.size.x <= 56 and scene.status_icon.size.y <= 56,"Reward icon remains a small HUD pictogram, not a full-size image")
 	check(scene.subject.text == "Resonant glass seam" and scene.hud.action_state.text == "SECURED" and scene.explanation.text.begins_with("+1 Resonant glass"),"Target card reports the delivered item without distance/status overlap")
