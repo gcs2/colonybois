@@ -2,7 +2,7 @@
 
 > Inventory of distinct external references already cited in maintained project documents. This is provenance and audit coverage, not a claim every page was opened or fully read. [Feature denominator](../parity/COVERAGE.md) and [evidence report](../parity/EXPERIENCE_REPORT.md) own the separate measurements.
 
-Updated 25 September 2026. **98 registered references:** 83 SporeWiki (Fandom), 4 StrategyWiki, 4 YouTube, 4 Gamepressure guide, 2 Official EA/Maxis, 1 Community reverse-engineering reference. The count excludes duplicate timestamp variants of the same video.
+Updated 25 September 2026. **106 registered references:** 84 SporeWiki (Fandom), 4 StrategyWiki, 4 YouTube, 4 Gamepressure guides, 4 Gamepressure visual references, 5 Official EA/Maxis, 1 Community reverse-engineering reference. The count excludes duplicate timestamp variants of the same video.
 
 ## Primary gameplay-video bookmark
 
@@ -11,6 +11,18 @@ Updated 25 September 2026. **98 registered references:** 83 SporeWiki (Fandom), 
 Review boundary: work so far is a targeted sample of paused frames, not a continuous viewing of five hours and 51 minutes. Captures were muted, so they provide no listening evidence. Game version/mod configuration is unverified. A still cannot prove the input, animation timing, voice, music, or sound.
 
 To suggest a moment, pause the video, right-click the picture, choose **Copy video URL at current time**, then paste that link here with one sentence about what happens or what to inspect.
+
+## Live wiki-category census (25 September 2026)
+
+A direct browser inspection of SporeWiki's category indexes gives a candidate-page census, separate from both the 61 gameplay workflows and the 106 unique references cited in project documents:
+
+- [Category:Space stage](https://spore.fandom.com/wiki/Category:Space_stage) displayed **251 entries**: 221 article-page links and 30 subcategory links. A search-indexed copy still reported 250, so the live browser count is recorded with that one-entry discrepancy. Membership is broad: it includes cross-stage topics, editor/asset pages, fictional and user pages, and category metadata. It is a discovery index, not 251 gameplay features.
+- [Category:Ship Tools](https://spore.fandom.com/wiki/Category:Ship_Tools) displayed **122 entries**: 110 mixed article/utility/series/template/user-page links and 12 subcategory links. It is not a count of 122 functional equipment items.
+- The directly read [Ship Tools article](https://spore.fandom.com/wiki/Ship_Tools) says “roughly 184 tools” and divides them into eight functional groups and three usage types (permanent, standard equipment, charged). That figure is not directly comparable to the category's page-entry count; exact item, variant, hidden-content and category boundaries remain to be reconciled.
+- The [Space Stage article](https://spore.fandom.com/wiki/Space_Stage) was read directly in the browser this pass. Its coverage includes communication, rare galactic formations, collections, badges and promotions, alien empires, abilities, spice and trade routes, consequence abilities, philosophies, achievements, ship tools, play modes, difficulty/strategy and easter eggs. The existing 61 workflow rows map several of these areas, but the category candidates have not yet all been triaged against them.
+- Therefore **84 SporeWiki records means 84 directly cited page URLs**, not all 221 Space Stage article candidates. The 106-reference register is a traceable citation census of maintained project documents, not an exhaustive page-reading claim.
+
+The project's current browser bookmark for the 5:51:00 SingularMix video is the link above and the preserved YouTube tab. YouTube's caption control reports captions unavailable, and transcript export on 25 September returned “No transcript is available.” Exact dialogue must be transcribed from readable frames or supplied timestamps; the muted screenshot samples provide no listening evidence. The browser is signed out, so the video has not been saved to a YouTube account playlist.
 
 ## What the project tracks
 
@@ -23,7 +35,7 @@ To suggest a moment, pause the video, right-click the picture, choose **Copy vid
 
 The table records all unique SporeWiki/StrategyWiki pages and YouTube videos found in the maintained project docs and the machine-readable registry, plus the existing official and guide references. `Evidence recorded` preserves the current confidence note; the citation trail points back to the project file that used the link.
 
-### SporeWiki (Fandom) (83)
+### SporeWiki (Fandom) (84)
 
 | ID | Reference | Evidence recorded | Cited by |
 |---|---|---|---|
@@ -40,8 +52,8 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `bomb_ship_tool` | [Bomb (ship tool)](https://spore.fandom.com/wiki/Bomb_%28ship_tool%29) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/systems/SURFACE_COMBAT.md` |
 | `building` | [Building](https://spore.fandom.com/wiki/Building) | Search-indexed building classes and Space Stage cost table. | `reference_inventory.json` |
 | `cargo` | [Cargo Hold](https://spore.fandom.com/wiki/Cargo_Hold) | indexed excerpt | `reference_inventory.json` |
-| `ship_tool_category` | [Category:Ship Tools](https://spore.fandom.com/wiki/Category:Ship_Tools) | Search-indexed category page; 122 listed articles. | `reference_inventory.json` |
-| `space_category` | [Category:Space stage](https://spore.fandom.com/wiki/Category:Space_stage) | Search-indexed category page; 250 listed articles. | `reference_inventory.json` |
+| `ship_tool_category` | [Category:Ship Tools](https://spore.fandom.com/wiki/Category:Ship_Tools) | Browser inspected 2026-09-25: 122 entries, 110 mixed page links plus 12 subcategories. | reference_inventory.json |
+| `space_category` | [Category:Space stage](https://spore.fandom.com/wiki/Category:Space_stage) | Browser inspected 2026-09-25: 251 entries, 221 article links plus 30 subcategories; cached search copy said 250. | reference_inventory.json |
 | `traits` | [Category:Space stage traits](https://spore.fandom.com/wiki/Category:Space_stage_traits) | Search-indexed category; 12 listed Space Stage consequence traits. | `reference_inventory.json` |
 | `category_weapon_tools` | [Category:Weapon tools](https://spore.fandom.com/wiki/Category:Weapon_tools) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/research/SPORE_PALETTE_AUDIT.md` |
 | `collector` | [Collector](https://spore.fandom.com/wiki/Collector) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/research/SPORE_BADGE_PARITY.md` |
@@ -62,6 +74,7 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `explorer` | [Explorer](https://spore.fandom.com/wiki/Explorer) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/research/SPORE_BADGE_PARITY.md` |
 | `flora` | [Flora](https://spore.fandom.com/wiki/Flora) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/systems/PLANET_BIOSPHERE.md` |
 | `frequent_flyer` | [Frequent Flyer](https://spore.fandom.com/wiki/Frequent_Flyer) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/research/SPORE_BADGE_PARITY.md` |
+| `friendly_trait` | [Friendly](https://spore.fandom.com/wiki/Friendly) | Named inherited-trait reference; the trait's effect and acquisition are not yet verified. | `docs/parity/reference_progression.json` |
 | `galactic_core` | [Galactic Core](https://spore.fandom.com/wiki/Galactic_Core) | Search-indexed overview and endgame sequence. | `docs/research/SPORE_SPACE_STAGE_RESEARCH.md` |
 | `gear` | [Gear Series](https://spore.fandom.com/wiki/Gear_Series) | indexed excerpt | `reference_inventory.json` |
 | `gopher` | [Gopher](https://spore.fandom.com/wiki/Gopher) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/research/SPORE_BADGE_PARITY.md` |
@@ -96,9 +109,9 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `shield` | [Shield](https://spore.fandom.com/wiki/Shield) | Previously cited in maintained project documentation; page-level re-audit status not consistently recorded. | `docs/systems/SHIP_SUPPORT.md` |
 | `abilities` | [Ship Abilities](https://spore.fandom.com/wiki/Ship_Abilities) | indexed excerpt | `docs/parity/COVERAGE.md` |
 | `costs` | [Ship Tool Costs](https://spore.fandom.com/wiki/Ship_Tool_Costs) | indexed excerpt; direct fetch blocked | `reference_inventory.json` |
-| `tools` | [Ship Tools](https://spore.fandom.com/wiki/Ship_Tools) | indexed excerpt; direct fetch blocked | `docs/parity/COVERAGE.md`, `docs/research/SPORE_PALETTE_AUDIT.md` |
+| `tools` | [Ship Tools](https://spore.fandom.com/wiki/Ship_Tools) | Directly read 2026-09-25: roughly 184 tools, eight groups and three usage types; count not normalized. | docs/parity/COVERAGE.md, docs/research/SPORE_PALETTE_AUDIT.md |
 | `space_fleets` | [Space fleets](https://spore.fandom.com/wiki/Space_fleets) | Search-indexed article sections on allied and NPC fleets. | `docs/parity/COVERAGE.md`, `docs/research/SPORE_SPACE_STAGE_RESEARCH.md`, `docs/systems/ALLIED_FLEET.md` |
-| `stage` | [Space Stage](https://spore.fandom.com/wiki/Space_Stage) | indexed excerpt | `docs/research/SPORE_BADGE_PARITY.md`, `docs/systems/ALLIED_FLEET.md`, `docs/systems/SPACE_SIGNAL_ENCOUNTERS.md` |
+| `stage` | [Space Stage](https://spore.fandom.com/wiki/Space_Stage) | Directly read 2026-09-25; broad sections logged in the live wiki-category census above. | docs/research/SPORE_BADGE_PARITY.md, docs/systems/ALLIED_FLEET.md, docs/systems/SPACE_SIGNAL_ENCOUNTERS.md |
 | `achievements` | [Space stage achievements](https://spore.fandom.com/wiki/Space_stage_achievements) | indexed excerpt | `docs/parity/COVERAGE.md`, `docs/research/SPORE_BADGE_PARITY.md` |
 | `spice` | [Spice](https://spore.fandom.com/wiki/Spice) | Search-indexed economy tables and gameplay sections. | `docs/research/SPORE_SPACE_STAGE_RESEARCH.md` |
 | `galactic_adventures` | [Spore Galactic Adventures](https://spore.fandom.com/wiki/Spore_Galactic_Adventures) | Search-indexed expansion overview. | `reference_inventory.json` |
@@ -125,7 +138,7 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `youtube_gameplaydump` | [GameplayDump — Spore: Space Stage Gameplay (supplemental; metadata incomplete)](https://www.youtube.com/watch?v=bVmJpkFRXFw&t=3175s) | Earlier GUI-forensics gameplay reference, also opened previously at 52:55. | `docs/research/SPORE_GUI_FORENSICS.md` |
 | `youtube_creepycute_announcement` | [Official Creepy & Cute announcement (metadata not captured)](https://www.youtube.com/watch?v=ur_VVDxNRb0) | Linked as the official Creepy & Cute announcement in art-direction research; metadata not captured in this pass. | `docs/art/ART_DIRECTION.md` |
 | `youtube_launch` | [PoketamaVideos — Spore - Beginning of Space (1:34)](https://www.youtube.com/watch?v=tPv31DJRST8) | Separate 1:34 Space Stage launch clip; 19 paused samples indexed. | `docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md` |
-| `youtube_singularmix` | [SingularMix — Spore Playthrough: Space Stage (5:51:00)](https://www.youtube.com/watch?v=0NN5fBVEHcA) | Primary long-playthrough bookmark; displayed runtime 5:51:00; 1080p60 option verified; specific paused frames archived at effective 1080p. | `docs/direction/CONTACT_PERFORMANCE_SPEC.md`, `docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md` |
+| `youtube_singularmix` | [SingularMix — Spore Playthrough: Space Stage (5:51:00)](https://www.youtube.com/watch?v=0NN5fBVEHcA) | Project bookmark; 5:51:00, 1080p60 offered, selected paused frames archived; caption/transcript unavailable on 2026-09-25. | docs/direction/CONTACT_PERFORMANCE_SPEC.md, docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md |
 ### Gamepressure guide (4)
 
 | ID | Reference | Evidence recorded | Cited by |
@@ -134,12 +147,23 @@ The table records all unique SporeWiki/StrategyWiki pages and YouTube videos fou
 | `gamepressure_travel` | [zb151d](https://www.gamepressure.com/spore/traveling-to-another-planet/zb151d) | Guide page and gameplay screenshots inspected. | `reference_inventory.json` |
 | `gamepressure_colonies` | [zc151e](https://www.gamepressure.com/spore/setting-up-colonies-and-planet-upgrades/zc151e) | Guide page and screenshot inspected. | `reference_inventory.json` |
 | `gamepressure_contact` | [zd151f](https://www.gamepressure.com/spore/other-civilisations/zd151f) | Contact screenshot inspected. | `reference_inventory.json` |
-### Official EA/Maxis (2)
+### Gamepressure visual references (4)
+
+| ID | Reference | Evidence recorded | Cited by |
+|---|---|---|---|
+| `gamepressure_image_badges` | [Badge collection screenshot](https://www.gamepressure.com/spore/gfx/word/893447359.jpg) | Localized in-game UI reference; narrow image, not interaction proof. | `docs/ui-review/data.js`, `docs/research/SPORE_BADGE_PARITY.md` |
+| `gamepressure_image_contact` | [Contact screenshot](https://www.gamepressure.com/spore/gfx/word/893408890.jpg) | Localized in-game UI reference; narrow image, not interaction proof. | `docs/ui-review/data.js` |
+| `gamepressure_image_shop` | [Shop screenshot](https://www.gamepressure.com/spore/gfx/word/893447343.jpg) | Localized in-game UI reference; narrow image, not interaction proof. | `docs/ui-review/data.js`, `docs/reviews/SPORE_INTERFACE_CONTRACT.md` |
+| `gamepressure_image_transaction` | [Cargo transaction screenshot](https://www.gamepressure.com/spore/gfx/word/893447375.jpg) | Localized in-game UI reference; narrow image, not interaction proof. | `docs/ui-review/data.js`, `docs/reviews/SPORE_INTERFACE_CONTRACT.md` |
+### Official EA/Maxis (5)
 
 | ID | Reference | Evidence recorded | Cited by |
 |---|---|---|---|
 | `official_controls` | [controls](https://www.spore.com/comm/tutorials/controls) | Official Spore controls reference. | `reference_inventory.json` |
 | `manual` | [manual.pdf](https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281) | Official retail manual; relevant Space Stage pages inspected and rendered. | `reference_inventory.json` |
+| `official_creepy_cute_page` | [Creepy & Cute Pack page](https://www.spore.com/what/creepycute) | Official historical art-direction reference. | `docs/art/ART_DIRECTION.md` |
+| `official_spore_screens` | [Spore screenshots and movies](https://www.spore.com/what/screensmovies) | Official visual-reference index cited in art-direction research. | `docs/art/ART_DIRECTION.md` |
+| `sc4_deluxe_manual` | [SimCity 4 Deluxe manual](https://cdn.akamai.steamstatic.com/steam/apps/24780/manuals/SIMC4DpcMAN%28ukeng%29_DDAM.pdf) | Official adjacent SimCity 4 systems reference; no Spore parity credit. | `docs/research/SC4_SYSTEMS_AND_RENDERING.md` |
 ### Community reverse-engineering reference (1)
 
 | ID | Reference | Evidence recorded | Cited by |

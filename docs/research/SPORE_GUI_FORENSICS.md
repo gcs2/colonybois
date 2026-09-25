@@ -23,7 +23,7 @@ The next pass should replace the composition and interaction model before adding
 
 | ID | Evidence inspected | What it establishes / limits |
 | --- | --- | --- |
-| M | [EA/Maxis manual distributed on Steam](https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281), printed pp. 46–51; PDF sheets 26–28 | Original diagrams and control explanations. Rendered locally for inspection. Not proof of every retail animation or input edge case. |
+| M | [EA/Maxis manual distributed on Steam](https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281), printed pp. 46–51; PDF sheets 26–28 | Original diagrams and control explanations. Rendered locally for inspection. Not proof of every retail animation or input edge case. |
 | G1 | [Travel screenshots](https://www.gamepressure.com/spore/traveling-to-another-planet/zb151d), image IDs 893351328 and 893351359 | Full surface HUD and homeworld service conversation. Polish localization, small resolution. |
 | G2 | [Terraforming screenshot](https://www.gamepressure.com/spore/setting-up-colonies-and-planet-upgrades/zc151e), image 893378781 | Close view of the planetary instrument and ecosystem slots. |
 | G3 | [Contact screenshot](https://www.gamepressure.com/spore/other-civilisations/zd151f), image 893408890 | Portrait, dialogue, relationship cue and reply composition. |

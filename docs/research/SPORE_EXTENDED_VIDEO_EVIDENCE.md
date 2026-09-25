@@ -12,6 +12,10 @@ Companion audit: [REFERENCE_COVERAGE_METRICS.md](REFERENCE_COVERAGE_METRICS.md) 
 
 An independent hidden in-app-browser tab was used. Playback was muted. The critic sought to named times and inspected rendered screenshots; neighboring frames were sampled for the combat and travel/contact/shop sequences. Player time was checked through the visible controls/accessibility tree. Five key full browser screenshots were subsequently saved and visually verified under ignored research artifacts. This audit did not download the video or use footage as production assets. Some frames were inspected enlarged, but the recording itself and the browser player limit fine text readability. Minute text or exact item prices are not inferred where they cannot be read.
 
+## Transcript and bookmark status
+
+On 25 September 2026, the YouTube player showed captions unavailable and its transcript export returned “No transcript is available.” The 5:51:00 recording is bookmarked in the project source register and remains open in the in-app browser. It is not saved to a YouTube playlist because that browser session is signed out. The user's timestamp notes (including the 2:00–2:50 and 6:30–7:10 observations) remain preserved as user-reported evidence; exact dialogue should be transcribed from readable frames. Muted screenshots do not verify voice, music or sound effects.
+
 ## Actually inspected frames
 
 | Timestamp | Visible evidence | What this changes for our review |
@@ -50,7 +54,7 @@ This is stronger source evidence, **not complete coverage of every Spore view**.
 
 Our complete-view mock inventory must additionally cover our own freight contracts, colony administration/ledger/services, warehouse, equipment, encounters, sandbox controls and existing ecosystem screens. Several are project additions without a direct Spore equivalent. Mark those explicitly as original designs rather than fabricating source parity. On-foot/RPG/factory proposals remain later work and must not appear as already playable systems.
 
-Primary manual corroboration remains [EA/Maxis Spore manual](https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281), printed pages 46–51, previously rendered locally as `artifacts/references/spore/manual-26.png` through `manual-28.png`. See [SPORE_GUI_FORENSICS.md](SPORE_GUI_FORENSICS.md) for the earlier evidence register and limits.
+Primary manual corroboration remains [EA/Maxis Spore manual](https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281), printed pages 46–51, previously rendered locally as `artifacts/references/spore/manual-26.png` through `manual-28.png`. See [SPORE_GUI_FORENSICS.md](SPORE_GUI_FORENSICS.md) for the earlier evidence register and limits.
 
 ## Persisted screenshots and clarity assessment
 
@@ -183,7 +187,7 @@ Adaptation: keep target identity/health beside the target, selected weapon and o
 
 ## History and collection manual cross-check
 
-24 September2026: inspected the locally archived EA/Maxis manual, PDF page6 (printed6–7), rendered with Poppler to local `artifacts/references/spore/manual-history.png` at2400px wide. Source remains the [official manual](https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281). It describes history access from the progress bar, milestone/event and consequence information, hover details and timeline scrolling. The illustrated history is a prior-stage example, not a verified Space Stage history screen. The collection section explicitly includes badges, rares and tools for Space Stage, with rank selection and badge hover inspection. This supports separating badge collection from equipment inspection and making event history navigable; it does not establish Space Stage timeline composition, badge animation, exact thresholds or native interaction.
+24 September2026: inspected the locally archived EA/Maxis manual, PDF page6 (printed6–7), rendered with Poppler to local `artifacts/references/spore/manual-history.png` at2400px wide. Source remains the [official manual](https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281). It describes history access from the progress bar, milestone/event and consequence information, hover details and timeline scrolling. The illustrated history is a prior-stage example, not a verified Space Stage history screen. The collection section explicitly includes badges, rares and tools for Space Stage, with rank selection and badge hover inspection. This supports separating badge collection from equipment inspection and making event history navigable; it does not establish Space Stage timeline composition, badge animation, exact thresholds or native interaction.
 
 Fresh web search returned SporeWiki badge/point summaries and StrategyWiki tool-unlock tables. Direct StrategyWiki retrieval was403; the web PDF fetch exceeded its content-size limit. No exact unlock formula or visual-coverage credit is based on search snippets. Local manual inspection succeeded; extended gameplay history/badge before/action/after and audio remain missing.
 ## User-marked opening sequence: capture and transcript queue

@@ -8,12 +8,13 @@
   "sources": {
     "tools": {
       "url": "https://spore.fandom.com/wiki/Ship_Tools",
-      "evidence": "indexed excerpt; direct fetch blocked",
-      "limits": "Family navigation only; not a retail database.",
+      "evidence": "Ship Tools article directly inspected in browser on 2026-09-25; it states roughly 184 tools, eight functional groups and permanent/standard-equipment/charged usage types.",
+      "limits": "The approximate 184 figure is not reconciled to category-page entries or normalized item variants; not a complete retail item database.",
       "source_group": "SporeWiki (Fandom)",
       "project_refs": [
         "docs/parity/COVERAGE.md",
-        "docs/research/SPORE_PALETTE_AUDIT.md"
+        "docs/research/SPORE_PALETTE_AUDIT.md",
+        "docs/ui-review/data.js"
       ],
       "title": "Ship Tools"
     },
@@ -32,7 +33,9 @@
       "evidence": "indexed excerpt; direct fetch blocked",
       "limits": "Partial price table; seller coverage incomplete.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Ship Tool Costs"
     },
     "drive": {
@@ -51,7 +54,9 @@
       "evidence": "indexed excerpt",
       "limits": "Three purchased capacities; base/Small naming conflicts with overview.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Cargo Hold"
     },
     "energy": {
@@ -59,7 +64,9 @@
       "evidence": "indexed excerpt",
       "limits": "Four purchased upgrades after default; source omits icon labels in table.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Energy Storage"
     },
     "pulse": {
@@ -67,7 +74,9 @@
       "evidence": "indexed excerpt",
       "limits": "Three weapon variants and progression.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Pulse"
     },
     "blaster": {
@@ -85,7 +94,9 @@
       "evidence": "indexed excerpt",
       "limits": "Three social-beam variants and progression.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Happy Ray"
     },
     "repair": {
@@ -93,7 +104,9 @@
       "evidence": "indexed excerpt",
       "limits": "Contradictory energy/health prose; do not import effects without corroboration.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Repair Pack"
     },
     "sculpt": {
@@ -101,7 +114,9 @@
       "evidence": "indexed excerpt",
       "limits": "Basic/Terra tool names; unlock conflict with individual terrain pages.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Planet Sculpting"
     },
     "gear": {
@@ -109,7 +124,9 @@
       "evidence": "indexed excerpt",
       "limits": "Nine discoverable stamps.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Gear Series"
     },
     "crystal": {
@@ -117,7 +134,9 @@
       "evidence": "indexed excerpt",
       "limits": "Eight listed stamps; Seas appears in StrategyWiki comparison.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Crystal Series"
     },
     "cute": {
@@ -125,7 +144,9 @@
       "evidence": "indexed excerpt",
       "limits": "Nine stamps; Canyon singular/plural differs between summaries.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Cute Series"
     },
     "strategy": {
@@ -145,7 +166,9 @@
       "evidence": "indexed excerpt",
       "limits": "Eight palettes across three channels; normalized labels below, not all retail names.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Planet Coloring"
     },
     "climate": {
@@ -178,16 +201,18 @@
       "source_group": "SporeWiki (Fandom)",
       "project_refs": [
         "docs/parity/COVERAGE.md",
+        "docs/parity/reference_progression.json",
         "docs/research/SPORE_BADGE_PARITY.md"
       ],
       "title": "Badge"
     },
     "stage": {
       "url": "https://spore.fandom.com/wiki/Space_Stage",
-      "evidence": "indexed excerpt",
-      "limits": "Navigation, collections, badge points, master ranks and special discoveries.",
+      "evidence": "Space Stage overview directly inspected in browser on 2026-09-25, including communications, rare formations, collections, badges/promotions, empires, powers, spice/trade, consequence abilities, philosophy, achievements, tools, play mode, difficulty, strategy and easter eggs.",
+      "limits": "The article is a broad overview and community-edited secondary source; linked pages and hands-on behavior still need separate review.",
       "source_group": "SporeWiki (Fandom)",
       "project_refs": [
+        "docs/parity/reference_progression.json",
         "docs/research/SPORE_BADGE_PARITY.md",
         "docs/systems/ALLIED_FLEET.md",
         "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md"
@@ -201,6 +226,7 @@
       "source_group": "SporeWiki (Fandom)",
       "project_refs": [
         "docs/parity/COVERAGE.md",
+        "docs/parity/reference_progression.json",
         "docs/research/SPORE_BADGE_PARITY.md"
       ],
       "title": "Space stage achievements"
@@ -211,7 +237,8 @@
       "limits": "Hidden, removed and expansion achievements distinguished.",
       "source_group": "SporeWiki (Fandom)",
       "project_refs": [
-        "docs/parity/COVERAGE.md"
+        "docs/parity/COVERAGE.md",
+        "docs/parity/reference_progression.json"
       ],
       "title": "Achievements"
     },
@@ -220,7 +247,9 @@
       "evidence": "indexed excerpt",
       "limits": "Main/tutorial, requested and emergency contract roles; exact encounter templates unresolved.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Mission"
     },
     "lower": {
@@ -228,7 +257,9 @@
       "evidence": "indexed excerpt",
       "limits": "Unlock contradiction; copied raise-surface prose is suspect.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Lower Terrain"
     },
     "rally": {
@@ -236,7 +267,9 @@
       "evidence": "indexed excerpt",
       "limits": "Fleet buff exists; item page does not clearly mark OR in summary.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Rally Call"
     },
     "planets": {
@@ -244,23 +277,29 @@
       "evidence": "indexed excerpt",
       "limits": "Planet classes, orbit/environment identity and expansion boundary.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Planet"
     },
     "space_category": {
       "url": "https://spore.fandom.com/wiki/Category:Space_stage",
-      "evidence": "Search-indexed category page; 250 listed articles.",
-      "limits": "Discovery index only: mixes base Space Stage, cross-stage mechanics, Galactic Adventures, user creations, fictional pages and category metadata. Not a feature count.",
+      "evidence": "Direct browser category inspection on 2026-09-25: 251 total entries (221 article-page links and 30 subcategory links); search-indexed copy reported 250.",
+      "limits": "Candidate discovery index only. Mixes base Space Stage, cross-stage mechanics, editors/assets, fictional/user pages and category metadata; not a feature count and not all article pages have been read.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Category:Space stage"
     },
     "ship_tool_category": {
       "url": "https://spore.fandom.com/wiki/Category:Ship_Tools",
-      "evidence": "Search-indexed category page; 122 listed articles.",
-      "limits": "Article/page entries are not normalized tool variants; categories and series pages are mixed with tools.",
+      "evidence": "Direct browser category inspection on 2026-09-25: 122 total entries (110 mixed article/utility/series/template/user-page links and 12 subcategory links).",
+      "limits": "Directory-page count, not normalized functional tool count or variant count; includes non-gameplay/template/user entries.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Category:Ship Tools"
     },
     "manual": {
@@ -268,7 +307,15 @@
       "evidence": "Official retail manual; relevant Space Stage pages inspected and rendered.",
       "limits": "Documents controls and screen regions; not complete proof of every interaction edge or later patches.",
       "source_group": "Official EA/Maxis",
-      "project_refs": [],
+      "project_refs": [
+        "docs/direction/SPACE_STAGE_TARGET.md",
+        "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md",
+        "docs/research/SPORE_GUI_FORENSICS.md",
+        "docs/research/SPORE_PALETTE_AUDIT.md",
+        "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+        "docs/systems/SYSTEM_NAVIGATION.md",
+        "docs/ui-review/data.js"
+      ],
       "title": "manual.pdf"
     },
     "official_controls": {
@@ -276,7 +323,11 @@
       "evidence": "Official Spore controls reference.",
       "limits": "Shortcut reference; does not cover every context or demonstrate timing.",
       "source_group": "Official EA/Maxis",
-      "project_refs": [],
+      "project_refs": [
+        "docs/direction/SPACE_STAGE_TARGET.md",
+        "docs/research/SPORE_PALETTE_AUDIT.md",
+        "docs/ui-review/data.js"
+      ],
       "title": "controls"
     },
     "strategy_space": {
@@ -316,7 +367,9 @@
       "evidence": "Search-indexed article sections on generated empires, expansion and defeat.",
       "limits": "Community-edited summary; exact AI cadence and hidden rules unverified.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Empire (territory)"
     },
     "relationship": {
@@ -334,7 +387,9 @@
       "evidence": "Search-indexed Space Stage diplomacy section.",
       "limits": "Page covers multiple stages; use only the Space Stage subsection for this denominator.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Diplomacy"
     },
     "grox": {
@@ -342,7 +397,9 @@
       "evidence": "Search-indexed overview.",
       "limits": "One special empire is not a template for all alien societies; flavor claims are not all mechanics.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Grox"
     },
     "galactic_core": {
@@ -360,7 +417,9 @@
       "evidence": "Search-indexed navigation article.",
       "limits": "Wormhole travel behavior and connected destinations need runtime verification.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Black hole"
     },
     "spice": {
@@ -378,7 +437,9 @@
       "evidence": "Search-indexed currency sources and sinks.",
       "limits": "Amounts may vary by difficulty and source article revision.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Sporebuck"
     },
     "trade_route": {
@@ -397,7 +458,9 @@
       "evidence": "Search-indexed system purchase negotiation details.",
       "limits": "Community-edited costs and success probabilities require retail corroboration.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Economic takeover"
     },
     "homeworld": {
@@ -405,7 +468,9 @@
       "evidence": "Search-indexed homeworld, mission and service details.",
       "limits": "Includes prior-stage and Galactic Adventures material; use only explicitly labeled Space Stage content.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Homeworld"
     },
     "building": {
@@ -413,7 +478,9 @@
       "evidence": "Search-indexed building classes and Space Stage cost table.",
       "limits": "Buildings are chiefly cosmetic in Space Stage; do not infer a SimCity-style simulation from this page.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Building"
     },
     "planner": {
@@ -421,7 +488,9 @@
       "evidence": "Search-indexed colony planner and production description.",
       "limits": "Does not document every placement, adjacency or production boundary.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Planner"
     },
     "environment": {
@@ -429,7 +498,9 @@
       "evidence": "Search-indexed planetary conditions and hazards.",
       "limits": "Some page text concerns Creature Stage; only Space Stage-relevant planet behavior belongs here.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Environment (planetary)"
     },
     "natural_landmarks": {
@@ -447,7 +518,9 @@
       "evidence": "Search-indexed collection overview.",
       "limits": "Artifact names, availability and sale values are not yet exhaustively reconciled.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Rares"
     },
     "artifact": {
@@ -455,7 +528,9 @@
       "evidence": "Search-indexed artifact overview.",
       "limits": "Exact set membership, scarcity and transaction values remain open.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Artifact"
     },
     "eco_disaster": {
@@ -484,7 +559,9 @@
       "evidence": "Search-indexed category; 12 listed Space Stage consequence traits.",
       "limits": "Names are inventoried; every effect and acquisition path still needs item-level verification.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Category:Space stage traits"
     },
     "galactic_adventures": {
@@ -492,7 +569,9 @@
       "evidence": "Search-indexed expansion overview.",
       "limits": "Used only to mark expansion-only content as out of base-game denominator.",
       "source_group": "SporeWiki (Fandom)",
-      "project_refs": [],
+      "project_refs": [
+        "docs/parity/reference_inventory.json"
+      ],
       "title": "Spore Galactic Adventures"
     },
     "gamepressure_travel": {
@@ -500,7 +579,9 @@
       "evidence": "Guide page and gameplay screenshots inspected.",
       "limits": "Polish localization and small image source; supports composition only where readable.",
       "source_group": "Gamepressure guide",
-      "project_refs": [],
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md"
+      ],
       "title": "zb151d"
     },
     "gamepressure_colonies": {
@@ -508,7 +589,9 @@
       "evidence": "Guide page and screenshot inspected.",
       "limits": "Visual/guide evidence only; not a complete mechanic specification.",
       "source_group": "Gamepressure guide",
-      "project_refs": [],
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md"
+      ],
       "title": "zc151e"
     },
     "gamepressure_contact": {
@@ -516,7 +599,10 @@
       "evidence": "Contact screenshot inspected.",
       "limits": "Single state; does not establish response timing or all diplomacy actions.",
       "source_group": "Gamepressure guide",
-      "project_refs": [],
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md",
+        "docs/ui-review/data.js"
+      ],
       "title": "zd151f"
     },
     "gamepressure_trade": {
@@ -524,17 +610,23 @@
       "evidence": "Shop, badge and cargo screenshots inspected.",
       "limits": "Labels were checked against pixels because the page caption is misleading; transaction causality remains unverified.",
       "source_group": "Gamepressure guide",
-      "project_refs": [],
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md",
+        "docs/ui-review/data.js"
+      ],
       "title": "z81520"
     },
     "youtube_singularmix": {
       "url": "https://www.youtube.com/watch?v=0NN5fBVEHcA",
       "evidence": "Primary long-playthrough bookmark; displayed runtime 5:51:00; 1080p60 option verified; specific paused frames archived at effective 1080p.",
-      "limits": "Only selected frames sampled; full runtime not watched; muted captures provide no listening evidence; version/mod configuration unverified.",
+      "limits": "Selected frames only; full runtime not watched; muted captures provide no listening evidence; version/mod configuration unverified. YouTube caption control reported unavailable and transcript export returned no transcript on 2026-09-25; project link and open browser tab are the bookmark, not a YouTube playlist save.",
       "source_group": "YouTube",
       "project_refs": [
         "docs/direction/CONTACT_PERFORMANCE_SPEC.md",
-        "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md"
+        "docs/parity/experience_coverage.json",
+        "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md",
+        "docs/ui-review/reference-assets.json",
+        "docs/ui-review/reference-set.js"
       ],
       "title": "SingularMix — Spore Playthrough: Space Stage (5:51:00)"
     },
@@ -554,7 +646,11 @@
       "limits": "Low native resolution; audio not reviewed; not a substitute for the longer playthrough.",
       "source_group": "YouTube",
       "project_refs": [
-        "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
+        "docs/parity/experience_coverage.json",
+        "docs/parity/launch_capture_manifest.json",
+        "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md",
+        "docs/ui-review/reference-assets.json",
+        "docs/ui-review/reference-set.js"
       ],
       "title": "PoketamaVideos — Spore - Beginning of Space (1:34)"
     },
@@ -563,7 +659,11 @@
       "evidence": "Community reverse-engineered SpaceGameUI API documentation.",
       "limits": "Not an official Maxis specification; implementation names can drift from player-facing behavior.",
       "source_group": "Community reverse-engineering reference",
-      "project_refs": [],
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md",
+        "docs/research/SPORE_PALETTE_AUDIT.md",
+        "docs/ui-review/data.js"
+      ],
       "title": "class u i 1 1 space game u i.html"
     },
     "youtube_creepycute_announcement": {
@@ -930,6 +1030,90 @@
         "docs/systems/SURFACE_COMBAT.md"
       ],
       "title": "Bomb (ship tool)"
+    },
+    "friendly_trait": {
+      "url": "https://spore.fandom.com/wiki/Friendly",
+      "evidence": "Named in the Space consequence-trait manifest; page-specific effect not re-audited.",
+      "limits": "Trait name is inventoried; effect and acquisition need verification.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/reference_progression.json"
+      ],
+      "title": "Friendly"
+    },
+    "gamepressure_image_shop": {
+      "url": "https://www.gamepressure.com/spore/gfx/word/893447343.jpg",
+      "evidence": "Direct localized gameplay screenshot already used in the UI comparison set.",
+      "limits": "Composition reference only; does not prove controls, retail-independent text or interaction.",
+      "source_group": "Gamepressure visual reference",
+      "project_refs": [
+        "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+        "docs/ui-review/data.js"
+      ],
+      "title": "Shop screen"
+    },
+    "gamepressure_image_badges": {
+      "url": "https://www.gamepressure.com/spore/gfx/word/893447359.jpg",
+      "evidence": "Direct localized gameplay screenshot already used in the UI comparison set.",
+      "limits": "Composition reference only; does not prove controls, retail-independent text or interaction.",
+      "source_group": "Gamepressure visual reference",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md",
+        "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+        "docs/ui-review/data.js"
+      ],
+      "title": "Badge collection screen"
+    },
+    "gamepressure_image_transaction": {
+      "url": "https://www.gamepressure.com/spore/gfx/word/893447375.jpg",
+      "evidence": "Direct localized gameplay screenshot already used in the UI comparison set.",
+      "limits": "Composition reference only; does not prove controls, retail-independent text or interaction.",
+      "source_group": "Gamepressure visual reference",
+      "project_refs": [
+        "docs/reviews/SPORE_INTERFACE_CONTRACT.md",
+        "docs/ui-review/data.js"
+      ],
+      "title": "Cargo transaction screen"
+    },
+    "gamepressure_image_contact": {
+      "url": "https://www.gamepressure.com/spore/gfx/word/893408890.jpg",
+      "evidence": "Direct localized gameplay screenshot already used in the UI comparison set.",
+      "limits": "Composition reference only; does not prove controls, retail-independent text or interaction.",
+      "source_group": "Gamepressure visual reference",
+      "project_refs": [
+        "docs/ui-review/data.js"
+      ],
+      "title": "Contact screen"
+    },
+    "official_spore_screens": {
+      "url": "https://www.spore.com/what/screensmovies",
+      "source_group": "Official EA/Maxis",
+      "title": "Spore official screenshots and movies",
+      "project_refs": [
+        "docs/art/ART_DIRECTION.md"
+      ],
+      "evidence": "Official Space Stage screenshot/movie index cited for visual direction.",
+      "limits": "Reference context; dated availability and exact media provenance have not been re-audited."
+    },
+    "official_creepy_cute_page": {
+      "url": "https://www.spore.com/what/creepycute",
+      "source_group": "Official EA/Maxis",
+      "title": "Spore Creepy & Cute Pack page",
+      "project_refs": [
+        "docs/art/ART_DIRECTION.md"
+      ],
+      "evidence": "Official pack page cited for visual direction.",
+      "limits": "Historical page; does not verify current availability."
+    },
+    "sc4_deluxe_manual": {
+      "url": "https://cdn.akamai.steamstatic.com/steam/apps/24780/manuals/SIMC4DpcMAN%28ukeng%29_DDAM.pdf",
+      "source_group": "Official EA/Maxis",
+      "title": "SimCity 4 Deluxe manual",
+      "project_refs": [
+        "docs/research/SC4_SYSTEMS_AND_RENDERING.md"
+      ],
+      "evidence": "Official manual used for adjacent SimCity 4 systems research.",
+      "limits": "Cross-game urban-simulation source; contributes no Spore parity entry."
     }
   },
   "families": [
@@ -2271,13 +2455,33 @@
     }
   ],
   "source_census": {
-    "registered_source_records": 98,
-    "sporewiki_pages": 83,
+    "registered_source_records": 106,
+    "sporewiki_pages": 84,
     "strategywiki_pages": 4,
     "youtube_videos": 4,
     "gamepressure_guides": 4,
-    "official_ea_maxis_references": 2,
+    "official_ea_maxis_references": 5,
     "community_reverse_engineering_references": 1,
-    "interpretation": "Distinct references already cited in maintained project documentation and evidence manifests. Source-record counts, wiki article counts, video counts, and normalized feature rows are different units."
-  }
+    "interpretation": "Distinct canonical external pages, videos and visual-reference files cited in maintained documents/evidence. URL host aliases and video timestamp variants are normalized; these counts do not imply full-page reading, feature coverage, or verified behavior.",
+    "gamepressure_visual_references": 4
+  },
+  "wiki_category_census": [
+    {
+      "source_id": "space_category",
+      "observed_on": "2026-09-25",
+      "reported_members": 251,
+      "article_page_links": 221,
+      "subcategory_links": 30,
+      "search_index_snapshot": 250,
+      "status": "Candidate index; members not all individually read or classified."
+    },
+    {
+      "source_id": "ship_tool_category",
+      "observed_on": "2026-09-25",
+      "reported_members": 122,
+      "mixed_page_links": 110,
+      "subcategory_links": 12,
+      "status": "Directory census; page links include non-tool/template/user entries and are not normalized tool items."
+    }
+  ]
 }
