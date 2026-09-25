@@ -48,12 +48,60 @@ func quote(game: RefCounted, source: String, destination: String, item: String, 
 	elif game.field.marks < result.charter: result.reason = "Chartering a carrier costs 80 Marks."
 	return result
 
+func carrier_system(route: Dictionary) -> String:
+	if route.path.is_empty(): return ""
+	if route.path.size() == 1: return route.path[0]
+	var links: int = maxi(1, route.path.size() - 1)
+	var elapsed: int = route.duration - route.remaining
+	var hop: int = mini(links - 1, elapsed / DAYS_PER_LINK)
+	if elapsed % DAYS_PER_LINK > 0:
+		return route.path[mini(route.path.size() - 1, hop + 1)]
+	return route.path[hop]
+
+func system_threat(game: RefCounted, sys_id: String) -> Dictionary:
+	var system: Dictionary = game.sector.system_by_id(sys_id)
+	if system.is_empty(): return {}
+	if system.get("piracy", false) or not str(system.get("threat", "")).is_empty():
+		return {
+			"system": sys_id,
+			"faction": system.get("threat_faction", system.get("owner", "raiders")),
+			"at_war": false,
+			"risk": str(system.get("threat", "pirate_raider"))
+		}
+	var owner: String = system.get("owner", "")
+	if owner.is_empty() or owner == "player": return {}
+	var at_war: bool = game.conflict.at_war(owner)
+	var faction: Dictionary = game.sector.faction_by_id(owner)
+	var relation: int = int(faction.get("relation", 0))
+	var is_hostile: bool = at_war or relation < 0 or faction.get("hostile", false)
+	if not is_hostile: return {}
+	var risk: String = "privateer" if at_war else ("hostile_patrol" if relation < -20 else "raider")
+	return {
+		"system": sys_id,
+		"faction": owner,
+		"at_war": at_war,
+		"risk": risk
+	}
+
+func route_threat(game: RefCounted, route: Dictionary) -> Dictionary:
+	if route.path.is_empty(): return {}
+	var current_sys: String = carrier_system(route)
+	var direct_threat: Dictionary = system_threat(game, current_sys)
+	if not direct_threat.is_empty():
+		return direct_threat
+	for sys_id: String in route.path:
+		var system: Dictionary = game.sector.system_by_id(sys_id)
+		var owner: String = system.get("owner", "")
+		if not owner.is_empty() and game.conflict.at_war(owner):
+			return system_threat(game, sys_id)
+	return {}
+
 func configure(game: RefCounted, source: String, destination: String, item: String, reserve: int) -> String:
 	var offer: Dictionary = quote(game,source,destination,item,reserve)
 	if not offer.reason.is_empty(): return offer.reason
 	var previous: Dictionary = state.routes.get(source,{})
 	game.field.marks -= offer.charter
-	state.routes[source] = {"destination":destination,"item":item,"reserve":reserve,"paused":false,"phase":"waiting","cargo":0,"remaining":0,"duration":0,"path":[],"status":"Waiting for warehouse surplus", "delivered":previous.get("delivered",0),"receipts":previous.get("receipts",0),"fees":previous.get("fees",0),"trips":previous.get("trips",0)}
+	state.routes[source] = {"destination":destination,"item":item,"reserve":reserve,"paused":false,"phase":"waiting","cargo":0,"remaining":0,"duration":0,"path":[],"status":"Waiting for warehouse surplus", "delivered":previous.get("delivered",0),"receipts":previous.get("receipts",0),"fees":previous.get("fees",0),"trips":previous.get("trips",0),"incident":{},"incident_count":previous.get("incident_count",0),"incidents_this_trip":0}
 	var is_supply: bool = game.colonies.state.outposts.has(destination) and game.sector.state.colonies.has(destination)
 	var event_text: String = "%s freight contract: supply %s to %s." % [Geography.definition(source).name,game.commerce.catalog.goods[item].name,Geography.definition(destination).name] if is_supply else "%s freight contract: %s to %s." % [Geography.definition(source).name,game.commerce.catalog.goods[item].name,Geography.definition(destination).name]
 	game.diplomacy.record(game,"colonies" if is_supply else "trade",event_text,"",{"source":source,"destination":destination,"item":item,"reserve":reserve,"charter":offer.charter,"supply":is_supply})
@@ -92,10 +140,13 @@ func _status(game: RefCounted, source: String, message: String) -> void:
 func _money(game: RefCounted, source: String, receipt: int, fee: int) -> void:
 	game.field.marks += receipt-fee
 	var ledger: Dictionary = game.sector.state.ledger
-	ledger.exports += receipt; ledger.upkeep += fee
-	ledger.closing = game.field.marks; ledger.net = game.field.marks-ledger.opening
-	var colony: Dictionary = game.sector.state.colonies[source]
-	colony.ledger.exports += receipt; colony.ledger.upkeep += fee; colony.income += receipt-fee
+	if ledger != null:
+		ledger.exports += receipt; ledger.upkeep += fee
+		ledger.closing = game.field.marks; ledger.net = game.field.marks-ledger.opening
+	var colony: Dictionary = game.sector.state.colonies.get(source, {})
+	if not colony.is_empty():
+		if not colony.has("ledger"): colony.ledger = {"tax":0.0,"crime_loss":0.0,"upkeep":0.0,"exports":0.0}
+		colony.ledger.exports += receipt; colony.ledger.upkeep += fee; colony.income += receipt-fee
 
 func tick(game: RefCounted) -> void:
 	for source: String in state.routes:
@@ -103,6 +154,45 @@ func tick(game: RefCounted) -> void:
 		var warehouse: Dictionary = game.colonies.state.outposts[source].stock
 		if not game.conflict.port_reason(source).is_empty(): _status(game,source,"Blocked · source port disabled; cargo retained"); continue
 		if route.phase != "waiting":
+			if not route.incident.is_empty() and not route.incident.get("resolved", false):
+				_status(game, source, "Intercepted · %s in %s; cargo held aboard" % [route.incident.risk.replace("_", " ").capitalize(), game.sector.system_by_id(route.incident.system).name])
+				continue
+			var threat: Dictionary = route_threat(game, route)
+			if not threat.is_empty() and route.incidents_this_trip < 1:
+				route.incidents_this_trip += 1
+				route.incident_count += 1
+				var inc_id: String = "inc_%s_%d" % [source, int(game.field.state.time)]
+				route.incident = {
+					"id": inc_id,
+					"carrier": source,
+					"system": threat.system,
+					"faction": threat.faction,
+					"risk": threat.risk,
+					"cargo": route.cargo,
+					"item": route.item,
+					"time": int(game.field.state.time),
+					"route": [route.path.front(), route.path.back()],
+					"phase": route.phase,
+					"resolved": false
+				}
+				var summary: String = "%s carrier intercepted in %s by %s; %d %s held aboard." % [
+					Geography.definition(source).name,
+					game.sector.system_by_id(threat.system).name,
+					threat.risk.replace("_", " "),
+					route.cargo,
+					game.commerce.catalog.goods[route.item].name
+				]
+				_status(game, source, "Intercepted · %s in %s; cargo held aboard" % [threat.risk.replace("_", " ").capitalize(), game.sector.system_by_id(threat.system).name])
+				game.diplomacy.record(game, "trade", summary, threat.faction, {
+					"carrier": source,
+					"cargo": route.cargo,
+					"item": route.item,
+					"system": threat.system,
+					"risk": threat.risk,
+					"incident_id": inc_id
+				}, 0, "incident:" + inc_id, source)
+				game.field.note("incident_" + inc_id, summary)
+				continue
 			if not path_open(game,route.path): _status(game,source,"Blocked · transit border closed; cargo retained"); continue
 			route.remaining = maxi(0,route.remaining-1)
 			if route.remaining > 0:
@@ -145,7 +235,7 @@ func tick(game: RefCounted) -> void:
 				route.status = "Returning · %d days" % route.remaining
 				continue
 			else:
-				route.phase = "waiting"; route.path = []; route.duration = 0
+				route.phase = "waiting"; route.path = []; route.duration = 0; route.incident = {}; route.incidents_this_trip = 0
 		if route.cargo > 0:
 			var stored: int = 0
 			for amount: int in warehouse.values(): stored += amount
@@ -177,6 +267,18 @@ func restore(value: Variant, sector: RefCounted, colonies: RefCounted) -> Error:
 			if not route[key] is int or route[key] < 0: return ERR_INVALID_DATA
 		if route.reserve not in [0,4,8] or route.cargo > CAPACITY or route.remaining > route.duration or route.duration > 10: return ERR_INVALID_DATA
 		if not route.path is Array or route.path.size() > 6: return ERR_INVALID_DATA
+		var incident: Variant = route.get("incident", {})
+		if not incident is Dictionary: return ERR_INVALID_DATA
+		if not incident.is_empty():
+			if not incident.has_all(["id","carrier","system","faction","risk","cargo","item","time","route","phase","resolved"]): return ERR_INVALID_DATA
+			if not incident.id is String or not incident.carrier is String or not incident.system is String or not incident.faction is String or not incident.risk is String: return ERR_INVALID_DATA
+			if not incident.cargo is int or incident.cargo < 0 or incident.cargo > CAPACITY: return ERR_INVALID_DATA
+			if incident.item not in ["alloy","water","glass"] or not incident.time is int or not incident.route is Array or not incident.resolved is bool: return ERR_INVALID_DATA
+			if incident.phase not in ["outbound","returning"] or incident.carrier != source: return ERR_INVALID_DATA
+		var incident_count: Variant = route.get("incident_count", 0)
+		if not incident_count is int or incident_count < 0: return ERR_INVALID_DATA
+		var incidents_this_trip: Variant = route.get("incidents_this_trip", 0)
+		if not incidents_this_trip is int or incidents_this_trip < 0: return ERR_INVALID_DATA
 		if route.phase == "waiting":
 			if route.remaining != 0 or route.duration != 0 or not route.path.is_empty(): return ERR_INVALID_DATA
 		else:
@@ -190,4 +292,9 @@ func restore(value: Variant, sector: RefCounted, colonies: RefCounted) -> Error:
 				if not seen.is_empty() and node not in sector.system_by_id(seen.back()).links: return ERR_INVALID_DATA
 				seen.append(node)
 	state = value.duplicate(true)
+	for source: String in state.routes:
+		var r: Dictionary = state.routes[source]
+		if not r.has("incident"): r.incident = {}
+		if not r.has("incident_count"): r.incident_count = 0
+		if not r.has("incidents_this_trip"): r.incidents_this_trip = 0
 	return OK
