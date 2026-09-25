@@ -1,10 +1,10 @@
 # Tripo asset pack v1 — source concepts and Spore mapping
 
-Generated source art for a small, traceable Frontier Worlds → Tripo → Godot experiment. These are concepts, not approved final game assets. The nine batch inputs live by themselves in `batch_01_props/`; the orbital composition mock in `reference_only/` is excluded from the prop batch.
+Generated source art for a small, traceable Frontier Worlds → Tripo → Godot experiment. These are concepts, not approved final game assets. The original nine prop inputs are in `batch_01_props/`; the 16 newly isolated Space Stage equipment concepts are in `batch_02_space_equipment/`. The orbital composition mock in `reference_only/` is excluded from both batches.
 
 ## Where the images are
 
-Each PNG is under 5 MB. Open `batch_01_props/` to select all nine isolated prop concepts in one upload. The excluded orbit mock is kept in `reference_only/`.
+Each PNG is under 5 MB. Each batch has its own README; [batch 02's guide](batch_02_space_equipment/README.md) numbers the 16 items and maps their roles to Spore. The excluded orbit mock is kept in `reference_only/`.
 
 | File | Purpose in our game | Relationship to Spore Space Stage | Tripo target |
 |---|---|---|---|
