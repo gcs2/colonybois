@@ -1,8 +1,8 @@
 {
-  "schema": 1,
-  "as_of": "2026-09-24",
+  "schema": 2,
+  "as_of": "2026-09-25",
   "scope": "Base Space Stage experience audit; character/creature customization and Galactic Adventures excluded. Ship/building editor connections reference-only until delivery scope is agreed. Excluded world-editing stays reference-only.",
-  "closure": "OPEN working workflow denominator; reconcile against existing tool/progression catalogs and newly observed screens. Never claim exhaustive closure from a fixed checklist.",
+  "closure": "OPEN: 61 source-linked workflow rows in ten primary-goal categories. Add a row when source review finds a distinct player action/outcome or meaningful boundary. This working partition is not proof of exhaustive retail feature discovery.",
   "source_video": "https://www.youtube.com/watch?v=0NN5fBVEHcA",
   "categories": [
     {
@@ -89,7 +89,18 @@
           "root"
         ],
         "supported_claim": "Readable surface-state composition: ship above curved terrain, visible beam, flora/creatures, contextual condition panel and populated tray. No steering, altitude, zoom or beam-trigger verification."
-      }
+      },
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF002",
@@ -125,7 +136,18 @@
           "root"
         ],
         "supported_claim": "Galaxy and system endpoint HUD states only; surface endpoint and actual transition boundary absent."
-      }
+      },
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF003",
@@ -160,7 +182,18 @@
           "root"
         ],
         "supported_claim": "System planets, orbital paths and blue planet brackets readable; hover versus selection semantics and triggering input unverified."
-      }
+      },
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF004",
@@ -182,7 +215,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF005",
@@ -201,7 +245,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF006",
@@ -220,7 +275,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF007",
@@ -239,7 +305,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "space_category",
+        "planets",
+        "black_hole",
+        "galactic_core",
+        "youtube_singularmix",
+        "youtube_gameplaydump"
+      ]
     },
     {
       "id": "RF008",
@@ -260,7 +337,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF009",
@@ -297,7 +387,20 @@
           "contact_shop_critic"
         ],
         "supported_claim": "Readable target-local Khadia health1800 and contextual city statistics, own health25, selected weapon slot4; adjacent archived frames establish numeric change and visible aftermath, not per-shot causality/cost or input."
-      }
+      },
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF010",
@@ -316,7 +419,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF011",
@@ -353,7 +469,20 @@
           "contact_shop_critic"
         ],
         "supported_claim": "Readable target-local Khadia health1800 and contextual city statistics, own health25, selected weapon slot4; adjacent archived frames establish numeric change and visible aftermath, not per-shot causality/cost or input."
-      }
+      },
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF012",
@@ -372,7 +501,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF013",
@@ -391,7 +533,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF014",
@@ -410,7 +565,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF015",
@@ -429,7 +597,20 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "ship_tool_category",
+        "tools",
+        "abilities",
+        "costs",
+        "repair",
+        "energy",
+        "pulse",
+        "blaster",
+        "homeworld",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF016",
@@ -452,7 +633,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF017",
@@ -471,7 +666,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF018",
@@ -511,7 +720,21 @@
           "contact_shop_critic"
         ],
         "supported_claim": "Count5 in the new upper-right cargo slot and Brasstax card are readable with the world and highlighted beam tool visible. Collection feedback only; no release or input-causality claim."
-      }
+      },
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF019",
@@ -530,7 +753,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF020",
@@ -549,7 +786,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF021",
@@ -568,7 +819,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF022",
@@ -587,7 +852,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "space_category",
+        "ship_tool_category",
+        "tools",
+        "climate",
+        "planets",
+        "environment",
+        "eco_disaster",
+        "artifact",
+        "rares",
+        "natural_landmarks",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF023",
@@ -606,7 +885,19 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "space_category",
+        "homeworld",
+        "planets",
+        "building",
+        "planner",
+        "climate",
+        "tools",
+        "spice",
+        "strategy_space",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF024",
@@ -627,7 +918,19 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "space_category",
+        "homeworld",
+        "planets",
+        "building",
+        "planner",
+        "climate",
+        "tools",
+        "spice",
+        "strategy_space",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF025",
@@ -646,7 +949,19 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "space_category",
+        "homeworld",
+        "planets",
+        "building",
+        "planner",
+        "climate",
+        "tools",
+        "spice",
+        "strategy_space",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF026",
@@ -665,7 +980,19 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "space_category",
+        "homeworld",
+        "planets",
+        "building",
+        "planner",
+        "climate",
+        "tools",
+        "spice",
+        "strategy_space",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF027",
@@ -684,7 +1011,19 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "space_category",
+        "homeworld",
+        "planets",
+        "building",
+        "planner",
+        "climate",
+        "tools",
+        "spice",
+        "strategy_space",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF028",
@@ -718,7 +1057,18 @@
           "root"
         ],
         "supported_claim": "Cargo quantities and displayed prices are readable. No purchase/sale result, unit-price semantics or lock-cause claim."
-      }
+      },
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF029",
@@ -752,7 +1102,18 @@
           "root"
         ],
         "supported_claim": "Cargo quantities and displayed prices are readable. No purchase/sale result, unit-price semantics or lock-cause claim."
-      }
+      },
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF030",
@@ -773,7 +1134,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF031",
@@ -792,7 +1164,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF032",
@@ -811,7 +1194,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF033",
@@ -830,7 +1224,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "spice",
+        "sporebuck",
+        "trade_route",
+        "economic_takeover",
+        "homeworld",
+        "costs",
+        "strategy_space",
+        "gamepressure_trade",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF034",
@@ -862,7 +1267,18 @@
           "root"
         ],
         "supported_claim": "Contact/service labels, 450 recharge quote and 12,811 treasury are readable. No click-result or voice claim."
-      }
+      },
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF035",
@@ -881,7 +1297,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF036",
@@ -900,7 +1327,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF037",
@@ -919,7 +1357,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF038",
@@ -938,7 +1387,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF039",
@@ -957,7 +1417,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF040",
@@ -976,7 +1447,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "diplomacy",
+        "relationship",
+        "empire",
+        "philosophy",
+        "space_fleets",
+        "grox",
+        "strategy_space",
+        "youtube_singularmix",
+        "gamepressure_contact"
+      ]
     },
     {
       "id": "RF041",
@@ -995,7 +1477,17 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "missions",
+        "rares",
+        "artifact",
+        "eco_disaster",
+        "planets",
+        "natural_landmarks",
+        "galactic_core",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF042",
@@ -1014,7 +1506,17 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "missions",
+        "rares",
+        "artifact",
+        "eco_disaster",
+        "planets",
+        "natural_landmarks",
+        "galactic_core",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF043",
@@ -1033,7 +1535,17 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "missions",
+        "rares",
+        "artifact",
+        "eco_disaster",
+        "planets",
+        "natural_landmarks",
+        "galactic_core",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF044",
@@ -1052,7 +1564,17 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "missions",
+        "rares",
+        "artifact",
+        "eco_disaster",
+        "planets",
+        "natural_landmarks",
+        "galactic_core",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF045",
@@ -1071,7 +1593,17 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "missions",
+        "rares",
+        "artifact",
+        "eco_disaster",
+        "planets",
+        "natural_landmarks",
+        "galactic_core",
+        "youtube_singularmix"
+      ]
     },
     {
       "id": "RF046",
@@ -1090,7 +1622,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "badges",
+        "achievements",
+        "hidden",
+        "strategy_badges",
+        "master_badge",
+        "philosophy",
+        "tools",
+        "costs",
+        "traits"
+      ]
     },
     {
       "id": "RF047",
@@ -1109,7 +1652,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "badges",
+        "achievements",
+        "hidden",
+        "strategy_badges",
+        "master_badge",
+        "philosophy",
+        "tools",
+        "costs",
+        "traits"
+      ]
     },
     {
       "id": "RF048",
@@ -1128,7 +1682,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "badges",
+        "achievements",
+        "hidden",
+        "strategy_badges",
+        "master_badge",
+        "philosophy",
+        "tools",
+        "costs",
+        "traits"
+      ]
     },
     {
       "id": "RF049",
@@ -1147,7 +1712,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "badges",
+        "achievements",
+        "hidden",
+        "strategy_badges",
+        "master_badge",
+        "philosophy",
+        "tools",
+        "costs",
+        "traits"
+      ]
     },
     {
       "id": "RF050",
@@ -1166,7 +1742,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "philosophy",
+        "traits",
+        "empire",
+        "diplomacy",
+        "monolith",
+        "planets",
+        "environment",
+        "space_fleets"
+      ]
     },
     {
       "id": "RF051",
@@ -1185,7 +1772,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "philosophy",
+        "traits",
+        "empire",
+        "diplomacy",
+        "monolith",
+        "planets",
+        "environment",
+        "space_fleets"
+      ]
     },
     {
       "id": "RF052",
@@ -1204,7 +1802,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "philosophy",
+        "traits",
+        "empire",
+        "diplomacy",
+        "monolith",
+        "planets",
+        "environment",
+        "space_fleets"
+      ]
     },
     {
       "id": "RF053",
@@ -1223,7 +1832,18 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "stage",
+        "philosophy",
+        "traits",
+        "empire",
+        "diplomacy",
+        "monolith",
+        "planets",
+        "environment",
+        "space_fleets"
+      ]
     },
     {
       "id": "RF054",
@@ -1258,6 +1878,20 @@
           ],
           "record": "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
         }
+      ],
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
       ]
     },
     {
@@ -1288,6 +1922,20 @@
           ],
           "record": "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
         }
+      ],
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
       ]
     },
     {
@@ -1307,7 +1955,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
+      ]
     },
     {
       "id": "RF057",
@@ -1329,7 +1991,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio."
+      "note": "One or more relevant states visually sampled. Does not establish complete interaction, fine text, timing or audio.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
+      ]
     },
     {
       "id": "RF058",
@@ -1348,7 +2024,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
+      ]
     },
     {
       "id": "RF059",
@@ -1367,7 +2057,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
+      ]
     },
     {
       "id": "RF060",
@@ -1386,7 +2090,21 @@
       "failure_or_boundary_verified": false,
       "independent_corroboration": false,
       "adaptation_recorded": false,
-      "note": "Not visually audited in this new reference corpus."
+      "note": "Not visually audited in this new reference corpus.",
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
+      ]
     },
     {
       "id": "RF061",
@@ -1416,7 +2134,38 @@
           ],
           "record": "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
         }
+      ],
+      "source_refs": [
+        "manual",
+        "official_controls",
+        "stage",
+        "youtube_singularmix",
+        "youtube_gameplaydump",
+        "youtube_launch",
+        "gamepressure_contact",
+        "gamepressure_travel",
+        "gamepressure_colonies",
+        "gamepressure_trade",
+        "modapi_ui",
+        "galactic_adventures"
       ]
     }
-  ]
+  ],
+  "denominator_contract": {
+    "unit": "One distinct player workflow defined by primary goal, action/input, observable result, applicable costs/restrictions, and meaningful failure or boundary conditions.",
+    "workflow_count": 61,
+    "categories": 10,
+    "partition_rule": "Every current workflow has one stable ID and one primary-goal category. MECE applies to these rows, not to the yet-unproven completeness of the retail game inventory.",
+    "expansion_rule": "Add newly discovered workflows instead of merging distinct outcomes or freezing the denominator to protect a percentage.",
+    "scope": "Base Spore Space Stage. Galactic Adventures and community content are separately labeled; RF021 world decoration and RF061 editor connection remain reference-only under current user scope.",
+    "separate_dimensions": [
+      "Item/variant catalog",
+      "badges and promotion tiers",
+      "achievements and inherited traits",
+      "source confidence/readability/interaction/audio",
+      "project implementation/task-board status",
+      "mock/view coverage",
+      "native acceptance"
+    ]
+  }
 }

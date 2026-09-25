@@ -8,6 +8,8 @@
 
 ## What is now enumerated
 
+The cited-page catalog is indexed in the [Spore and project reference register](../research/SPORE_SOURCE_REGISTER.md). Workflow evidence remains in [experience_coverage.json](experience_coverage.json); the 61-row denominator is open and separate from item-family counts.
+
 | Reference set | Enumerated entries | Meaning |
 | --- | ---: | --- |
 | Ship tools, equipment and world-editing variants | 189 in 84 families | Includes defaults, purchased tiers, individual sculpting stamps, normalized coloring channels and nine archetype powers. Two creature-editor entries are explicitly deferred. |

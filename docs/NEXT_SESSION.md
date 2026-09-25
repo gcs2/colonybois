@@ -1,6 +1,6 @@
 # Resume here
 
-Updated 24 September 2026. Read the [documentation map](README.md) for ownership; [TASK_BOARD.md](TASK_BOARD.md) is the only production queue. Old session details are in [History](history/README.md), not instructions to execute.
+Updated 25 September 2026. Read the [documentation map](README.md) for ownership; [TASK_BOARD.md](TASK_BOARD.md) is the only production queue. Old session details are in [History](history/README.md), not instructions to execute.
 
 ## Current direction
 
@@ -10,7 +10,7 @@ The user has established a token-aware [Synthetic Squad working contract](delive
 
 Character modeling and cast expansion remain **deferred** after the failed modeling demonstration. The later character experiments were canceled and removed from the project asset set. Existing Tavi concept art is a static portrait, not acting. Read the [postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md) before any future reprioritized retry. The overall space-game objective is unchanged.
 
-First complete the reference/current/mock coverage gate in [TASK_BOARD.md](TASK_BOARD.md), beginning with orbital/surface HUD. The user rejected continued implementation without comprehensive source fidelity and every-view mocks. [Coverage audit](reviews/VIEW_MOCK_COVERAGE.md): 18/61 sampled source workflows, 9/61 readable, zero fully verified interactions/presentation/audio; six base candidate files across 33 families, zero complete family state sets. These are evidence counts, not game completion. No further discretionary UI/feature production ahead of the gate. Existing builds remain available; character production remains deferred.
+Current focus (25 September): return to the connected expedition loop and the visual critic. Read [CORE_LOOP_AND_CONTENT_EPIC.md](direction/CORE_LOOP_AND_CONTENT_EPIC.md), then use its matched Spore/reference + actual runtime + approved mock review on one short playable sequence. The working evidence ledger is 18/61 sampled and 9/61 readable; interaction, presentation and audio remain unverified. R01 stays open, but broad catalog expansion is paused. The Gemini chronology is useful mechanics analysis with uncertain timestamp precision, not source confirmation. Character production remains deferred.
 
 ## Successor handoff — quota checkpoint, 24 September 2026
 

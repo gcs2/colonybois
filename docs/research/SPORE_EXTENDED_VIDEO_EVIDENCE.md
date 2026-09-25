@@ -186,3 +186,38 @@ Adaptation: keep target identity/health beside the target, selected weapon and o
 24 September2026: inspected the locally archived EA/Maxis manual, PDF page6 (printed6–7), rendered with Poppler to local `artifacts/references/spore/manual-history.png` at2400px wide. Source remains the [official manual](https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281). It describes history access from the progress bar, milestone/event and consequence information, hover details and timeline scrolling. The illustrated history is a prior-stage example, not a verified Space Stage history screen. The collection section explicitly includes badges, rares and tools for Space Stage, with rank selection and badge hover inspection. This supports separating badge collection from equipment inspection and making event history navigable; it does not establish Space Stage timeline composition, badge animation, exact thresholds or native interaction.
 
 Fresh web search returned SporeWiki badge/point summaries and StrategyWiki tool-unlock tables. Direct StrategyWiki retrieval was403; the web PDF fetch exceeded its content-size limit. No exact unlock formula or visual-coverage credit is based on search snippets. Local manual inspection succeeded; extended gameplay history/badge before/action/after and audio remain missing.
+## User-marked opening sequence: capture and transcript queue
+
+25 September 2026. The user identified these times for a closer review. The sensory observations below are attributed to the user; they are not a claim that the agent heard the soundtrack. These timestamps are queued evidence leads, not new verified workflow counts.
+
+| Video time | User's observation / question | Text and evidence to capture |
+|---|---|---|
+| 2:00 | Early story/gameplay beat; agent's low-resolution on-screen look showed a ship/wreck clue. | Preserve and transcribe visible dialogue or subtitles; a still appeared to mention missiles, an interstellar drive and a beacon/coordinates, but the full wording and whether it is game dialogue or creator narration need a clear capture. |
+| 2:50 | User flagged this as another important timestamp. | Identify the shot/action and capture all readable in-game or subtitle text with speaker/source. |
+| 6:30 | Dialogue begins in the travel sequence. | Capture the line, speaker/portrait, and what the camera/ship is doing. |
+| 6:35, 6:41 | User reports the camera follows the ship between stars with an accelerated, elastic snap; satisfying blips and an airplane-like flight sound. | Capture before, travel, and arrival states plus exact UI/cutscene text. Audio character is user-reported and still needs an explicit listening review record. |
+| 6:55 | User likes a zoom-out-and-spin cutscene. | Capture start, movement, and landing/return-to-control states; transcribe visible copy and note any dialogue. |
+| 7:10 | User identifies another classic-Spore cutscene and is open to a different treatment for our game. | Capture the full dramatic beat and text; compare framing, timing and control handoff before proposing an adaptation. |
+
+For text fidelity, record UI labels, subtitles, character dialogue and creator-added commentary as separate fields. Transcribe exact words only when legible; mark partial readings and uncertainty. A summary or screenshot without its timestamp is not a transcript. The first low-resolution inspection at 7:10 did not expose legible game text and is not archived as accepted evidence.
+
+
+## User-pasted Gemini chronology: mechanic-aware secondary analysis
+
+25 September 2026. The user pasted a Gemini-produced chronology of this same SingularMix recording. Its account is a useful, mechanic-aware working model: it connects recognizable Space Stage activities into a loop of launch, personal ship tools, scanning and salvage, combat, galaxy travel, colonization, contact and trade. The user reasonably notes that its feature-level understanding may be stronger than its timestamp precision. Keep it as a secondary analysis and a guide for what to inspect; do not dismiss its mechanics hypotheses just because its timing may drift.
+
+The supplied text has no attached frame captures, transcript, verified control observations, or game-version/mod check. So the claims that the footage “confirms” every detail and supports “95% mechanical accuracy” remain unsubstantiated. Validate event order and visible behavior against targeted frames and the existing manual/wiki references; keep proposed internal equations and implementation architecture in a separate hypothesis class.
+
+| Candidate interval | Pasted claim to inspect | Evidence status |
+|---|---|---|
+| 00:00–03:15 | Launch, flight HUD and tutorial rings | Not independently sampled for this chronology. The exact controls listed beside it are unverified. |
+| 03:15–06:40 | Local creature sampling, abduction and mini-laser | Candidate event sequence only. Raycast behavior, AI suspension and lift vectors are unsupported implementation inferences. |
+| 06:40–10:20 | Atmosphere exit and orbital/system transition | Useful interval for targeted capture. This broadly overlaps the user's firsthand notes at 6:30–7:10, which separately report dialogue, a ship-follow camera, elastic star-to-star movement, and a zoom/spin cutscene. Exact text, inputs, easing and audio still need their own evidence. |
+| 10:20–14:45 | Planet scan, wreck and salvage | Candidate timestamps; no new workflow credit until frames show the before/action/result and readable item text. |
+| 14:45–19:10 | Combat around defended wreckage | Candidate timestamps; weapons, damage, warning, defeat and recovery need distinct observations. |
+| 19:10–24:30 | Galaxy travel and first colonization | Candidate timestamps; range, travel input, colony tool, cost and placement result are not verified by the pasted summary. |
+| 24:30–30:00 | First contact, dialogue and red-spice trade | Candidate timestamps; capture portrait, exact words, choice labels, transaction and persistent outcome before recording as behavior. |
+
+Keep two confidence levels separate. The gameplay-level sequence and named systems are useful secondary hypotheses, especially when they align with independently documented Space Stage features. The precise controls, camera/physics equations, static Keplerian orbit claim, threat AI, ecological recipes, engine comparison, and prescriptions for quad-cube LOD, floating-origin frames and ECS archetypes are lower-confidence technical interpretations. Screenshots cannot establish those internal implementation details; they do not constrain our Godot architecture or authorize an engine change.
+
+Next review this recording in short, preselected windows around the user's 2:00, 2:50 and 6:30–7:10 markers, then inspect later candidate events only where they fill a named workflow gap. For each interaction capture a legible state before the action, the action if observable, and its result; record exact game UI/dialogue separately from subtitles or creator narration. Keep muted visual inspection separate from the user's audio impressions. Use this chronology to prioritize those checks, while recording timestamp uncertainty. Until a claim is corroborated with a timestamped capture, manual/wiki evidence or verified transcript as appropriate, the pasted analysis adds no independently verified workflow, interaction proof, readable-text claim or audio coverage to the denominator.

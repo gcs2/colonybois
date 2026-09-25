@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "as_of": "2026-09-23",
+  "as_of": "2026-09-25",
   "implementation_commit": "305d428913912fe77204dac4e352486f2825796a",
   "scope": "Base Spore Space Stage reference; original project adaptations are separate.",
   "closure": "OPEN: inventory is source-backed working coverage, not retail-verified exhaustive parity.",
@@ -9,132 +9,927 @@
     "tools": {
       "url": "https://spore.fandom.com/wiki/Ship_Tools",
       "evidence": "indexed excerpt; direct fetch blocked",
-      "limits": "Family navigation only; not a retail database."
+      "limits": "Family navigation only; not a retail database.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_PALETTE_AUDIT.md"
+      ],
+      "title": "Ship Tools"
     },
     "abilities": {
       "url": "https://spore.fandom.com/wiki/Ship_Abilities",
       "evidence": "indexed excerpt",
-      "limits": "Baseline and upgrade family names; drive range conflicts with dedicated page."
+      "limits": "Baseline and upgrade family names; drive range conflicts with dedicated page.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md"
+      ],
+      "title": "Ship Abilities"
     },
     "costs": {
       "url": "https://spore.fandom.com/wiki/Ship_Tool_Costs",
       "evidence": "indexed excerpt; direct fetch blocked",
-      "limits": "Partial price table; seller coverage incomplete."
+      "limits": "Partial price table; seller coverage incomplete.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Ship Tool Costs"
     },
     "drive": {
       "url": "https://spore.fandom.com/wiki/Interstellar_Drive",
       "evidence": "indexed excerpt",
-      "limits": "Five levels and alternative unlocks; level-three range conflicts with overview."
+      "limits": "Five levels and alternative unlocks; level-three range conflicts with overview.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/history/TWO_DAY_VISUAL_TARGET.md",
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Interstellar Drive"
     },
     "cargo": {
       "url": "https://spore.fandom.com/wiki/Cargo_Hold",
       "evidence": "indexed excerpt",
-      "limits": "Three purchased capacities; base/Small naming conflicts with overview."
+      "limits": "Three purchased capacities; base/Small naming conflicts with overview.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Cargo Hold"
     },
     "energy": {
       "url": "https://spore.fandom.com/wiki/Energy_Storage",
       "evidence": "indexed excerpt",
-      "limits": "Four purchased upgrades after default; source omits icon labels in table."
+      "limits": "Four purchased upgrades after default; source omits icon labels in table.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Energy Storage"
     },
     "pulse": {
       "url": "https://spore.fandom.com/wiki/Pulse",
       "evidence": "indexed excerpt",
-      "limits": "Three weapon variants and progression."
+      "limits": "Three weapon variants and progression.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Pulse"
     },
     "blaster": {
       "url": "https://spore.fandom.com/wiki/Blaster",
       "evidence": "indexed excerpt",
-      "limits": "Three automatic-fire variants; reference says this family operates outside atmosphere."
+      "limits": "Three automatic-fire variants; reference says this family operates outside atmosphere.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md"
+      ],
+      "title": "Blaster"
     },
     "happy": {
       "url": "https://spore.fandom.com/wiki/Happy_Ray",
       "evidence": "indexed excerpt",
-      "limits": "Three social-beam variants and progression."
+      "limits": "Three social-beam variants and progression.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Happy Ray"
     },
     "repair": {
       "url": "https://spore.fandom.com/wiki/Repair_Pack",
       "evidence": "indexed excerpt",
-      "limits": "Contradictory energy/health prose; do not import effects without corroboration."
+      "limits": "Contradictory energy/health prose; do not import effects without corroboration.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Repair Pack"
     },
     "sculpt": {
       "url": "https://spore.fandom.com/wiki/Planet_Sculpting",
       "evidence": "indexed excerpt",
-      "limits": "Basic/Terra tool names; unlock conflict with individual terrain pages."
+      "limits": "Basic/Terra tool names; unlock conflict with individual terrain pages.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Planet Sculpting"
     },
     "gear": {
       "url": "https://spore.fandom.com/wiki/Gear_Series",
       "evidence": "indexed excerpt",
-      "limits": "Nine discoverable stamps."
+      "limits": "Nine discoverable stamps.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Gear Series"
     },
     "crystal": {
       "url": "https://spore.fandom.com/wiki/Crystal_Series",
       "evidence": "indexed excerpt",
-      "limits": "Eight listed stamps; Seas appears in StrategyWiki comparison."
+      "limits": "Eight listed stamps; Seas appears in StrategyWiki comparison.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Crystal Series"
     },
     "cute": {
       "url": "https://spore.fandom.com/wiki/Cute_Series",
       "evidence": "indexed excerpt",
-      "limits": "Nine stamps; Canyon singular/plural differs between summaries."
+      "limits": "Nine stamps; Canyon singular/plural differs between summaries.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Cute Series"
     },
     "strategy": {
       "url": "https://strategywiki.org/wiki/Spore/Tools",
       "evidence": "indexed excerpt; direct fetch 403",
-      "limits": "Tentacle/Chocolate stamps and Crystal Seas; spelling normalized and flagged."
+      "limits": "Tentacle/Chocolate stamps and Crystal Seas; spelling normalized and flagged.",
+      "source_group": "StrategyWiki",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md",
+        "docs/systems/SHIP_SUPPORT.md"
+      ],
+      "title": "Tools"
     },
     "color": {
       "url": "https://spore.fandom.com/wiki/Planet_Coloring",
       "evidence": "indexed excerpt",
-      "limits": "Eight palettes across three channels; normalized labels below, not all retail names."
+      "limits": "Eight palettes across three channels; normalized labels below, not all retail names.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Planet Coloring"
     },
     "climate": {
       "url": "https://spore.fandom.com/wiki/Terraforming",
       "evidence": "indexed excerpt",
-      "limits": "Temperature/atmosphere, energy versus charge tools, ecosystem stabilization."
+      "limits": "Temperature/atmosphere, energy versus charge tools, ecosystem stabilization.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md",
+        "docs/systems/PLANET_BIOSPHERE.md"
+      ],
+      "title": "Terraforming"
     },
     "philosophy": {
       "url": "https://spore.fandom.com/wiki/Philosophy",
       "evidence": "indexed excerpt",
-      "limits": "Ten identities, nine powers; removed Wanderer power excluded."
+      "limits": "Ten identities, nine powers; removed Wanderer power excluded.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/art/CHARACTER_ARCHETYPES.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Philosophy"
     },
     "badges": {
       "url": "https://spore.fandom.com/wiki/Badge",
       "evidence": "indexed excerpt plus prior research",
-      "limits": "Family inventory from SPORE_BADGE_PARITY.md; thresholds and points still require closure."
+      "limits": "Family inventory from SPORE_BADGE_PARITY.md; thresholds and points still require closure.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Badge"
     },
     "stage": {
       "url": "https://spore.fandom.com/wiki/Space_Stage",
       "evidence": "indexed excerpt",
-      "limits": "Navigation, collections, badge points, master ranks and special discoveries."
+      "limits": "Navigation, collections, badge points, master ranks and special discoveries.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md",
+        "docs/systems/ALLIED_FLEET.md",
+        "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md"
+      ],
+      "title": "Space Stage"
     },
     "achievements": {
       "url": "https://spore.fandom.com/wiki/Space_stage_achievements",
       "evidence": "indexed excerpt",
-      "limits": "Base Space achievements; cross-stage unlock recorded separately."
+      "limits": "Base Space achievements; cross-stage unlock recorded separately.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Space stage achievements"
     },
     "hidden": {
       "url": "https://spore.fandom.com/wiki/Achievements",
       "evidence": "indexed excerpt",
-      "limits": "Hidden, removed and expansion achievements distinguished."
+      "limits": "Hidden, removed and expansion achievements distinguished.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md"
+      ],
+      "title": "Achievements"
     },
     "missions": {
       "url": "https://spore.fandom.com/wiki/Mission",
       "evidence": "indexed excerpt",
-      "limits": "Main/tutorial, requested and emergency contract roles; exact encounter templates unresolved."
+      "limits": "Main/tutorial, requested and emergency contract roles; exact encounter templates unresolved.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Mission"
     },
     "lower": {
       "url": "https://spore.fandom.com/wiki/Lower_Terrain",
       "evidence": "indexed excerpt",
-      "limits": "Unlock contradiction; copied raise-surface prose is suspect."
+      "limits": "Unlock contradiction; copied raise-surface prose is suspect.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Lower Terrain"
     },
     "rally": {
       "url": "https://spore.fandom.com/wiki/Rally_Call",
       "evidence": "indexed excerpt",
-      "limits": "Fleet buff exists; item page does not clearly mark OR in summary."
+      "limits": "Fleet buff exists; item page does not clearly mark OR in summary.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Rally Call"
     },
     "planets": {
       "url": "https://spore.fandom.com/wiki/Planet",
       "evidence": "indexed excerpt",
-      "limits": "Planet classes, orbit/environment identity and expansion boundary."
+      "limits": "Planet classes, orbit/environment identity and expansion boundary.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Planet"
+    },
+    "space_category": {
+      "url": "https://spore.fandom.com/wiki/Category:Space_stage",
+      "evidence": "Search-indexed category page; 250 listed articles.",
+      "limits": "Discovery index only: mixes base Space Stage, cross-stage mechanics, Galactic Adventures, user creations, fictional pages and category metadata. Not a feature count.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Category:Space stage"
+    },
+    "ship_tool_category": {
+      "url": "https://spore.fandom.com/wiki/Category:Ship_Tools",
+      "evidence": "Search-indexed category page; 122 listed articles.",
+      "limits": "Article/page entries are not normalized tool variants; categories and series pages are mixed with tools.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Category:Ship Tools"
+    },
+    "manual": {
+      "url": "https://shared.steamstatic.com/store_item_assets/steam/apps/17390/manuals/manual.pdf?t=1642702281",
+      "evidence": "Official retail manual; relevant Space Stage pages inspected and rendered.",
+      "limits": "Documents controls and screen regions; not complete proof of every interaction edge or later patches.",
+      "source_group": "Official EA/Maxis",
+      "project_refs": [],
+      "title": "manual.pdf"
+    },
+    "official_controls": {
+      "url": "https://www.spore.com/comm/tutorials/controls",
+      "evidence": "Official Spore controls reference.",
+      "limits": "Shortcut reference; does not cover every context or demonstrate timing.",
+      "source_group": "Official EA/Maxis",
+      "project_refs": [],
+      "title": "controls"
+    },
+    "strategy_space": {
+      "url": "https://strategywiki.org/wiki/Spore/Space_Stage",
+      "evidence": "StrategyWiki gameplay walkthrough, search-indexed sections.",
+      "limits": "Guide corroboration, not retail code; some legacy instructions reflect disliked tutorial errands.",
+      "source_group": "StrategyWiki",
+      "project_refs": [
+        "docs/history/TWO_DAY_VISUAL_TARGET.md"
+      ],
+      "title": "Space Stage"
+    },
+    "strategy_badges": {
+      "url": "https://strategywiki.org/wiki/Spore/Badges",
+      "evidence": "StrategyWiki badge table; indexed page contents inspected.",
+      "limits": "Corroborates names and thresholds; does not resolve all Fandom discrepancies or exact in-game point values.",
+      "source_group": "StrategyWiki",
+      "project_refs": [
+        "docs/systems/EXPEDITION_PROGRESSION.md"
+      ],
+      "title": "Badges"
+    },
+    "space_fleets": {
+      "url": "https://spore.fandom.com/wiki/Space_fleets",
+      "evidence": "Search-indexed article sections on allied and NPC fleets.",
+      "limits": "Community-edited summary; verify values and battle edge cases in retail.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md",
+        "docs/systems/ALLIED_FLEET.md"
+      ],
+      "title": "Space fleets"
+    },
+    "empire": {
+      "url": "https://spore.fandom.com/wiki/Empire_(territory)",
+      "evidence": "Search-indexed article sections on generated empires, expansion and defeat.",
+      "limits": "Community-edited summary; exact AI cadence and hidden rules unverified.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Empire (territory)"
+    },
+    "relationship": {
+      "url": "https://spore.fandom.com/wiki/Relationship",
+      "evidence": "Search-indexed Space Stage relationship states and modifiers.",
+      "limits": "Community-edited source; decay, numeric modifiers and special-case behavior need itemized verification.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EMPIRE_CONFLICT.md"
+      ],
+      "title": "Relationship"
+    },
+    "diplomacy": {
+      "url": "https://spore.fandom.com/wiki/Diplomacy",
+      "evidence": "Search-indexed Space Stage diplomacy section.",
+      "limits": "Page covers multiple stages; use only the Space Stage subsection for this denominator.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Diplomacy"
+    },
+    "grox": {
+      "url": "https://spore.fandom.com/wiki/Grox",
+      "evidence": "Search-indexed overview.",
+      "limits": "One special empire is not a template for all alien societies; flavor claims are not all mechanics.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Grox"
+    },
+    "galactic_core": {
+      "url": "https://spore.fandom.com/wiki/Galactic_Core",
+      "evidence": "Search-indexed overview and endgame sequence.",
+      "limits": "Community-edited guide; exact route constraints and cinematics need direct retail sampling.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Galactic Core"
+    },
+    "black_hole": {
+      "url": "https://spore.fandom.com/wiki/Black_hole",
+      "evidence": "Search-indexed navigation article.",
+      "limits": "Wormhole travel behavior and connected destinations need runtime verification.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Black hole"
+    },
+    "spice": {
+      "url": "https://spore.fandom.com/wiki/Spice",
+      "evidence": "Search-indexed economy tables and gameplay sections.",
+      "limits": "Large page includes strategies, glitches and difficulty-specific values; extract only verified base mechanics.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Spice"
+    },
+    "sporebuck": {
+      "url": "https://spore.fandom.com/wiki/Sporebuck",
+      "evidence": "Search-indexed currency sources and sinks.",
+      "limits": "Amounts may vary by difficulty and source article revision.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Sporebuck"
+    },
+    "trade_route": {
+      "url": "https://spore.fandom.com/wiki/Trade_Route",
+      "evidence": "Search-indexed route and system-buyout overview.",
+      "limits": "Do not conflate the in-game route progress mechanic with our physical freight extension.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/parity/COVERAGE.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Trade Route"
+    },
+    "economic_takeover": {
+      "url": "https://spore.fandom.com/wiki/Economic_takeover",
+      "evidence": "Search-indexed system purchase negotiation details.",
+      "limits": "Community-edited costs and success probabilities require retail corroboration.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Economic takeover"
+    },
+    "homeworld": {
+      "url": "https://spore.fandom.com/wiki/Homeworld",
+      "evidence": "Search-indexed homeworld, mission and service details.",
+      "limits": "Includes prior-stage and Galactic Adventures material; use only explicitly labeled Space Stage content.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Homeworld"
+    },
+    "building": {
+      "url": "https://spore.fandom.com/wiki/Building",
+      "evidence": "Search-indexed building classes and Space Stage cost table.",
+      "limits": "Buildings are chiefly cosmetic in Space Stage; do not infer a SimCity-style simulation from this page.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Building"
+    },
+    "planner": {
+      "url": "https://spore.fandom.com/wiki/Planner",
+      "evidence": "Search-indexed colony planner and production description.",
+      "limits": "Does not document every placement, adjacency or production boundary.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Planner"
+    },
+    "environment": {
+      "url": "https://spore.fandom.com/wiki/Environment_(planetary)",
+      "evidence": "Search-indexed planetary conditions and hazards.",
+      "limits": "Some page text concerns Creature Stage; only Space Stage-relevant planet behavior belongs here.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Environment (planetary)"
+    },
+    "natural_landmarks": {
+      "url": "https://spore.fandom.com/wiki/Natural_landmarks",
+      "evidence": "Search-indexed rare formation overview.",
+      "limits": "Separate normal scenery, rare discoveries and expansion adventure assets.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Natural landmarks"
+    },
+    "rares": {
+      "url": "https://spore.fandom.com/wiki/Rares",
+      "evidence": "Search-indexed collection overview.",
+      "limits": "Artifact names, availability and sale values are not yet exhaustively reconciled.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Rares"
+    },
+    "artifact": {
+      "url": "https://spore.fandom.com/wiki/Artifact",
+      "evidence": "Search-indexed artifact overview.",
+      "limits": "Exact set membership, scarcity and transaction values remain open.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Artifact"
+    },
+    "eco_disaster": {
+      "url": "https://spore.fandom.com/wiki/Eco_Disaster",
+      "evidence": "Search-indexed emergency and prevention overview.",
+      "limits": "Trigger odds, timers, prevention and full response template matrix remain open.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Eco Disaster"
+    },
+    "monolith": {
+      "url": "https://spore.fandom.com/wiki/Monolith",
+      "evidence": "Search-indexed uplift/intervention article.",
+      "limits": "Uplift outcome varies by starting civilization; acquisition edge needs full cross-check.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md",
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Monolith"
+    },
+    "traits": {
+      "url": "https://spore.fandom.com/wiki/Category:Space_stage_traits",
+      "evidence": "Search-indexed category; 12 listed Space Stage consequence traits.",
+      "limits": "Names are inventoried; every effect and acquisition path still needs item-level verification.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Category:Space stage traits"
+    },
+    "galactic_adventures": {
+      "url": "https://spore.fandom.com/wiki/Spore_Galactic_Adventures",
+      "evidence": "Search-indexed expansion overview.",
+      "limits": "Used only to mark expansion-only content as out of base-game denominator.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [],
+      "title": "Spore Galactic Adventures"
+    },
+    "gamepressure_travel": {
+      "url": "https://www.gamepressure.com/spore/traveling-to-another-planet/zb151d",
+      "evidence": "Guide page and gameplay screenshots inspected.",
+      "limits": "Polish localization and small image source; supports composition only where readable.",
+      "source_group": "Gamepressure guide",
+      "project_refs": [],
+      "title": "zb151d"
+    },
+    "gamepressure_colonies": {
+      "url": "https://www.gamepressure.com/spore/setting-up-colonies-and-planet-upgrades/zc151e",
+      "evidence": "Guide page and screenshot inspected.",
+      "limits": "Visual/guide evidence only; not a complete mechanic specification.",
+      "source_group": "Gamepressure guide",
+      "project_refs": [],
+      "title": "zc151e"
+    },
+    "gamepressure_contact": {
+      "url": "https://www.gamepressure.com/spore/other-civilisations/zd151f",
+      "evidence": "Contact screenshot inspected.",
+      "limits": "Single state; does not establish response timing or all diplomacy actions.",
+      "source_group": "Gamepressure guide",
+      "project_refs": [],
+      "title": "zd151f"
+    },
+    "gamepressure_trade": {
+      "url": "https://www.gamepressure.com/spore/trade/z81520",
+      "evidence": "Shop, badge and cargo screenshots inspected.",
+      "limits": "Labels were checked against pixels because the page caption is misleading; transaction causality remains unverified.",
+      "source_group": "Gamepressure guide",
+      "project_refs": [],
+      "title": "z81520"
+    },
+    "youtube_singularmix": {
+      "url": "https://www.youtube.com/watch?v=0NN5fBVEHcA",
+      "evidence": "Primary long-playthrough bookmark; displayed runtime 5:51:00; 1080p60 option verified; specific paused frames archived at effective 1080p.",
+      "limits": "Only selected frames sampled; full runtime not watched; muted captures provide no listening evidence; version/mod configuration unverified.",
+      "source_group": "YouTube",
+      "project_refs": [
+        "docs/direction/CONTACT_PERFORMANCE_SPEC.md",
+        "docs/research/SPORE_EXTENDED_VIDEO_EVIDENCE.md"
+      ],
+      "title": "SingularMix — Spore Playthrough: Space Stage (5:51:00)"
+    },
+    "youtube_gameplaydump": {
+      "url": "https://www.youtube.com/watch?v=bVmJpkFRXFw&t=3175s",
+      "evidence": "Earlier GUI-forensics gameplay reference, also opened previously at 52:55.",
+      "limits": "Runtime, decoded resolution, version/mod configuration and full source inventory not recorded; supplemental only.",
+      "source_group": "YouTube",
+      "project_refs": [
+        "docs/research/SPORE_GUI_FORENSICS.md"
+      ],
+      "title": "GameplayDump — Spore: Space Stage Gameplay (supplemental; metadata incomplete)"
+    },
+    "youtube_launch": {
+      "url": "https://www.youtube.com/watch?v=tPv31DJRST8",
+      "evidence": "Separate 1:34 Space Stage launch clip; 19 paused samples indexed.",
+      "limits": "Low native resolution; audio not reviewed; not a substitute for the longer playthrough.",
+      "source_group": "YouTube",
+      "project_refs": [
+        "docs/research/SPORE_LAUNCH_SEQUENCE_EVIDENCE.md"
+      ],
+      "title": "PoketamaVideos — Spore - Beginning of Space (1:34)"
+    },
+    "modapi_ui": {
+      "url": "https://modapi-docs.sporecommunity.com/class_u_i_1_1_space_game_u_i.html",
+      "evidence": "Community reverse-engineered SpaceGameUI API documentation.",
+      "limits": "Not an official Maxis specification; implementation names can drift from player-facing behavior.",
+      "source_group": "Community reverse-engineering reference",
+      "project_refs": [],
+      "title": "class u i 1 1 space game u i.html"
+    },
+    "youtube_creepycute_announcement": {
+      "url": "https://www.youtube.com/watch?v=ur_VVDxNRb0",
+      "evidence": "Linked as the official Creepy & Cute announcement in art-direction research; metadata not captured in this pass.",
+      "limits": "Art-direction context only; not Space Stage feature evidence.",
+      "source_group": "YouTube",
+      "project_refs": [
+        "docs/art/ART_DIRECTION.md"
+      ],
+      "title": "Official Creepy & Cute announcement (metadata not captured)"
+    },
+    "shaman": {
+      "url": "https://spore.fandom.com/wiki/Shaman",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/art/CHARACTER_ARCHETYPES.md"
+      ],
+      "title": "Shaman"
+    },
+    "trader_philosophy": {
+      "url": "https://spore.fandom.com/wiki/Trader_%28philosophy%29",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/art/CHARACTER_ARCHETYPES.md"
+      ],
+      "title": "Trader (philosophy)"
+    },
+    "diplomat_philosophy": {
+      "url": "https://spore.fandom.com/wiki/Diplomat_%28philosophy%29",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/art/CHARACTER_ARCHETYPES.md"
+      ],
+      "title": "Diplomat (philosophy)"
+    },
+    "spore_galaxy": {
+      "url": "https://spore.fandom.com/wiki/Spore_Galaxy",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/history/TWO_DAY_VISUAL_TARGET.md"
+      ],
+      "title": "Spore Galaxy"
+    },
+    "zoning_and_demand": {
+      "url": "https://strategywiki.org/wiki/SimCity_4/Zoning_and_Demand",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "StrategyWiki",
+      "project_refs": [
+        "docs/research/SC4_SYSTEMS_AND_RENDERING.md"
+      ],
+      "title": "StrategyWiki — SimCity 4: Zoning and Demand (adjacent design research)"
+    },
+    "master_badge": {
+      "url": "https://spore.fandom.com/wiki/Master_Badge",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md",
+        "docs/systems/EXPEDITION_PROGRESSION.md"
+      ],
+      "title": "Master Badge"
+    },
+    "collector": {
+      "url": "https://spore.fandom.com/wiki/Collector",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Collector"
+    },
+    "merchant": {
+      "url": "https://spore.fandom.com/wiki/Merchant",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Merchant"
+    },
+    "diplomat_badge": {
+      "url": "https://spore.fandom.com/wiki/Diplomat_%28badge%29",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Diplomat (badge)"
+    },
+    "colonist": {
+      "url": "https://spore.fandom.com/wiki/Colonist",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Colonist"
+    },
+    "conqueror": {
+      "url": "https://spore.fandom.com/wiki/Conqueror",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Conqueror"
+    },
+    "explorer": {
+      "url": "https://spore.fandom.com/wiki/Explorer",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Explorer"
+    },
+    "terra_wrangler": {
+      "url": "https://spore.fandom.com/wiki/Terra-Wrangler",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Terra-Wrangler"
+    },
+    "frequent_flyer": {
+      "url": "https://spore.fandom.com/wiki/Frequent_Flyer",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Frequent Flyer"
+    },
+    "gopher": {
+      "url": "https://spore.fandom.com/wiki/Gopher",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Gopher"
+    },
+    "missionista": {
+      "url": "https://spore.fandom.com/wiki/Missionista",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Missionista"
+    },
+    "health": {
+      "url": "https://spore.fandom.com/wiki/Health",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_BADGE_PARITY.md"
+      ],
+      "title": "Health"
+    },
+    "category_weapon_tools": {
+      "url": "https://spore.fandom.com/wiki/Category:Weapon_tools",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_PALETTE_AUDIT.md"
+      ],
+      "title": "Category:Weapon tools"
+    },
+    "abduction_beam": {
+      "url": "https://spore.fandom.com/wiki/Abduction_Beam",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Abduction Beam"
+    },
+    "history": {
+      "url": "https://spore.fandom.com/wiki/History",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "History"
+    },
+    "bio_stabilizer": {
+      "url": "https://spore.fandom.com/wiki/Bio_Stabilizer",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/research/SPORE_SPACE_STAGE_RESEARCH.md"
+      ],
+      "title": "Bio Stabilizer"
+    },
+    "alliance": {
+      "url": "https://spore.fandom.com/wiki/Alliance",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/ALLIED_FLEET.md"
+      ],
+      "title": "Alliance"
+    },
+    "war": {
+      "url": "https://spore.fandom.com/wiki/War",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EMPIRE_CONFLICT.md",
+        "docs/systems/TERRITORIAL_COMBAT.md"
+      ],
+      "title": "War"
+    },
+    "invasion": {
+      "url": "https://spore.fandom.com/wiki/Invasion",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EMPIRE_CONFLICT.md",
+        "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md",
+        "docs/systems/TERRITORIAL_COMBAT.md"
+      ],
+      "title": "Invasion"
+    },
+    "turret": {
+      "url": "https://spore.fandom.com/wiki/Turret",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EMPIRE_CONFLICT.md",
+        "docs/systems/TERRITORIAL_COMBAT.md"
+      ],
+      "title": "Turret"
+    },
+    "allied_attack": {
+      "url": "https://spore.fandom.com/wiki/Allied_Attack",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EMPIRE_CONFLICT.md"
+      ],
+      "title": "Allied Attack"
+    },
+    "badge_point": {
+      "url": "https://spore.fandom.com/wiki/Badge_Point",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/EXPEDITION_PROGRESSION.md"
+      ],
+      "title": "Badge Point"
+    },
+    "ecological_niche": {
+      "url": "https://spore.fandom.com/wiki/Ecological_niche",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/PLANET_BIOSPHERE.md"
+      ],
+      "title": "Ecological niche"
+    },
+    "flora": {
+      "url": "https://spore.fandom.com/wiki/Flora",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/PLANET_BIOSPHERE.md"
+      ],
+      "title": "Flora"
+    },
+    "shield": {
+      "url": "https://spore.fandom.com/wiki/Shield",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SHIP_SUPPORT.md"
+      ],
+      "title": "Shield"
+    },
+    "cooldown": {
+      "url": "https://spore.fandom.com/wiki/Cooldown",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SHIP_SUPPORT.md"
+      ],
+      "title": "Cooldown"
+    },
+    "pirate": {
+      "url": "https://spore.fandom.com/wiki/Pirate",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SPACE_SIGNAL_ENCOUNTERS.md"
+      ],
+      "title": "Pirate"
+    },
+    "laser": {
+      "url": "https://spore.fandom.com/wiki/Laser",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SURFACE_COMBAT.md"
+      ],
+      "title": "Laser"
+    },
+    "missile": {
+      "url": "https://spore.fandom.com/wiki/Missile",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SURFACE_COMBAT.md"
+      ],
+      "title": "Missile"
+    },
+    "bomb_ship_tool": {
+      "url": "https://spore.fandom.com/wiki/Bomb_%28ship_tool%29",
+      "evidence": "Previously cited in maintained project documentation; page-level re-audit status not consistently recorded.",
+      "limits": "Link presence is not verification. Reopen the relevant section and corroborate its claim before treating it as confirmed retail behavior.",
+      "source_group": "SporeWiki (Fandom)",
+      "project_refs": [
+        "docs/systems/SURFACE_COMBAT.md"
+      ],
+      "title": "Bomb (ship tool)"
     }
   },
   "families": [
@@ -1463,6 +2258,26 @@
       "id": "philosophy_traits",
       "question": "Nine powers are named; prior-stage consequence abilities and conversion requirements still need itemized verification.",
       "owner": "P02"
+    },
+    {
+      "id": "tool_count_reconciliation",
+      "question": "SporeWiki lists 122 Ship Tools category article entries and describes roughly 184 tools; the project manifest has 189 normalized variant rows. Reconcile retail item IDs, category/series pages, tiers, skipped color/sculpt content and expansion entries.",
+      "owner": "R01"
+    },
+    {
+      "id": "category_scope_filter",
+      "question": "The Space Stage category lists 250 mixed articles. Audit gameplay-relevant pages and record exclusions; cross-stage, Galactic Adventures, user creations/fiction and metadata mean 250 is not a feature count.",
+      "owner": "R01"
     }
-  ]
+  ],
+  "source_census": {
+    "registered_source_records": 98,
+    "sporewiki_pages": 83,
+    "strategywiki_pages": 4,
+    "youtube_videos": 4,
+    "gamepressure_guides": 4,
+    "official_ea_maxis_references": 2,
+    "community_reverse_engineering_references": 1,
+    "interpretation": "Distinct references already cited in maintained project documentation and evidence manifests. Source-record counts, wiki article counts, video counts, and normalized feature rows are different units."
+  }
 }

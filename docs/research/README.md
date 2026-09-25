@@ -25,5 +25,6 @@ Status is the document's role, not a game-completion claim. The task board alone
 | [Spore Space Stage GUI: forensic review](<SPORE_GUI_FORENSICS.md>) | evidence |
 | [Space Stage launch: sampled staging evidence](<SPORE_LAUNCH_SEQUENCE_EVIDENCE.md>) | evidence |
 | [Space Stage palette and input audit](<SPORE_PALETTE_AUDIT.md>) | evidence |
+| [Spore and project reference register](<SPORE_SOURCE_REGISTER.md>) | evidence |
 | [Spore Space Stage: preserve the play](<SPORE_SPACE_STAGE_RESEARCH.md>) | evidence |
 | [Visual fidelity: feasibility and proof](<VISUAL_FIDELITY_FEASIBILITY.md>) | evidence |

@@ -2,13 +2,28 @@
 
 > Design intent; task status and execution order live in the task board. [Documentation map](../README.md).
 
-23 September 2026. User direction: establish the core loop and confirm understanding of all subsystems first, then flesh out a broad, deep corpus with synergies and cohesive story. **Alignment has not passed.** The latest screenshot rejection makes the interface correction an immediate prerequisite. Spore Space Stage parity is the baseline; no optional addition silently replaces a baseline feature.
+25 September 2026. User direction: establish the core loop and confirm understanding of all subsystems first, then flesh out a broad, deep corpus with synergies and cohesive story. **Alignment has not passed.** The latest screenshot rejection makes the interface correction an immediate prerequisite. Spore Space Stage parity is the baseline; no optional addition silently replaces a baseline feature.
 
 Latest scope correction: coloring/sculpting are explicitly skipped and further planet editing is deferred. Existing climate/ecosystem behavior remains. Consult the current task board and SPACE_STAGE_TARGET for implementation status; older gap descriptions below describe the original alignment audit.
 
 ## Working loop to validate
 
-Explore → discover useful things → choose how to spend energy, cargo space and risk → trade or invest → earn recognition → purchase capabilities → reach new opportunities. Personally flying and applying tools is the activity, not a menu wrapper around an economy. Colonies, ecosystems, diplomacy, combat and history change what the next expedition can achieve.
+1. **Read a lead in the world.** The galaxy is a full-screen, spatial map with discovery fog, reachable-range constraints and ship-following travel. The system and planet views preserve the same geography and give a clear next place to go.
+2. **Pilot and investigate.** Descend, move freely, approach a landmark, living creature, resource or wreck. Choose a pictorial category and tool, target the world directly, and receive immediate visual, audio and text feedback.
+3. **Make a field decision.** Scan or collect useful cargo, uncover an upgrade or encounter danger. Finite energy, hull, cargo room and scarce finds make retreat, combat, tool choice or leaving something behind meaningful.
+4. **Bring the result into civilization.** Meet a recognizable alien, use a shop or trade relationship, sell or keep goods, and see the price, capacity, attitude and consequence before committing. Colony production and supply routes make later expeditions more capable; they do not replace piloting.
+5. **Carry consequences forward.** Record discoveries, agreements, losses and decisions in the chronicle. Achievements recognize varied play and unlock purchasable options; the player still pays and chooses what to install.
+6. **Follow a new possibility.** A capability, relationship, map reveal or living-world change opens another route. Story reveals the ancestors through present-day people, contested evidence and consequences, not a chain of recording hunts.
+
+This is the working core-loop target, not a claim that the connected experience is already fun or complete. Avoid compulsory gopher missions, passive energy regeneration and instant free colony establishment. Automate repetitive logistics only after the player has discovered and chosen them.
+
+## Next proof: review one connected expedition
+
+Return to the **visual critic loop** before growing catalogs or opening another subsystem. Select one short end-to-end expedition already possible in the current game. Assemble three matched references for its key states: (1) a timestamped Spore capture or manual reference, (2) an actual runtime capture, and (3) the closest approved Field Instruments mock. For the user's 6:30–7:10 travel/cutscene lead, first capture the readable text and before/travel/arrival states; keep the Gemini chronology as a mechanic-aware guide with uncertain timing, not a substitute for those captures.
+
+Ask the critic to judge the full composition and the action sequence: can the player see where they are going, understand the selected tool and target, read the result and cost, feel the ship/camera move, notice a consequential risk or reward, and keep the world visually dominant? Include 1080p and a larger supported resolution. Record the three highest-impact mismatches and fix the first one in the live view, then rerun the same comparison. A static mock, clean crop, passing test or critic pass alone is not user acceptance.
+
+Do not broaden the source denominator or add content corpus while this single loop still fails to read or feel coherent. Keep the remaining Space Stage inventory open and use it to prevent scope loss, not as a reason to postpone the playable core.
 
 ## Subsystem understanding and integration obligations
 
@@ -22,7 +37,7 @@ Explore → discover useful things → choose how to spend energy, cargo space a
 | Cargo, commodities and artifacts | Scarce hold space and discovery value | Physical stock, provenance, quantity and capacity; surface store and hold cannot be conflated |
 | Trade and supply chains | Profit, specialization and interdependence | Provider prices, finite demand, real production, access and route costs; optional personal trade plus automation of repetition |
 | Colonies and cities | Production, services, administration and manpower | Expensive timed founding, aggregate development and finite demand; cities support space play, not a mandatory long opener |
-| Terraforming and sculpting | Visible agency and new settlement/ecology opportunities | Climate/atmosphere, ecological tiers, terrain/color tools and consequences; most manipulation families missing |
+| Climate and ecological effects | Visible planetary agency and consequential choices | Existing climate/ecology tools remain; further planet editing, terrain brushes and coloring are outside current delivery scope |
 | Diplomacy and civilizations | Access, conflict, allies and expressive encounters | Nations differ from species and planets; government differs from philosophy; ties to trade, uplift, borders and obligations |
 | War, fleet and conquest | Danger, territorial decisions and material losses | Actual targets, allied ships, raids, defense and capture; isolated custodian is not empire warfare |
 | Badges, ranks and shops | Recognition that changes capabilities | Alternate accomplishment paths → shop eligibility → purchase; shared event/progression ledger missing |

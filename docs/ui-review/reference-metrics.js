@@ -1,7 +1,7 @@
 const REFERENCE_METRICS = {
   "schema": 1,
   "scope": "Base Space Stage experience audit; character/creature customization and Galactic Adventures excluded. Ship/building editor connections reference-only until delivery scope is agreed. Excluded world-editing stays reference-only.",
-  "closure": "OPEN working workflow denominator; reconcile against existing tool/progression catalogs and newly observed screens. Never claim exhaustive closure from a fixed checklist.",
+  "closure": "OPEN: 61 source-linked workflow rows in ten primary-goal categories. Add a row when source review finds a distinct player action/outcome or meaningful boundary. This working partition is not proof of exhaustive retail feature discovery.",
   "overall": {
     "denominator": 61,
     "visual_sampled": {
