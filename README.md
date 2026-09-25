@@ -132,11 +132,15 @@ Manual save: `%APPDATA%\Godot\app_userdata\Frontier Worlds\frontier_save.fw`.
 Autosave: the same folder, `frontier_autosave.fw`, every 60 simulated days. Both are versioned binary snapshots, with object deserialization disabled. Autosave has its own restore button and never overwrites a manual save. No offline simulation.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/Test.ps1
+powershell -ExecutionPolicy Bypass -File tools/Test.ps1 -List
+powershell -ExecutionPolicy Bypass -File tools/Test.ps1 -Tests test_flight_hud,test_ui -ProfileId luna-flight
+powershell -ExecutionPolicy Bypass -File tools/Test.ps1 -All -ProfileId sol-integration
 powershell -ExecutionPolicy Bypass -File tools/Build.ps1
 ```
 
-Simulation tests cover deterministic generation and continuation after loading, growth constraints, actual-stock trade, embargoes, climate projects, discovery rewards, and peaceful progression. UI tests exercise screen picking, view navigation, colony founding, overlays, and time controls. `-- --capture` produces rendered preview PNGs under `artifacts/` and exits; it uses a disposable demo state and does not save the expedition.
+With no selector, `Test.ps1` prints usage and runs nothing. Prefer `-Tests` for changed behavior; `-All` is an explicit full-suite run. Tests run one at a time and report each duration. `-ProfileId` creates an ignored per-worktree project profile with a shared per-worktree Godot import cache and separate per-profile artifacts and `user://` save directory. Use a different id for each concurrently running instance. See [the squad operating contract](docs/delivery/SYNTHETIC_SQUAD.md) for test and import-cost rules. Simulation and UI tests establish deterministic behavior, not playability, visual acceptance or performance.
+
+Start a separate GUI instance with `powershell -ExecutionPolicy Bypass -File tools/Start-AgentGame.ps1 -ProfileId luna-flight -Resolution 1600x900`. Add `-Scene res://path/to/scene.tscn` to launch a specific scene or `-Maximized` to maximize the window. `-- --capture` produces rendered preview PNGs under `artifacts/` and exits; it uses a disposable demo state and does not save the expedition.
 
 ## Free Windows narration
 

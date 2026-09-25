@@ -4,6 +4,9 @@ build/
 artifacts/
 *.tmp
 
+# Per-worktree Godot profiles, caches, user data staging and artifacts.
+/.local/agent-profiles/
+
 # Raw Tripo exports stay local until their mesh and runtime presentation pass review.
 /assets/tripo_inbox/*.glb
 /assets/tripo_inbox/*.gltf

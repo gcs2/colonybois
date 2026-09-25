@@ -13,6 +13,12 @@
 - Start with docs/README.md and docs/NEXT_SESSION.md. TASK_BOARD.md is the sole production queue; PRODUCTION_GOAL.md owns the objective; ROADMAP.md owns milestone gates. Each documentation file has one primary purpose in docs/DOCUMENTATION_MAP.json. Run tools/DocumentationReport.py after documentation moves or additions.
 - docs/history contains superseded snapshots and unselected alternatives, not current instructions. Update the owning record rather than appending another competing latest override. Character art/modeling/corpus production is deferred; read docs/reviews/MODELING_POSTMORTEM_2026-09-24.md before any reprioritized retry. No remaining fish/style revision is queued.
 
+## Verification cost
+
+- `tools/Test.ps1` without a selector prints usage and runs nothing. Use `-List`, named `-Tests`, or explicit `-All`; require a unique `-ProfileId` for runs. Run domain-relevant tests once, record durations, and skip unchanged suites. Reserve `-All` for a major integration gate or an explicit request.
+- `tools/AgentProfile.ps1` creates ignored per-worktree Godot project overlays. `tools/Start-AgentGame.ps1 -ProfileId <id>` and the test runner use isolated `user://` and `artifacts/` paths with a per-worktree import cache. Give each concurrently running instance a distinct profile id. Serialize imports and performance measurements to avoid resource contention.
+- Test results establish only the behaviors those tests observe. Use actual runtime and independent visual review when appearance or motion is material; tests do not establish fun, visual acceptance or performance.
+
 ## Product constraints
 
 - 24 September portrait exception: the user authorizes existing generated concepts as in-game 2D portraits. Tavi's isolated concept portrait is integrated; cleanup provenance lives in assets/aliens/tavi-portrait-v1.md. This does not reopen 3D modeling, new character design, fish revisions or cast expansion. Do not overlay the old procedural eyes/mouth on raster concept art or claim a static portrait is animated acting.

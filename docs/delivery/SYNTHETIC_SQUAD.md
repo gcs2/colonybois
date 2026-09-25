@@ -1,19 +1,42 @@
 # Synthetic Squad: token-aware development contract
 
-This is the operating contract for optional multi-model work on Frontier Worlds. It changes how bounded tasks are handed off; it does not change the product objective or the production queue. [TASK_BOARD.md](../TASK_BOARD.md) owns priority, [ROADMAP.md](../ROADMAP.md) owns acceptance gates, and [NEXT_SESSION.md](../NEXT_SESSION.md) owns the current handoff.
+This is the operating contract for bounded multi-model work on Frontier Worlds. It changes how tasks are handed off; it does not change the product objective or add a production queue. [TASK_BOARD.md](../TASK_BOARD.md) remains the sole production queue, [ROADMAP.md](../ROADMAP.md) owns acceptance gates, and [NEXT_SESSION.md](../NEXT_SESSION.md) owns the current handoff.
 
 ## Why and when
 
-Use multiple models when a task can be divided into a narrow specification, implementation, and independent review. Keep a small correction with the current worker when handoff overhead exceeds the likely work. Record model calls, input/output tokens and cost when a provider supplies them. Use measured cost and defect rates to revise routing; model names below are preferences, not locked dependencies or proof that a provider is connected.
+Use multiple models when work can be split into narrow, independent implementations. Keep a small correction with the current worker when handoff overhead exceeds the likely work. Record model calls, input/output tokens and cost when the runtime supplies them. Use measured delivery, rework and cost to revise routing; model names are preferences, not evidence.
 
-| Function | Preferred routing | Receives | Produces |
+| Function | Pilot routing | Receives | Produces |
 |---|---|---|---|
-| Architect | Strong reasoning model, e.g. GPT-6 Astra | Product intent, relevant owner docs, interfaces and constraints | Bounded spec, invariants, acceptance evidence and affected files |
-| Implementer | Coding model, e.g. GPT-5.6 Sol or Claude Sonnet | Approved spec and scoped repository context | Patch, tests and actual command output |
-| Mechanical verifier | Fast model or deterministic tool | Patch, compiler/test output and acceptance checklist | Machine-readable pass/fail findings |
-| Independent critic | Strong reasoning model | Spec, exact source/mock/current evidence and measured state | Specific discrepancy and change request or evidence-limited pass |
+| Sol coordinator | GPT-6 Sol, high reasoning effort | Goal, owner documents, task-board item and verified baseline | Bounded contracts, assignment packets, integration, owning-record updates and concise report |
+| Implementation workers | Up to three GPT-6 Luna agents, high reasoning effort; one independent item each | Scoped task packet, compact project context and assignment roster | Commit, changed player behavior, evidence, selected checks/costs and remaining gaps |
+| Mechanical verification | Deterministic tools; model assistance only for interpretation | Patch, declared test budget and acceptance checklist | Exact command outcomes, durations and bounded findings |
+| Independent visual critic | One review after an integrated presentation change, when material | Matched source, approved mock and actual runtime evidence | Specific discrepancy/change request or a pass limited to inspected states |
 
-The architect and critic can be the same model family, but the critic must not review its own unexamined claims as evidence. The coordinator retains responsibility for integration, save safety, visual quality and backup. Do not split work solely to satisfy this table.
+Sol owns product reasoning, integration, save safety, visual review, checkpointing and backup. A critic cannot approve its own unexamined work. Do not fan out solely to fill slots.
+
+This routing follows [OpenAI's multi-agent guidance](https://developers.openai.com/api/docs/guides/agents-api/multi-agent) and [GPT-6 model guidance](https://developers.openai.com/api/docs/guides/latest-model): parallelize bounded independent work, account for coordination/token costs, and use Sol for demanding coordination with Luna for focused implementation.
+
+## Sol-led implementation pilot
+
+The first fan-out is gated on the active HUD and source/mock coverage audit reaching its own checkpoint. Until then, prepare workflow changes only; do not start parallel feature implementation. After that checkpoint, Sol re-reads the task board and selects up to its next three items only when code ownership, interfaces and dependencies are independent. Use fewer or serialize work when the queue does not split cleanly. This contract does not reorder the board or create another queue.
+
+Before dispatch, Sol creates one clean Git worktree and branch per worker from the same verified baseline. Each assignment packet states:
+
+- Task-board ID and the single player-facing outcome to change.
+- Baseline commit, exact worktree path and branch.
+- Allowed files; all other files are prohibited unless Sol approves an interface change.
+- Fixed code/data/persistence interfaces and invariants, plus explicit exclusions.
+- Dependencies and a compact roster of the other workers' task IDs, file areas and interface boundaries.
+- Acceptance evidence, named domain tests, verification budget and checks that must not be repeated when unchanged.
+
+A worker requests interface or shared-file changes through Sol and pauses dependent edits until the contract is resolved. Two workers never mutate the same campaign state or file set concurrently. If a task needs shared code/schema or mutable save state, Sol defines the interface first or schedules the tasks in order. Workers commit locally but do not push or merge each other's branches. Sol inspects and integrates results, updates owning records, then makes the small verified checkpoint and checks its remote hash.
+
+Each worker returns a compact handoff: task ID; branch/worktree and baseline-to-commit hashes; player behavior changed; evidence; exact checks and elapsed times; integration concerns; remaining gaps; and token/cost figures only when exposed by the runtime. Sol returns one concise summary across the swarm. For material presentation work, integrate first and request one independent visual review of matched runtime states. A critic's review does not replace human acceptance.
+
+Use `tools/Test.ps1 -List`, `-Tests <names> -ProfileId <unique-id>`, or explicit `-All -ProfileId <unique-id>`. No-argument invocation runs nothing. Test only affected behavior, record per-test duration and avoid rerunning unchanged suites. Full-suite runs require a major integration gate or explicit request. `tools/Start-AgentGame.ps1 -ProfileId <unique-id>` opens a worktree in its isolated profile. Give every simultaneously running process a distinct ID; imports and performance measurements remain serialized.
+
+For the first three eligible items, compare delivered and accepted player behavior per elapsed time, integration rework, regressions, verification/runtime cost and available token use. Retain three-worker concurrency only if it improves delivery without increasing integration defects; otherwise reduce concurrency. This is a measured pilot, not a permanent agent quota.
 
 ## Context boundary and prompt budget
 
@@ -24,10 +47,10 @@ Keep a stable, versioned core contract at the beginning of prompts when the prov
 ## One work item through the pipeline
 
 1. **Scope.** Coordinator chooses one TASK_BOARD item, records the baseline commit, touched paths and whether existing files have user or another agent's uncommitted changes. Preserve those edits; use a separate worktree for competing edits. Define evidence at the scale of the claim: actual game screenshot for appearance, native input for interaction, tests for deterministic rules, and export smoke for packaging.
-2. **Specify.** Architect states behavior, invariants, data/schema changes, failure cases, visual reference and exclusions. A reviewer can challenge the spec before coding if it is expensive or changes persistence.
-3. **Build.** Implementer works only within the declared scope. Deterministic code checks and syntax checks run locally. Small compiler fixes can loop with the implementer without another architect call. Cap retries and escalate a repeated failure with the exact errors and diff.
-4. **Review.** Mechanical verification checks declared commands, changed files and save/resource invariants. For visual work, capture the same state at a stated resolution and camera, then compare a target and runtime image. The critic must examine composition, materials, world context, legibility and motion evidence when relevant; an absence of clipping is not art acceptance. The critic returns a bounded change request or a pass limited to observed evidence.
-5. **Integrate.** Coordinator inspects the diff, runs the relevant tests and native/export checks required by the change, updates the owning docs, commits and pushes a small checkpoint, and verifies the remote hash. Only then is work called backed up. A proposal or isolated mock is labelled as such and cannot be reported as a playable fix.
+2. **Specify.** Sol states behavior, invariants, data/schema changes, failure cases, visual reference and exclusions. If a task is expensive or changes persistence, Sol can request one bounded challenge before implementation.
+3. **Build.** The assigned worker works only within the declared scope. Run only the selected domain checks. Small compiler fixes can loop with the worker without another coordination round. Cap retries and escalate a repeated failure with the exact error and diff.
+4. **Review.** Mechanical verification checks declared commands, changed files and save/resource invariants. For visual work, capture the same state at a stated resolution and camera, then compare the approved target and actual runtime. The critic examines composition, materials, world context, legibility and motion evidence when relevant; absence of clipping is not art acceptance. The critic returns a bounded change request or a pass limited to observed evidence.
+5. **Integrate.** Sol inspects the diff, runs relevant tests and required native/export checks, updates owning docs, commits and pushes a small checkpoint, and verifies the remote hash. Only then is work called backed up. A proposal or isolated mock is labelled as such and cannot be reported as a playable fix.
 
 Stop optional loops when the next attempt merely reshuffles the same mock, the evidence no longer changes the decision, or costs exceed the scoped value. Return to the task board and the playable acceptance gate.
 
@@ -51,6 +74,6 @@ Reusable authored meshes and hand-edited fixes remain valid. A blanket ban on a 
 
 ## Current application
 
-Recent Gemini work includes committed communicator/export changes at `3b360bc` and `aa86d0e` plus uncommitted HUD, encounter, shader, capture and pod files at the time this contract was written. Treat committed work as a checkpoint to review and the uncommitted work as another worker's active state. Do not overwrite or stage those paths casually. `art/tripo_ready/` remains outside this pipeline decision. The near-term game priority remains visual fidelity and playable flight, not building a general orchestration service.
+The verified baseline, active worktree and current state live in [NEXT_SESSION.md](../NEXT_SESSION.md); priority and sequencing live only in [TASK_BOARD.md](../TASK_BOARD.md). Recheck both before every dispatch. Do not copy commit-specific status, stale uncommitted-file lists or a competing queue into this contract. `art/tripo_ready/` remains outside the asset decision. Near-term product work stays focused on playability and visual fidelity.
 
-An API orchestrator may be built after one manual end-to-end task demonstrates lower cost **and** equal or better quality. A first version should validate packets and run local commands with explicit file allowlists and timeouts; provider adapters, caching metrics and spending ceilings follow measured use. This document authorizes no service spend.
+This pilot adds no paid external orchestration service or second queue. Existing local handoff validation remains sufficient while the team measures this workflow. Any future orchestration investment requires measured evidence and separate user approval; this contract authorizes no service spend.
