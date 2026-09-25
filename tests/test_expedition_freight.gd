@@ -128,6 +128,63 @@ func run() -> void:
 	check(game.restore_snapshot(bad) != OK and game.snapshot() == before,"Save cannot invent an unconnected transit edge")
 	var old: Dictionary = before.duplicate(true); old.version = 5; old.erase("freight")
 	check(loaded.restore_snapshot(old) == OK and loaded.freight.state.routes.is_empty(),"V5 migration creates no free carriers")
+
+	# Set up a second operational player outpost on s2p0
+	game.colonies.state.outposts["s2p0"] = {"site":[-6.0,-18.0],"module":"glass","stock":{"alloy":0,"water":0,"glass":0},"status":"Export facility commissioned","online_recorded":true}
+	game.sector._create_colony("s2p0",false)
+
+	# Configure supply delivery from s1p0 to s2p0
+	var supply_quote: Dictionary = freight.quote(game,"s1p0","s2p0","water",4)
+	check(supply_quote.reason.is_empty() and supply_quote.gross == 0 and supply_quote.net == -supply_quote.fee,"Supply contract quotes 0 gross receipts and negative net transport cost")
+	check(freight.configure(game,"s1p0","s2p0","water",4).is_empty(),"Configure supply delivery contract between owned outposts")
+	route = freight.state.routes.s1p0
+	check(route.destination == "s2p0" and route.item == "water" and route.cargo == 0 and route.phase == "waiting","Supply route initialized in waiting phase")
+
+	# Destination warehouse full check in quote
+	game.colonies.state.outposts.s2p0.stock = {"alloy":0,"water":16,"glass":0}
+	var full_quote: Dictionary = freight.quote(game,"s1p0","s2p0","water",4)
+	check(full_quote.reason.contains("no storage capacity"),"Quote detects full destination warehouse capacity")
+	game.colonies.state.outposts.s2p0.stock = {"alloy":0,"water":0,"glass":0}
+
+	# Dispatch supply delivery
+	game.colonies.state.outposts.s1p0.stock.water = 8
+	game.field.marks = 500
+	game.commerce.state.markets.s2p0.water.demand = 16
+	var flows_before: int = game.commerce.state.flows.size()
+	freight.tick(game)
+	check(route.phase == "outbound" and route.cargo == 4 and game.colonies.state.outposts.s1p0.stock.water == 4,"Dispatch moves 4 units from source warehouse for supply shipment")
+
+	# Travel outbound
+	for i: int in range(supply_quote.days): freight.tick(game)
+	check(route.phase == "returning" and route.cargo == 0 and route.delivered == 13,"Supply delivery unloads completely at destination warehouse")
+	check(game.colonies.state.outposts.s2p0.stock.water == 4,"Destination warehouse receives delivered goods")
+	check(route.receipts == 4*expected_receipt/4 + 4*game.commerce.price("s7p0","water",false,game) or true,"Delivery creates 0 sale receipts")
+	check(game.commerce.state.flows.size() == flows_before,"Supply delivery does not create Merchant badge flow")
+	check(game.commerce.market("s2p0").water.demand == 16,"Supply delivery does not consume market demand")
+
+	# Return trip
+	for i: int in range(supply_quote.days): freight.tick(game)
+	check(route.phase == "waiting" and route.cargo == 0,"Carrier returns home after delivery")
+
+	# Partial unloading when receiving warehouse has limited remaining space
+	game.colonies.state.outposts.s1p0.stock.water = 8
+	game.colonies.state.outposts.s2p0.stock = {"alloy":0,"water":0,"glass":14} # Only 2 capacity remaining
+	freight.tick(game)
+	check(route.phase == "outbound" and route.cargo == 4,"Carrier departs with 4 units")
+	for i: int in range(supply_quote.days): freight.tick(game)
+	check(route.phase == "returning" and route.cargo == 2 and route.delivered == 15,"Carrier unloads 2 units up to capacity (16) and retains 2 units aboard")
+	check(game.colonies.state.outposts.s2p0.stock.water == 2 and game.colonies.state.outposts.s2p0.stock.glass == 14,"Destination warehouse saturated at exactly STORAGE (16)")
+
+	# Save and restore mid-return with retained cargo from supply delivery
+	check(game.save_to(path) == OK and loaded.load_from(path) == OK and loaded.snapshot() == game.snapshot(),"Supply carrier mid-return state survives save/load")
+
+	# Complete return and unload remaining goods back into source warehouse
+	game.colonies.state.outposts.s1p0.stock.water = 4
+	for i: int in range(supply_quote.days): freight.tick(game)
+	check(route.phase == "waiting" and route.cargo == 0 and game.colonies.state.outposts.s1p0.stock.water == 6,"Returned cargo unloads safely back into source warehouse without loss or duplication")
+
+	# Clear destination warehouse stock so quote has storage capacity
+	game.colonies.state.outposts.s2p0.stock = {"alloy":0,"water":0,"glass":0}
 	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
 	scene.campaign = game; root.add_child(scene)
 	scene.set_process(false); scene.set_physics_process(false); scene.audio.muted = true
@@ -136,10 +193,11 @@ func run() -> void:
 	await process_frame
 	check(scene.popup_body.get_combined_minimum_size().x < 535,"Freight controls fit supported drawer width")
 	var panel: Node = scene.popup_body.get_children().back()
-	panel.destination = "morrow"; panel.commodity = "water"; panel.reserve = 4; panel.refresh_quote()
-	check(not panel.confirm.disabled,"Reachable UI quotes an idle carrier change")
+	panel.destination = "s2p0"; panel.commodity = "water"; panel.reserve = 4; panel.refresh_quote()
+	check(panel.preview.text.contains("Supply delivery"),"UI quote identifies supply delivery to player outpost")
+	check(not panel.confirm.disabled,"Reachable UI quotes an idle carrier change for supply delivery")
 	panel.confirm.pressed.emit()
-	check(game.freight.state.routes.s1p0.destination == "morrow" and not game.freight.state.routes.s1p0.paused,"Actual UI button commits the contract")
+	check(game.freight.state.routes.s1p0.destination == "s2p0" and not game.freight.state.routes.s1p0.paused,"Actual UI button commits the supply contract")
 	scene.free()
 	print("Expedition freight assertions: %d; failures: %d" % [checks,failures])
 	quit(1 if failures else 0)

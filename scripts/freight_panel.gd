@@ -71,7 +71,14 @@ func rebuild() -> void:
 			recall.disabled = locked
 			recall.tooltip_text = UI.tooltip("Reverse the current journey without selling and pause future departures. Closed transit borders can still hold the carrier. Prepaid transport is not refunded.")
 		if route.phase != "waiting" or route.cargo > 0:
-			copy("%s · keeping %d units locally\nBuyer demand: %d units" % [campaign.commerce.catalog.goods[route.item].name,route.reserve,campaign.commerce.market(route.destination)[route.item].demand])
+			var is_supply_active: bool = campaign.colonies.state.outposts.has(route.destination) and campaign.sector.state.colonies.has(route.destination)
+			if is_supply_active:
+				var dest_wh: Dictionary = campaign.colonies.state.outposts[route.destination].stock
+				var dest_stored: int = 0
+				for amount: int in dest_wh.values(): dest_stored += amount
+				copy("%s · keeping %d units locally\nDestination warehouse: %d / %d storage" % [campaign.commerce.catalog.goods[route.item].name,route.reserve,dest_stored,campaign.colonies.STORAGE])
+			else:
+				copy("%s · keeping %d units locally\nBuyer demand: %d units" % [campaign.commerce.catalog.goods[route.item].name,route.reserve,campaign.commerce.market(route.destination)[route.item].demand])
 			copy("The contract can be changed after the carrier returns and unloads. One colony day is 30 active seconds.")
 			return
 	var destinations: Dictionary = {}
@@ -94,11 +101,18 @@ func rebuild() -> void:
 func refresh_quote() -> void:
 	var offer: Dictionary = campaign.freight.quote(campaign,source,destination,commodity,reserve)
 	var available: int = campaign.colonies.state.outposts[source].stock[commodity]
-	preview.text = "Warehouse: %d · departure needs %d\n%d days each way · %d Marks round-trip transport\nCurrent full-load sale: %d Marks · %d after transport" % [available,reserve+4,offer.days,offer.fee,offer.gross,offer.net]
+	var is_supply: bool = campaign.colonies.state.outposts.has(destination) and campaign.sector.state.colonies.has(destination)
+	if is_supply:
+		var dest_wh: Dictionary = campaign.colonies.state.outposts[destination].stock
+		var dest_stored: int = 0
+		for amount: int in dest_wh.values(): dest_stored += amount
+		preview.text = "Warehouse: %d · departure needs %d\n%d days each way · %d Marks round-trip transport\nSupply delivery · destination storage: %d / %d" % [available,reserve+4,offer.days,offer.fee,dest_stored,campaign.colonies.STORAGE]
+	else:
+		preview.text = "Warehouse: %d · departure needs %d\n%d days each way · %d Marks round-trip transport\nCurrent full-load sale: %d Marks · %d after transport" % [available,reserve+4,offer.days,offer.fee,offer.gross,offer.net]
 	if not offer.reason.is_empty(): preview.text += "\n"+offer.reason
 	confirm.text = "Charter carrier · 80 Marks" if offer.charter > 0 else "Apply contract"
 	confirm.disabled = locked or not offer.reason.is_empty()
-	confirm.tooltip_text = UI.tooltip("Resume flight before issuing orders." if locked else offer.reason if confirm.disabled else "Reserve stock stays in the warehouse. Transport is prepaid at dispatch; sale price and demand are checked on arrival. Net quote excludes facility operating costs and the initial charter. Unsold goods return. One colony day is 30 active seconds.")
+	confirm.tooltip_text = UI.tooltip("Resume flight before issuing orders." if locked else offer.reason if confirm.disabled else "Reserve stock stays in the warehouse. Transport is prepaid at dispatch; inter-colony supply transfers generate 0 sale receipts. Net quote excludes facility operating costs and the initial charter. Unsold goods return. One colony day is 30 active seconds." if is_supply else "Reserve stock stays in the warehouse. Transport is prepaid at dispatch; sale price and demand are checked on arrival. Net quote excludes facility operating costs and the initial charter. Unsold goods return. One colony day is 30 active seconds.")
 func finish(error: String) -> void:
 	feedback = error if not error.is_empty() else "Freight orders updated."
 	if error.is_empty(): committed.emit()

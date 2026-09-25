@@ -28,9 +28,21 @@ func quote(game: RefCounted, source: String, destination: String, item: String, 
 	var links: int = maxi(1,result.path.size()-1)
 	result.days = links*DAYS_PER_LINK
 	result.fee = links*4
-	result.gross = game.commerce.price(destination,item,false,game)*CAPACITY
-	result.net = result.gross-result.fee
-	result.reason = market_access(game,destination)
+	var is_supply: bool = game.colonies.state.outposts.has(destination) and game.sector.state.colonies.has(destination)
+	if is_supply:
+		result.gross = 0
+		result.net = -result.fee
+		result.reason = market_access(game,destination)
+		if result.reason.is_empty():
+			var dest_wh: Dictionary = game.colonies.state.outposts[destination].stock
+			var dest_stored: int = 0
+			for amount: int in dest_wh.values(): dest_stored += amount
+			if dest_stored >= game.colonies.STORAGE:
+				result.reason = "Destination warehouse has no storage capacity."
+	else:
+		result.gross = game.commerce.price(destination,item,false,game)*CAPACITY
+		result.net = result.gross-result.fee
+		result.reason = market_access(game,destination)
 	if result.path.is_empty(): result.reason = "No charted, accessible freight route."
 	elif links > 5: result.reason = "Beyond this carrier's five-link range."
 	elif game.field.marks < result.charter: result.reason = "Chartering a carrier costs 80 Marks."
@@ -42,7 +54,9 @@ func configure(game: RefCounted, source: String, destination: String, item: Stri
 	var previous: Dictionary = state.routes.get(source,{})
 	game.field.marks -= offer.charter
 	state.routes[source] = {"destination":destination,"item":item,"reserve":reserve,"paused":false,"phase":"waiting","cargo":0,"remaining":0,"duration":0,"path":[],"status":"Waiting for warehouse surplus", "delivered":previous.get("delivered",0),"receipts":previous.get("receipts",0),"fees":previous.get("fees",0),"trips":previous.get("trips",0)}
-	game.diplomacy.record(game,"trade","%s freight contract: %s to %s." % [Geography.definition(source).name,game.commerce.catalog.goods[item].name,Geography.definition(destination).name],"",{"source":source,"destination":destination,"item":item,"reserve":reserve,"charter":offer.charter})
+	var is_supply: bool = game.colonies.state.outposts.has(destination) and game.sector.state.colonies.has(destination)
+	var event_text: String = "%s freight contract: supply %s to %s." % [Geography.definition(source).name,game.commerce.catalog.goods[item].name,Geography.definition(destination).name] if is_supply else "%s freight contract: %s to %s." % [Geography.definition(source).name,game.commerce.catalog.goods[item].name,Geography.definition(destination).name]
+	game.diplomacy.record(game,"colonies" if is_supply else "trade",event_text,"",{"source":source,"destination":destination,"item":item,"reserve":reserve,"charter":offer.charter,"supply":is_supply})
 	return ""
 
 func pause(game: RefCounted, source: String) -> String:
@@ -96,22 +110,37 @@ func tick(game: RefCounted) -> void:
 				continue
 			if route.phase == "outbound":
 				var blocked: String = market_access(game,route.destination)
-				var sold: int = 0
-				var receipts: int = 0
-				if blocked.is_empty():
-					var market: Dictionary = game.commerce.market(route.destination)
-					sold = mini(route.cargo,market[route.item].demand)
-					market[route.item].demand -= sold
-					game.commerce.state.markets[route.destination] = market
-					receipts = sold*game.commerce.price(route.destination,route.item,false,game)
-					route.cargo -= sold; route.delivered += sold; route.receipts += receipts
-					_money(game,source,receipts,0)
-					var flow: String = source+">"+route.destination+":"+route.item
-					if sold > 0 and flow not in game.commerce.state.flows: game.commerce.state.flows.append(flow)
-					game.commerce.update_badges(game)
-				var owner: String = game.owner_of(route.destination)
-				var cause: int = game.diplomacy.state.keys.get("pact:"+owner+":trade",0) if sold > 0 and owner+":trade" in game.sector.state.agreements else 0
-				game.diplomacy.record(game,"trade","Freighter sold %d %s at %s for %d Marks; %d units returning." % [sold,game.commerce.catalog.goods[route.item].name,Geography.definition(route.destination).name,receipts,route.cargo],owner,{"source":source,"destination":route.destination,"item":route.item,"sold":sold,"receipts":receipts,"unsold":route.cargo,"reason":blocked},cause)
+				var is_supply: bool = game.colonies.state.outposts.has(route.destination) and game.sector.state.colonies.has(route.destination)
+				if is_supply:
+					var delivered: int = 0
+					if blocked.is_empty():
+						var dest_wh: Dictionary = game.colonies.state.outposts[route.destination].stock
+						var dest_stored: int = 0
+						for amount: int in dest_wh.values(): dest_stored += amount
+						var space: int = maxi(0,game.colonies.STORAGE-dest_stored)
+						delivered = mini(route.cargo,space)
+						dest_wh[route.item] += delivered
+						route.cargo -= delivered
+						route.delivered += delivered
+					var owner: String = game.owner_of(route.destination)
+					game.diplomacy.record(game,"colonies","Freighter delivered %d %s to %s warehouse; %d units returning." % [delivered,game.commerce.catalog.goods[route.item].name,Geography.definition(route.destination).name,route.cargo],owner,{"source":source,"destination":route.destination,"item":route.item,"delivered":delivered,"cargo":route.cargo,"reason":blocked,"supply":true})
+				else:
+					var sold: int = 0
+					var receipts: int = 0
+					if blocked.is_empty():
+						var market: Dictionary = game.commerce.market(route.destination)
+						sold = mini(route.cargo,market[route.item].demand)
+						market[route.item].demand -= sold
+						game.commerce.state.markets[route.destination] = market
+						receipts = sold*game.commerce.price(route.destination,route.item,false,game)
+						route.cargo -= sold; route.delivered += sold; route.receipts += receipts
+						_money(game,source,receipts,0)
+						var flow: String = source+">"+route.destination+":"+route.item
+						if sold > 0 and flow not in game.commerce.state.flows: game.commerce.state.flows.append(flow)
+						game.commerce.update_badges(game)
+					var owner: String = game.owner_of(route.destination)
+					var cause: int = game.diplomacy.state.keys.get("pact:"+owner+":trade",0) if sold > 0 and owner+":trade" in game.sector.state.agreements else 0
+					game.diplomacy.record(game,"trade","Freighter sold %d %s at %s for %d Marks; %d units returning." % [sold,game.commerce.catalog.goods[route.item].name,Geography.definition(route.destination).name,receipts,route.cargo],owner,{"source":source,"destination":route.destination,"item":route.item,"sold":sold,"receipts":receipts,"unsold":route.cargo,"reason":blocked},cause)
 				route.phase = "returning"; route.remaining = route.duration; route.path.reverse()
 				route.status = "Returning · %d days" % route.remaining
 				continue
@@ -127,7 +156,8 @@ func tick(game: RefCounted) -> void:
 		if warehouse[route.item] < CAPACITY+route.reserve: route.status = "Waiting for %d units above reserve %d" % [CAPACITY,route.reserve]; continue
 		var offer: Dictionary = quote(game,source,route.destination,route.item,route.reserve)
 		if not offer.reason.is_empty(): _status(game,source,"Blocked · "+offer.reason); continue
-		if game.commerce.market(route.destination)[route.item].demand < CAPACITY: route.status = "Waiting for destination demand"; continue
+		var is_supply: bool = game.colonies.state.outposts.has(route.destination) and game.sector.state.colonies.has(route.destination)
+		if not is_supply and game.commerce.market(route.destination)[route.item].demand < CAPACITY: route.status = "Waiting for destination demand"; continue
 		if game.field.marks < offer.fee: route.status = "Waiting for %d transport Marks" % offer.fee; continue
 		warehouse[route.item] -= CAPACITY
 		route.cargo = CAPACITY; route.phase = "outbound"; route.path = offer.path
