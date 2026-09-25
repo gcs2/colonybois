@@ -4,7 +4,7 @@
 
 The player rejected the first cast board: it felt too close to familiar armored grand-strategy aliens. The board is archived locally under ignored artifacts and is excluded from the repository. It is not approved art.
 
-The new target is a love note to Spore's space stage: full-body, expressive, anatomically odd creatures; playful miniature worlds; colorful spacecraft; and unsettling details within an affectionate, funny world. No creature creator is in MVP scope.
+The new target is a love note to Spore's space stage: full-body, expressive, anatomically odd creatures; playful miniature worlds; colorful spacecraft; and unsettling details within an affectionate, funny world. No creature creator is in MVP scope. The user-approved Morrow and galaxy visual references are indexed in the [visual canon home](../../art/visual-canon/README.md).
 
 ## Research
 

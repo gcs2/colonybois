@@ -28,7 +28,7 @@ Classification rule: use the document's primary decision purpose. A feature chec
 | What story is currently endorsed? | [Current story](direction/STORY_CURRENT.md) | Older foundation/explorations are historical; a mandatory city-first opening is deferred. |
 | What was implemented and checked? | Relevant [system checkpoint](systems/README.md) | Read its date and limits; tests do not establish fun or final quality. |
 | How do we report status? | [Check-in contract](delivery/GOAL_AND_CHECKINS.md) | TSV estimates and dated reports are supporting research, not another queue. |
-| What visual behavior is required? | [Interface contract](reviews/SPORE_INTERFACE_CONTRACT.md), amended by [view review register](reviews/VIEW_MOCK_COVERAGE.md) | Field Instruments is selected. Prompt records and generated images are candidates. |
+| What visual behavior is required? | [Interface contract](reviews/SPORE_INTERFACE_CONTRACT.md), amended by [view review register](reviews/VIEW_MOCK_COVERAGE.md); user-approved targets and exact prompts are in the [visual canon home](../art/visual-canon/README.md). | Field Instruments is selected. Prompt records and generated images outside that canon are candidates. |
 | What is the current character decision? | [Character scope](art/CHARACTER_SCOPE_OPTIONS.md) | [Modeling postmortem](reviews/MODELING_POSTMORTEM_2026-09-24.md): production stopped; prototypes failed the art gate. |
 | How complete is our source understanding? | [Reference measurement contract](research/REFERENCE_COVERAGE_METRICS.md) | [Generated evidence report](parity/EXPERIENCE_REPORT.md); coverage is not parity. |
 

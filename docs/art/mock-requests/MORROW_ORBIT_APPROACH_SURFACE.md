@@ -4,7 +4,7 @@
 
 **Player activity:** Fly, navigate, discover and approach Morrow as one continuing expedition with the same scout, route, equipment and campaign state.
 
-**Status:** The user authorized a designer agent to generate proposals on 25 September 2026. Nothing is accepted yet.
+**Status:** The user approved the Morrow surface target and v2 orbital gameplay, solar-system map, and approach/arrival images on 25 September 2026. Their original 1672 × 941 files are canon; do not regenerate them for critic-requested size/ship revisions. The user also asked to include the earlier galaxy-scale view as a supporting reference. See the single tracked [visual canon home](../../../art/visual-canon/README.md).
 
 ## Wider project context
 
@@ -13,6 +13,7 @@ Read [production goal](../../PRODUCTION_GOAL.md), [Space Stage target](../../dir
 ## Ground-truth references
 
 - **Selected target:** [Morrow surface populated v3](../../../artifacts/field-instruments-review/01-surface-populated-v3.png). Byte-identical to the image the user pinned on 25 September 2026; SHA-256 2E57DBE16817150BAA831B7C889F3E238352F44D00030457D3A4867A604E42C2. This sets the environment, broad world-to-ship scale and surface HUD.
+- **Earlier galaxy reference:** [Galaxy local v2](../../../art/visual-canon/galaxy-view-reference.png), included at the user's request as a supporting scale/composition reference.
 - [Surface v1](../../../artifacts/field-instruments-review/01-surface-v1.png) and [surface v2](../../../artifacts/field-instruments-review/01-surface-populated-v2.png): progression only.
 - [Orbit v1](../../../artifacts/field-instruments-review/03-orbit-v1.png): candidate composition, camera/HUD not approved.
 - [System v1](../../../artifacts/field-instruments-review/04-system-v1.png): candidate solar-system map study.
@@ -49,4 +50,4 @@ Use the selected Morrow screenshot as exact environment/HUD target. Create one 1
 
 ## Review gate
 
-All generated images remain proposals until the user accepts them. One independent critic pass may guide a revision. Match accepted states with inspected Spore evidence and runtime views before closing R01/V01/V04. Mocks do not prove continuity, motion, input, timing, sound, fun or performance.
+The user approved the selected surface and exact v2 orbital/system/approach stills on 25 September; approval and prompt provenance are in the tracked visual canon home. Use accepted images as implementation targets. Continue matching inspected Spore evidence and runtime states, including before/during/after approach and scale transitions. Static mock approval is not proof of source behavior, motion, input, sound, live art quality, performance, fun or full state coverage.
