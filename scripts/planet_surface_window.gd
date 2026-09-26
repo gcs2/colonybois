@@ -32,19 +32,19 @@ const _HABITAT_ROLES_BY_BIOME: Dictionary = {
 	"forest": ["thicket", "grove", "clearing"]
 }
 const _HABITAT_PROFILES: Dictionary = {
-	"shoal": {"counts": [[0, 1], [1, 3], [0, 1], [1, 1]], "spread": 0.12},
-	"shelf": {"counts": [[0, 1], [2, 4], [0, 1], [1, 1]], "spread": 0.09},
-	"icefield": {"counts": [[1, 3], [1, 3], [0, 2], [1, 1]], "spread": 0.14},
-	"refuge": {"counts": [[2, 4], [1, 2], [2, 3], [1, 2]], "spread": 0.12},
-	"scree": {"counts": [[0, 1], [3, 5], [0, 1], [1, 1]], "spread": 0.08},
-	"alpine": {"counts": [[2, 4], [1, 3], [1, 3], [1, 1]], "spread": 0.13},
-	"scrub": {"counts": [[1, 3], [1, 2], [3, 5], [1, 2]], "spread": 0.12},
-	"sparse": {"counts": [[1, 2], [1, 2], [1, 2], [1, 1]], "spread": 0.17},
-	"meadow": {"counts": [[2, 4], [1, 2], [2, 4], [1, 3]], "spread": 0.16},
-	"grove": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.11},
-	"outcrop": {"counts": [[1, 2], [3, 5], [1, 2], [1, 1]], "spread": 0.09},
-	"thicket": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.10},
-	"clearing": {"counts": [[2, 4], [1, 2], [1, 3], [2, 3]], "spread": 0.15}
+	"shoal": {"counts": [[0, 1], [1, 3], [0, 1], [1, 1]], "spread": 0.12, "rock_scale": 1.4, "flora_scale": 1.1, "fauna_scale": 1.45},
+	"shelf": {"counts": [[0, 1], [2, 4], [0, 1], [1, 1]], "spread": 0.09, "rock_scale": 1.75, "flora_scale": 1.1, "fauna_scale": 1.35},
+	"icefield": {"counts": [[1, 3], [1, 3], [0, 2], [1, 1]], "spread": 0.14, "rock_scale": 1.5, "flora_scale": 1.2, "fauna_scale": 1.5},
+	"refuge": {"counts": [[2, 4], [1, 2], [2, 3], [1, 2]], "spread": 0.12, "rock_scale": 1.3, "flora_scale": 1.9, "fauna_scale": 1.5},
+	"scree": {"counts": [[0, 1], [3, 5], [0, 1], [1, 1]], "spread": 0.08, "rock_scale": 2.25, "flora_scale": 1.1, "fauna_scale": 1.25},
+	"alpine": {"counts": [[2, 4], [1, 3], [1, 3], [1, 1]], "spread": 0.13, "rock_scale": 1.7, "flora_scale": 1.55, "fauna_scale": 1.45},
+	"scrub": {"counts": [[1, 3], [1, 2], [3, 5], [1, 2]], "spread": 0.12, "rock_scale": 1.45, "flora_scale": 1.6, "fauna_scale": 1.45},
+	"sparse": {"counts": [[1, 2], [1, 2], [1, 2], [1, 1]], "spread": 0.17, "rock_scale": 1.35, "flora_scale": 1.3, "fauna_scale": 1.35},
+	"meadow": {"counts": [[2, 4], [1, 2], [2, 4], [1, 3]], "spread": 0.16, "rock_scale": 1.2, "flora_scale": 1.75, "fauna_scale": 1.6},
+	"grove": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.11, "rock_scale": 1.25, "flora_scale": 2.0, "fauna_scale": 1.55},
+	"outcrop": {"counts": [[1, 2], [3, 5], [1, 2], [1, 1]], "spread": 0.09, "rock_scale": 2.0, "flora_scale": 1.25, "fauna_scale": 1.3},
+	"thicket": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.10, "rock_scale": 1.3, "flora_scale": 2.05, "fauna_scale": 1.55},
+	"clearing": {"counts": [[2, 4], [1, 2], [1, 3], [2, 3]], "spread": 0.15, "rock_scale": 1.25, "flora_scale": 1.45, "fauna_scale": 1.75}
 }
 
 ## Returns nearest deterministic region and feature records in one tangent frame.

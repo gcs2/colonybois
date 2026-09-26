@@ -4,6 +4,7 @@ signal leave
 var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
 const SectorChart = preload("res://scripts/sector_chart.gd")
+const SurfaceWindow = preload("res://scripts/planet_surface_window.gd")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
@@ -726,7 +727,7 @@ func _surface_feature_sets(center_up: Vector3 = Vector3.ZERO) -> Dictionary:
 		if model.state.surface_changes.has(str(feature.id)): continue
 		var position: Vector2 = runtime.local_offset(anchor,feature.up)
 		if kind in ["rock","flora","fauna"] and position.distance_to(query_position) < nearfield_radius: continue
-		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
+		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"habitat_role":feature.habitat_role,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
 	var habitat_window: Dictionary = runtime.habitat_window(query_center)
 	for feature: Dictionary in habitat_window.features:
 		var kind: String = str(feature.get("kind", ""))
@@ -734,7 +735,7 @@ func _surface_feature_sets(center_up: Vector3 = Vector3.ZERO) -> Dictionary:
 		if model.state.surface_changes.has(str(feature.id)): continue
 		var position: Vector2 = runtime.local_offset(anchor,feature.up)
 		if position.distance_to(query_position) < 8.0: continue
-		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
+		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"habitat_role":feature.habitat_role,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
 	return grouped
 
 func _make_regional_features() -> void:
@@ -758,7 +759,8 @@ func _make_regional_features() -> void:
 		for index: int in range(rocks.size()):
 			var feature: Dictionary = rocks[index]
 			var at: Vector2 = feature["position"]
-			var size: float = float(feature["size"])
+			var rock_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
+			var size: float = float(feature["size"])*float(rock_profile.get("rock_scale", 1.0))
 			var scale := Vector3(size*1.25,size*2.1,size*(0.78+float(int(feature["variant"])%3)*0.12))
 			multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y)-0.45,at.y)))
 			multimesh.set_instance_color(index,colors[int(feature["variant"])%colors.size()])
@@ -787,7 +789,9 @@ func _make_regional_features() -> void:
 			for index: int in range(shaped.size()):
 				var feature: Dictionary = shaped[index]
 				var at: Vector2 = feature.position
-				var scale := Vector3(float(feature.size)*1.5,float(feature.size)*1.55,float(feature.size)*1.5)
+				var flora_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
+				var silhouette_scale: float = float(flora_profile.get("flora_scale", 1.0))
+				var scale := Vector3(float(feature.size)*1.5*silhouette_scale,float(feature.size)*1.55*silhouette_scale,float(feature.size)*1.5*silhouette_scale)
 				flora_multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
 				flora_multimesh.set_instance_color(index,flora_colors[variant])
 			var flora_batch := MultiMeshInstance3D.new()
@@ -810,7 +814,8 @@ func _make_regional_features() -> void:
 		for index: int in range(shaped.size()):
 			var feature: Dictionary = shaped[index]
 			var at: Vector2 = feature.position
-			var size: float = float(feature.size)
+			var fauna_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
+			var size: float = float(feature.size)*float(fauna_profile.get("fauna_scale", 1.0))
 			animal_mesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(Vector3(size*1.6,size*1.2,size*1.6)),Vector3(at.x,terrain_height(at.x,at.y)+0.12,at.y)))
 			animal_mesh.set_instance_color(index,[Color("dba36c"),Color("83c5c0"),Color("c4b979")][variant])
 		var animal_material := StandardMaterial3D.new()
@@ -2116,18 +2121,18 @@ func _rebuild_surface_terrain(center_up: Vector3) -> void:
 					var absolute_z: float = pz+center_offset.y
 					h = terrain_height(absolute_x,absolute_z)
 					color = Geography.surface_color(world_definition,absolute_x,absolute_z)
-				var far_start: float = 260.0 if rendered_planet == "morrow" else Geography.surface_travel_radius(rendered_planet)+80.0
-				var far_blend: float = smoothstep(far_start,far_start+(560.0 if rendered_planet == "morrow" else 220.0),radial_distance)
+				var far_start: float = 240.0 if rendered_planet == "morrow" else Geography.surface_travel_radius(rendered_planet)+80.0
+				var far_blend: float = smoothstep(far_start,far_start+(210.0 if rendered_planet == "morrow" else 220.0),radial_distance)
 				var distant_height: float = _distant_landform(vertex_x+center_offset.x,vertex_z+center_offset.y) if rendered_planet == "morrow" else _distant_landform(px,pz)
 				if rendered_planet == "morrow":
 					# The distant shell is a stable visual continuation of the sampled
 					# recipe. Local gameplay height and its 1.2 km travel envelope stay exact.
-					distant_height += maxf(0.0,recipe_elevation)*24.0+recipe_ruggedness*32.0
+					distant_height += maxf(0.0,recipe_elevation)*30.0+recipe_ruggedness*42.0
 				h = lerpf(h,distant_height,far_blend)
 				var visual_radius: float = maxf(0.0,radial_distance-far_start)
 				h -= visual_radius*visual_radius/3200.0
 				if rendered_planet == "morrow":
-					color = color.darkened(0.11).lerp(Color("747a73"),far_blend*0.48)
+					color = color.darkened(0.11).lerp(Color("686c68"),far_blend*0.56)
 				surface.set_color(color)
 				surface.add_vertex(Vector3(vertex_x,h,vertex_z))
 	surface.generate_normals()
