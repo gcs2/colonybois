@@ -21,6 +21,18 @@ func click(chart: Control, id: String) -> void:
 	var event := InputEventMouseButton.new(); event.button_index = MOUSE_BUTTON_LEFT; event.pressed = true
 	event.position = chart.camera.unproject_position(chart.bodies[id].position); chart._view_input(event)
 func run() -> void:
+	var home := Session.new(); home.field.state.flight_mode = "orbit"; home.configure_flagship()
+	var home_chart := Chart.new(); root.add_child(home_chart); await process_frame
+	check(home_chart.present(home) and home_chart.bodies.size() == 3,"The Morrow system presents two planets and its moon as actual chart bodies")
+	check(home_chart.bodies.has_all(["morrow","s0p1","s0p2"]) and home_chart.bodies.s0p2.planet_definition.body_kind == "moon","Morrow's moon uses its own stable destination identity and body type")
+	check(is_equal_approx(home_chart.bodies.s0p2.position.distance_to(home_chart.bodies.morrow.position),Chart.MOON_ORBIT_RADIUS),"The moon follows a local orbit around Morrow inside the system map")
+	var local_offer: Dictionary = home.quote("s0p1")
+	check(local_offer.reason.is_empty() and home.begin_travel("s0p1").is_empty(),"A new Morrow-system planet accepts a real in-system departure")
+	for i: int in range(int(local_offer.seconds)): home.advance_travel()
+	check(home.field.state.planet_id == "s0p1" and home.worlds.has("morrow"),"In-system arrival preserves Morrow as a separate revisitable world")
+	var resumed := Session.new()
+	check(resumed.restore_snapshot(home.snapshot()) == OK and resumed.field.state.planet_id == "s0p1" and resumed.worlds.has("morrow"),"New local destination and return world survive campaign save restoration")
+	home_chart.free()
 	var game: RefCounted = pilot(); var chart := Chart.new(); root.add_child(chart); await process_frame
 	chart.travel_requested.connect(func(id: String) -> void: departures.append(id))
 	chart.sector_requested.connect(func() -> void: sectors += 1)
@@ -55,7 +67,7 @@ func run() -> void:
 	chart.target_distance = 19; chart.zoom(-1); check(returns == 2,"Inward zoom into the current planet returns to orbital flight")
 	chart.select_planet("s2p1"); chart.target_distance = 19; chart.zoom(-1)
 	check(departures.size() == 1,"Camera zoom alone cannot charge travel to a different planet")
-	chart.key(KEY_HOME); check(chart.target_distance == 78,"Home reframes all three planets")
+	chart.key(KEY_HOME); check(chart.target_distance == 110,"Home frames all three planets and the seeded asteroid belt")
 	var press_drag := InputEventMouseButton.new(); press_drag.button_index = MOUSE_BUTTON_RIGHT; press_drag.pressed = true; chart._view_input(press_drag)
 	var motion := InputEventMouseMotion.new(); motion.relative = Vector2(24,12); var yaw: float = chart.yaw; chart._view_input(motion)
 	check(chart.yaw != yaw,"Right-drag rotates the actual 3D system camera")

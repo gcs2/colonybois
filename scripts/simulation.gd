@@ -34,10 +34,15 @@ func new_game(seed_value: int = 2409, mode: String = "expedition") -> void:
 	for i: int in range(12):
 		var owner: String = ["directorate","consortium","commune"][i - 6] if i >= 6 and i <= 8 else ""
 		var system: Dictionary = {"id":"s%d" % i,"name":names[i],"x":positions[i][0],"z":positions[i][1],"links":[],"owner":owner,"visited":i == 0,"planets":[]}
-		for j: int in range(1 + i % 3):
+		var body_count: int = 3 if i == 0 else 1 + i % 3
+		for j: int in range(body_count):
 			var pid: String = "s%dp%d" % [i,j]
 			var env: String = ["temperate","frozen","arid"][(i + j) % 3]
-			state.planets[pid] = {"id":pid,"system":system.id,"name":"%s %s" % [names[i],["I","II","III"][j]],"environment":env,"owner":owner,"terraform":0.0,"project":false,"seed":seed_value + i * 101 + j * 37}
+			var planet_name: String = "%s %s" % [names[i],["I","II","III"][j]]
+			if i == 0:
+				planet_name = ["Morrow","Vesper","Morrow's Moon"][j]
+				env = ["temperate","arid","frozen"][j]
+			state.planets[pid] = {"id":pid,"system":system.id,"name":planet_name,"environment":env,"owner":owner,"terraform":0.0,"project":false,"seed":seed_value + i * 101 + j * 37}
 			system.planets.append(pid)
 		state.systems.append(system)
 	for edge: Array in edges:

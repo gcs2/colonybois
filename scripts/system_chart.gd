@@ -16,6 +16,8 @@ const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const ORBIT_BASE_RADIUS: float = 22.0
 const ORBIT_SPACING: float = 17.0
+const MOON_ORBIT_RADIUS: float = 7.0
+const ASTEROID_BELT_WIDTH: float = 8.0
 class RouteOverlay extends Control:
 	var origin: Vector2 = Vector2.ZERO
 	var destination: Vector2 = Vector2.ZERO
@@ -45,6 +47,8 @@ var system_id: String = ""
 var selected_planet: String = ""
 var bodies: Dictionary = {}
 var captions: Dictionary = {}
+var moon_orbits: Array[Dictionary] = []
+var outer_extent: float = 0.0
 var world: Node3D
 var planets_root: Node3D
 var viewport: SubViewport
@@ -114,14 +118,14 @@ func _ready() -> void:
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(310,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
+	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(252,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
 	var card_style := StyleBoxFlat.new(); card_style.bg_color = Color(0.025,0.045,0.065,0.96); card_style.border_color = Color("c1a94d"); card_style.set_border_width_all(1); card_style.set_content_margin_all(12)
 	destination_card.add_theme_stylebox_override("panel",card_style)
 	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",8); destination_card.add_child(card)
-	details = text_label(""); details.custom_minimum_size = Vector2(280,100); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	details = text_label(""); details.custom_minimum_size = Vector2(220,78); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,card)
-	travel.custom_minimum_size = Vector2(280,44)
-	status = text_label("",15); status.custom_minimum_size = Vector2(280,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	travel.custom_minimum_size = Vector2(220,44)
+	status = text_label("",15); status.custom_minimum_size = Vector2(220,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
 	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(280,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
 		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
@@ -221,7 +225,7 @@ func add_starfield() -> void:
 	var stars := MultiMeshInstance3D.new(); var field := MultiMesh.new()
 	field.transform_format = MultiMesh.TRANSFORM_3D; field.use_colors = true
 	var speck := SphereMesh.new(); speck.radius = 0.25; speck.height = 0.5; speck.radial_segments = 8; speck.rings = 4
-	field.mesh = speck; field.instance_count = 280
+	field.mesh = speck; field.instance_count = 680
 	var rng := RandomNumberGenerator.new(); rng.seed = 271828
 	for i: int in range(field.instance_count):
 		var direction := Vector3(rng.randf_range(-1,1),rng.randf_range(-1,1),rng.randf_range(-1,1)).normalized()
@@ -241,35 +245,80 @@ func present(game: RefCounted, id: String = "") -> bool:
 		system_id = target; build_system(system); reset_camera()
 	selected_planet = game.field.state.planet_id if bodies.has(game.field.state.planet_id) else str(bodies.keys()[0])
 	if game.traveling() and bodies.has(game.sector.state.flagship.target_planet): selected_planet = game.sector.state.flagship.target_planet
-	heading.text = system.name.to_upper()+" / SYSTEM"
+	heading.text = "MORROW SYSTEM" if target == "s0" else system.name.to_upper()+" / SYSTEM"
 	show(); refresh(); return true
 func build_system(system: Dictionary) -> void:
 	for child: Node in planets_root.get_children(): child.free()
 	for caption: Node in captions.values(): caption.free()
-	bodies.clear(); captions.clear()
+	bodies.clear(); captions.clear(); moon_orbits.clear()
+	var planet_index: int = 0
 	for i: int in range(system.planets.size()):
-		var id: String = Session.local_id(system.planets[i]); var radius: float = orbital_radius(i)
+		var id: String = Session.local_id(system.planets[i])
+		var definition: Dictionary = Geography.definition(id)
+		var is_moon: bool = definition.get("body_kind", "planet") == "moon"
+		var orbit_radius: float = MOON_ORBIT_RADIUS if is_moon else orbital_radius(planet_index)
 		var orbit := MeshInstance3D.new(); var path := ImmediateMesh.new()
 		path.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
-		for j: int in range(129): path.surface_add_vertex(Vector3(cos(TAU*j/128)*radius,0,sin(TAU*j/128)*radius))
+		for j: int in range(129): path.surface_add_vertex(Vector3(cos(TAU*j/128)*orbit_radius,0,sin(TAU*j/128)*orbit_radius))
 		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("40505d")); planets_root.add_child(orbit)
-		var globe := Globe.new(); globe.radius = 4.6+float(i%2)*0.5; globe.planet_definition = Geography.definition(id); planets_root.add_child(globe)
+		if is_moon:
+			var parent_id: String = Session.local_id(str(definition.get("parent_id", "")))
+			moon_orbits.append({"node":orbit,"parent":parent_id})
+		else:
+			planet_index += 1
+		var globe := Globe.new(); globe.radius = 2.6 if is_moon else 4.6+float((planet_index-1)%2)*0.5; globe.planet_definition = definition; planets_root.add_child(globe)
 		bodies[id] = globe
 		var caption := text_label(globe.planet_definition.name,15); caption.add_theme_color_override("font_color",UI.PAPER); preview.add_child(caption); captions[id] = caption
 	update_bodies()
-func update_bodies() -> void:
-	var index: int = 0
+	outer_extent = orbital_radius(maxi(0,planet_index-1))
 	for id: String in bodies:
-		var angle: float = float(system_id.trim_prefix("s").to_int())*0.61+index*2.35+0.45
-		bodies[id].position = Vector3(cos(angle),0,sin(angle))*orbital_radius(index)
-		index += 1
+		var definition: Dictionary = bodies[id].planet_definition
+		if definition.get("body_kind", "planet") != "moon": continue
+		var parent_id: String = Session.local_id(str(definition.get("parent_id", "")))
+		if bodies.has(parent_id): outer_extent = maxf(outer_extent,bodies[parent_id].position.length()+MOON_ORBIT_RADIUS)
+	outer_extent = maxf(outer_extent,add_asteroid_belt(planet_index,system_id.trim_prefix("s").to_int()))
+func update_bodies() -> void:
+	var planet_index: int = 0
+	for id: String in bodies:
+		var definition: Dictionary = bodies[id].planet_definition
+		if definition.get("body_kind", "planet") == "moon":
+			var parent_id: String = Session.local_id(str(definition.get("parent_id", "")))
+			if bodies.has(parent_id):
+				var moon_angle: float = float(system_id.trim_prefix("s").to_int())*0.61+float(planet_index)*2.35+1.35
+				bodies[id].position = bodies[parent_id].position+Vector3(cos(moon_angle),0,sin(moon_angle))*MOON_ORBIT_RADIUS
+		else:
+			var angle: float = float(system_id.trim_prefix("s").to_int())*0.61+planet_index*2.35+0.45
+			bodies[id].position = Vector3(cos(angle),0,sin(angle))*orbital_radius(planet_index)
+			planet_index += 1
+	for moon_orbit: Dictionary in moon_orbits:
+		var parent_id: String = str(moon_orbit.parent)
+		if bodies.has(parent_id): moon_orbit.node.position = bodies[parent_id].position
 
 func orbital_radius(index: int) -> float:
 	return ORBIT_BASE_RADIUS+float(index)*ORBIT_SPACING
 
+func add_asteroid_belt(planet_count: int, system_number: int) -> float:
+	var belt_inner: float = orbital_radius(maxi(0,planet_count-1))+10.0
+	var belt_outer: float = belt_inner+ASTEROID_BELT_WIDTH
+	var field := MultiMesh.new(); field.transform_format = MultiMesh.TRANSFORM_3D; field.use_colors = true
+	var rock := SphereMesh.new(); rock.radius = 0.72; rock.height = 1.44; rock.radial_segments = 7; rock.rings = 4
+	field.mesh = rock; field.instance_count = 240
+	var rng := RandomNumberGenerator.new(); rng.seed = 271828+system_number*9973
+	for i: int in range(field.instance_count):
+		var angle: float = rng.randf_range(0,TAU)
+		var radius: float = rng.randf_range(belt_inner,belt_outer)
+		var scale: Vector3 = Vector3.ONE*rng.randf_range(0.22,0.78)
+		var position := Vector3(cos(angle)*radius,rng.randf_range(-2.8,2.8),sin(angle)*radius)
+		var rotation := Vector3(rng.randf_range(0,TAU),rng.randf_range(0,TAU),rng.randf_range(0,TAU))
+		field.set_instance_transform(i,Transform3D(Basis.from_euler(rotation).scaled(scale),position))
+		field.set_instance_color(i,Color("77736f").lerp(Color("ba9e7b"),rng.randf_range(0.0,0.8)))
+	var belt := MultiMeshInstance3D.new(); belt.multimesh = field
+	var material := StandardMaterial3D.new(); material.roughness = 0.95; material.vertex_color_use_as_albedo = true
+	belt.material_override = material; planets_root.add_child(belt)
+	return belt_outer
+
 func reset_camera() -> void:
-	var outer_orbit: float = orbital_radius(maxi(0,bodies.size()-1))
-	yaw = 0.15; pitch = 0.75; distance = outer_orbit+22.0; target_distance = distance; focus = Vector3.ZERO; update_camera()
+	yaw = 0.15; pitch = 0.75; distance = outer_extent+36.0; target_distance = distance; focus = Vector3.ZERO; update_camera()
 func update_camera() -> void:
 	camera.position = focus+Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.look_at(focus)
@@ -306,6 +355,10 @@ func refresh() -> void:
 		progress.value = 100*(1.0-float(ship.remaining)/maxf(1,ship.duration))
 		status.text = ("TRAVEL PAUSED" if locked else "IN TRANSIT")+" · %d seconds\nEscape: pause / save" % ship.remaining
 	selection.position = bodies[selected_planet].position
+	var selection_mesh: TorusMesh = selection.mesh as TorusMesh
+	var selection_radius: float = bodies[selected_planet].radius+1.1
+	selection_mesh.inner_radius = selection_radius
+	selection_mesh.outer_radius = selection_radius+0.2
 	for id: String in bodies:
 		bodies[id].set_climate(campaign.climate.world(id),campaign.climate.baseline(id),campaign.climate.state.worlds.has(id))
 		var visited: Dictionary = campaign.field.state if id == campaign.field.state.planet_id else campaign.worlds.get(id,{})
@@ -341,13 +394,18 @@ func update_target_overlay() -> void:
 		card_rect.position = destination_card.position
 	var pod_rect := Rect2(viewport_size.x-550,viewport_size.y-230,526,158)
 	if card_rect.intersects(pod_rect):
-		var alternate_x: float = center.x-radius-panel_width-18 if left > center.x else center.x+radius+18
-		destination_card.position.x = clampf(alternate_x,24,viewport_size.x-panel_width-24)
-		card_rect.position = destination_card.position
-		if card_rect.intersects(pod_rect):
-			destination_card.position.x = clampf(viewport_size.x-panel_width-568,24,viewport_size.x-panel_width-24)
+		var above_pod: float = pod_rect.position.y-panel_height-12
+		if above_pod >= 92:
+			destination_card.position.y = above_pod
 			card_rect.position = destination_card.position
-			if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-220,142,viewport_size.y-panel_height-92)
+		if card_rect.intersects(pod_rect):
+			var alternate_x: float = center.x-radius-panel_width-18 if left > center.x else center.x+radius+18
+			destination_card.position.x = clampf(alternate_x,24,viewport_size.x-panel_width-24)
+			card_rect.position = destination_card.position
+			if card_rect.intersects(pod_rect):
+				destination_card.position.x = clampf(viewport_size.x-panel_width-568,24,viewport_size.x-panel_width-24)
+				card_rect.position = destination_card.position
+				if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-220,142,viewport_size.y-panel_height-92)
 	var x0: float = center.x-radius; var x1: float = center.x+radius
 	var y0: float = center.y-radius; var y1: float = center.y+radius
 	var arm: float = 16; var thick: float = 2

@@ -24,9 +24,11 @@ During travel, Escape opens the pause/save menu. Opening a modal immediately blo
 - Twenty-four planets are orbital destinations; only Morrow, Nacre I and Kestrel I currently have playable surfaces. The view does not invent landing regions or known alien affiliations.
 - Camera movement is smooth within the chart, but scale changes still switch views. Seamless flight, broader planet access, signals, wormholes and the galactic core remain open. Existing art and sounds remain provisional.
 
+- **25 September home-system extension:** fresh campaigns include Morrow (morrow), Vesper (s0p1) and Morrow's Moon (s0p2). The Moon has its own stable destination identity and local orbit; existing travel/save paths handle it, and older saves with only Morrow remain valid. A seeded asteroid belt and denser star specks add system context. The current 1920×1080 capture shows all three bodies, but the inspection card still overlaps the Moon and the independent critic rejects the composition. Visual density and performance are not approved or measured.
+
 ## Evidence
 
-`tests/test_system_chart.gd` exercises 41 checks: real globe identities, survey/knowledge gates, read-only inspection, mouse destination requests, fuel refusal, left-handed controls, zoom boundaries, camera rotation, hidden rendering, shared-clock transit, immediate modal guards, save/load, actual scene arrival and surface-only local-chart restoration. It is part of `tools/Test.ps1`.
+tests/test_system_chart.gd now exercises 47 focused assertions: the prior chart/transit/save behaviors plus fresh Morrow-system body identities, local Moon orbit, actual travel to Vesper, preservation of Morrow, and snapshot restoration. The latest run passed with zero failures in 34.56 seconds. The current runtime capture and independent rejection are recorded in [VIEW_MOCK_COVERAGE.md](../reviews/VIEW_MOCK_COVERAGE.md); this test result does not establish visual approval or performance.
 
 `tests/review_system_chart.gd` renders actual overview, selection, transit and sector states at 1920×1080 and 2560×1440. It controls focus-loss pause in the fixture so captures actually exercise travel. Screenshots caught undersized buttons, overlapping captions and the misleading pause indicator; these were corrected. Render review does not prove native mouse feel, accessibility, performance on other PCs or player art approval.
 

@@ -135,13 +135,25 @@ static func sector_definition(id: String) -> Dictionary:
 	if found == null: return {}
 	var system: int = int(found.get_string(1))
 	var planet: int = int(found.get_string(2))
-	if system >= preload("res://scripts/galaxy_catalog.gd").COUNT or planet >= 1+system%3 or system == 0: return {}
+	if system >= preload("res://scripts/galaxy_catalog.gd").COUNT or (system == 0 and planet == 0): return {}
+	var body_count: int = 3 if system == 0 else 1+system%3
+	if planet >= body_count: return {}
 	var names: Array = ["Solace","Nacre","Kestrel","Ilyr","Meridian","Aster","Veyr","Orin","Lumen","Thalen","Cinder","Far Reach"]
 	var sites: Array = []
+	var body_name: String = (names[system] if system < 12 else preload("res://scripts/galaxy_catalog.gd").generated_name(system))+" "+["I","II","III"][planet]
+	var archetype: String = ["temperate","frozen","arid"][(system+planet)%3]
+	var body_kind: String = "planet"
+	var parent_id: String = ""
+	if system == 0:
+		body_name = "Vesper" if planet == 1 else "Morrow's Moon"
+		archetype = "arid" if planet == 1 else "frozen"
+		if planet == 2:
+			body_kind = "moon"
+			parent_id = "morrow"
 	if id in ["s1p0","s2p0"]:
 		sites.append({"id":id+"_site","name":"Thawline" if id == "s1p0" else "Glass Basin","latitude":22.0 if id == "s1p0" else -18.0,"longitude":35.0 if id == "s1p0" else -42.0,"landable":true})
 	if preload("res://scripts/territory_catalog.gd").catalog.has(id):
 		sites.append({"id":id+"_site","name":preload("res://scripts/territory_catalog.gd").catalog[id].name,"latitude":14.0+planet*7,"longitude":25.0+planet*32,"landable":true})
-	sector_definitions[id] = {"id":id,"name":(names[system] if system < 12 else preload("res://scripts/galaxy_catalog.gd").generated_name(system))+" "+["I","II","III"][planet],"geography_seed":2409+system*101+planet*37,
-		"generator_version":1,"archetype":["temperate","frozen","arid"][(system+planet)%3],"sites":sites,"survey_energy":20,"survey_seconds":12}
+	sector_definitions[id] = {"id":id,"name":body_name,"geography_seed":2409+system*101+planet*37,
+		"generator_version":1,"archetype":archetype,"body_kind":body_kind,"parent_id":parent_id,"sites":sites,"survey_energy":20,"survey_seconds":12}
 	return sector_definitions[id]
