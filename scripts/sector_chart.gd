@@ -24,8 +24,10 @@ class StarGraph extends Control:
 	signal selected(id: String)
 	signal activated(id: String)
 	const Galaxy = preload("res://scripts/galaxy_catalog.gd")
+	const Session = preload("res://scripts/expedition_session.gd")
 	var campaign: RefCounted
 	var selected_id: String = "s0"
+	var selected_planet_id: String = "morrow"
 	var magnification: float = 1.0
 	var pan := Vector2.ZERO
 	var dragging: bool = false
@@ -168,6 +170,7 @@ class StarGraph extends Control:
 			if hovered != selected_id: label_ids.append(hovered)
 			for id: String in label_ids:
 				if id.is_empty(): continue
+				if id == current.id or (id == selected_id and selected_id != current.id): continue
 				var star: Dictionary = campaign.sector.system_by_id(id)
 				if not in_front(Galaxy.position(star)) or not campaign.sector.is_revealed(id): continue
 				var title: String = star.name if star.visited or star.get("charted",false) else "Uncharted star"
@@ -182,17 +185,28 @@ class StarGraph extends Control:
 		if arc.size() > 1: draw_polyline(arc,Color("cfb968"),1.3,true)
 		if reach*36*magnification > 40: draw_string(font,project(origin_pc+Vector2(0,-reach))+Vector2(0,-12),"%d pc" % int(reach),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("e7d18b"))
 
+		draw_arc(origin,12,0,TAU,36,Color("f9e5a2"),1.5,true)
 		draw_colored_polygon(PackedVector2Array([origin+Vector2(0,-9),origin+Vector2(-5,7),origin+Vector2(0,4),origin+Vector2(5,7)]),Color("f9e5a2"))
+		if in_front(Galaxy.position(current)):
+			var origin_name: String = str(current.name) if current.visited or current.get("charted",false) else "Current system"
+			draw_string(font,origin+Vector2(15,-14),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f9e5a2"))
 		var target: Dictionary = campaign.sector.system_by_id(selected_id)
-		if not target.is_empty() and in_front(Galaxy.position(target)) and campaign.sector.is_revealed(selected_id) and magnification > 0.3:
+		if not target.is_empty() and in_front(Galaxy.position(target)) and campaign.sector.is_revealed(selected_id):
 			var at: Vector2 = point(target)
 			draw_arc(at,13,0.3,2.7,20,Color("e9d99c"),2,true)
 			draw_arc(at,13,3.45,5.85,20,Color("e9d99c"),2,true)
 			if selected_id != current.id:
-				var offer: Dictionary = campaign.quote(preload("res://scripts/expedition_session.gd").local_id(target.planets[0]))
-				var allowed: bool = offer.reason.is_empty()
-				if allowed: draw_dashed_line(origin,at,Color(0.85,0.79,0.53,0.6),1,6,true)
-				draw_string(font,at+Vector2(14,24),"%.1f pc · %d energy" % [offer.distance,offer.energy],HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("c9d2d6"))
+				var route_planet: String = selected_planet_id if not selected_planet_id.is_empty() else Session.local_id(target.planets[0])
+				var offer: Dictionary = campaign.quote(route_planet)
+				draw_line(origin,at,Color(0.04,0.09,0.12,0.9),6,true)
+				draw_dashed_line(origin,at,Color("8cc9d0"),2,9,true)
+				var destination_name: String = str(target.name) if target.visited or target.get("charted",false) else "Uncharted destination"
+				draw_string(font,at+Vector2(17,24),"DESTINATION · "+destination_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f0dfae"))
+				var route_quote: String = "%.1f pc · %d energy · %d s" % [offer.distance,offer.energy,offer.seconds]
+				var quote_size: Vector2 = font.get_string_size(route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14)
+				var quote_at: Vector2 = origin.lerp(at,0.5)+Vector2(0,20)
+				draw_rect(Rect2(quote_at-Vector2(7,17),quote_size+Vector2(14,9)),Color("0b1419"))
+				draw_string(font,quote_at,route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e4e5df"))
 		if campaign.traveling():
 			var ship: Dictionary = campaign.sector.state.flagship
 			var fraction: float = travel_fraction
@@ -347,11 +361,12 @@ func select_system(id: String) -> void:
 	var system: Dictionary = campaign.sector.system_by_id(id)
 	heading.text = "GALAXY  /  "+ (system.name.to_upper() if system.visited or system.get("charted",false) else "UNCHARTED SIGNAL")
 	selected_planet = Session.local_id(system.planets[0])
+	graph.selected_planet_id = selected_planet
 	for pid: String in system.planets:
 		var world: String = Session.local_id(pid)
 		if not system.visited and not system.get("charted",false) and pid != system.planets[0]: continue
 		var title: String = Geography.definition(world).name if system.visited or system.get("charted",false) else "Approach first orbital body"
-		var item: Button = button(title,func() -> void: selected_planet = world; refresh())
+		var item: Button = button(title,func() -> void: selected_planet = world; graph.selected_planet_id = world; refresh())
 		item.icon = UI.icon("planet_map")
 		item.set_meta("planet",world)
 		item.disabled = campaign.traveling()
@@ -360,6 +375,7 @@ func select_system(id: String) -> void:
 
 func refresh() -> void:
 	if campaign == null: return
+	graph.selected_planet_id = selected_planet
 	var offer: Dictionary = campaign.quote(selected_planet)
 	var known_system: Dictionary = campaign.sector.system_by_id(selected_system)
 	var known: bool = known_system.visited or known_system.get("charted",false)
