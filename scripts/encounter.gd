@@ -716,7 +716,7 @@ func _make_regional_features() -> void:
 func _flora_shape_mesh(variant: int) -> Mesh:
 	var cylinder := CylinderMesh.new(); cylinder.top_radius = 0.08; cylinder.bottom_radius = 0.15; cylinder.height = 1.0
 	var bulb := SphereMesh.new(); bulb.radius = 0.42; bulb.height = 0.84
-	var cone := ConeMesh.new(); cone.bottom_radius = 0.36; cone.height = 0.95
+	var cone := CylinderMesh.new(); cone.top_radius = 0.0; cone.bottom_radius = 0.36; cone.height = 0.95
 	var parts: Array = []
 	var count: int = 3 if variant in [0,3] else 5 if variant == 1 else 4 if variant == 2 else 7
 	for i: int in range(count):
@@ -739,7 +739,7 @@ func _flora_shape_mesh(variant: int) -> Mesh:
 func _fauna_shape_mesh(variant: int) -> Mesh:
 	var body := SphereMesh.new(); body.radius = 0.52; body.height = 1.04
 	var limb := CylinderMesh.new(); limb.top_radius = 0.035; limb.bottom_radius = 0.09; limb.height = 0.6
-	var fin := ConeMesh.new(); fin.bottom_radius = 0.32; fin.height = 0.7
+	var fin := CylinderMesh.new(); fin.top_radius = 0.0; fin.bottom_radius = 0.32; fin.height = 0.7
 	var parts: Array = [[body,_shape_xform(Vector3.UP*(0.58 if variant != 2 else 1.0),Vector3(1.2,0.8,1.0) if variant == 0 else Vector3(1.5,0.45,1.0) if variant == 1 else Vector3(0.8,0.9,1.0))]]
 	if variant == 0:
 		for x: float in [-0.34,0.34]:

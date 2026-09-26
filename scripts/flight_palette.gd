@@ -4,10 +4,11 @@ const Equipment = preload("res://scripts/equipment_catalog.gd")
 const Model = preload("res://scripts/encounter_state.gd")
 const Combat = preload("res://scripts/surface_combat.gd")
 const Climate = preload("res://scripts/planet_climate.gd")
-const PAGE_SIZE := 18
+const COLUMNS := 6
+const PAGE_SIZE := 12
 const CATEGORY_ICONS := {"Main tools":"category_tools", "Environment":"category_life", "Weapons":"category_weapons", "Inventory":"inventory"}
 static func slot_rect(slot: int) -> Rect2:
-	return Rect2(766+(slot%9)*59,748+(slot/9)*56,56,54)
+	return Rect2(766+(slot%COLUMNS)*59,748+(slot/COLUMNS)*56,56,54)
 const GROUPS := {
 	"Main tools": ["scan", "collect", "mine"],
 	"Environment": ["heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","heat_charge","cool_charge","atmosphere_charge","vacuum_charge","warm", "seed"],

@@ -13,8 +13,8 @@ const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const PALETTE_ORIGIN := Vector2(1034, 690)
-const PALETTE_COLUMNS := 6
-const PALETTE_PAGE_CAPACITY := 12
+const PALETTE_COLUMNS := Palette.COLUMNS
+const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * 59 - 3
 var nav_pod: Control
 var console_pod: Control
