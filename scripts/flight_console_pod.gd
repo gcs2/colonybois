@@ -154,10 +154,6 @@ func _draw() -> void:
 		draw_line(Vector2(div_x, 10), Vector2(div_x, size.y - 10), Color("b4b0a4"), 1.0)
 
 		# Telemetry Section (Right side)
-		# Altitude
-		draw_string(FONT, Vector2(div_x + 10, 24), "ALT", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("767468"))
-		draw_string(FONT, Vector2(div_x + 40, 24), "12 m", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
-
 		# HULL row
 		draw_string(FONT, Vector2(div_x + 10, 44), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 		var hull_recess := Rect2(div_x + 42, 34, 76, 12)
