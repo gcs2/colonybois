@@ -10,6 +10,8 @@ const Equipment = preload("res://scripts/equipment_catalog.gd")
 const Palette = preload("res://scripts/flight_palette.gd")
 const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
+const PALETTE_ORIGIN := Vector2(1000, 690)
+const PALETTE_COLUMNS := 9
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -44,6 +46,7 @@ var quick_cargo: Button
 var location_label: Label
 var stats: Label
 var treasury_backing: ColorRect
+var altitude_backing: ColorRect
 var objective: Label
 var subject: Label
 var explanation: Label
@@ -117,13 +120,19 @@ func _build() -> void:
 	add_child(chart_backing)
 
 	console_pod = ConsolePod.new()
-	console_pod.position = Vector2(1304, 744)
-	console_pod.size = Vector2(268, 117)
+	console_pod.position = Vector2(1436, 744)
+	console_pod.size = Vector2(160, 117)
 	add_child(console_pod)
+	altitude_backing = ColorRect.new()
+	altitude_backing.position = Vector2(1436, 718)
+	altitude_backing.size = Vector2(160, 26)
+	altitude_backing.color = Color("dedad0")
+	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(altitude_backing)
 
 	palette_backing = ColorRect.new()
-	palette_backing.position = Vector2(760, 744)
-	palette_backing.size = Vector2(138, 68)
+	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
+	palette_backing.size = Vector2(150, 68)
 	palette_backing.color = Color(0.045, 0.05, 0.05, 0.72)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(palette_backing)
@@ -197,7 +206,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1318,722,246,18),11,Color("1c2426"))
+	flight_readout = label_at("",Rect2(1444,722,144,18),11,Color("1c2426"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -279,10 +288,11 @@ func _build() -> void:
 
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
-	button.add_theme_constant_override("icon_max_width",30)
+	button.size = Vector2(46, 48)
+	button.add_theme_constant_override("icon_max_width",24)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
-	shortcut.position = Vector2(3,36)
+	shortcut.position = Vector2(2,30)
 	shortcut.add_theme_font_size_override("font_size",11)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -318,21 +328,33 @@ func show_group(group: String) -> void:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
 		if item_buttons[id].visible:
-			item_buttons[id].position = Palette.slot_rect(slot).position
+			item_buttons[id].position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 47, (slot / PALETTE_COLUMNS) * 50)
 			slot_labels[id].text = ("Ctrl+" if slot >= 9 else "")+str(slot%9+1)
+	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
+		category_buttons[key].position = Vector2(1000 + category_index * 52, 630)
+		category_buttons[key].size = Vector2(48, 48)
+		category_buttons[key].visible = true
+		category_index += 1
 	if console_pod != null:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	palette_backing.visible = palette_expanded
 	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
-	var columns: int = mini(9, visible_items)
-	var rows: int = int(ceil(visible_items/9.0))
-	palette_backing.position = Vector2(760, 744)
-	palette_backing.size = Vector2(12+columns*59, 12+rows*56)
+	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
+	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
+	palette_backing.size = Vector2(16+PALETTE_COLUMNS*47, 16+rows*50)
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
+	page_previous.position = Vector2(1220, 634)
+	page_previous.size = Vector2(34, 42)
+	page_label.position = Vector2(1256, 642)
+	page_label.size = Vector2(36, 24)
+	page_next.position = Vector2(1294, 634)
+	page_next.size = Vector2(34, 42)
+	collapse_button.position = Vector2(1332, 634)
+	collapse_button.size = Vector2(42, 42)
 	var pages: int = maxi(1,int(ceil(entries.size()/float(Palette.PAGE_SIZE))))
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
@@ -368,7 +390,7 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		Art.symbol(item_buttons[key],item.icon,item.tint,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",30)
+		item_buttons[key].add_theme_constant_override("icon_max_width",24)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
 
@@ -446,8 +468,8 @@ func set_orbital_mode(enabled: bool) -> void:
 
 	if enabled:
 		if console_pod != null:
-			console_pod.position = Vector2(1304, 744)
-			console_pod.size = Vector2(268, 117)
+			console_pod.position = Vector2(1436, 744)
+			console_pod.size = Vector2(160, 117)
 		hull_bar.position = Vector2(1032, 796)
 		hull_bar.size = Vector2(110, 10)
 		energy_bar.position = Vector2(1032, 828)
@@ -474,16 +496,16 @@ func set_orbital_mode(enabled: bool) -> void:
 		show_group(active_group)
 	else:
 		if console_pod != null:
-			console_pod.position = Vector2(1304, 744)
-			console_pod.size = Vector2(268, 117)
-		hull_bar.position = Vector2(1324, 758)
+			console_pod.position = Vector2(1436, 744)
+			console_pod.size = Vector2(160, 117)
+		hull_bar.position = Vector2(1444, 758)
 		hull_bar.size = Vector2(240, 10)
-		energy_bar.position = Vector2(1324, 788)
+		energy_bar.position = Vector2(1444, 788)
 		energy_bar.size = Vector2(240, 10)
 		hull_bar.modulate.a = 0.0
 		energy_bar.modulate.a = 0.0
-		hull_label.position = Vector2(1324, 717)
-		energy_label.position = Vector2(1324, 750)
+		hull_label.position = Vector2(1444, 717)
+		energy_label.position = Vector2(1444, 750)
 		hull_label.visible = false
 		energy_label.visible = false
 		quick_cargo.visible = false

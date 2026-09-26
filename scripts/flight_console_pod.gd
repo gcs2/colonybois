@@ -1,9 +1,8 @@
 extends Control
 ## Field Instruments Consolidated Console Pod.
 ## Displays segmented HULL and ENERGY meters, category sockets with active LED indicators,
-## active comms / signal state, and the Marks treasury balance.
+## and active comms / signal state. The Marks balance belongs to FlightHUD's top-right anchor.
 const FONT = preload("res://assets/fonts/Barlow-Regular.ttf")
-const MARK = preload("res://assets/ui/mark-symbol.svg")
 const SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
 const IVORY := Color("dedad0")
 const IVORY_SHADOW := Color("8d8c80")
@@ -26,8 +25,7 @@ var active_group: String = "Main tools"
 var groups: Array[String] = ["Main tools", "Environment", "Weapons", "Inventory"]
 
 func _ready() -> void:
-	# The same pod is assigned a compact surface footprint and a wider orbital
-	# footprint by FlightHUD; a fixed minimum silently defeated the compact size.
+	# FlightHUD keeps the same compact footprint beside the item matrix at both scales.
 	custom_minimum_size = Vector2.ZERO
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(queue_redraw)
@@ -100,48 +98,41 @@ func _draw() -> void:
 		draw_line(p - Vector2(1, 1), p + Vector2(1, 1), Color("343630"), 1.0)
 
 	if size.x <= 400.0:
-		# Compact layout for surface flight (e.g. 268x117)
+		# Compact layout beside the item grid for both flight scales.
 		# HULL row
-		draw_string(FONT, Vector2(16, 32), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
-		var hull_recess := Rect2(68, 18, 124, 18)
+		draw_string(FONT, Vector2(8, 32), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		var hull_recess := Rect2(42, 18, 86, 18)
 		draw_rect(hull_recess, Color("0e1518"))
 		draw_rect(Rect2(hull_recess.position + Vector2(1, 1), hull_recess.size - Vector2(2, 2)), Color("182022"))
 		var hull_pct: float = clampf(float(hull_val) / float(max_hull_val), 0.0, 1.0)
 		var hull_bars: int = int(round(hull_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(72 + i * 11.8, 21, 8.5, 12)
+			var bar_rect := Rect2(46 + i * 7.8, 21, 6.2, 12)
 			draw_rect(bar_rect, HULL_TINT if i < hull_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(202, 32), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
+		draw_string(FONT, Vector2(132, 32), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# ENERGY row
-		draw_string(FONT, Vector2(16, 62), "ENERGY", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
-		var energy_recess := Rect2(68, 48, 124, 18)
+		draw_string(FONT, Vector2(8, 62), "ENG", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		var energy_recess := Rect2(42, 48, 86, 18)
 		draw_rect(energy_recess, Color("0e1518"))
 		draw_rect(Rect2(energy_recess.position + Vector2(1, 1), energy_recess.size - Vector2(2, 2)), Color("182022"))
 		var energy_pct: float = clampf(float(energy_val) / float(max_energy_val), 0.0, 1.0)
 		var energy_bars: int = int(round(energy_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(72 + i * 11.8, 51, 8.5, 12)
+			var bar_rect := Rect2(46 + i * 7.8, 51, 6.2, 12)
 			draw_rect(bar_rect, ENERGY_TINT if i < energy_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(202, 62), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
+		draw_string(FONT, Vector2(132, 62), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# Divider line
 		draw_line(Vector2(14, 76), Vector2(size.x - 14, 76), Color("b4b0a4"), 1.0)
 
-		# Row 3: Signal and Marks
+		# Row 3: Signal state. Marks live once in the top-right treasury anchor.
 		var sig_rect := Rect2(20, 83, 30, 20)
 		if SIGNAL_ICON != null:
 			draw_texture_rect(SIGNAL_ICON, sig_rect, false, SIGNAL_GREEN)
 		var sig_led := Vector2(58, 93)
 		draw_circle(sig_led, 4.0, Color(SIGNAL_GREEN.r, SIGNAL_GREEN.g, SIGNAL_GREEN.b, 0.3))
 		draw_circle(sig_led, 2.0, SIGNAL_GREEN)
-
-		# Marks balance
-		var marks_str: String = _format_number(marks_val)
-		var mark_icon_rect := Rect2(size.x - 130, 85, 16, 16)
-		if MARK != null:
-			draw_texture_rect(MARK, mark_icon_rect, false, Color("9a7a30"))
-		draw_string(FONT, Vector2(size.x - 108, 98), marks_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, CHARCOAL)
 	elif not orbital:
 		# Unified Surface Field Console Layout (e.g. 542 x 117 or similar)
 		# Left side: Recessed dark charcoal plate for the item matrix
@@ -242,12 +233,6 @@ func _draw() -> void:
 		draw_circle(sig_led, 4.5, Color(SIGNAL_GREEN.r, SIGNAL_GREEN.g, SIGNAL_GREEN.b, 0.3))
 		draw_circle(sig_led, 2.5, SIGNAL_GREEN)
 
-		# Marks balance
-		var marks_str: String = _format_number(marks_val)
-		var mark_icon_rect := Rect2(494, 62, 16, 16)
-		if MARK != null:
-			draw_texture_rect(MARK, mark_icon_rect, false, Color("9a7a30"))
-		draw_string(FONT, Vector2(516, 75), marks_str, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, CHARCOAL)
 
 func _format_number(n: int) -> String:
 	var s: String = str(n)
