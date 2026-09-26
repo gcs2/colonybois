@@ -87,8 +87,19 @@ func advance(up: Vector3, east_m: float, north_m: float) -> Vector3:
 func window(center_up: Vector3) -> Dictionary:
 	return SurfaceWindow.build(recipe, center_up, _planet_radius_m, _region_size_m, _view_radius_m)
 
+## Fine-grained deterministic habitat query for nearby presentation. This uses
+## the same recipe and generator as the broader opportunity window while keeping
+## its smaller patch grid and radius independent from the legacy region IDs.
+func habitat_window(center_up: Vector3, patch_size_m: float = 64.0, view_radius_m: float = 192.0) -> Dictionary:
+	return SurfaceWindow.build(recipe, center_up, _planet_radius_m, patch_size_m, view_radius_m)
+
 func region_id(up: Vector3) -> String:
 	var grid: Dictionary = SurfaceWindow._grid(_planet_radius_m, _region_size_m)
+	var cell: Vector2i = SurfaceWindow._cell_for_up(up, grid)
+	return SurfaceWindow._region_id(recipe, grid, cell.x, cell.y)
+
+func habitat_region_id(up: Vector3, patch_size_m: float = 64.0) -> String:
+	var grid: Dictionary = SurfaceWindow._grid(_planet_radius_m, patch_size_m)
 	var cell: Vector2i = SurfaceWindow._cell_for_up(up, grid)
 	return SurfaceWindow._region_id(recipe, grid, cell.x, cell.y)
 
