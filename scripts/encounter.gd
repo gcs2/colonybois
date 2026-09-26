@@ -50,6 +50,8 @@ const Instruments = preload("res://scripts/flight_interface.gd")
 const TOAST_SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
+const SurfaceCoordinates = preload("res://scripts/planet_surface_coordinates.gd")
+const SurfaceRuntime = preload("res://scripts/planet_surface_runtime.gd")
 const FlightHUD = preload("res://scripts/flight_hud.gd")
 const FlightEffects = preload("res://scripts/flight_effects.gd")
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
@@ -62,6 +64,10 @@ var climate_chart: Control
 var climate_ring: MeshInstance3D
 var climate_signature: String = ""
 var ground_material: ShaderMaterial
+var terrain_mesh_instance: MeshInstance3D
+var surface_window_region_id: String = ""
+var regional_cover_instance: MultiMeshInstance3D
+var regional_feature_root: Node3D
 var surface_region_features: Dictionary = {}
 var biosphere_view: Node3D
 var fleet_visual: Node3D
@@ -307,9 +313,30 @@ func terrain_height(x: float, z: float) -> float:
 	return Geography.surface_height(world_definition,x,z)
 
 func _sync_surface_pose() -> void:
+	var up: Vector3 = _saved_surface_up()
+	var saved_position: Array = model.state.surface_position
+	if Vector2(ship.position.x,ship.position.z).distance_to(Vector2(float(saved_position[0]),float(saved_position[2]))) > 0.5:
+		# Explicit scene placement remains a supported way to set a surface pose;
+		# ordinary flight keeps position and radial direction synchronized each physics step.
+		up = Geography.surface_pose(world_definition,ship.position.x,ship.position.z)
+	var offset: Vector2 = Geography.surface_local_position(world_definition, up)
+	ship.position.x = offset.x
+	ship.position.z = offset.y
 	model.state.surface_position = [ship.position.x,ship.position.y,ship.position.z]
-	var up: Vector3 = Geography.surface_pose(world_definition, ship.position.x, ship.position.z)
 	model.state.surface_direction = [up.x,up.y,up.z]
+
+func _saved_surface_up() -> Vector3:
+	var direction: Array = model.state.surface_direction
+	var up := Vector3(float(direction[0]),float(direction[1]),float(direction[2]))
+	return up.normalized() if up.length_squared() > 0.000001 else Geography.site_direction(rendered_planet)
+
+func _set_surface_up(up_value: Vector3) -> void:
+	var up: Vector3 = up_value.normalized()
+	var offset: Vector2 = Geography.surface_local_position(world_definition, up)
+	ship.position.x = offset.x
+	ship.position.z = offset.y
+	model.state.surface_direction = [up.x,up.y,up.z]
+	model.state.surface_position = [ship.position.x,ship.position.y,ship.position.z]
 
 func _terrain_base(x: float, z: float) -> float:
 	return Geography.surface_base(world_definition,x,z)
@@ -393,45 +420,12 @@ func _make_world() -> void:
 	camera.current = true
 	camera.fov = 52
 	camera.far = 900
-	surface_region_features = _surface_feature_sets()
-	var surface := SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# Keep the first explorable habitats detailed enough for low-altitude flight. The
-	# far shell stays coarse and is only a horizon, beyond the playable surface radius.
-	var coordinates: Array[float] = []
-	for v: int in range(-1250,-320,20): coordinates.append(float(v))
-	for v: int in range(-320,-48,8): coordinates.append(float(v))
-	for v: int in range(-48,49,2): coordinates.append(float(v))
-	for v: int in range(56,321,8): coordinates.append(float(v))
-	for v: int in range(340,1251,20): coordinates.append(float(v))
-	for xi: int in range(coordinates.size()-1):
-		for zi: int in range(coordinates.size()-1):
-			for offset: Vector2 in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
-				var px: float = lerpf(coordinates[xi],coordinates[xi+1],offset.x)
-				var pz: float = lerpf(coordinates[zi],coordinates[zi+1],offset.y)
-				var radial_distance: float = Vector2(px,pz).length()
-				var h: float = terrain_height(px,pz)
-				# The playable region and terrain query must agree; curve only the shell
-				# that sits well beyond the player's bounded expedition envelope.
-				var far_start: float = Geography.surface_travel_radius(rendered_planet)+80.0
-				var far_blend: float = smoothstep(far_start,far_start+220.0,radial_distance)
-				h = lerpf(h,_distant_landform(px,pz),far_blend)
-				var visual_radius: float = maxf(0.0,radial_distance-far_start)
-				h -= visual_radius*visual_radius/3200.0
-				var color: Color = Geography.surface_color(world_definition,px,pz)
-				if rendered_planet == "morrow":
-					# Keep Morrow's rust palette while restoring shadow and distance
-					# separation lost to the warm full-scene lighting.
-					color = color.darkened(0.11)
-					var horizon_tint: Color = Color("747a73")
-					color = color.lerp(horizon_tint,far_blend*0.48)
-				surface.set_color(color)
-				surface.add_vertex(Vector3(px,h,pz))
-	surface.generate_normals()
 	ground_material = ShaderMaterial.new()
 	ground_material.shader = preload("res://assets/shaders/expedition_ground.gdshader")
 	ground_material.set_shader_parameter("surface_detail",1.0 if rendered_planet == "morrow" else 0.0)
-	_mesh(surface.commit(),Vector3.ZERO,ground_material)
+	surface_window_region_id = Geography.surface_region_id(world_definition,_saved_surface_up()) if rendered_planet == "morrow" else ""
+	surface_region_features = _surface_feature_sets(_saved_surface_up())
+	_rebuild_surface_terrain(_saved_surface_up())
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(world_definition.geography_seed)
 	var rock_meshes: Array[SphereMesh] = []
@@ -526,7 +520,11 @@ func _make_world() -> void:
 	var vein := Node3D.new()
 	# The only authored mineral opportunity is deliberately placed in the first
 	# adjacent spherical region; the existing scan/cutter/ore save path owns it.
-	var vein_position: Vector2 = Vector2(620,16) if rendered_planet == "morrow" else Vector2(18,16)
+	var vein_position: Vector2 = Vector2(18,16)
+	if rendered_planet == "morrow":
+		var basin_up: Vector3 = Geography.surface_direction(world_definition,0,12)
+		var adjacent_up: Vector3 = Geography.surface_runtime(world_definition).advance(basin_up,620,0)
+		vein_position = Geography.surface_local_position(world_definition,adjacent_up)
 	vein.position = Vector3(vein_position.x,terrain_height(vein_position.x,vein_position.y),vein_position.y)
 	vein.rotation.y = 0.43
 	add_child(vein)
@@ -671,24 +669,31 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	var node := MultiMeshInstance3D.new()
 	node.multimesh = batch
 	node.material_override = material
-	add_child(node)
+	if is_instance_valid(regional_cover_instance): regional_cover_instance.queue_free()
+	regional_cover_instance = node
+	if is_instance_valid(surface_root): surface_root.add_child(node)
+	else: add_child(node)
 
-func _surface_feature_sets() -> Dictionary:
+func _surface_feature_sets(center_up: Vector3 = Vector3.ZERO) -> Dictionary:
 	var grouped: Dictionary = {"cover":[],"rock":[],"flora":[],"fauna":[]}
 	if rendered_planet != "morrow": return grouped
-	# The fixed tangent frame is a temporary compatibility view. Region identities
-	# and feature positions come from the shared spherical recipe and bounded query.
 	var anchor: Vector3 = Geography.site_direction("morrow")
-	var window: Dictionary = Geography.surface_runtime(world_definition).window(anchor)
+	var query_center: Vector3 = center_up.normalized() if center_up.length_squared() > 0.000001 else _saved_surface_up()
+	var window: Dictionary = Geography.surface_runtime(world_definition).window(query_center)
 	for feature: Dictionary in window.features:
 		var kind: String = str(feature.get("kind", ""))
 		if not grouped.has(kind): continue
-		var position: Vector2 = feature.get("position_m", Vector2.ZERO)
-		if position.length() < 48.0: continue
+		if model.state.surface_changes.has(str(feature.id)): continue
+		var position: Vector2 = Geography.surface_runtime(world_definition).local_offset(anchor,feature.up)
+		if position.distance_to(Geography.surface_local_position(world_definition,query_center)) < 48.0: continue
 		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
 	return grouped
 
 func _make_regional_features() -> void:
+	if is_instance_valid(regional_feature_root): regional_feature_root.queue_free()
+	regional_feature_root = Node3D.new()
+	if is_instance_valid(surface_root): surface_root.add_child(regional_feature_root)
+	else: add_child(regional_feature_root)
 	var rocks: Array = surface_region_features.get("rock",[])
 	if not rocks.is_empty():
 		var mesh := SphereMesh.new()
@@ -715,7 +720,7 @@ func _make_regional_features() -> void:
 		var rock_batch := MultiMeshInstance3D.new()
 		rock_batch.multimesh = multimesh
 		rock_batch.material_override = rock_material
-		add_child(rock_batch)
+		regional_feature_root.add_child(rock_batch)
 	var flora: Array = surface_region_features.get("flora",[])
 	if not flora.is_empty():
 		var flora_colors: Array[Color] = [Color("a8d2a0"),Color("97c5c4"),Color("c4bf8b"),Color("b2a6cb"),Color("72aaa1"),Color("d5ae8b")]
@@ -740,7 +745,7 @@ func _make_regional_features() -> void:
 			var flora_batch := MultiMeshInstance3D.new()
 			flora_batch.multimesh = flora_multimesh
 			flora_batch.material_override = flora_material
-			add_child(flora_batch)
+			regional_feature_root.add_child(flora_batch)
 	var fauna: Array = surface_region_features.get("fauna",[])
 	var fauna_limit: int = mini(30,fauna.size())
 	for variant: int in range(3):
@@ -767,7 +772,7 @@ func _make_regional_features() -> void:
 		var animal_batch := MultiMeshInstance3D.new()
 		animal_batch.multimesh = animal_mesh
 		animal_batch.material_override = animal_material
-		add_child(animal_batch)
+		regional_feature_root.add_child(animal_batch)
 
 func _flora_shape_mesh(variant: int) -> Mesh:
 	var cylinder := CylinderMesh.new(); cylinder.top_radius = 0.08; cylinder.bottom_radius = 0.15; cylinder.height = 1.0
@@ -1113,17 +1118,23 @@ func _physics_process(delta: float) -> void:
 		move.y = clampf((altitude_order-ship.position.y)*2,-14,14)
 		if absf(altitude_order-ship.position.y) < 0.2: altitude_order = -1
 	velocity = velocity.move_toward(move,delta*28)
-	ship.position += velocity*delta
-	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else Geography.surface_travel_radius(rendered_planet))
-	ship.position.x = flat.x
-	ship.position.z = flat.y
 	if orbital:
+		ship.position += velocity*delta
+		var orbital_flat := Vector2(ship.position.x,ship.position.z).limit_length(80)
+		ship.position.x = orbital_flat.x
+		ship.position.z = orbital_flat.y
 		ship.position.y = clampf(ship.position.y,-55,75)
 		# The orbital globe is solid, including during point-and-click flight.
 		var away: Vector3 = ship.position-orbit.planet.position
 		if away.length() < 21: ship.position = orbit.planet.position+away.normalized()*21
 	else:
-		ship.position.y = maxf(ship.position.y,terrain_height(flat.x,flat.y)+2.7)
+		_advance_surface_motion(delta)
+		var surface_limit: float = Geography.surface_travel_radius(rendered_planet)
+		var flat := Vector2(ship.position.x,ship.position.z)
+		if flat.length() > surface_limit:
+			flat = flat.limit_length(surface_limit)
+			_set_surface_up(Geography.surface_direction(world_definition,flat.x,flat.y))
+		ship.position.y = maxf(ship.position.y,terrain_height(ship.position.x,ship.position.z)+2.7)
 		if ship.position.y >= 58: _change_flight_mode("orbit"); return
 		var away: Vector3 = ship.position-targets.relay.position
 		if Vector2(away.x,away.z).length() < 3 and away.y < 7:
@@ -1131,9 +1142,36 @@ func _physics_process(delta: float) -> void:
 			if outward.is_zero_approx(): outward = Vector2.RIGHT
 			ship.position.x = targets.relay.position.x+outward.x*3
 			ship.position.z = targets.relay.position.z+outward.y*3
+			_set_surface_up(Geography.surface_direction(world_definition,ship.position.x,ship.position.z))
+		_refresh_surface_geography()
 	if Vector2(velocity.x,velocity.z).length() > 0.2: ship.rotation.y = lerp_angle(ship.rotation.y,atan2(-velocity.x,-velocity.z),delta*5)
 	ship.rotation.z = lerpf(ship.rotation.z,-move.rotated(Vector3.UP,-ship.rotation.y).x*0.025,delta*5)
 	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
+
+func _advance_surface_motion(delta: float) -> void:
+	var anchor_frame: Dictionary = SurfaceCoordinates.tangent_frame(Geography.site_direction(rendered_planet))
+	var current_up: Vector3 = _saved_surface_up()
+	var current_frame: Dictionary = SurfaceCoordinates.tangent_frame(current_up)
+	var plane_motion: Vector3 = anchor_frame.east*velocity.x+anchor_frame.north*velocity.z
+	var east_m: float = plane_motion.dot(current_frame.east)*delta
+	var north_m: float = plane_motion.dot(current_frame.north)*delta
+	var next_up: Vector3 = Geography.surface_runtime(world_definition).advance(current_up,east_m,north_m)
+	ship.position.y += velocity.y*delta
+	_set_surface_up(next_up)
+	_refresh_surface_geography()
+
+func _refresh_surface_geography() -> void:
+	if rendered_planet != "morrow": return
+	var up: Vector3 = _saved_surface_up()
+	var next_region_id: String = Geography.surface_region_id(world_definition,up)
+	if next_region_id == surface_window_region_id: return
+	surface_window_region_id = next_region_id
+	surface_region_features = _surface_feature_sets(up)
+	_rebuild_surface_terrain(up)
+	var cover_rng := RandomNumberGenerator.new()
+	cover_rng.seed = int(world_definition.geography_seed)
+	_make_ground_cover(cover_rng)
+	_make_regional_features()
 
 func _process(delta: float) -> void:
 	if hud != null and model.state.flight_mode == "surface":
@@ -1970,6 +2008,55 @@ func _begin_landing() -> void:
 	landing = true
 	_toast("Approaching "+str(model.definition().sites[0].name)+" · Stop or steer to cancel")
 	audio.play("entry")
+
+func _rebuild_surface_terrain(center_up: Vector3) -> void:
+	var runtime: Object = Geography.surface_runtime(world_definition)
+	var anchor: Vector3 = Geography.site_direction(rendered_planet)
+	var center_offset: Vector2 = Geography.surface_local_position(world_definition,center_up) if rendered_planet == "morrow" else Vector2.ZERO
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var coordinates: Array[float] = []
+	for v: int in range(-1250,-320,20): coordinates.append(float(v))
+	for v: int in range(-320,-48,8): coordinates.append(float(v))
+	for v: int in range(-48,49,2): coordinates.append(float(v))
+	for v: int in range(56,321,8): coordinates.append(float(v))
+	for v: int in range(340,1251,20): coordinates.append(float(v))
+	for xi: int in range(coordinates.size()-1):
+		for zi: int in range(coordinates.size()-1):
+			for sample_offset: Vector2 in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
+				var px: float = lerpf(coordinates[xi],coordinates[xi+1],sample_offset.x)
+				var pz: float = lerpf(coordinates[zi],coordinates[zi+1],sample_offset.y)
+				var radial_distance: float = Vector2(px,pz).length()
+				var h: float
+				var color: Color
+				var vertex_x: float = px
+				var vertex_z: float = pz
+				if rendered_planet == "morrow":
+					var sample_up: Vector3 = runtime.advance(center_up,px,pz)
+					var sample: Dictionary = runtime.sample(sample_up)
+					h = float(sample.elevation)*SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M
+					var absolute_offset: Vector2 = runtime.local_offset(anchor,sample_up)
+					vertex_x = absolute_offset.x-center_offset.x
+					vertex_z = absolute_offset.y-center_offset.y
+					color = runtime.surface_color(sample_up)
+				else:
+					var absolute_x: float = px+center_offset.x
+					var absolute_z: float = pz+center_offset.y
+					h = terrain_height(absolute_x,absolute_z)
+					color = Geography.surface_color(world_definition,absolute_x,absolute_z)
+				var far_start: float = Geography.surface_travel_radius(rendered_planet)+80.0
+				var far_blend: float = smoothstep(far_start,far_start+220.0,radial_distance)
+				h = lerpf(h,_distant_landform(px,pz),far_blend)
+				var visual_radius: float = maxf(0.0,radial_distance-far_start)
+				h -= visual_radius*visual_radius/3200.0
+				if rendered_planet == "morrow":
+					color = color.darkened(0.11).lerp(Color("747a73"),far_blend*0.48)
+				surface.set_color(color)
+				surface.add_vertex(Vector3(vertex_x,h,vertex_z))
+	surface.generate_normals()
+	if is_instance_valid(terrain_mesh_instance): terrain_mesh_instance.queue_free()
+	var terrain_parent: Node3D = surface_root if is_instance_valid(surface_root) else self
+	terrain_mesh_instance = _mesh(surface.commit(),Vector3(center_offset.x,0,center_offset.y),ground_material,terrain_parent)
 
 func _change_flight_mode(mode: String) -> void:
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
@@ -2853,8 +2940,14 @@ func _load() -> void:
 
 func _restore_ship() -> void:
 	var at: Array = model.state.position
-	ship.position = Vector3(at[0],at[1],at[2])
-	if model.state.flight_mode == "surface": ship.position.y = clampf(ship.position.y,terrain_height(ship.position.x,ship.position.z)+2.7,57)
+	if model.state.flight_mode == "surface":
+		var surface_at: Array = model.state.surface_position
+		var offset: Vector2 = Geography.surface_local_position(world_definition,_saved_surface_up())
+		ship.position = Vector3(offset.x,float(surface_at[1]),offset.y)
+		ship.position.y = clampf(ship.position.y,terrain_height(ship.position.x,ship.position.z)+2.7,57)
+		_refresh_surface_geography()
+	else:
+		ship.position = Vector3(at[0],at[1],at[2])
 	yaw = model.state.yaw
 	camera_focus = ship.position
 	velocity = Vector3.ZERO

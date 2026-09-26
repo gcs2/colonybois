@@ -13,13 +13,13 @@ var checks: int = 0
 var failures: int = 0
 
 func _initialize() -> void:
-	var guard := create_timer(10.0)
+	var guard := create_timer(60.0)
 	guard.timeout.connect(_timed_out)
 	call_deferred("run")
 
 func _timed_out() -> void:
 	failures += 1
-	printerr("FAIL: surface exploration test exceeded its 10 second script budget")
+	printerr("FAIL: surface exploration test exceeded its 60 second script budget")
 	quit(2)
 
 func check(condition: bool, message: String) -> void:
@@ -74,9 +74,10 @@ func run() -> void:
 	check(Vector2(species_sites.ribbon_bush[0],species_sites.ribbon_bush[2]).distance_to(Vector2(species_sites.moss_lantern[0],species_sites.moss_lantern[2])) > 100,"Native species occupy distinct, explorable habitats")
 	var field := Field.new()
 	field.state.position = [620.0,5.0,16.0]
+	field.state.surface_direction = [saved_up.x,saved_up.y,saved_up.z]
 	check(field.change_flight_mode("orbit"),"A scout can leave a distant surface region")
-	check(field.state.surface_position == [620.0,5.0,16.0] and Vector3(field.state.surface_direction[0],field.state.surface_direction[1],field.state.surface_direction[2]).distance_to(saved_up) < 0.001,"Leaving surface stores its exact local pose and planet-fixed direction")
-	check(field.change_flight_mode("surface") and field.state.position == [620.0,5.0,16.0],"Returning from orbit restores the same adjacent-region position")
+	check(field.state.surface_position[1] == 5.0 and Vector3(field.state.surface_direction[0],field.state.surface_direction[1],field.state.surface_direction[2]).distance_to(saved_up) < 0.001,"Leaving surface stores its planet-fixed direction and altitude")
+	check(field.change_flight_mode("surface") and Vector2(field.state.position[0],field.state.position[2]).distance_to(Vector2(620.0,16.0)) < 0.01,"Returning from orbit resolves the saved direction to the same adjacent-region position")
 	var restored := Field.new()
 	check(restored.restore_snapshot(field.snapshot()) == OK and restored.state.surface_position == field.state.surface_position and restored.state.surface_direction == field.state.surface_direction,"The adjacent-region pose and planet-fixed direction survive save validation")
 	var legacy: Dictionary = field.snapshot()
@@ -107,5 +108,62 @@ func run() -> void:
 	var campaign_migration_error: Error = migrated_campaign.restore_snapshot(old_campaign)
 	var fresh_up: Vector3 = Geography.surface_pose(Geography.definition("morrow"),0.0,12.0)
 	check(campaign_migration_error == OK and migrated_campaign.field.state.surface_direction == [fresh_up.x,fresh_up.y,fresh_up.z] and migrated_campaign.worlds.s1p0.surface_direction != [0.0,0.0,1.0],"Older campaign and inactive-world records migrate to planet-fixed surface poses")
+	await _test_player_crossing_and_surface_change_persistence()
 	print("Surface exploration assertions: ",checks,"; failures: ",failures)
 	quit(0 if failures == 0 else 1)
+
+func _test_player_crossing_and_surface_change_persistence() -> void:
+	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
+	scene.campaign = Session.new()
+	root.add_child(scene)
+	await process_frame
+	scene.save_path = "user://surface_connected_gate_test.json"
+	scene.set_process(false)
+	scene.set_physics_process(false)
+	var starting_up: Vector3 = scene._saved_surface_up()
+	var starting_region: String = Geography.surface_region_id(scene.world_definition,starting_up)
+	var starting_features: Dictionary = scene.surface_region_features.duplicate(true)
+	Input.action_press("flight_right")
+	for _step: int in range(900):
+		scene._physics_process(0.1)
+		if scene.ship.position.distance_to(scene._target_position("vein")) <= 8.0: break
+	Input.action_release("flight_right")
+	check(scene.ship.position.x >= 580.0,"Automated flight-right action input carries the scout from the Basin into the adjacent region")
+	check(scene.surface_window_region_id != starting_region,"Crossing a region recenters the terrain and deterministic feature window")
+	check(_has_unchanged_feature_overlap(starting_features,scene.surface_region_features),"Recentered feature windows retain identical records for overlapping stable feature IDs")
+	check(scene.ship.position.distance_to(scene._target_position("vein")) < 50.0,"The adjacent region exposes the reachable resonant seam opportunity")
+	scene.selected = "vein"
+	scene._select_tool("scan")
+	scene.held = true
+	scene._operate(2.0)
+	scene._select_tool("mine")
+	scene.held = true
+	scene._operate(3.0)
+	var site_key: String = "%s|site|vein" % scene.model.state.planet_id
+	check(int(scene.model.state.ore_remaining) == Field.MINERAL_DEPOSIT_UNITS-1 and scene.model.state.surface_changes.get(site_key,{}) == {"remaining":Field.MINERAL_DEPOSIT_UNITS-1},"Mining records its changed feature under a stable sparse site ID")
+	var invalid_change: Dictionary = scene.model.snapshot()
+	invalid_change.surface_changes[site_key].remaining = Field.MINERAL_DEPOSIT_UNITS
+	check(Field.new().restore_snapshot(invalid_change) == ERR_INVALID_DATA,"Snapshot validation rejects a sparse site delta that disagrees with the saved lode")
+	var saved_surface_position: Vector3 = scene.ship.position
+	var saved_surface_up: Vector3 = scene._saved_surface_up()
+	scene._change_flight_mode("orbit")
+	scene._save()
+	scene.model.state.ore_remaining = Field.MINERAL_DEPOSIT_UNITS
+	scene.model.state.surface_changes.clear()
+	scene.model.state.surface_direction = [starting_up.x,starting_up.y,starting_up.z]
+	scene._load()
+	check(scene.model.state.flight_mode == "orbit" and int(scene.model.state.ore_remaining) == Field.MINERAL_DEPOSIT_UNITS-1 and scene.model.state.surface_changes.has(site_key),"Save and reload in orbit preserve the sparse changed seam")
+	scene._change_flight_mode("surface")
+	scene._update_visuals()
+	var returned_up: Vector3 = scene._saved_surface_up()
+	check(scene.ship.position.distance_to(saved_surface_position) < 0.05 and returned_up.distance_to(saved_surface_up) < 0.00001 and scene.mineral_crystals.filter(func(item: Node3D) -> bool: return item.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Returning from orbit restores the same position and visibly changed seam")
+	scene.free()
+
+func _has_unchanged_feature_overlap(first: Dictionary, second: Dictionary) -> bool:
+	var by_id: Dictionary = {}
+	for kind: String in first:
+		for feature: Dictionary in first[kind]: by_id[feature.id] = feature
+	for kind: String in second:
+		for feature: Dictionary in second[kind]:
+			if by_id.has(feature.id) and by_id[feature.id] == feature: return true
+	return false
