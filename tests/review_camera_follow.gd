@@ -97,8 +97,8 @@ func run() -> void:
 	else:
 		scene.yaw = 0.0
 		scene.pitch = 0.36
-		scene.distance = 32.0
-		scene.camera_distance_target = 32.0
+		# Keep the production surface camera distance configured by the encounter.
+		scene.distance = scene.camera_distance_target
 	scene._update_camera(1.0)
 	var trace := FileAccess.open(ProjectSettings.globalize_path(output_dir.path_join("trace.csv")),FileAccess.WRITE)
 	trace.store_line("mode,phase,frame,seconds,flight_mode,input,input_is_synthetic,ship_x,ship_y,ship_z,focus_x,focus_y,focus_z,camera_x,camera_y,camera_z,camera_distance,camera_target,velocity_x,velocity_y,velocity_z,viewport_width,viewport_height")
