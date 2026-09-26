@@ -156,51 +156,51 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 
 func _build() -> void:
 	nav_pod = NavPod.new()
-	nav_pod.position = Vector2(26, 730)
-	nav_pod.size = Vector2(250, 130)
+	nav_pod.position = Vector2(26, 680)
+	nav_pod.size = Vector2(250, 190)
 	add_child(nav_pod)
 
 	chart_backing = ColorRect.new()
-	chart_backing.position = Vector2(26, 730)
-	chart_backing.size = Vector2(250, 130)
+	chart_backing.position = Vector2(26, 680)
+	chart_backing.size = Vector2(250, 190)
 	chart_backing.color = Color(0, 0, 0, 0)
 	chart_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(chart_backing)
 
+	palette_backing = ColorRect.new()
+	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
+	palette_backing.size = Vector2(150, 68)
+	palette_backing.color = Color("dedad0")
+	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(palette_backing)
+
 	console_pod = ConsolePod.new()
-	console_pod.position = Vector2(1402, 744)
+	console_pod.position = Vector2(1402, 690)
 	console_pod.size = Vector2(184, 117)
 	add_child(console_pod)
 	altitude_backing = ColorRect.new()
-	altitude_backing.position = Vector2(1402, 718)
+	altitude_backing.position = Vector2(1402, 664)
 	altitude_backing.size = Vector2(184, 26)
 	altitude_backing.color = Color("dedad0")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
 
-	palette_backing = ColorRect.new()
-	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
-	palette_backing.size = Vector2(150, 68)
-	palette_backing.color = Color(0.045, 0.05, 0.05, 0.72)
-	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(palette_backing)
-
 	navigation_backing = ColorRect.new()
-	navigation_backing.position = Vector2(281, 726)
-	navigation_backing.size = Vector2(108, 174)
-	navigation_backing.color = Color(0.06, 0.09, 0.11, 0.88)
+	navigation_backing.position = Vector2(281, 680)
+	navigation_backing.size = Vector2(108, 190)
+	navigation_backing.color = Color("dedad0")
 	navigation_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation_backing)
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
 	treasury_backing = ColorRect.new()
-	treasury_backing.position = Vector2(1290, 18)
-	treasury_backing.size = Vector2(230, 48)
+	treasury_backing.position = Vector2(1360, 18)
+	treasury_backing.size = Vector2(224, 48)
 	treasury_backing.color = Color("dedad0")
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1304, 30)
+	treasury_icon.position = Vector2(1372, 30)
 	treasury_icon.size = Vector2(22, 22)
 	treasury_icon.texture = MARK_ICON
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -208,31 +208,31 @@ func _build() -> void:
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1336, 22, 174, 36), 17, Color("1c2426"))
+	stats = label_at("", Rect2(1404, 22, 168, 36), 17, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
 
 	# Top-left clean location header matching Field Instruments
 	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20)
-	chart_heading = label_at("LOCAL CHART", Rect2(40, 735, 200, 16), 11, Art.MUTED)
+	chart_heading = label_at("LOCAL SURFACE CHART", Rect2(40, 846, 222, 18), 11, Color("1c2426"))
 	chart_heading.visible = false
 
 	# Local navigation chart mounted cleanly inside the dial of nav_pod
-	navigation.position = Vector2(48, 749)
-	navigation.size = Vector2(92, 92)
+	navigation.position = Vector2(14, 695)
+	navigation.size = Vector2(160, 160)
 	add_child(navigation)
 
 	# Compact navigation controls
-	sector_button = symbol_at("systems", Rect2(285, 730, 48, 42), "sector", "Galaxy · select a star and orbital destination [G]", Art.GOLD)
-	system_button = symbol_at("system_view", Rect2(337, 730, 48, 42), "system_view", "System view · nearby planets [J]", Art.NAV)
-	navigation_actions.append(symbol_at("planet_map", Rect2(285, 776, 48, 42), "atlas", "Planet map", Art.NAV))
+	sector_button = symbol_at("systems", Rect2(285, 686, 48, 42), "sector", "Galaxy · select a star and orbital destination [G]", Art.GOLD)
+	system_button = symbol_at("system_view", Rect2(337, 686, 48, 42), "system_view", "System view · nearby planets [J]", Art.NAV)
+	navigation_actions.append(symbol_at("planet_map", Rect2(285, 732, 48, 42), "atlas", "Planet map", Art.NAV))
 	navigation_actions[-1].tooltip_text = "Planet map · Morrow, survey coverage and landing site [M]"
-	navigation_actions.append(symbol_at("communicator", Rect2(337, 776, 48, 42), "contact", "Communicate", Art.COMMS))
+	navigation_actions.append(symbol_at("communicator", Rect2(337, 732, 48, 42), "contact", "Communicate", Art.COMMS))
 	navigation_actions[-1].tooltip_text = "Communicate · local trade and ship services [Y]"
-	navigation_actions.append(symbol_at("zoom_out", Rect2(285, 822, 48, 42), "zoom_out", "Zoom out", Art.NAV))
+	navigation_actions.append(symbol_at("zoom_out", Rect2(285, 778, 48, 42), "zoom_out", "Zoom out", Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom out · at surface limit, ascend to orbit"
-	navigation_actions.append(symbol_at("zoom_in", Rect2(337, 822, 48, 42), "zoom_in", "Zoom in", Art.NAV))
+	navigation_actions.append(symbol_at("zoom_in", Rect2(337, 778, 48, 42), "zoom_in", "Zoom in", Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom in · move camera closer"
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	tool_title = label_at("",Rect2(772,634,516,26),18)
@@ -264,7 +264,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1410,722,168,18),11,Color("1c2426"))
+	flight_readout = label_at("",Rect2(1410,669,168,18),11,Color("1c2426"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -305,7 +305,7 @@ func _build() -> void:
 	lower_button.visible = false
 	brake_button = symbol_at("brake",Rect2(1532,825,36,30),"stop","Stop · Numpad 5",Art.NAV)
 	brake_button.visible = false
-	departure_button = button_at("Leave atmosphere",Rect2(285,872,104,24),"departure",Art.NAV)
+	departure_button = button_at("Leave atmosphere",Rect2(285,824,104,28),"departure",Art.NAV)
 	departure_button.add_theme_font_size_override("font_size",11)
 	danger_label = label_at("",Rect2(940,582,590,34),18,Art.CARGO)
 	danger_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -462,18 +462,30 @@ func show_group(group: String) -> void:
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
-		category_buttons[key].position = Vector2(1034 + category_index * 50, 630)
-		category_buttons[key].size = Vector2(48, 48)
+		if orbital_mode:
+			category_buttons[key].position = Vector2(772 + category_index * 74, 686)
+			category_buttons[key].size = Vector2(64, 54)
+		else:
+			category_buttons[key].position = Vector2(1034 + category_index * 50, 630)
+			category_buttons[key].size = Vector2(48, 48)
 		category_buttons[key].visible = true
 		category_index += 1
 	if console_pod != null:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
-	palette_backing.visible = palette_expanded
+	palette_backing.visible = palette_expanded or not orbital_mode
 	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
 	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
 	palette_backing.size = Vector2(16+PALETTE_COLUMNS*59, 16+rows*56)
+	if orbital_mode:
+		palette_backing.color = Color(0.045, 0.05, 0.05, 0.72)
+	else:
+		# One Field Instruments plate ties the category strip, pictorial slots and
+		# condition console together. Leave room for every real carried entry row.
+		palette_backing.position = Vector2(1026, 622)
+		palette_backing.size = Vector2(560, maxf(190.0, 78.0 + rows * 56.0))
+		palette_backing.color = Color("dedad0")
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
 	page_previous.position = Vector2(1238, 634)
@@ -601,6 +613,23 @@ func set_orbital_mode(enabled: bool) -> void:
 		console_pod.set_orbital(false)
 
 	if enabled:
+		nav_pod.position = Vector2(26, 730)
+		nav_pod.size = Vector2(250, 130)
+		chart_backing.position = Vector2(26, 730)
+		chart_backing.size = Vector2(250, 130)
+		navigation.position = Vector2(48, 749)
+		navigation.size = Vector2(92, 92)
+		navigation_backing.position = Vector2(281, 726)
+		navigation_backing.size = Vector2(108, 174)
+		sector_button.position = Vector2(285, 730)
+		system_button.position = Vector2(337, 730)
+		navigation_actions[0].position = Vector2(285, 776)
+		navigation_actions[1].position = Vector2(337, 776)
+		navigation_actions[2].position = Vector2(285, 822)
+		navigation_actions[3].position = Vector2(337, 822)
+		departure_button.position = Vector2(285, 872)
+		altitude_backing.position = Vector2(1402, 718)
+		flight_readout.position = Vector2(1410, 722)
 		if console_pod != null:
 			console_pod.position = Vector2(1402, 744)
 			console_pod.size = Vector2(184, 117)
@@ -629,8 +658,25 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
+		nav_pod.position = Vector2(26, 680)
+		nav_pod.size = Vector2(250, 190)
+		chart_backing.position = Vector2(26, 680)
+		chart_backing.size = Vector2(250, 190)
+		navigation.position = Vector2(14, 695)
+		navigation.size = Vector2(160, 160)
+		navigation_backing.position = Vector2(281, 680)
+		navigation_backing.size = Vector2(108, 190)
+		sector_button.position = Vector2(285, 686)
+		system_button.position = Vector2(337, 686)
+		navigation_actions[0].position = Vector2(285, 732)
+		navigation_actions[1].position = Vector2(337, 732)
+		navigation_actions[2].position = Vector2(285, 778)
+		navigation_actions[3].position = Vector2(337, 778)
+		departure_button.position = Vector2(285, 824)
+		altitude_backing.position = Vector2(1402, 664)
+		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
-			console_pod.position = Vector2(1402, 744)
+			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)
 		hull_bar.position = Vector2(1410, 758)
 		hull_bar.size = Vector2(168, 10)
