@@ -52,32 +52,38 @@ func _rebuild_terrain() -> void:
 	var img := Image.create(96,96,false,Image.FORMAT_RGBA8)
 	var elevations := PackedFloat32Array()
 	elevations.resize(96*96)
+	var lowest_land: float = INF
+	var highest_land: float = -INF
 	for y: int in range(96):
 		for x: int in range(96):
-			elevations[y*96+x] = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
+			var height: float = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
+			elevations[y*96+x] = height
+			if height >= -0.6:
+				lowest_land = minf(lowest_land,height)
+				highest_land = maxf(highest_land,height)
+	var land_range: float = maxf(highest_land-lowest_land,1.0)
 	for y: int in range(96):
 		for x: int in range(96):
 			var h: float = elevations[y*96+x]
 			var color: Color
+			var relief: float = 0.0
 			if h < -0.6:
 				var water_depth: float = clampf((-h-0.6)/18.0,0,1)
-				color = Color("285b5d").lerp(Color("102d3b"),water_depth)
+				color = Color("4d9c91").lerp(Color("173646"),water_depth)
 			else:
-				var relief: float = clampf(h/28.0,0,1)
-				if relief < 0.56:
-					color = Color("35423c").lerp(Color("777359"),relief/0.56)
-				else:
-					color = Color("777359").lerp(Color("b9a77f"),(relief-0.56)/0.44)
+				relief = clampf((h-lowest_land)/land_range,0,1)
+				color = Color("485750").lerp(Color("a99a70"),relief)
 			# Shade opposite terrain slopes from adjacent real elevation samples.
 			var left: float = elevations[y*96+maxi(0,x-1)]
 			var right: float = elevations[y*96+mini(95,x+1)]
 			var above: float = elevations[maxi(0,y-1)*96+x]
 			var below: float = elevations[mini(95,y+1)*96+x]
-			var slope_shade: float = clampf(((right-left)-(below-above))*0.035,-0.14,0.14)
+			var slope_shade: float = clampf(((right-left)-(below-above))*0.035,-0.22,0.22)
 			if slope_shade > 0.0: color = color.lightened(slope_shade)
 			elif slope_shade < 0.0: color = color.darkened(-slope_shade)
-			# Sparse sampled elevation bands retain shape without turning the chart into speckles.
-			if h >= -0.6 and fposmod(h,4.0) < 0.18: color = color.darkened(0.18)
+			# Contours use the sampled local relief range, so small expedition regions
+			# still show landform shape even when their absolute elevation is narrow.
+			if h >= -0.6 and fposmod(relief*7.0,1.0) < 0.045: color = color.darkened(0.16)
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
@@ -203,5 +209,10 @@ func _draw_map_label(text: String, at: Vector2, color: Color) -> void:
 	if baseline.y < 16: baseline.y = 16
 	if baseline.y > size.y-5: baseline.y = size.y-5
 	var font: Font = ThemeDB.fallback_font
+	var label_size: Vector2 = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,9)
+	var label_rect := Rect2(baseline+Vector2(-3,-10),label_size+Vector2(6,13))
+	label_rect.position.x = clampf(label_rect.position.x,chart_rect().position.x+2,chart_rect().end.x-label_rect.size.x-2)
+	label_rect.position.y = clampf(label_rect.position.y,chart_rect().position.y+2,chart_rect().end.y-label_rect.size.y-2)
+	draw_rect(label_rect,Color("10191d",0.88))
 	draw_string(font,baseline+Vector2(1,1),text,HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("101719",0.95))
 	draw_string(font,baseline,text,HORIZONTAL_ALIGNMENT_LEFT,-1,9,color)

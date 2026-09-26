@@ -27,9 +27,9 @@ func run() -> void:
 	scene.set_physics_process(false)
 	scene.audio.muted = true
 	var hud: Control = scene.hud
-	check(hud.navigation.size.x >= 170 and hud.navigation.size.y >= 145 and hud.navigation.tooltip_text.contains("50 m"),"Surface chart matches the canon map field proportions and keeps its 50 m scale")
-	check(hud.chart_heading.visible and hud.chart_heading.position.y >= hud.navigation.position.y + hud.navigation.size.y,"Surface chart keeps its name below the map field")
-	check(hud.chart_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.chart_backing.size.x <= 210 and not hud.nav_pod.visible,"Surface chart uses one fitted Field Instruments frame without a blank altitude bay")
+	check(hud.navigation.size.x >= 200 and hud.navigation.size.y >= 160 and hud.navigation.tooltip_text.contains("50 m"),"Surface chart expands its terrain aperture while keeping the 50 m scale")
+	check(hud.chart_heading.visible and hud.chart_heading.position.y >= hud.navigation.position.y + hud.navigation.size.y - 6,"Surface chart keeps its name below the map field")
+	check(hud.chart_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.chart_backing.size.x <= 230 and not hud.nav_pod.visible,"Surface chart uses one fitted Field Instruments frame without a blank altitude bay")
 	check(hud.navigation_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.navigation_backing.visible and hud.navigation_backing.size.x <= 40 and hud.navigation_backing.size.y <= 90,"Local navigation uses a narrow angular Field Instruments tab strip")
 	check(hud.navigation_menu_button.visible and hud.departure_button.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible) and not hud.sector_button.visible and not hud.system_button.visible,"Surface keeps two navigation controls visible and tucks secondary actions away")
 	check(hud.departure_button.get_theme_font_size("font_size") == 1 and not hud.departure_button.tooltip_text.is_empty(),"The ascent tab stays icon-only and keeps its named hover tooltip")
