@@ -1,6 +1,7 @@
 extends SceneTree
 const Session = preload("res://scripts/expedition_session.gd")
 const Field = preload("res://scripts/encounter_state.gd")
+const Geography = preload("res://scripts/planet_geography.gd")
 var checks: int = 0
 var failures: int = 0
 
@@ -135,6 +136,7 @@ func run() -> void:
 	scene._refresh_ui()
 	check(scene.stats.text.begins_with("%d Marks" % scene.campaign.sector.state.credits),"HUD reads the authoritative balance")
 	var seam: Vector3 = scene._target_position("vein")
+	check(Vector2(seam.x,seam.z).length() > 512.0 and Vector2(seam.x,seam.z).length() < Geography.SURFACE_TRAVEL_RADIUS_M,"The saved finite lode sits inside the first adjacent, reachable region")
 	scene.ship.position = seam+Vector3(0,3,3)
 	scene.selected = "vein"
 	scene._select_tool("scan")
@@ -147,11 +149,22 @@ func run() -> void:
 	scene._update_visuals()
 	scene._refresh_ui()
 	check(scene.campaign.commerce.quantity("glass") == 1 and scene.model.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS-1,"Mouse-selected cutter visibly transfers one mineral into cargo")
-	check(scene.mineral_crystals.filter(func(lode: Node3D) -> bool: return lode.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Collected lode disappears from the finite surface seam")
 	check(scene.operation_feedback == "SECURED" and scene.status_icon.visible and scene.status.text.begins_with("+1 Resonant glass"),"Mining reward uses the item icon and concise cargo receipt")
 	check(scene.status_icon.size.x <= 56 and scene.status_icon.size.y <= 56,"Reward icon remains a small HUD pictogram, not a full-size image")
 	check(scene.subject.text == "Resonant glass seam" and scene.hud.action_state.text == "SECURED" and scene.explanation.text.begins_with("+1 Resonant glass"),"Target card reports the delivered item without distance/status overlap")
 	check(scene.ring.position.y > scene.terrain_height(scene.ring.position.x,scene.ring.position.z),"Selected target ring sits visibly above the surface")
+
+	var lode_return: Vector3 = scene.ship.position
+	scene._change_flight_mode("orbit")
+	check(scene.model.state.surface_position[0] == lode_return.x and scene.model.state.surface_position[2] == lode_return.z,"Leaving for orbit records the adjacent lode's planet-fixed return place")
+	scene._change_flight_mode("surface")
+	check(Vector2(scene.ship.position.x,scene.ship.position.z).distance_to(Vector2(lode_return.x,lode_return.z)) < 0.01,"Returning from orbit restores the same adjacent-region surface coordinates")
+	scene._save()
+	scene.model.state.ore_remaining = Field.MINERAL_DEPOSIT_UNITS
+	scene.model.state.surface_position = [0.0,5.0,12.0]
+	scene._load()
+	check(scene.model.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS-1 and scene.model.state.surface_position[0] == lode_return.x and scene.model.state.surface_position[2] == lode_return.z,"Save/reload preserves regional lode depletion and return location")
+	check(scene.mineral_crystals.filter(func(lode: Node3D) -> bool: return lode.visible).size() == Field.MINERAL_DEPOSIT_UNITS-1,"Collected lode disappears from the finite surface seam")
 	scene.persistence_blocked = true
 	var safe_bytes: PackedByteArray = FileAccess.get_file_as_bytes(scene._campaign_path(false))
 	scene.model.marks = 999

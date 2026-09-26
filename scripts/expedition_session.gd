@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 22
+const VERSION := 23
 const Galaxy = preload("res://scripts/galaxy_catalog.gd")
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
@@ -139,7 +139,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -174,6 +174,13 @@ func restore_snapshot(source: Variant) -> Error:
 		if source.version < 20 and not saved_worlds[id].has("ore_remaining"): saved_worlds[id].ore_remaining = Field.MINERAL_DEPOSIT_UNITS
 		if source.version < 21 and not saved_worlds[id].has("surface_position"): saved_worlds[id].surface_position = [0.0,5.0,12.0]
 		if source.version < 22 and not saved_worlds[id].has("surface_direction"): saved_worlds[id].surface_direction = [0.0,0.0,1.0]
+		if source.version < 23:
+			var saved_surface: Variant = saved_worlds[id].get("surface_position", [0.0,5.0,12.0])
+			if not saved_surface is Array or saved_surface.size() != 3: return ERR_INVALID_DATA
+			for component: Variant in saved_surface:
+				if not (typeof(component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(component)): return ERR_INVALID_DATA
+			var up: Vector3 = Geography.surface_pose(Geography.definition(id), float(saved_surface[0]), float(saved_surface[2]))
+			saved_worlds[id].surface_direction = [up.x,up.y,up.z]
 		if saved_worlds[id].size() != LOCAL_KEYS.size(): return ERR_INVALID_DATA
 		var probe: Dictionary = Field.fresh()
 		probe.planet_id = id

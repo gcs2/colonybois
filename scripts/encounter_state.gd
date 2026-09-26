@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 12
+const VERSION := 13
 const Support = preload("res://scripts/ship_support.gd")
 var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
@@ -241,10 +241,11 @@ func use_repair_pack(item: String) -> String:
 
 
 static func fresh(planet: String = "morrow") -> Dictionary:
+	var initial_up: Vector3 = Geography.surface_direction(Geography.definition(planet), 0.0, 12.0)
 	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3, "ore_remaining":MINERAL_DEPOSIT_UNITS,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
-		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "surface_direction":[0.0,0.0,1.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
+		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "surface_direction":[initial_up.x,initial_up.y,initial_up.z], "yaw":0.0, "flight_mode":"surface", "landings":0,
 		"planet_id":planet, "survey_ticks":0, "survey_active":false,
 		"hull":100.0, "shroud_unlocked":false, "shroud_on":false,
 		"threat_clock":0, "tow_count":0, "last_repair_at":-REPAIR_COOLDOWN,
@@ -409,7 +410,10 @@ func start_survey() -> String:
 func change_flight_mode(mode: String) -> bool:
 	if mode == "surface" and definition().sites.is_empty(): return false
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
-	if state.flight_mode == "surface": state.surface_position = state.position.duplicate(true)
+	if state.flight_mode == "surface":
+		state.surface_position = state.position.duplicate(true)
+		var up: Vector3 = Geography.surface_pose(definition(), float(state.position[0]), float(state.position[2]))
+		state.surface_direction = [up.x,up.y,up.z]
 	state.flight_mode = mode
 	state.guardian_alert = 0
 	state.guardian_fire_at = 0
@@ -603,10 +607,18 @@ func restore_snapshot(source: Variant) -> Error:
 		value.version = 11
 		value.surface_position = value.position.duplicate(true) if value.get("flight_mode", "surface") == "surface" else [0.0,5.0,12.0]
 	if value.get("version") == 11:
-		value.version = VERSION
+		value.version = 12
 		# Old local coordinates have no defined planetary frame. Anchor migrated saves
 		# to the authored landing direction; keep the exact planar return position too.
 		value.surface_direction = [0.0,0.0,1.0]
+	if value.get("version") == 12:
+		value.version = VERSION
+		var saved_surface: Variant = value.get("surface_position", [0.0,5.0,12.0])
+		if not saved_surface is Array or saved_surface.size() != 3: return ERR_INVALID_DATA
+		for component: Variant in saved_surface:
+			if not (typeof(component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(component)): return ERR_INVALID_DATA
+		var up: Vector3 = Geography.surface_direction(Geography.definition(str(value.get("planet_id", "morrow"))), float(saved_surface[0]), float(saved_surface[2]))
+		value.surface_direction = [up.x,up.y,up.z]
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -660,18 +672,19 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.survey_ticks == int(Geography.definition(value.planet_id).survey_seconds) and value.survey_active: return ERR_INVALID_DATA
 	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition(value.planet_id).survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
 	if value.position.size() != 3 or value.surface_position.size() != 3 or value.surface_direction.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
+	var surface_limit: float = Geography.surface_travel_radius(str(value.planet_id))
 	for index: int in range(3):
 		var coordinate: Variant = value.position[index]
 		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)): return ERR_INVALID_DATA
-		var bound: float = Geography.PLAYABLE_RADIUS if value.flight_mode == "surface" and index != 1 else 100.0
+		var bound: float = surface_limit if value.flight_mode == "surface" and index != 1 else 100.0
 		if absf(float(coordinate)) > bound: return ERR_INVALID_DATA
 		var surface_coordinate: Variant = value.surface_position[index]
 		if not (typeof(surface_coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(surface_coordinate)): return ERR_INVALID_DATA
-		var surface_bound: float = 100.0 if index == 1 else Geography.PLAYABLE_RADIUS
+		var surface_bound: float = 100.0 if index == 1 else surface_limit
 		if absf(float(surface_coordinate)) > surface_bound: return ERR_INVALID_DATA
 		var direction_component: Variant = value.surface_direction[index]
 		if not (typeof(direction_component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(direction_component)): return ERR_INVALID_DATA
-	if Vector2(float(value.surface_position[0]),float(value.surface_position[2])).length() > Geography.PLAYABLE_RADIUS: return ERR_INVALID_DATA
+	if Vector2(float(value.surface_position[0]),float(value.surface_position[2])).length() > surface_limit: return ERR_INVALID_DATA
 	var saved_direction := Vector3(float(value.surface_direction[0]),float(value.surface_direction[1]),float(value.surface_direction[2]))
 	if saved_direction.length_squared() < 0.000001 or absf(saved_direction.length()-1.0) > 0.01: return ERR_INVALID_DATA
 	saved_direction = saved_direction.normalized()

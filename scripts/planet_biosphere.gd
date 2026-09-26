@@ -84,7 +84,7 @@ func reason(game: RefCounted, id: String, action: String, at: Vector3, point: Ve
 		if int(world(planet).stock.get(id,0)) <= 0: return "Local population recovering."
 	elif action == "release":
 		if int(state.cargo.get(id,0)) <= 0: return "No specimen aboard."
-		if Vector2(point.x,point.z).length() > Geography.PLAYABLE_RADIUS: return "Choose a site inside the explorable surface region."
+		if Vector2(point.x,point.z).length() > Geography.surface_travel_radius(planet): return "Choose a site inside the explorable surface region."
 		if absf(point.y-Geography.surface_height(game.field.definition(),point.x,point.z)-1.5) > 0.1: return "Choose a surface habitat."
 		if id in species(planet): return "Species already established here."
 		if release_slot(game,id).is_empty(): return "Needs a climate tier with a matching slot and an established food supply."
@@ -199,8 +199,8 @@ func restore(source: Variant) -> Error:
 			if not id is String or id not in seen or not local.sites[id] is Array or local.sites[id].size() != 3: return ERR_INVALID_DATA
 			for axis: int in range(3):
 				var value: Variant = local.sites[id][axis]
-				var bound: float = 100.0 if axis == 1 else Geography.PLAYABLE_RADIUS
+				var bound: float = 100.0 if axis == 1 else Geography.surface_travel_radius(str(planet))
 				if not Validation.number(value,-bound,bound): return ERR_INVALID_DATA
-			if Vector2(local.sites[id][0],local.sites[id][2]).length() > Geography.PLAYABLE_RADIUS: return ERR_INVALID_DATA
+			if Vector2(local.sites[id][0],local.sites[id][2]).length() > Geography.surface_travel_radius(str(planet)): return ERR_INVALID_DATA
 	state = source.duplicate(true)
 	return OK

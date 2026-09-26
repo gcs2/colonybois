@@ -50,7 +50,6 @@ const Instruments = preload("res://scripts/flight_interface.gd")
 const TOAST_SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
-const SurfaceLayout = preload("res://scripts/surface_region_layout.gd")
 const FlightHUD = preload("res://scripts/flight_hud.gd")
 const FlightEffects = preload("res://scripts/flight_effects.gd")
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
@@ -307,6 +306,11 @@ func _notification(what: int) -> void:
 func terrain_height(x: float, z: float) -> float:
 	return Geography.surface_height(world_definition,x,z)
 
+func _sync_surface_pose() -> void:
+	model.state.surface_position = [ship.position.x,ship.position.y,ship.position.z]
+	var up: Vector3 = Geography.surface_pose(world_definition, ship.position.x, ship.position.z)
+	model.state.surface_direction = [up.x,up.y,up.z]
+
 func _terrain_base(x: float, z: float) -> float:
 	return Geography.surface_base(world_definition,x,z)
 
@@ -409,7 +413,7 @@ func _make_world() -> void:
 				var h: float = terrain_height(px,pz)
 				# The playable region and terrain query must agree; curve only the shell
 				# that sits well beyond the player's bounded expedition envelope.
-				var far_start: float = Geography.PLAYABLE_RADIUS+80.0
+				var far_start: float = Geography.surface_travel_radius(rendered_planet)+80.0
 				var far_blend: float = smoothstep(far_start,far_start+220.0,radial_distance)
 				h = lerpf(h,_distant_landform(px,pz),far_blend)
 				var visual_radius: float = maxf(0.0,radial_distance-far_start)
@@ -520,7 +524,10 @@ func _make_world() -> void:
 		var plant: Node3D = _asset("pod",bed.position+Vector3(cos(a)*2.3,0.2,sin(a)*2.3),0.01)
 		grown_plants.append(plant)
 	var vein := Node3D.new()
-	vein.position = Vector3(18,terrain_height(18,16),16)
+	# The only authored mineral opportunity is deliberately placed in the first
+	# adjacent spherical region; the existing scan/cutter/ore save path owns it.
+	var vein_position: Vector2 = Vector2(620,16) if rendered_planet == "morrow" else Vector2(18,16)
+	vein.position = Vector3(vein_position.x,terrain_height(vein_position.x,vein_position.y),vein_position.y)
 	vein.rotation.y = 0.43
 	add_child(vein)
 	targets.vein = vein
@@ -669,18 +676,16 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 func _surface_feature_sets() -> Dictionary:
 	var grouped: Dictionary = {"cover":[],"rock":[],"flora":[],"fauna":[]}
 	if rendered_planet != "morrow": return grouped
-	var tile_size: float = SurfaceLayout.FEATURE_TILE_SIZE
-	# Seeded environmental dressing extends to the rendered horizon. The smaller
-	# PLAYABLE_RADIUS remains the current interaction boundary until spherical
-	# streaming replaces this local field.
-	var tile_count: int = ceili(SURFACE_VISUAL_RADIUS/tile_size)
-	for tile_x: int in range(-tile_count,tile_count+1):
-		for tile_z: int in range(-tile_count,tile_count+1):
-			for feature: Dictionary in SurfaceLayout.tile_features(world_definition,Vector2i(tile_x,tile_z),tile_size):
-				var at: Vector2 = feature["position"]
-				if at.length() > SURFACE_VISUAL_RADIUS or at.length() < 48.0: continue
-				var kind: String = str(feature["kind"])
-				if grouped.has(kind): grouped[kind].append(feature)
+	# The fixed tangent frame is a temporary compatibility view. Region identities
+	# and feature positions come from the shared spherical recipe and bounded query.
+	var anchor: Vector3 = Geography.site_direction("morrow")
+	var window: Dictionary = Geography.surface_runtime(world_definition).window(anchor)
+	for feature: Dictionary in window.features:
+		var kind: String = str(feature.get("kind", ""))
+		if not grouped.has(kind): continue
+		var position: Vector2 = feature.get("position_m", Vector2.ZERO)
+		if position.length() < 48.0: continue
+		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
 	return grouped
 
 func _make_regional_features() -> void:
@@ -1109,7 +1114,7 @@ func _physics_process(delta: float) -> void:
 		if absf(altitude_order-ship.position.y) < 0.2: altitude_order = -1
 	velocity = velocity.move_toward(move,delta*28)
 	ship.position += velocity*delta
-	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else Geography.PLAYABLE_RADIUS)
+	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else Geography.surface_travel_radius(rendered_planet))
 	ship.position.x = flat.x
 	ship.position.z = flat.y
 	if orbital:
@@ -1154,7 +1159,7 @@ func _process(delta: float) -> void:
 			var old_pulse: int = model.state.threat_clock
 			var old_escorts: Array = campaign.fleet.active_ids() if campaign != null else []
 			model.state.position = [ship.position.x,ship.position.y,ship.position.z]
-			if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
+			if model.state.flight_mode == "surface": _sync_surface_pose()
 			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
 			if model.state.planet_id != rendered_planet:
 				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
@@ -1460,7 +1465,7 @@ func _hud_action(action: String) -> void:
 func _chart_navigate(at: Vector2) -> void:
 	if paused or _inspection_open(): return
 	if model.state.flight_mode == "surface":
-		at = at.limit_length(Geography.PLAYABLE_RADIUS)
+		at = at.limit_length(Geography.surface_travel_radius(rendered_planet))
 		_navigate(Vector3(at.x,maxf(ship.position.y,terrain_height(at.x,at.y)+4),at.y))
 	else: _navigate(Vector3(at.x,ship.position.y,at.y))
 
@@ -1879,7 +1884,7 @@ func _pick(screen: Vector2) -> void:
 	for i: int in range(1,480):
 		var at: Vector3 = from+ray*float(i)*0.5
 		if at.y <= terrain_height(at.x,at.z):
-			var flat := Vector2(at.x,at.z).limit_length(Geography.PLAYABLE_RADIUS)
+			var flat := Vector2(at.x,at.z).limit_length(Geography.surface_travel_radius(rendered_planet))
 			_navigate(Vector3(flat.x,maxf(ship.position.y,terrain_height(flat.x,flat.y)+4),flat.y))
 			return
 
@@ -1968,7 +1973,7 @@ func _begin_landing() -> void:
 
 func _change_flight_mode(mode: String) -> void:
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
-	if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
+	if model.state.flight_mode == "surface": _sync_surface_pose()
 	if not model.change_flight_mode(mode): return
 	_cancel_orders()
 	_restore_ship()
@@ -2817,7 +2822,7 @@ func _save(notify: bool = true) -> void:
 		if notify: _toast("Saving disabled: the existing campaign could not be restored.")
 		return
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
-	if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
+	if model.state.flight_mode == "surface": _sync_surface_pose()
 	model.state.yaw = yaw
 	var error: Error = campaign.save_to(_campaign_path(not notify)) if campaign != null else model.save_to(save_path if notify else save_path.replace(".json","_auto.json"))
 	if notify: audio.play("saved" if error == OK else "error")

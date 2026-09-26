@@ -1,21 +1,42 @@
 extends RefCounted
 ## Planet-fixed coordinates: north +Y; longitude zero +Z, east toward +X.
 const PLAYABLE_RADIUS := 256.0
+## Temporary first-slice tangent-frame envelope. This is not a planet-scale limit.
+const SURFACE_TRAVEL_RADIUS_M := 1200.0
+const SurfaceRuntime = preload("res://scripts/planet_surface_runtime.gd")
+const PLANET_RADIUS_M := SurfaceRuntime.PROVISIONAL_PLANET_RADIUS_M
 static var cached_definition: Dictionary = {}
 static var sector_definitions: Dictionary = {}
 static var surface_noise_cache: Dictionary = {}
+static var surface_runtime_cache: Dictionary = {}
+
+static func surface_travel_radius(planet_id: String) -> float:
+	return SURFACE_TRAVEL_RADIUS_M if planet_id.to_lower() == "morrow" else PLAYABLE_RADIUS
+
+static func surface_direction(world: Dictionary, x: float, z: float) -> Vector3:
+	var anchor: Vector3 = site_direction(str(world.get("id", "morrow")))
+	return surface_runtime(world).advance(anchor, x, z)
+
+static func surface_pose(world: Dictionary, x: float, z: float) -> Vector3:
+	return surface_direction(world, x, z)
+
+static func surface_runtime(world: Dictionary) -> Object:
+	var key: String = "%s:%d:%d" % [str(world.get("id", world.get("planet_id", ""))).to_lower(), int(world.get("geography_seed", world.get("seed", 0))), int(world.get("generator_version", 1))]
+	var cached: Variant = surface_runtime_cache.get(key)
+	if cached is Object and cached.matches_recipe(world): return cached
+	var runtime: Object = SurfaceRuntime.new(SurfaceRuntime.normalized_recipe(world))
+	surface_runtime_cache[key] = runtime
+	if surface_runtime_cache.size() > 4: surface_runtime_cache.erase(surface_runtime_cache.keys()[0])
+	return runtime
 static func surface_height(world: Dictionary, x: float, z: float) -> float:
+	if str(world.get("id", "")) == "morrow":
+		# Shared spherical sample drives movement, camera, chart picking, deployment,
+		# and combat ground queries through the encounter's existing local frame.
+		var runtime: Object = surface_runtime(world)
+		var anchor: Vector3 = site_direction(str(world.get("id", "morrow")))
+		var sample: Dictionary = runtime.sample(runtime.advance(anchor, x, z))
+		return float(sample.elevation) * SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M
 	var height: float = surface_base(world,x,z)
-	if world.get("id","") == "morrow":
-		var radius: float = Vector2(x,z).length()
-		if radius <= 39.0: return height
-		var field: Dictionary = _surface_noise_field(world)
-		var macro: float = field.macro.get_noise_2d(x,z)
-		var detail: float = field.detail.get_noise_2d(x,z)
-		var ridge_noise: float = field.ridge.get_noise_2d(x,z)
-		var ridges: float = pow(1.0-absf(ridge_noise),4.0)
-		var outer_height: float = 3.6+macro*2.6+detail*0.7+ridges*0.85
-		return lerpf(height,outer_height,smoothstep(39.0,96.0,radius))
 	if world.archetype != "temperate":
 		var basin: float = 1.0-smoothstep(4.4,6.5,Vector2(x-8,z+4).length())
 		height = lerpf(height,surface_base(world,8,-4),basin)
@@ -33,18 +54,9 @@ static func surface_base(world: Dictionary, x: float, z: float) -> float:
 ## Other archetypes retain the existing encounter palette calculation.
 static func surface_color(world: Dictionary, x: float, z: float) -> Color:
 	if world.get("id","") == "morrow":
-		var field: Dictionary = _surface_noise_field(world)
-		var macro: float = field.macro.get_noise_2d(x,z)*0.5+0.5
-		var detail: float = field.detail.get_noise_2d(x,z)*0.5+0.5
-		var ridge_noise: float = field.ridge.get_noise_2d(x,z)
-		var ridge: float = pow(1.0-absf(ridge_noise),4.0)
-		var soil := Color("785044").lerp(Color("b96f50"),smoothstep(0.18,0.82,macro))
-		soil = soil.lerp(Color("d0a071"),smoothstep(0.64,0.92,detail)*0.52)
-		var mineral: float = clampf(smoothstep(0.70,0.91,macro*0.58+detail*0.42)*0.48+ridge*0.16,0.0,0.55)
-		soil = soil.lerp(Color("456b66").lerp(Color("77978a"),detail),mineral)
-		var pond_distance: float = sqrt(pow((x+23.0)/7.2,2.0)+pow(z/13.5,2.0))
-		var shore: float = 1.0-smoothstep(0.85,1.35,pond_distance)
-		return soil.lerp(Color("5e4939"),shore*0.75)
+		var runtime: Object = surface_runtime(world)
+		var anchor: Vector3 = site_direction(str(world.get("id", "morrow")))
+		return runtime.surface_color(runtime.advance(anchor, x, z))
 
 	var radial_distance: float = Vector2(x,z).length()
 	var far_blend: float = smoothstep(55.0,155.0,radial_distance)
