@@ -4,7 +4,7 @@
 
 **Player activity:** Fly, navigate, discover and approach Morrow as one continuing expedition with the same scout, route, equipment and campaign state.
 
-**Status:** The user approved the Morrow surface target and v2 orbital gameplay, solar-system map, and approach/arrival images on 25 September 2026. Their original 1672 × 941 files are canon; do not regenerate them for critic-requested size/ship revisions. The user also asked to include the earlier galaxy-scale view as a supporting reference. See the single tracked [visual canon home](../../../art/visual-canon/README.md).
+**Status: Completed and approved, 25 September 2026.** The original Morrow surface target and exact v2 orbital, solar-system-map and approach/arrival images, plus the earlier galaxy reference, are in the single tracked [visual canon home](../../../art/visual-canon/README.md). Preserve the 1672 × 941 originals. Do not regenerate these views or revise their ship size/resolution from critic suggestions. This brief remains context and prompt provenance, not an open image-generation task.
 
 ## Wider project context
 
@@ -12,7 +12,7 @@ Read [production goal](../../PRODUCTION_GOAL.md), [Space Stage target](../../dir
 
 ## Ground-truth references
 
-- **Selected target:** [Morrow surface populated v3](../../../artifacts/field-instruments-review/01-surface-populated-v3.png). Byte-identical to the image the user pinned on 25 September 2026; SHA-256 2E57DBE16817150BAA831B7C889F3E238352F44D00030457D3A4867A604E42C2. This sets the environment, broad world-to-ship scale and surface HUD.
+- **Selected target:** [Morrow surface ground truth](../../../art/visual-canon/morrow-surface-ground-truth.png). This is the exact image the user pinned on 25 September 2026; SHA-256 2E57DBE16817150BAA831B7C889F3E238352F44D00030457D3A4867A604E42C2. It sets the environment, broad world-to-ship scale and surface HUD.
 - **Earlier galaxy reference:** [Galaxy local v2](../../../art/visual-canon/galaxy-view-reference.png), included at the user's request as a supporting scale/composition reference.
 - [Surface v1](../../../artifacts/field-instruments-review/01-surface-v1.png) and [surface v2](../../../artifacts/field-instruments-review/01-surface-populated-v2.png): progression only.
 - [Orbit v1](../../../artifacts/field-instruments-review/03-orbit-v1.png): candidate composition, camera/HUD not approved.
@@ -28,16 +28,13 @@ Ordinary gameplay uses a player-follow camera; no cinematic framing. Keep the sh
 
 Avoid oversized ship, shallow-focus blur, dominant altitude panel, thin icon strip in place of inventory, blue Windows panels, rounded icon wells, shiny copper-like borders, copied Spore art, and downgraded sparse landscape.
 
-## Deliverables and shared image home
+## Deliverables and canonical home
 
-Put three separate 1920×1080 images (not a collage) in artifacts/designer-mocks/R01-V01-V04/ in the active review worktree:
-- 01-orbital-gameplay.png — player-follow orbital flight, planet, route and destination visible.
-- 02-solar-system-map.png — star, planets, orbital paths, current ship, selected destination, route and travel context.
-- 03-approach-arrival.png — player-follow approach to the same Morrow relay/region, leading to the selected surface target.
-
-Leave the selected source image unchanged. Update the artifact home's README.md with exact prompts actually used, tool, date, source links and status. The current index is the shared view for user, coordinator and critic.
+Completed. The approved orbital gameplay, solar-system map, and approach/arrival originals are indexed with the selected surface target and supporting galaxy reference in the tracked [visual canon](../../../art/visual-canon/README.md). The exact generation prompts and provenance are recorded beside them. This home replaces the earlier artifacts/designer-mocks destination for this completed request.
 
 ## Copy-ready prompts
+
+These prompt drafts preserve the original request. The exact prompts used for the approved images are in the tracked [generation-prompt record](../../../art/visual-canon/generation-prompts.md). Do not run the drafts to regenerate the completed views; use a new task-board brief for a genuinely missing view.
 
 ### 01 — Orbital gameplay
 Use the selected Morrow surface screenshot as visual and HUD ground truth. Create one 1920×1080 ordinary playable orbital-flight screen for an original creepy-cute space exploration game. A practical third-person player-follow camera keeps the scout about 6% of screen width; the planet, atmosphere, route and landing cue dominate. Preserve Field Instruments, full tabbed two-row equipment/cargo grid with counts, notifications top-left, Marks top-right, readable hull/energy and small ALT. No cinematic angle, blur, large ship, surface chart, dominant altitude panel, simplified icon strip, blue Windows panels, rounded wells, copper borders or collage. Original art.
