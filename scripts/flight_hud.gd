@@ -262,7 +262,7 @@ func _build() -> void:
 
 	# Top-left clean location header matching Field Instruments
 	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Color("1c2426"))
-	chart_heading = label_at("LOCAL SURFACE CHART · 80 m", Rect2(42, 683, 222, 16), 11, Color("1c2426"))
+	chart_heading = label_at("LOCAL SURFACE CHART · 80 m", Rect2(36, 663, 196, 18), 11, Color("1c2426"))
 	chart_heading.visible = false
 
 	# Local navigation chart mounted cleanly inside the dial of nav_pod
@@ -709,6 +709,10 @@ func set_orbital_mode(enabled: bool) -> void:
 		navigation_actions[2].position = Vector2(285, 778)
 		navigation_actions[3].position = Vector2(337, 778)
 		departure_button.position = Vector2(285, 824)
+		Art.instrument(departure_button,"",Art.NAV)
+		departure_button.icon = null
+		departure_button.add_theme_font_size_override("font_size",11)
+		departure_button.tooltip_text = ""
 		altitude_backing.position = Vector2(1402, 664)
 		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
@@ -739,24 +743,34 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# One flush instrument rail gives the surface chart a useful face while
-		# keeping the world open above it. The adjacent navigation block begins
-		# at the chart pod's edge and shares its matte-ivory housing.
-		nav_pod.position = Vector2(26, 680)
-		nav_pod.size = Vector2(210, 190)
-		chart_backing.position = Vector2(26, 680)
-		chart_backing.size = Vector2(210, 190)
+		# The chart, clear title strip and compact action column share one flush
+		# housing so this useful instrument does not dominate the lower-left view.
+		nav_pod.position = Vector2(26, 660)
+		nav_pod.size = Vector2(210, 210)
+		chart_backing.position = Vector2(26, 660)
+		chart_backing.size = Vector2(210, 210)
 		navigation.position = Vector2(32, 686)
 		navigation.size = Vector2(198, 178)
-		navigation_backing.position = Vector2(236, 680)
-		navigation_backing.size = Vector2(153, 190)
-		sector_button.position = Vector2(242, 686)
-		system_button.position = Vector2(315, 686)
-		navigation_actions[0].position = Vector2(242, 732)
-		navigation_actions[1].position = Vector2(315, 732)
-		navigation_actions[2].position = Vector2(242, 778)
-		navigation_actions[3].position = Vector2(315, 778)
-		departure_button.position = Vector2(260, 824)
+		navigation_backing.position = Vector2(236, 660)
+		navigation_backing.size = Vector2(54, 210)
+		chart_heading.position = Vector2(36, 663)
+		var rail_actions: Array[Button] = [sector_button, system_button, navigation_actions[0], navigation_actions[1], navigation_actions[2], navigation_actions[3], departure_button]
+		for index: int in range(rail_actions.size()):
+			rail_actions[index].position = Vector2(241, 664 + index * 29)
+			rail_actions[index].size = Vector2(44, 28)
+			rail_actions[index].add_theme_constant_override("icon_max_width",22)
+			for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
+				var compact_style := rail_actions[index].get_theme_stylebox(state).duplicate() as StyleBoxFlat
+				compact_style.content_margin_left = 2
+				compact_style.content_margin_right = 2
+				compact_style.content_margin_top = 1
+				compact_style.content_margin_bottom = 1
+				rail_actions[index].add_theme_stylebox_override(state,compact_style)
+		Art.symbol(departure_button,"ascend",Art.NAV)
+		departure_button.tooltip_text = "Leave atmosphere · ascend to orbit"
+		departure_button.add_theme_font_size_override("font_size",1)
+		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
+			departure_button.add_theme_color_override(state,Color(0,0,0,0))
 		altitude_backing.position = Vector2(1402, 664)
 		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
