@@ -96,7 +96,7 @@ func _rebuild_terrain() -> void:
 			# Shores and contours reinforce coast and ridge shape while remaining
 			# derived entirely from the current terrain samples.
 			if h >= -0.6 and h < -0.15: color = color.lerp(Color("647e76"),0.20)
-			if h >= -0.6 and fposmod(relief*8.0,1.0) < 0.055: color = color.darkened(0.20)
+			if h >= -0.6 and fposmod(relief*8.0,1.0) < 0.055: color = color.darkened(0.14)
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
@@ -201,8 +201,8 @@ func _draw() -> void:
 	for fraction: float in [0.33,0.66]:
 		var x: float = lerpf(rect.position.x,rect.end.x,fraction)
 		var y: float = lerpf(rect.position.y,rect.end.y,fraction)
-		draw_line(Vector2(x,rect.position.y),Vector2(x,rect.end.y),Color(0.76,0.75,0.66,0.055))
-		draw_line(Vector2(rect.position.x,y),Vector2(rect.end.x,y),Color(0.76,0.75,0.66,0.055))
+		draw_line(Vector2(x,rect.position.y),Vector2(x,rect.end.y),Color(0.76,0.75,0.66,0.08))
+		draw_line(Vector2(rect.position.x,y),Vector2(rect.end.x,y),Color(0.76,0.75,0.66,0.08))
 	if not orbital:
 		for id: String in points:
 			var p: Vector2 = project(points[id])
