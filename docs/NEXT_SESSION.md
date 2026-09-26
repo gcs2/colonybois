@@ -4,23 +4,32 @@ Updated 26 September 2026. The task board is the only production queue; the prod
 
 ## Current checkpoint
 
-The available Spore navigation-source review remains closed with an insufficiency finding. Paused samples and manual controls do not establish continuous transition timing, input, or audio. R01, runtime-motion parity, presentation, and playability remain open.
+The available Spore navigation-source review remains closed with an insufficiency finding: paused samples/manual controls do not establish continuous transition timing, input or audio. Runtime-motion parity, presentation and playability remain open.
 
-The isolated worktree C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project is on codex/r01-v01-v04-transition-audit. Its implementation is four commits ahead of the last remotely verified base 89910c1781b45f63b51fe3e4e48cab16320399cd; code HEAD is 88877e43f4b2b2abe4b9a99888916551595ebff9. This combined checkpoint adds deterministic habitat-role clusters, recipe-derived Morrow relief and water rendering, a terrain-sampled local chart, and a more compact Field Instruments layout. The code-and-review checkpoint 089605b31c5e9e332a45aa3177297684a56e2cbd was pushed and verified with git ls-remote before this handoff-only update. Recheck the remote tip after it is pushed. The dirty main checkout at C:/Users/zephy/Documents/ChatGPT/New project was not modified.
+The isolated worktree C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project is on codex/r01-v01-v04-transition-audit at 4b1697e1cf8ae6dba25ef4d9f74721c7da1da98c. It was pushed and git ls-remote verified origin at that exact hash. The dirty main checkout C:/Users/zephy/Documents/ChatGPT/New project was not staged, reset, merged or overwritten.
 
-Focused checks on the combined source:
+This checkpoint tightens the ALT inset and gives the capture harness an output-directory option so reviews do not overwrite earlier evidence. Owning records now distinguish terraforming T-score from biosphere tier and state the user's T2 visual direction. The harness changes and documentation are included with the code.
+
+Focused checks on the integrated source:
 - test_surface_exploration.gd: 63 assertions, zero failures, 46.31 s.
 - test_planet_surface_runtime.gd: 18 checks, zero failures, 0.62 s.
 - test_planet_surface_window.gd: 608 assertions, zero failures, 0.57 s.
-- Chart-only checks in test_flight_hud.gd: 5 assertions, zero failures.
-- Full test_flight_hud.gd: 69 assertions, zero failures, 21.63 s.
-- The actual-renderer capture harness saved before/after 1920×1080 frames and passed its scripted mining/cargo assertions.
+- test_flight_hud.gd: 71 assertions, zero failures, 13.00 s.
+- Actual-renderer mining/cargo harness: scripted assertions passed; 1920×1080 before/after frames captured.
+- DocumentationReport.py: 121/121 files registered, 681 local links, no errors. Targeted git diff --check passed.
 
-The combined capture is at C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project/artifacts/visual-critic-surface-pass/integrated-mining/surface-mining-after-1080.png. An independent reviewer fails both visual gates: terrain and habitat remain sparse and smooth; the distant shell reads as potentially traversable; chart contrast is weak; item icons are undersized and ALT remains a detached strip. The mining position is away from the authored basin, so water is not expected in this view. No full suite, native-input playtest, exported-build review, user acceptance, player-fun review, or performance measurement was done. The focused suite used the existing Godot 4.7.2 binary with isolated worktree profiles; the full HUD attempt in its own worktree stopped after missing generated import caches.
+Latest actual-renderer capture: artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/surface-mining-after-1080.png. Two independent critics reject both world and HUD composition against art/visual-canon/morrow-surface-ground-truth.png. The world is a mostly smooth empty brown plane with sparse small props and a traversable-looking horizon; the chart has weak geography; cargo pictograms are tiny; floating panels and ALT compete with the scene. The user clarified that T2 means terraforming climate score, not biosphere/ecological T2. The approved lush surface is the visual direction for Terraform T2. Do not call the current scene accepted.
+
+No full suite, native-input playtest, exported-build review, user/fun acceptance or performance measurement was performed. Generated .import/.uid sidecars from local imports remain unstaged; review captures are ignored. Do not stage those sidecars.
 
 ## Next work
 
-Push and verify the current code-plus-record checkpoint. Then continue a bounded Morrow composition pass: larger readable deterministic habitat kits, clearer sampled terrain/contacts, and a far-scene horizon that does not look like a walkable slope. Review both the authored basin and one adjacent region; keep the HUD corrections in the same view. If the next pass still falls far short, reassess scope rather than polishing one more isolated asset. After a materially stronger scene, return to the connected-voyage task board item.
+The visual gap is structural. Rebuild Morrow's surface and HUD together as a cohesive, repeatable T2 world presentation derived from the shared planet/region recipe. Define near interactive geometry, coherent middle-distance representation and a clearly distant horizon while preserving seeded geography, traversal, sparse saved changes and the approved player-follow scale. Make the surface chart depict the same landforms and make the real pictorial cargo grid useful without fabricating items. Do not spend another cycle on spacing-only changes.
+
+A separate project-linked read-only investigation was requested for external artists/services, image cutouts, 3D asset generation, licensing/pricing and multiscale rendering. It must inform a small no-spend pilot; purchases or paid terms need concrete user approval. Keep its findings connected to the existing visual canon and task board.
+
+Capture the authored basin and one adjacent playable region at matched follow-camera scale. Request one strict independent visual review after the integrated change. Passing checks and good mocks do not establish runtime visual acceptance or fun. After the visual gate moves materially, continue the connected-voyage task-board work.
+
 ## Checkpoint handling
 
-Keep all work in the isolated integration worktree and branch. Do not stage or alter the dirty main checkout. Stage only intentional source, tests, and owning documentation; preserve but do not stage Godot .import/.uid sidecar changes from the local import run. Keep user data, builds, and captures local/ignored. Serialize imports, tests, and captures. The workstation may be in Silent mode, so make no profiling claims. Push a validated checkpoint and verify its remote hash; cached tracking data is insufficient. No purchase or paid terms are authorized without a concrete price/license decision.
+Continue on codex/r01-v01-v04-transition-audit. Leave the dirty main checkout and all unrelated uncommitted handoffs untouched. Stage only intentional source, tests and owning docs; generated import sidecars and captures stay local. Serialize imports, tests and captures. The workstation may be in Silent mode, so do not claim performance. Keep checkpoints small, push meaningful verified changes and confirm their full remote hash.
