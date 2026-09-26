@@ -54,17 +54,39 @@ static func tile_features(world: Dictionary, tile: Vector2i, tile_size: float = 
 	var feature_counts := {
 		"cover": rng.randi_range(11, 17),
 		"rock": rng.randi_range(2, 4),
-		"flora": rng.randi_range(3, 5),
-		"fauna": rng.randi_range(0, 1)
+		"flora": rng.randi_range(4, 7),
+		"fauna": rng.randi_range(1, 3) if rng.randf() < 0.58 else 0
 	}
 	var kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
 	var serial := 0
 	for kind: String in kinds:
+		# Flora grows in two recipe-stable clumps per tile; fauna arrive in small
+		# local groups. Cover and geology retain the broader scatter pattern.
+		var clusters: Array[Vector2] = []
+		if kind == "flora":
+			for _cluster: int in range(2):
+				clusters.append(Vector2(
+					(float(tile.x) + rng.randf_range(0.22, 0.78)) * tile_size,
+					(float(tile.y) + rng.randf_range(0.22, 0.78)) * tile_size
+				))
+		elif kind == "fauna" and int(feature_counts[kind]) > 0:
+			clusters.append(Vector2(
+				(float(tile.x) + rng.randf_range(0.24, 0.76)) * tile_size,
+				(float(tile.y) + rng.randf_range(0.24, 0.76)) * tile_size
+			))
 		for _index: int in range(int(feature_counts[kind])):
-			var position := Vector2(
-				(float(tile.x) + rng.randf()) * tile_size,
-				(float(tile.y) + rng.randf()) * tile_size
-			)
+			var position: Vector2
+			if not clusters.is_empty():
+				var cluster_index: int = mini(clusters.size() - 1, _index * clusters.size() / maxi(1, int(feature_counts[kind])))
+				var cluster: Vector2 = clusters[cluster_index]
+				position = cluster + Vector2(rng.randfn(0.0, 5.5 if kind == "flora" else 8.0), rng.randfn(0.0, 5.5 if kind == "flora" else 8.0))
+				position.x = clampf(position.x, float(tile.x) * tile_size + 2.0, float(tile.x + 1) * tile_size - 2.0)
+				position.y = clampf(position.y, float(tile.y) * tile_size + 2.0, float(tile.y + 1) * tile_size - 2.0)
+			else:
+				position = Vector2(
+					(float(tile.x) + rng.randf()) * tile_size,
+					(float(tile.y) + rng.randf()) * tile_size
+				)
 			var habitat := _region_at_cached(region_cache, position)
 			if habitat.is_empty():
 				continue

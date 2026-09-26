@@ -662,46 +662,107 @@ func _make_regional_features() -> void:
 		add_child(rock_batch)
 	var flora: Array = surface_region_features.get("flora",[])
 	if not flora.is_empty():
-		var blade_surface := SurfaceTool.new()
-		blade_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for blade: int in range(5):
-			var angle: float = TAU*float(blade)/5.0
-			var outward := Vector3(cos(angle),0,sin(angle))
-			var side := Vector3(-outward.z,0,outward.x)*0.12
-			var base := Vector3.ZERO
-			var bend := outward*0.18+Vector3.UP*0.32
-			var tip := outward*0.42+Vector3.UP*(0.66+0.08*(blade%2))
-			for vertex: Vector3 in [base-side,bend,base+side,bend-side,tip,bend+side]: blade_surface.add_vertex(vertex)
-		blade_surface.generate_normals()
-		var flora_multimesh := MultiMesh.new()
-		flora_multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		flora_multimesh.use_colors = true
-		flora_multimesh.mesh = blade_surface.commit()
-		flora_multimesh.instance_count = flora.size()
 		var flora_colors: Array[Color] = [Color("a8d2a0"),Color("97c5c4"),Color("c4bf8b"),Color("b2a6cb"),Color("72aaa1"),Color("d5ae8b")]
-		for index: int in range(flora.size()):
-			var feature: Dictionary = flora[index]
-			var at: Vector2 = feature["position"]
-			var size: float = float(feature["size"])
-			var scale := Vector3(size*1.5,size*1.7,size*1.5)
-			flora_multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
-			flora_multimesh.set_instance_color(index,flora_colors[int(feature["variant"])%flora_colors.size()])
 		var flora_material := StandardMaterial3D.new()
 		flora_material.vertex_color_use_as_albedo = true
 		flora_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		flora_material.roughness = 0.9
-		var flora_batch := MultiMeshInstance3D.new()
-		flora_batch.multimesh = flora_multimesh
-		flora_batch.material_override = flora_material
-		add_child(flora_batch)
+		for variant: int in range(flora_colors.size()):
+			var shaped: Array = flora.filter(func(item: Dictionary) -> bool: return int(item.variant)%flora_colors.size() == variant)
+			if shaped.is_empty(): continue
+			var flora_multimesh := MultiMesh.new()
+			flora_multimesh.transform_format = MultiMesh.TRANSFORM_3D
+			flora_multimesh.use_colors = true
+			flora_multimesh.mesh = _flora_shape_mesh(variant)
+			flora_multimesh.instance_count = shaped.size()
+			for index: int in range(shaped.size()):
+				var feature: Dictionary = shaped[index]
+				var at: Vector2 = feature.position
+				var scale := Vector3(float(feature.size)*1.5,float(feature.size)*1.55,float(feature.size)*1.5)
+				flora_multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
+				flora_multimesh.set_instance_color(index,flora_colors[variant])
+			var flora_batch := MultiMeshInstance3D.new()
+			flora_batch.multimesh = flora_multimesh
+			flora_batch.material_override = flora_material
+			add_child(flora_batch)
 	var fauna: Array = surface_region_features.get("fauna",[])
-	var fauna_limit: int = mini(12,fauna.size())
-	for index: int in range(fauna_limit):
-		var feature: Dictionary = fauna[index*fauna.size()/fauna_limit]
-		var at: Vector2 = feature["position"]
-		var id: String = "grazer" if int(feature["variant"]) == 0 else "pod"
-		var animal: Node3D = _asset(id,Vector3(at.x,terrain_height(at.x,at.y),at.y),float(feature["size"])*(0.36 if id == "pod" else 0.28))
-		animal.rotation.y = float(feature["rotation"])
+	var fauna_limit: int = mini(30,fauna.size())
+	for variant: int in range(3):
+		var shaped: Array = []
+		for index: int in range(fauna_limit):
+			var feature: Dictionary = fauna[index*fauna.size()/fauna_limit]
+			if int(feature.variant)%3 == variant: shaped.append(feature)
+		if shaped.is_empty(): continue
+		var animal_mesh := MultiMesh.new()
+		animal_mesh.transform_format = MultiMesh.TRANSFORM_3D
+		animal_mesh.use_colors = true
+		animal_mesh.mesh = _fauna_shape_mesh(variant)
+		animal_mesh.instance_count = shaped.size()
+		for index: int in range(shaped.size()):
+			var feature: Dictionary = shaped[index]
+			var at: Vector2 = feature.position
+			var size: float = float(feature.size)
+			animal_mesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(Vector3(size*1.6,size*1.2,size*1.6)),Vector3(at.x,terrain_height(at.x,at.y)+0.12,at.y)))
+			animal_mesh.set_instance_color(index,[Color("dba36c"),Color("83c5c0"),Color("c4b979")][variant])
+		var animal_material := StandardMaterial3D.new()
+		animal_material.vertex_color_use_as_albedo = true
+		animal_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		animal_material.roughness = 0.82
+		var animal_batch := MultiMeshInstance3D.new()
+		animal_batch.multimesh = animal_mesh
+		animal_batch.material_override = animal_material
+		add_child(animal_batch)
+
+func _flora_shape_mesh(variant: int) -> Mesh:
+	var cylinder := CylinderMesh.new(); cylinder.top_radius = 0.08; cylinder.bottom_radius = 0.15; cylinder.height = 1.0
+	var bulb := SphereMesh.new(); bulb.radius = 0.42; bulb.height = 0.84
+	var cone := ConeMesh.new(); cone.bottom_radius = 0.36; cone.height = 0.95
+	var parts: Array = []
+	var count: int = 3 if variant in [0,3] else 5 if variant == 1 else 4 if variant == 2 else 7
+	for i: int in range(count):
+		var angle: float = TAU*float(i)/float(count)
+		var offset := Vector3(cos(angle)*0.22,0,sin(angle)*0.22)
+		if variant == 0:
+			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.42,Vector3(0.6,0.82,0.6),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*0.95,Vector3(0.52,0.65,0.52),angle)])
+		elif variant == 1 or variant == 5:
+			parts.append([cone,_shape_xform(offset+Vector3.UP*(0.4 if variant == 1 else 0.9),Vector3(0.6,1.2,0.5),angle)])
+		elif variant == 2:
+			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.7,Vector3(0.36,1.35,0.36),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.45,Vector3(0.3,0.52,0.3),angle)])
+		elif variant == 3:
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.44,0.82,sin(angle)*0.44),Vector3(0.9,0.34,0.9),angle)])
+		else:
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.35,0.22,sin(angle)*0.35),Vector3(1.0,0.22,0.52),angle)])
+	return _joined_shape(parts)
+
+func _fauna_shape_mesh(variant: int) -> Mesh:
+	var body := SphereMesh.new(); body.radius = 0.52; body.height = 1.04
+	var limb := CylinderMesh.new(); limb.top_radius = 0.035; limb.bottom_radius = 0.09; limb.height = 0.6
+	var fin := ConeMesh.new(); fin.bottom_radius = 0.32; fin.height = 0.7
+	var parts: Array = [[body,_shape_xform(Vector3.UP*(0.58 if variant != 2 else 1.0),Vector3(1.2,0.8,1.0) if variant == 0 else Vector3(1.5,0.45,1.0) if variant == 1 else Vector3(0.8,0.9,1.0))]]
+	if variant == 0:
+		for x: float in [-0.34,0.34]:
+			for z: float in [-0.3,0.3]: parts.append([limb,_shape_xform(Vector3(x,0.2,z),Vector3(0.75,0.85,0.75))])
+	elif variant == 1:
+		for side: float in [-1.0,1.0]: parts.append([fin,_shape_xform(Vector3(side*0.7,0.5,0),Vector3(1.1,0.55,0.62),side*PI*0.5)])
+		parts.append([limb,_shape_xform(Vector3(0,0.5,-0.65),Vector3(0.28,1.6,0.28))])
+	else:
+		for i: int in range(6):
+			var angle: float = TAU*float(i)/6.0
+			parts.append([limb,_shape_xform(Vector3(cos(angle)*0.4,0.34,sin(angle)*0.4),Vector3(0.7,1.25,0.7),angle)])
+		parts.append([fin,_shape_xform(Vector3(0,1.5,0.05),Vector3(0.65,1.2,0.65))])
+	return _joined_shape(parts)
+
+func _shape_xform(at: Vector3, size: Vector3, angle: float = 0.0) -> Transform3D:
+	return Transform3D(Basis(Vector3.UP,angle).scaled(size),at)
+
+func _joined_shape(parts: Array) -> Mesh:
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for part: Array in parts: surface.append_from(part[0],0,part[1])
+	surface.generate_normals()
+	return surface.commit()
 
 func _style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
