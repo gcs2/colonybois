@@ -269,7 +269,7 @@ func orbital_radius(index: int) -> float:
 
 func reset_camera() -> void:
 	var outer_orbit: float = orbital_radius(maxi(0,bodies.size()-1))
-	yaw = 0.15; pitch = 0.75; distance = outer_orbit+28.0; target_distance = distance; focus = Vector3.ZERO; update_camera()
+	yaw = 0.15; pitch = 0.75; distance = outer_orbit+22.0; target_distance = distance; focus = Vector3.ZERO; update_camera()
 func update_camera() -> void:
 	camera.position = focus+Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.look_at(focus)
