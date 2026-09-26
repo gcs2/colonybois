@@ -28,6 +28,10 @@ func run() -> void:
 	var before: Dictionary = game.snapshot()
 	check(chart.present(game) and chart.visible and chart.bodies.size() == 3,"Known system displays all three actual orbital bodies")
 	check(game.snapshot() == before,"Opening and inspecting a system cannot reveal, spend or duplicate simulation state")
+	var home_game := Session.new(); home_game.sector.system_by_id("s0").visited = true
+	home_game.sector.state.flagship.planet = "s0p0"; home_game.sector.state.flagship.system = "s0"
+	var home_chart := Chart.new(); root.add_child(home_chart); await process_frame
+	check(home_chart.present(home_game,"s0") and home_chart.ship_marker.visible and home_chart.ship_marker.position == home_chart.bodies.morrow.position+Vector3(0,5,0),"Strategic homeworld identity resolves to the existing Morrow body for the ship marker")
 	check(chart.bodies.s2p0.planet_definition.id == "s2p0" and chart.bodies.s2p1.planet_definition.id == "s2p1","Each system body uses its own shared seeded geography")
 	check(not chart.bodies.s2p0.site_marker.visible and not chart.details.text.contains("ecosystem"),"Unsurveyed worlds do not expose landing markers or ecological readings")
 	game.field.state.survey_ticks = game.field.definition().survey_seconds; chart.refresh()
