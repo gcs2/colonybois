@@ -89,12 +89,13 @@ func _ready() -> void:
 	sky.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; sky.ambient_light_color = Color("a1b5ca"); sky.ambient_light_energy = 0.45
 	environment.environment = sky; world.add_child(environment)
 	var light := OmniLight3D.new(); light.omni_range = 120; light.light_energy = 4; light.omni_attenuation = 0.45; world.add_child(light)
+	add_starfield()
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
 	star.mesh = sphere; star.material_override = stellar; world.add_child(star)
 	ship_marker = MeshInstance3D.new(); var ship := PrismMesh.new(); ship.size = Vector3(1.1,1.9,1.1)
 	ship_marker.mesh = ship; ship_marker.material_override = ink(UI.GOLD); world.add_child(ship_marker)
-	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 4.1; torus.outer_radius = 4.25; torus.rings = 48; torus.ring_segments = 6
+	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -120,6 +121,21 @@ func _ready() -> void:
 	hide()
 func ink(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new(); material.albedo_color = color; material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; return material
+func add_starfield() -> void:
+	var stars := MultiMeshInstance3D.new(); var field := MultiMesh.new()
+	field.transform_format = MultiMesh.TRANSFORM_3D; field.use_colors = true
+	var speck := SphereMesh.new(); speck.radius = 0.25; speck.height = 0.5; speck.radial_segments = 8; speck.rings = 4
+	field.mesh = speck; field.instance_count = 280
+	var rng := RandomNumberGenerator.new(); rng.seed = 271828
+	for i: int in range(field.instance_count):
+		var direction := Vector3(rng.randf_range(-1,1),rng.randf_range(-1,1),rng.randf_range(-1,1)).normalized()
+		var scale: float = rng.randf_range(0.55,1.7) if i % 23 != 0 else rng.randf_range(2.0,2.8)
+		var position: Vector3 = direction*rng.randf_range(145,235)
+		field.set_instance_transform(i,Transform3D(Basis.from_scale(Vector3.ONE*scale),position))
+		var tint: Color = Color("b9cce0") if i % 17 != 0 else Color("e3c783")
+		field.set_instance_color(i,tint*rng.randf_range(0.55,0.9))
+	var material := StandardMaterial3D.new(); material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; material.vertex_color_use_as_albedo = true
+	stars.multimesh = field; stars.material_override = material; world.add_child(stars)
 func present(game: RefCounted, id: String = "") -> bool:
 	var target: String = id if not id.is_empty() else game.sector.state.flagship.system
 	var system: Dictionary = game.sector.system_by_id(target)
@@ -141,7 +157,7 @@ func build_system(system: Dictionary) -> void:
 		path.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
 		for j: int in range(129): path.surface_add_vertex(Vector3(cos(TAU*j/128)*radius,0,sin(TAU*j/128)*radius))
 		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("263f50")); planets_root.add_child(orbit)
-		var globe := Globe.new(); globe.radius = 3.2+float(i%2)*0.45; globe.planet_definition = Geography.definition(id); planets_root.add_child(globe)
+		var globe := Globe.new(); globe.radius = 4.6+float(i%2)*0.5; globe.planet_definition = Geography.definition(id); planets_root.add_child(globe)
 		bodies[id] = globe
 		var caption := text_label(globe.planet_definition.name,15); caption.add_theme_color_override("font_color",UI.PAPER); preview.add_child(caption); captions[id] = caption
 	update_bodies()
