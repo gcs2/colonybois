@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 23
+const VERSION := 24
 const Galaxy = preload("res://scripts/galaxy_catalog.gd")
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
@@ -30,7 +30,7 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
-const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock","ore_remaining","surface_position","surface_direction"]
+const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock","ore_remaining","surface_position","surface_direction","surface_changes"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
 var sector := Sector.new()
@@ -139,7 +139,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -181,6 +181,10 @@ func restore_snapshot(source: Variant) -> Error:
 				if not (typeof(component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(component)): return ERR_INVALID_DATA
 			var up: Vector3 = Geography.surface_pose(Geography.definition(id), float(saved_surface[0]), float(saved_surface[2]))
 			saved_worlds[id].surface_direction = [up.x,up.y,up.z]
+		if source.version < 24 and not saved_worlds[id].has("surface_changes"):
+			saved_worlds[id].surface_changes = {}
+			if int(saved_worlds[id].get("ore_remaining", Field.MINERAL_DEPOSIT_UNITS)) < Field.MINERAL_DEPOSIT_UNITS:
+				saved_worlds[id].surface_changes["%s|site|vein" % id] = {"remaining":int(saved_worlds[id].ore_remaining)}
 		if saved_worlds[id].size() != LOCAL_KEYS.size(): return ERR_INVALID_DATA
 		var probe: Dictionary = Field.fresh()
 		probe.planet_id = id

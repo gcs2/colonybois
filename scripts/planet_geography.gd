@@ -20,6 +20,12 @@ static func surface_direction(world: Dictionary, x: float, z: float) -> Vector3:
 static func surface_pose(world: Dictionary, x: float, z: float) -> Vector3:
 	return surface_direction(world, x, z)
 
+static func surface_local_position(world: Dictionary, up: Vector3) -> Vector2:
+	return surface_runtime(world).local_offset(site_direction(str(world.get("id", world.get("planet_id", "morrow")))), up)
+
+static func surface_region_id(world: Dictionary, up: Vector3) -> String:
+	return surface_runtime(world).region_id(up)
+
 static func surface_runtime(world: Dictionary) -> Object:
 	var key: String = "%s:%d:%d" % [str(world.get("id", world.get("planet_id", ""))).to_lower(), int(world.get("geography_seed", world.get("seed", 0))), int(world.get("generator_version", 1))]
 	var cached: Variant = surface_runtime_cache.get(key)

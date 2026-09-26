@@ -77,5 +77,10 @@ func advance(up: Vector3, east_m: float, north_m: float) -> Vector3:
 func window(center_up: Vector3) -> Dictionary:
 	return SurfaceWindow.build(recipe, center_up, _planet_radius_m, _region_size_m, _view_radius_m)
 
+func region_id(up: Vector3) -> String:
+	var grid: Dictionary = SurfaceWindow._grid(_planet_radius_m, _region_size_m)
+	var cell: Vector2i = SurfaceWindow._cell_for_up(up, grid)
+	return SurfaceWindow._region_id(recipe, grid, cell.x, cell.y)
+
 func local_offset(origin_up: Vector3, target_up: Vector3) -> Vector2:
 	return Coordinates.local_offset(origin_up, target_up, _planet_radius_m)

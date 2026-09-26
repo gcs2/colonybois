@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 13
+const VERSION := 14
 const Support = preload("res://scripts/ship_support.gd")
 var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
@@ -243,6 +243,7 @@ func use_repair_pack(item: String) -> String:
 static func fresh(planet: String = "morrow") -> Dictionary:
 	var initial_up: Vector3 = Geography.surface_direction(Geography.definition(planet), 0.0, 12.0)
 	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3, "ore_remaining":MINERAL_DEPOSIT_UNITS,
+		"surface_changes":{},
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
 		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "surface_direction":[initial_up.x,initial_up.y,initial_up.z], "yaw":0.0, "flight_mode":"surface", "landings":0,
@@ -412,8 +413,6 @@ func change_flight_mode(mode: String) -> bool:
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
 	if state.flight_mode == "surface":
 		state.surface_position = state.position.duplicate(true)
-		var up: Vector3 = Geography.surface_pose(definition(), float(state.position[0]), float(state.position[2]))
-		state.surface_direction = [up.x,up.y,up.z]
 	state.flight_mode = mode
 	state.guardian_alert = 0
 	state.guardian_fire_at = 0
@@ -422,7 +421,9 @@ func change_flight_mode(mode: String) -> bool:
 		note("first_orbit","Beyond the clouds — reached %s orbit under your own power." % definition().name)
 	else:
 		state.shroud_on = false
-		state.position = state.surface_position.duplicate(true)
+		var up := Vector3(float(state.surface_direction[0]),float(state.surface_direction[1]),float(state.surface_direction[2])).normalized()
+		var offset: Vector2 = Geography.surface_local_position(definition(),up)
+		state.position = [offset.x,float(state.surface_position[1]),offset.y]
 		state.landings += 1
 		note("first_return","Returned to %s with the expedition intact." % definition().name)
 	return true
@@ -475,6 +476,7 @@ func act(action: String, target: String, distance: float) -> String:
 			note("seed_bed","Established lantern pods in the prepared bed.")
 		"mine":
 			state.ore_remaining -= 1
+			state.surface_changes["%s|site|vein" % str(state.planet_id)] = {"remaining":state.ore_remaining}
 			note("cut_glass_%d" % (MINERAL_DEPOSIT_UNITS-state.ore_remaining),"Cut a resonant crystal from the exposed seam. %d pieces remain." % state.ore_remaining)
 	return ""
 
@@ -612,13 +614,18 @@ func restore_snapshot(source: Variant) -> Error:
 		# to the authored landing direction; keep the exact planar return position too.
 		value.surface_direction = [0.0,0.0,1.0]
 	if value.get("version") == 12:
-		value.version = VERSION
+		value.version = 13
 		var saved_surface: Variant = value.get("surface_position", [0.0,5.0,12.0])
 		if not saved_surface is Array or saved_surface.size() != 3: return ERR_INVALID_DATA
 		for component: Variant in saved_surface:
 			if not (typeof(component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(component)): return ERR_INVALID_DATA
 		var up: Vector3 = Geography.surface_direction(Geography.definition(str(value.get("planet_id", "morrow"))), float(saved_surface[0]), float(saved_surface[2]))
 		value.surface_direction = [up.x,up.y,up.z]
+	if value.get("version") == 13:
+		value.version = VERSION
+		value.surface_changes = {}
+		if int(value.get("ore_remaining", MINERAL_DEPOSIT_UNITS)) < MINERAL_DEPOSIT_UNITS:
+			value.surface_changes["%s|site|vein" % str(value.get("planet_id", "morrow"))] = {"remaining":int(value.ore_remaining)}
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -627,6 +634,18 @@ func restore_snapshot(source: Variant) -> Error:
 		elif typeof(defaults[key]) != typeof(value[key]): return ERR_INVALID_DATA
 	if not Support.validate(value.support,int(value.time),installed_upgrades): return ERR_INVALID_DATA
 	if value.version != VERSION or value.samples < 0 or value.samples > 2 or value.native_stock < 1 or value.native_stock > 3 or value.ore_remaining < 0 or value.ore_remaining > MINERAL_DEPOSIT_UNITS: return ERR_INVALID_DATA
+	if not value.surface_changes is Dictionary or value.surface_changes.size() > 4096: return ERR_INVALID_DATA
+	for surface_id: Variant in value.surface_changes:
+		var change: Variant = value.surface_changes[surface_id]
+		if not surface_id is String or surface_id.length() > 256 or not surface_id.begins_with("%s|" % str(value.planet_id)): return ERR_INVALID_DATA
+		if not change is Dictionary or change.is_empty() or change.size() > 4: return ERR_INVALID_DATA
+		if surface_id == "%s|site|vein" % str(value.planet_id):
+			var remaining: Variant = change.get("remaining")
+			if change.size() != 1 or not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floorf(float(remaining)) or int(remaining) != int(value.ore_remaining): return ERR_INVALID_DATA
+		elif "|feature|" in surface_id:
+			if change != {"removed":true}: return ERR_INVALID_DATA
+		else:
+			return ERR_INVALID_DATA
 	if value.growth < 0 or value.growth > 1 or value.produce < 0 or value.produce > 8 or value.buyer_remaining < 0 or value.buyer_remaining > 6: return ERR_INVALID_DATA
 	if value.homeworld_id.is_empty() or value.homeworld_id.length() > 64: return ERR_INVALID_DATA
 	if value.energy_packs < 0 or value.energy_packs > PACK_CAPACITY or value.pack_ready_at < 0 or value.pack_ready_at > value.time+PACK_COOLDOWN: return ERR_INVALID_DATA
