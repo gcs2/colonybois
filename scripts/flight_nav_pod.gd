@@ -112,16 +112,6 @@ func _draw() -> void:
 		draw_string(FONT, Vector2(130, size.y * 0.5 - 6), "ALT", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("58646b"))
 		draw_string(FONT, Vector2(130, size.y * 0.5 + 20), altitude_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, CHARCOAL)
 	else:
-		# Surface mode markings
-		draw_string(FONT, Vector2(14, size.y - 12), "SURFACE", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("58646b"))
-		# Compass star glyph in top-left
-		var star_p := Vector2(16, 20)
-		draw_line(star_p - Vector2(5, 0), star_p + Vector2(5, 0), Color("4a545a"), 1.0)
-		draw_line(star_p - Vector2(0, 5), star_p + Vector2(0, 5), Color("4a545a"), 1.0)
-		draw_line(star_p - Vector2(3, 3), star_p + Vector2(3, 3), Color("4a545a"), 1.0)
-		draw_line(star_p - Vector2(-3, 3), star_p + Vector2(-3, 3), Color("4a545a"), 1.0)
-
-		# Range scale readout on the right
-		draw_string(FONT, Vector2(130, size.y * 0.5 + 6), "80 m", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, CHARCOAL)
-		draw_line(Vector2(120, size.y * 0.5), Vector2(126, size.y * 0.5), CHARCOAL, 1.5)
-		draw_line(Vector2(120, size.y * 0.5 - 6), Vector2(120, size.y * 0.5 + 6), CHARCOAL, 1.5)
+		# The live terrain chart overlays this surface pod. Its title and range are
+		# mounted above the map, so no dial markings intrude on the chart edge.
+		pass

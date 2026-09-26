@@ -34,7 +34,7 @@ var palette_locked: bool = false
 var item_buttons: Dictionary = {}
 var slot_labels: Dictionary = {}
 var count_labels: Dictionary = {}
-var palette_backing: ColorRect
+var palette_backing: Panel
 var collapse_button: Button
 var palette_page: int = 0
 var page_previous: Button
@@ -45,13 +45,14 @@ var campaign_item_buttons: Dictionary = {}
 var campaign_count_labels: Dictionary = {}
 var campaign_owned_counts: Dictionary = {}
 var orbital_mode: bool = false
+var inventory_grid_origin: Vector2 = PALETTE_ORIGIN
 var selected_tool: String = "scan"
 var tool_title: Label
 var tool_spec: Label
 var quick_cargo: Button
 var location_label: Label
 var stats: Label
-var treasury_backing: ColorRect
+var treasury_backing: Panel
 var treasury_icon: TextureRect
 var altitude_backing: ColorRect
 var objective: Label
@@ -167,10 +168,19 @@ func _build() -> void:
 	chart_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(chart_backing)
 
-	palette_backing = ColorRect.new()
+	palette_backing = Panel.new()
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
 	palette_backing.size = Vector2(150, 68)
-	palette_backing.color = Color("dedad0")
+	var inventory_style := StyleBoxFlat.new()
+	inventory_style.bg_color = Color("dedad0")
+	inventory_style.border_color = Color("454943")
+	inventory_style.set_border_width_all(1)
+	inventory_style.set_corner_radius_all(0)
+	inventory_style.content_margin_left = 0
+	inventory_style.content_margin_right = 0
+	inventory_style.content_margin_top = 0
+	inventory_style.content_margin_bottom = 0
+	palette_backing.add_theme_stylebox_override("panel", inventory_style)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(palette_backing)
 
@@ -193,14 +203,23 @@ func _build() -> void:
 	add_child(navigation_backing)
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
-	treasury_backing = ColorRect.new()
-	treasury_backing.position = Vector2(1360, 18)
-	treasury_backing.size = Vector2(224, 48)
-	treasury_backing.color = Color("dedad0")
+	treasury_backing = Panel.new()
+	treasury_backing.position = Vector2(1396, 18)
+	treasury_backing.size = Vector2(188, 48)
+	var treasury_style := StyleBoxFlat.new()
+	treasury_style.bg_color = Color("dedad0")
+	treasury_style.border_color = Color("454943")
+	treasury_style.set_border_width_all(1)
+	treasury_style.set_corner_radius_all(0)
+	treasury_style.content_margin_left = 0
+	treasury_style.content_margin_right = 0
+	treasury_style.content_margin_top = 0
+	treasury_style.content_margin_bottom = 0
+	treasury_backing.add_theme_stylebox_override("panel", treasury_style)
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1372, 30)
+	treasury_icon.position = Vector2(1408, 30)
 	treasury_icon.size = Vector2(22, 22)
 	treasury_icon.texture = MARK_ICON
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -208,18 +227,18 @@ func _build() -> void:
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1404, 22, 168, 36), 17, Color("1c2426"))
+	stats = label_at("", Rect2(1442, 22, 130, 36), 16, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
 
 	# Top-left clean location header matching Field Instruments
-	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20)
-	chart_heading = label_at("LOCAL SURFACE CHART", Rect2(40, 846, 222, 18), 11, Color("1c2426"))
+	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Color("1c2426"))
+	chart_heading = label_at("LOCAL SURFACE CHART · 80 m", Rect2(42, 683, 222, 16), 11, Color("1c2426"))
 	chart_heading.visible = false
 
 	# Local navigation chart mounted cleanly inside the dial of nav_pod
-	navigation.position = Vector2(14, 695)
+	navigation.position = Vector2(20, 700)
 	navigation.size = Vector2(160, 160)
 	add_child(navigation)
 
@@ -338,7 +357,7 @@ func _build() -> void:
 	progress_bar.visible = false
 	add_child(progress_bar)
 	progress_bar.size.y = 4
-	objective = label_at("",Rect2(36,58,420,56),14,Art.MUTED)
+	objective = label_at("",Rect2(36,58,420,56),14,Color("1c2426"))
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	paused_badge = label_at("",Rect2(650,25,300,24),15,Art.GOLD)
 	paused_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -447,18 +466,30 @@ func show_group(group: String) -> void:
 	if not GROUPS.has(group): return
 	active_group = group
 	var entries: Array[String] = _group_entries(group)
+	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
+	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
+	var pages: int = maxi(1,int(ceil(entries.size()/float(Palette.PAGE_SIZE))))
+	var controls_width: float = float(GROUPS.size()*50+6+40+(108 if pages > 1 else 0))
+	var grid_width: float = float(maxi(0, mini(PALETTE_COLUMNS, visible_items)*59-3))
+	var content_width: float = maxf(controls_width,grid_width)
+	if orbital_mode:
+		inventory_grid_origin = PALETTE_ORIGIN
+	else:
+		# Keep the grid snug against the condition console at the right edge. The
+		# tabs and visible real entries determine how much instrument face is used.
+		inventory_grid_origin = Vector2(1402.0-8.0-content_width,690)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
 		if item_buttons[id].visible:
-			item_buttons[id].position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
+			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 			slot_labels[id].text = ("Ctrl+" if slot >= 9 else "")+str(slot%9+1)
 	for id: String in campaign_inventory_ids:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		var button: Button = campaign_item_buttons[id]
 		button.visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
 		if button.visible:
-			button.position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
+			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
@@ -466,7 +497,7 @@ func show_group(group: String) -> void:
 			category_buttons[key].position = Vector2(772 + category_index * 74, 686)
 			category_buttons[key].size = Vector2(64, 54)
 		else:
-			category_buttons[key].position = Vector2(1034 + category_index * 50, 630)
+			category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 50, 630)
 			category_buttons[key].size = Vector2(48, 48)
 		category_buttons[key].visible = true
 		category_index += 1
@@ -474,29 +505,30 @@ func show_group(group: String) -> void:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	palette_backing.visible = palette_expanded or not orbital_mode
-	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
-	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
-	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
-	palette_backing.size = Vector2(16+PALETTE_COLUMNS*59, 16+rows*56)
+	var palette_style := palette_backing.get_theme_stylebox("panel") as StyleBoxFlat
 	if orbital_mode:
-		palette_backing.color = Color(0.045, 0.05, 0.05, 0.72)
+		palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
+		palette_backing.size = Vector2(16+PALETTE_COLUMNS*59, 16+rows*56)
+		palette_style.bg_color = Color(0.045, 0.05, 0.05, 0.72)
+		palette_style.set_border_width_all(0)
 	else:
-		# One Field Instruments plate ties the category strip, pictorial slots and
-		# condition console together. Leave room for every real carried entry row.
-		palette_backing.position = Vector2(1026, 622)
-		palette_backing.size = Vector2(560, maxf(190.0, 78.0 + rows * 56.0))
-		palette_backing.color = Color("dedad0")
+		# The angular housing ends around the visible inventory and attached console.
+		palette_backing.position = inventory_grid_origin-Vector2(8,68)
+		palette_backing.size = Vector2(content_width+208,maxf(190.0,78.0+rows*56.0))
+		palette_style.bg_color = Color("dedad0")
+		palette_style.border_color = Color("454943")
+		palette_style.set_border_width_all(1)
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	page_previous.position = Vector2(1238, 634)
+	var controls_x: float = inventory_grid_origin.x+GROUPS.size()*50+6
+	page_previous.position = Vector2(1238, 634) if orbital_mode else Vector2(controls_x,634)
 	page_previous.size = Vector2(32, 42)
-	page_label.position = Vector2(1272, 642)
+	page_label.position = Vector2(1272, 642) if orbital_mode else Vector2(controls_x+34,642)
 	page_label.size = Vector2(36, 24)
-	page_next.position = Vector2(1310, 634)
+	page_next.position = Vector2(1310, 634) if orbital_mode else Vector2(controls_x+72,634)
 	page_next.size = Vector2(32, 42)
-	collapse_button.position = Vector2(1348, 634)
+	collapse_button.position = Vector2(1348, 634) if orbital_mode else Vector2(controls_x+(108 if pages>1 else 0),634)
 	collapse_button.size = Vector2(40, 42)
-	var pages: int = maxi(1,int(ceil(entries.size()/float(Palette.PAGE_SIZE))))
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
 	page_label.visible = page_previous.visible
@@ -662,7 +694,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		nav_pod.size = Vector2(250, 190)
 		chart_backing.position = Vector2(26, 680)
 		chart_backing.size = Vector2(250, 190)
-		navigation.position = Vector2(14, 695)
+		navigation.position = Vector2(20, 700)
 		navigation.size = Vector2(160, 160)
 		navigation_backing.position = Vector2(281, 680)
 		navigation_backing.size = Vector2(108, 190)
