@@ -79,6 +79,15 @@ func run() -> void:
 	scene.set_physics_process(false)
 	scene.model = Model.new()
 	scene.save_path = "res://artifacts/field_ui_test.json"
+	scene.selected = "vein"
+	scene.tool = "mine"
+	scene.model.state.scanned.append("vein")
+	scene.ship.position = scene._target_position("vein")+Vector3(0,3,3)
+	scene._refresh_ui()
+	var seam_remaining: int = scene.model.state.ore_remaining
+	check(scene.subject.text == "RESONANT SEAM · %d/%d" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS] and scene.explanation.text.contains("%d / %d remain" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS]) and scene.explanation.text.contains("Mine") and scene.use_button.text == Equipment.title("mine"),"The seam card combines its live remaining amount with the selected action")
+	check(scene.hud.context_card.visible and scene.seam_tether.visible and scene.seam_tether.points.size() == 2,"The compact seam action card is visibly tethered to its projected world target")
+	scene.selected = "pod"
 	scene.ship.position = scene._target_position("pod")+Vector3(0,3,3)
 	scene._update_camera(1)
 	scene._pick(scene.camera.unproject_position(scene._target_position("pod")))

@@ -107,6 +107,7 @@ var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
 var relay_motes: Array[MeshInstance3D] = []
 var ring: MeshInstance3D
+var seam_tether: Line2D
 var beam: MeshInstance3D
 var beam_material: StandardMaterial3D
 var selected: String = "relay"
@@ -991,6 +992,13 @@ func _make_ui() -> void:
 	root.add_child(transition_caption)
 	hud = FlightHUD.new()
 	root.add_child(hud)
+	seam_tether = Line2D.new()
+	seam_tether.width = 2.0
+	seam_tether.default_color = Color("d7bc7d",0.88)
+	seam_tether.antialiased = true
+	seam_tether.hide()
+	hud.add_child(seam_tether)
+	hud.move_child(seam_tether,0)
 	location_label = hud.location_label
 	stats = hud.stats
 	objective = hud.objective
@@ -1520,7 +1528,7 @@ func _update_visuals() -> void:
 				var above_position: Vector2 = screen_at-Vector2(label.size.x*0.5,label.size.y+22)
 				label.position = left_position if not Rect2(left_position,label.size).intersects(ship_rect) else above_position
 			label.position.x = clampf(label.position.x,365.0,1480.0-label.size.x)
-		label.visible = id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
+		label.visible = id != "vein" and id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
 		label.modulate.a = 1.0
 
 func _target_position(id: String = "") -> Vector3:
@@ -2336,13 +2344,13 @@ func _refresh_ui() -> void:
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
 		var reason: String = _tool_reason(tool,selected,0)
-		subject.text = TITLES[selected]
+		subject.text = "RESONANT SEAM · %d/%d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if selected == "vein" else TITLES[selected]
 		if approach_subject:
 			hud.action_state.text = "APPROACHING"
-			explanation.text = "Moving into tool range."
+			explanation.text = "Moving into tool range." if selected != "vein" else "%d / %d crystals remain · approaching to %s." % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool).to_lower()]
 		elif held and not latched:
 			hud.action_state.text = "OPERATING"
-			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)]
+			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)] if selected != "vein" else "%d / %d remain · %s · %d%%" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),int(progress*100)]
 		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
 			hud.action_state.text = operation_feedback
 			if operation_feedback == "SECURED" and tool == "mine":
@@ -2350,15 +2358,16 @@ func _refresh_ui() -> void:
 			else: explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
 		elif not reason.is_empty():
 			hud.action_state.text = "UNAVAILABLE"
-			explanation.text = _short_reason(reason)
+			explanation.text = _short_reason(reason) if selected != "vein" else "%d / %d remain · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,_short_reason(reason)]
 		else:
 			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-			explanation.text = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
+			var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
+			explanation.text = action_copy if selected != "vein" else "%d / %d remain · %s · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),action_copy]
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
 	if not orbital:
-		use_button.text = "Cancel" if (held and not latched) or approach_subject else "Use"
+		use_button.text = "Cancel" if (held and not latched) or approach_subject else (Equipment.title(tool) if selected == "vein" else "Use")
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not _tool_reason(tool,selected,0).is_empty()
@@ -2419,6 +2428,7 @@ func _refresh_ui() -> void:
 func _layout_seam_context_card() -> void:
 	if not is_instance_valid(hud) or not is_instance_valid(hud.context_card): return
 	var compact: bool = model.state.flight_mode != "orbit" and selected == "vein" and not _inspection_open()
+	seam_tether.hide()
 	if not compact:
 		hud.context_card.position = Vector2(450,744)
 		hud.context_card.size = Vector2(290,117)
@@ -2433,17 +2443,25 @@ func _layout_seam_context_card() -> void:
 	if camera.is_position_behind(seam_at): return
 	var anchor: Vector2 = camera.unproject_position(seam_at)
 	var view_size: Vector2 = get_viewport().get_visible_rect().size
-	var card_at: Vector2 = Vector2(anchor.x-card_size.x*0.5,anchor.y+54.0)
-	if card_at.y+card_size.y > 660.0: card_at.y = anchor.y-card_size.y-38.0
-	card_at.x = clampf(card_at.x,300.0,view_size.x-card_size.x-20.0)
-	card_at.y = clampf(card_at.y,140.0,580.0)
+	var card_at: Vector2 = Vector2(clampf(anchor.x-card_size.x*0.5,300.0,view_size.x-card_size.x-20.0),clampf(anchor.y+34.0,140.0,640.0-card_size.y))
+	var ship_screen: Vector2 = camera.unproject_position(ship.position)
+	var ship_rect := Rect2(ship_screen-Vector2(78,38),Vector2(156,76))
+	if Rect2(card_at,card_size).intersects(ship_rect):
+		var above := Vector2(card_at.x,clampf(anchor.y-card_size.y-30.0,140.0,640.0-card_size.y))
+		if not Rect2(above,card_size).intersects(ship_rect): card_at = above
 	hud.context_card.position = card_at
 	hud.context_card.size = card_size
-	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(150,19); hud.subject.add_theme_font_size_override("font_size",13)
-	hud.action_state.position = card_at+Vector2(163,8); hud.action_state.size = Vector2(79,17); hud.action_state.add_theme_font_size_override("font_size",9)
+	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(162,19); hud.subject.add_theme_font_size_override("font_size",12)
+	hud.action_state.position = card_at+Vector2(174,8); hud.action_state.size = Vector2(68,17); hud.action_state.add_theme_font_size_override("font_size",9)
 	hud.explanation.position = card_at+Vector2(10,29); hud.explanation.size = Vector2(232,27); hud.explanation.add_theme_font_size_override("font_size",11)
 	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(78,22); hud.use_button.add_theme_font_size_override("font_size",11)
 	hud.progress_bar.position = card_at+Vector2(0,76); hud.progress_bar.size = Vector2(252,4)
+	var card_rect := Rect2(card_at,card_size)
+	var edge := Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_at.y if card_at.y > anchor.y else card_rect.end.y)
+	seam_tether.clear_points()
+	seam_tether.add_point(anchor)
+	seam_tether.add_point(edge)
+	seam_tether.show()
 
 func _flight_inventory_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
