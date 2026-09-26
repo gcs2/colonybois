@@ -14,6 +14,8 @@ const _MAX_LONGITUDE_CELLS: int = 131072
 const _MAX_QUERY_RADIUS_CELLS: float = 16.0
 const _MAX_CANDIDATE_CELLS: int = 1024
 const _FEATURE_STREAM_VERSION: int = 1
+# Current gameplay persists only the authored seam delta; generated feature IDs have no removal writer.
+# Before adding persistent feature actions, version placement in feature IDs and migrate legacy deltas.
 const MAX_WINDOW_REGIONS: int = 512
 const MAX_WINDOW_FEATURES: int = 8192
 const _TAU: float = PI * 2.0
