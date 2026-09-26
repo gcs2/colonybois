@@ -145,19 +145,19 @@ func _build_system_instruments(stage: Control) -> void:
 	var mark_icon := TextureRect.new(); mark_icon.texture = MARK_ICON; mark_icon.custom_minimum_size = Vector2(26,26); mark_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; mark_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; mark_icon.modulate = Color("a98427"); money_row.add_child(mark_icon)
 	treasury_amount = text_label("0 Marks",19); treasury_amount.add_theme_color_override("font_color",Color("1c2426")); treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; money_row.add_child(treasury_amount)
 	inventory_pod = PanelContainer.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT); inventory_pod.offset_left = 24; inventory_pod.offset_right = 284; inventory_pod.offset_top = -206; inventory_pod.offset_bottom = -72
+	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -424; inventory_pod.offset_right = -24; inventory_pod.offset_top = -206; inventory_pod.offset_bottom = -72
 	var pod_style := StyleBoxFlat.new(); pod_style.bg_color = Color("dedad0"); pod_style.border_color = Color("6e6c60"); pod_style.set_border_width_all(1); pod_style.set_content_margin_all(9)
 	inventory_pod.add_theme_stylebox_override("panel",pod_style); stage.add_child(inventory_pod)
-	var pod_column := VBoxContainer.new(); pod_column.add_theme_constant_override("separation",5); inventory_pod.add_child(pod_column)
-	var pod_title := text_label("SHIP STATUS  /  CARRIED",12); pod_title.add_theme_color_override("font_color",Color("58646b")); pod_column.add_child(pod_title)
-	var status_row := HBoxContainer.new(); status_row.add_theme_constant_override("separation",8); pod_column.add_child(status_row)
-	hull_readout = text_label("HULL  0%",12); hull_readout.add_theme_color_override("font_color",Color("1c2426")); hull_readout.custom_minimum_size.x = 108; status_row.add_child(hull_readout)
-	energy_readout = text_label("ENERGY  0%",12); energy_readout.add_theme_color_override("font_color",Color("1c2426")); energy_readout.custom_minimum_size.x = 108; status_row.add_child(energy_readout)
-	var meter_row := HBoxContainer.new(); meter_row.add_theme_constant_override("separation",8); pod_column.add_child(meter_row)
-	hull_meter = _instrument_meter(Color("dd8565")); hull_meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL; meter_row.add_child(hull_meter)
-	energy_meter = _instrument_meter(Color("dca842")); energy_meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL; meter_row.add_child(energy_meter)
-	inventory_grid = GridContainer.new(); inventory_grid.columns = 6; inventory_grid.add_theme_constant_override("h_separation",5); inventory_grid.add_theme_constant_override("v_separation",3); pod_column.add_child(inventory_grid)
-	inventory_overflow = text_label("",11); inventory_overflow.add_theme_color_override("font_color",Color("58646b")); pod_column.add_child(inventory_overflow)
+	var pod_row := HBoxContainer.new(); pod_row.add_theme_constant_override("separation",9); inventory_pod.add_child(pod_row)
+	var cargo_column := VBoxContainer.new(); cargo_column.add_theme_constant_override("separation",6); cargo_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL; pod_row.add_child(cargo_column)
+	var pod_title := text_label("CARRIED",12); pod_title.add_theme_color_override("font_color",Color("58646b")); cargo_column.add_child(pod_title)
+	inventory_grid = GridContainer.new(); inventory_grid.columns = 6; inventory_grid.add_theme_constant_override("h_separation",5); inventory_grid.add_theme_constant_override("v_separation",3); cargo_column.add_child(inventory_grid)
+	inventory_overflow = text_label("",11); inventory_overflow.add_theme_color_override("font_color",Color("58646b")); cargo_column.add_child(inventory_overflow)
+	var status_column := VBoxContainer.new(); status_column.custom_minimum_size.x = 116; status_column.add_theme_constant_override("separation",3); pod_row.add_child(status_column)
+	hull_readout = text_label("HULL  0%",11); hull_readout.add_theme_color_override("font_color",Color("1c2426")); status_column.add_child(hull_readout)
+	hull_meter = _instrument_meter(Color("dd8565")); hull_meter.custom_minimum_size.x = 112; status_column.add_child(hull_meter)
+	energy_readout = text_label("ENERGY  0%",11); energy_readout.add_theme_color_override("font_color",Color("1c2426")); status_column.add_child(energy_readout)
+	energy_meter = _instrument_meter(Color("dca842")); energy_meter.custom_minimum_size.x = 112; status_column.add_child(energy_meter)
 	_refresh_instruments()
 
 func _instrument_meter(tint: Color) -> ProgressBar:
@@ -329,12 +329,15 @@ func update_target_overlay() -> void:
 	if card_rect.intersects(Rect2(viewport_size.x-250,78,230,62)):
 		destination_card.position.y = clampf(142,92,viewport_size.y-panel_height-92)
 		card_rect.position = destination_card.position
-	var pod_rect := Rect2(24,viewport_size.y-206,260,134)
+	var pod_rect := Rect2(viewport_size.x-424,viewport_size.y-206,400,134)
 	if card_rect.intersects(pod_rect):
-		var alternate_x: float = center.x+radius+18 if left < center.x else center.x-radius-panel_width-18
+		var alternate_x: float = center.x-radius-panel_width-18 if left > center.x else center.x+radius+18
 		destination_card.position.x = clampf(alternate_x,24,viewport_size.x-panel_width-24)
 		card_rect.position = destination_card.position
-		if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-178,92,viewport_size.y-panel_height-92)
+		if card_rect.intersects(pod_rect):
+			destination_card.position.x = clampf(viewport_size.x-panel_width-442,24,viewport_size.x-panel_width-24)
+			card_rect.position = destination_card.position
+			if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-220,142,viewport_size.y-panel_height-92)
 	var x0: float = center.x-radius; var x1: float = center.x+radius
 	var y0: float = center.y-radius; var y1: float = center.y+radius
 	var arm: float = 16; var thick: float = 2
