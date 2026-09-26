@@ -6,7 +6,7 @@ Updated 26 September 2026. The task board is the only production queue; the prod
 
 The available Spore navigation-source review is closed with an insufficiency finding. Paused samples and manual controls do not show a continuous transition or bind its input, duration, and audio. This does not close R01’s broader feature inventory or the runtime-motion, visual, and playability gates.
 
-The isolated integration branch is codex/r01-v01-v04-transition-audit at commit 1d7905fb791b052b1477319fdf2ed5d08c6440d before the current documentation/code checkpoint. It combines the HUD, Morrow recipe, radial surface movement, bounded region windows, persistent stable-ID changes, deterministic 64 m habitat queries within 192 m, and prospecting. The dirty main checkout at C:\Users\zephy\Documents\ChatGPT\New project remains untouched.
+The integrated implementation checkpoint on codex/r01-v01-v04-transition-audit is commit 54b72dfe9c046479e39d0c5b78b0a3123dbb0079; it was pushed and git ls-remote verified the same full hash. It combines the HUD, Morrow recipe, radial surface movement, bounded region windows, persistent stable-ID changes, deterministic 64 m habitat queries within 192 m, and prospecting. The dirty main checkout at C:\Users\zephy\Documents\ChatGPT\New project remains untouched.
 
 Focused results on the current source:
 - test_flight_hud.gd: 64 assertions, zero failures, 20.28 s.
@@ -22,4 +22,4 @@ Continue V04 as a reusable Morrow composition pipeline, using the existing plane
 
 ## Checkpoint handling
 
-Keep all work in the isolated integration worktree and branch. Do not stage or alter the dirty main checkout. Stage only intentional source, tests, and owning documentation; leave Godot .import/.uid sidecars, user data, builds, and captures untracked/ignored. Serialize imports, tests, and captures. The workstation may be in Silent mode, so make no profiling claims. Push a validated checkpoint and verify its remote hash; cached tracking data is insufficient. No purchase or paid terms are authorized without a concrete price/license decision.
+Keep all work in the isolated integration worktree and branch. Do not stage or alter the dirty main checkout. Stage only intentional source, tests, and owning documentation; preserve but do not stage Godot .import/.uid sidecar changes from the local import run. Keep user data, builds, and captures local/ignored. Serialize imports, tests, and captures. The workstation may be in Silent mode, so make no profiling claims. Push a validated checkpoint and verify its remote hash; cached tracking data is insufficient. No purchase or paid terms are authorized without a concrete price/license decision.
