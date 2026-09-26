@@ -60,8 +60,48 @@ try {
     $cliArgs += @('--path', $projectRoot)
     $cliArgs += $GodotArgs
 
-    & $enginePath @cliArgs
-    $engineExitCode = $LASTEXITCODE
+    # The GUI-subsystem executable can detach from PowerShell's call operator.
+    # Keep this process alive until Godot exits so the temporary profile override
+    # remains in place for the full run and the next launch cannot collide with it.
+    if ([IO.Path]::GetFileName($enginePath) -match '_console\.exe$') {
+        & $enginePath @cliArgs
+        $engineExitCode = $LASTEXITCODE
+    } else {
+        $quotedArgs = foreach ($argument in $cliArgs) {
+            $builder = [Text.StringBuilder]::new()
+            [void]$builder.Append('"')
+            $slashes = 0
+            foreach ($character in $argument.ToCharArray()) {
+                if ($character -eq '\') { $slashes++; continue }
+                if ($character -eq '"') {
+                    for ($i = 0; $i -lt ($slashes * 2 + 1); $i++) { [void]$builder.Append('\') }
+                    [void]$builder.Append('"')
+                    $slashes = 0
+                    continue
+                }
+                for ($i = 0; $i -lt $slashes; $i++) { [void]$builder.Append('\') }
+                $slashes = 0
+                [void]$builder.Append($character)
+            }
+            for ($i = 0; $i -lt ($slashes * 2); $i++) { [void]$builder.Append('\') }
+            [void]$builder.Append('"')
+            $builder.ToString()
+        }
+        $startInfo = [Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = $enginePath
+        $startInfo.Arguments = [string]::Join(' ', [string[]]$quotedArgs)
+        $startInfo.WorkingDirectory = $projectRoot
+        $startInfo.UseShellExecute = $false
+        $startInfo.CreateNoWindow = $Headless
+        $engineProcess = [Diagnostics.Process]::Start($startInfo)
+        if ($null -eq $engineProcess) { throw 'Godot did not start.' }
+        try {
+            $engineProcess.WaitForExit()
+            $engineExitCode = $engineProcess.ExitCode
+        } finally {
+            $engineProcess.Dispose()
+        }
+    }
     $global:LASTEXITCODE = $engineExitCode
     return
 } finally {
