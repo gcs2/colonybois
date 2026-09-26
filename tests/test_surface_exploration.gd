@@ -94,11 +94,18 @@ func run() -> void:
 	var remote := Field.new()
 	remote.state.planet_id = "s1p0"
 	remote.state.surface_direction = [0.6,0.0,0.8]
+	remote.state.ore_remaining = Field.MINERAL_DEPOSIT_UNITS-1
+	remote.state.surface_changes = {"s1p0|site|vein":{"remaining":Field.MINERAL_DEPOSIT_UNITS-1}}
 	var remote_record: Dictionary = {}
 	for key: String in Session.LOCAL_KEYS: remote_record[key] = remote.state[key]
 	campaign.worlds["s1p0"] = remote_record
 	var campaign_copy := Session.new()
-	check(campaign_copy.restore_snapshot(campaign.snapshot()) == OK and campaign_copy.worlds.s1p0.surface_direction == [0.6,0.0,0.8],"Inactive planet snapshots require and preserve their own direction anchor")
+	check(campaign_copy.restore_snapshot(campaign.snapshot()) == OK and campaign_copy.worlds.s1p0.surface_direction == [0.6,0.0,0.8] and campaign_copy.worlds.s1p0.surface_changes == remote.state.surface_changes,"Inactive planet snapshots preserve their own direction anchor and sparse site delta")
+	var legacy_delta_campaign: Dictionary = campaign.snapshot()
+	legacy_delta_campaign.version = 23
+	legacy_delta_campaign.worlds.s1p0.erase("surface_changes")
+	var migrated_delta_campaign := Session.new()
+	check(migrated_delta_campaign.restore_snapshot(legacy_delta_campaign) == OK and migrated_delta_campaign.worlds.s1p0.surface_changes == {"s1p0|site|vein":{"remaining":Field.MINERAL_DEPOSIT_UNITS-1}},"Version 23 inactive-world mining migrates to the stable site delta")
 	var old_campaign: Dictionary = campaign.snapshot()
 	old_campaign.version = 21
 	old_campaign.field.version = 11
