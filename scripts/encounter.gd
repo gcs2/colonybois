@@ -1027,9 +1027,7 @@ func _update_camera(delta: float) -> void:
 		return
 	distance = lerpf(distance,camera_distance_target,minf(1,delta*8))
 	var focus: Vector3 = ship.position+Vector3(0,-1,0)
-	if model.state.flight_mode == "orbit":
-		var overview: float = smoothstep(65,190,distance)
-		focus = focus.lerp((ship.position+orbit.planet.position)*0.5,overview)
+	# Ordinary flight stays locked to the scout at every zoom distance.
 	camera_focus = camera_focus.lerp(focus,minf(1,delta*5))
 	var offset := Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.position = camera_focus+offset
