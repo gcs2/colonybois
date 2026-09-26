@@ -86,6 +86,20 @@ func run() -> void:
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
 	check(not hud.tool_title.visible and not hud.tool_spec.visible,"Persistent text above tool icons is removed; identity and costs belong in hover help")
 	check(hud.item_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.category_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.navigation_actions.all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()),"Every tool, category and navigation icon has named hover help")
+	var category_tabs_fit: bool = hud.category_buttons.size() == 4 and hud.category_tab_cards.size() == 4 and hud.communications_button != null and not hud.communications_button.tooltip_text.is_empty()
+	var tab_order: Array[String] = ["Main tools","Environment","Weapons","Inventory"]
+	for index: int in range(tab_order.size()):
+		var key: String = tab_order[index]
+		var button: Button = hud.category_buttons[key]
+		var card: Control = hud.category_tab_cards[key]
+		category_tabs_fit = category_tabs_fit and card.get_parent() == hud and card.position == button.position and card.size == button.size and button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("normal") is StyleBoxEmpty
+		if index > 0:
+			var prior: Button = hud.category_buttons[tab_order[index-1]]
+			category_tabs_fit = category_tabs_fit and is_equal_approx(button.position.x-prior.position.x,prior.size.x+7.0)
+	var last_category: Button = hud.category_buttons["Inventory"]
+	category_tabs_fit = category_tabs_fit and is_equal_approx(hud.communications_button.position.x-last_category.position.x,last_category.size.x+7.0) and hud.communications_button.size == last_category.size
+	category_tabs_fit = category_tabs_fit and hud.GROUPS.size() == 4 and hud.category_buttons["Main tools"].button_pressed and not hud.communications_button.toggle_mode
+	check(category_tabs_fit,"Four category cards and direct Communications card have aligned hit areas, even gaps, focus, named help and separate selection")
 	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")
 	check(icon_style is StyleBoxFlat and icon_style.corner_radius_top_left == 0 and not icon_style is StyleBoxTexture,"Icon controls do not use rounded decorative wells or metallic border textures")
 	scene._activate_selected()
@@ -246,6 +260,10 @@ func run() -> void:
 	for child: Node in hud.get_children():
 		if child is Button and child.text in ["Save","Load","Audio","Controls","Menu","Recharge","SHROUD ON"]: utility_buttons += 1
 	check(utility_buttons == 0,"Flight HUD contains no utility footer or direct recharge/shroud button")
+	var emitted_actions: Array[String] = []
+	hud.action_requested.connect(func(action: String) -> void: emitted_actions.append(action))
+	hud.communications_button.pressed.emit()
+	check(emitted_actions.size() == 1 and emitted_actions[0] == "contact","Communications card dispatches the existing contact action")
 	scene.free()
 	print("Flight HUD assertions: ",checks,"; failures: ",failures)
 	quit(0 if failures == 0 else 1)

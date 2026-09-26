@@ -17,6 +17,60 @@ const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * 59 - 3
+
+class TabCardArtwork extends Control:
+	var accent: Color = Color("8cc9d0")
+	var selected: bool = false
+	var hovered: bool = false
+	var depressed: bool = false
+	var focused: bool = false
+	var disabled: bool = false
+
+	func _draw() -> void:
+		var w: float = size.x
+		var h: float = size.y
+		if w < 24.0 or h < 20.0: return
+		var sink: float = 1.0 if depressed and not disabled else 0.0
+		var face := PackedVector2Array([
+			Vector2(0,6+sink), Vector2(6,sink), Vector2(w-6,sink), Vector2(w,6+sink),
+			Vector2(w,h-6+sink), Vector2(w-6,h+sink), Vector2(6,h+sink), Vector2(0,h-6+sink)
+		])
+		var shadow := PackedVector2Array()
+		for point: Vector2 in face: shadow.append(point+Vector2(0,2))
+		draw_colored_polygon(shadow,Color(0,0,0,0.5))
+		var fill := Color("1a2222")
+		if selected: fill = Color("202a29")
+		if hovered: fill = fill.lightened(0.12)
+		if depressed: fill = fill.darkened(0.13)
+		if disabled: fill = Color("232b29")
+		draw_colored_polygon(face,fill)
+		var outline := Color("64706d")
+		if hovered: outline = Color("a4aea5")
+		if selected: outline = accent.darkened(0.2)
+		if disabled: outline = Color("48514f")
+		var closed_face := face.duplicate()
+		closed_face.append(face[0])
+		draw_polyline(closed_face,outline,1.0,true)
+		if selected and not disabled:
+			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),Color(accent.r,accent.g,accent.b,0.16),4.0,true)
+			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),accent,2.0,true)
+		elif selected:
+			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),Color("596361"),1.0,true)
+		else:
+			var top_edge := Color("9aa49d")
+			top_edge.a = 0.5 if not disabled else 0.22
+			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),top_edge,1.0,true)
+		if focused and not disabled:
+			var focus_edge := Color("f3c567")
+			focus_edge.a = 0.9
+			draw_polyline(closed_face,focus_edge,1.5,true)
+		var fastener: Color = Color("101615") if not disabled else Color("1b2221")
+		var glint := Color("a0aaa2")
+		glint.a = 0.72 if not disabled else 0.35
+		for point: Vector2 in [Vector2(6,7+sink),Vector2(w-6,7+sink),Vector2(6,h-7+sink),Vector2(w-6,h-7+sink)]:
+			draw_circle(point,1.5,fastener)
+			draw_circle(point-Vector2(0.45,0.5),0.55,glint)
+
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -34,6 +88,9 @@ var navigation_actions: Array[Button] = []
 var toolbar: Array[Button] = []
 var support_badges: Dictionary = {}
 var category_buttons: Dictionary = {}
+var category_tab_cards: Dictionary = {}
+var communications_button: Button
+var communications_card: TabCardArtwork
 var active_group: String = "Main tools"
 var palette_expanded: bool = true
 var palette_locked: bool = false
@@ -165,6 +222,38 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 	button.tooltip_text = title
 	return button
 
+func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
+	var artwork := TabCardArtwork.new()
+	artwork.accent = tint
+	artwork.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var parent: Control = button.get_parent() as Control
+	artwork.position = button.position
+	artwork.size = button.size
+	parent.add_child(artwork)
+	parent.move_child(artwork,button.get_index())
+	for state: String in ["normal","hover","pressed","disabled","focus"]:
+		button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+	button.add_theme_constant_override("icon_max_width",28)
+	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.queue_redraw())
+	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.queue_redraw())
+	button.button_down.connect(func() -> void: artwork.depressed = true; artwork.queue_redraw())
+	button.button_up.connect(func() -> void: artwork.depressed = false; artwork.queue_redraw())
+	button.focus_entered.connect(func() -> void: artwork.focused = true; artwork.queue_redraw())
+	button.focus_exited.connect(func() -> void: artwork.focused = false; artwork.queue_redraw())
+	return artwork
+
+func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, selected: bool) -> void:
+	button.button_pressed = selected if button.toggle_mode else false
+	button.disabled = palette_locked
+	button.add_theme_color_override("icon_normal_color",tint.lightened(0.12))
+	button.add_theme_color_override("icon_hover_color",tint.lightened(0.32))
+	button.add_theme_color_override("icon_pressed_color",tint.lightened(0.08))
+	button.add_theme_color_override("icon_disabled_color",Color("687370"))
+	artwork.accent = tint
+	artwork.selected = selected
+	artwork.disabled = palette_locked
+	artwork.queue_redraw()
+
 func _build() -> void:
 	nav_pod = NavPod.new()
 	nav_pod.position = Vector2(26, 680)
@@ -288,9 +377,14 @@ func _build() -> void:
 	tool_spec.hide()
 	var group_index: int = 0
 	for group: String in GROUPS:
-		var button: Button = symbol_at(Palette.CATEGORY_ICONS[group],Rect2(772+group_index*74,686,64,54),"category:"+group,group+" · browse without changing your equipped tool [Tab / Shift-Tab]",Palette.entry(GROUPS[group][0]).tint)
+		var tint: Color = Palette.entry(GROUPS[group][0]).tint
+		var button: Button = symbol_at(Palette.CATEGORY_ICONS[group],Rect2(772+group_index*74,686,64,54),"category:"+group,group+" · browse without changing your equipped tool [Tab / Shift-Tab]",tint)
+		button.toggle_mode = true
 		category_buttons[group] = button
+		category_tab_cards[group] = _attach_tab_card(button,tint)
 		group_index += 1
+	communications_button = symbol_at("communicator",Rect2(772+group_index*74,686,64,54),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
+	communications_card = _attach_tab_card(communications_button,Art.COMMS)
 	collapse_button = symbol_at("palette_close",Rect2(1252,692,42,42),"palette_toggle","Collapse tools",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette; keep selected tool and ship status"
 	page_previous = symbol_at("page_previous",Rect2(1114,692,38,42),"page_previous","Previous item page",Art.NAV)
@@ -563,13 +657,32 @@ func show_group(group: String) -> void:
 		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
 			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
-	var category_index: int = 0
-	for key: String in category_buttons:
-		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
-		category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 46, panel_top+8)
-		category_buttons[key].size = Vector2(40, 48)
-		category_buttons[key].visible = true
-		category_index += 1
+	var controls_x: float = inventory_grid_origin.x+228
+	var tab_width: float = 30.0 if pages > 1 else 56.0
+	var tab_gap: float = 6.0 if pages > 1 else 7.0
+	var tab_start_x: float = inventory_grid_origin.x+8.0
+	var tab_index: int = 0
+	for key: String in GROUPS:
+		var button: Button = category_buttons[key]
+		var tint: Color = Palette.entry(GROUPS[key][0]).tint
+		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
+		button.size = Vector2(tab_width,42)
+		button.add_theme_constant_override("icon_max_width",mini(28,int(tab_width-16)))
+		button.visible = true
+		var artwork: TabCardArtwork = category_tab_cards[key] as TabCardArtwork
+		artwork.position = button.position
+		artwork.size = button.size
+		artwork.visible = button.visible
+		_set_tab_appearance(button,artwork,tint,key == group)
+		tab_index += 1
+	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
+	communications_button.size = Vector2(tab_width,42)
+	communications_button.add_theme_constant_override("icon_max_width",mini(28,int(tab_width-16)))
+	communications_button.visible = true
+	communications_card.position = communications_button.position
+	communications_card.size = communications_button.size
+	communications_card.visible = communications_button.visible
+	_set_tab_appearance(communications_button,communications_card,Art.COMMS,false)
 	if console_pod != null:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
@@ -581,15 +694,14 @@ func show_group(group: String) -> void:
 	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	var controls_x: float = inventory_grid_origin.x+228
 	page_previous.position = Vector2(controls_x,panel_top+12)
 	page_previous.size = Vector2(26, 40)
 	page_label.position = Vector2(controls_x+27,panel_top+20)
 	page_label.size = Vector2(32, 24)
 	page_next.position = Vector2(controls_x+62,panel_top+12)
 	page_next.size = Vector2(26, 40)
-	collapse_button.position = Vector2(controls_x+(92 if pages>1 else 0),panel_top+12)
-	collapse_button.size = Vector2(32, 40)
+	collapse_button.position = Vector2(inventory_grid_origin.x+320,panel_top+10)
+	collapse_button.size = Vector2(32, 42)
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
 	page_label.visible = page_previous.visible
@@ -636,6 +748,11 @@ func select_tool(id: String) -> void:
 func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dictionary] = []) -> void:
 	palette_locked = locked
 	_refresh_campaign_items(inventory_entries, locked)
+	for key: String in category_buttons:
+		var button: Button = category_buttons[key]
+		var tint: Color = Palette.entry(GROUPS[key][0]).tint
+		_set_tab_appearance(button,category_tab_cards[key] as TabCardArtwork,tint,key == active_group)
+	_set_tab_appearance(communications_button,communications_card,Art.COMMS,false)
 	for id: String in support_badges:
 		var chip: Button = support_badges[id]
 		chip.visible = model.Support.active(model,id)
@@ -647,7 +764,6 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 		selected.summary = Equipment.summary(selected_tool,model.installed_upgrades)
 		selected.hint = Equipment.hint(selected_tool,model.installed_upgrades)
 	tool_spec.text = selected.summary if selected.view == model.state.flight_mode else Palette.unavailable(selected_tool,model)
-	for button: Button in category_buttons.values(): button.disabled = locked
 	collapse_button.disabled = locked
 	page_previous.disabled = locked or palette_page == 0
 	page_next.disabled = locked or (palette_page+1)*PALETTE_PAGE_CAPACITY >= _group_entries(active_group).size()
@@ -847,4 +963,6 @@ func set_active_group(group: String) -> void:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	for key: String in category_buttons:
-		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
+		var button: Button = category_buttons[key]
+		var tint: Color = Palette.entry(GROUPS[key][0]).tint
+		_set_tab_appearance(button,category_tab_cards[key] as TabCardArtwork,tint,key == group)
