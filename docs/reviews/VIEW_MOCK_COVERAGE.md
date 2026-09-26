@@ -512,3 +512,34 @@ The V04 surface prototype uses the orbital PlanetGenerator for Morrow height/col
 The new live 1920×1080 surface capture is artifacts/visual-critic-surface-pass/actual-surface-1080.png in the isolated V04 worktree. An independent critic rejects it against the approved ground truth: nearly level camera, high horizon, empty foreground, distant relay, smooth olive ground, faceted rocks, sparse foreground plants, and no visible water, fauna or ship. The large bottom panels compete with the world; the terrain chart is low contrast. The approved image's layered warm terrain, readable pond, small ship, distinctive life and clear landmark relationship are absent. This is evidence of the current gap, not a request for another mock or a claim that the target is met.
 
 PlanetSurfaceRuntime now makes the query contract explicit. Next, make its geodesic direction authoritative for movement and return, recenter the bounded terrain/feature window as the scout moves, and review matched gameplay states again. Keep visual acceptance separate from the automated checks; no performance or player-fun test was run.
+
+
+## Independent Morrow surface comparison — 26 September 2026
+
+An independent critic compared the approved [surface canon](../../art/visual-canon/morrow-surface-ground-truth.png) with the V01 HUD branch capture and the corrected V04 follow-camera capture. The images come from separate branches and are not an integrated result.
+
+Approximate normalized bounds (x, y, width, height):
+
+| Element | Canon | V01 HUD capture | V04 corrected-world capture |
+| --- | --- | --- | --- |
+| Scout | (.46,.51,.08,.10) | (.44,.47,.11,.11) | (.46,.47,.08,.06) |
+| Chart + rail | (.01,.74,.15,.20) | (.01,.75,.16,.22) | (.01,.58,.19,.23) |
+| Inventory + status | (.64,.72,.35,.23) | (.65,.75,.35,.22) | (.54,.63,.29,.18) |
+| Upper-left notice | (.02,.09,.11,.05) | (.03,.09,.14,.03), faint | Instruction text only |
+| Target | Relay near (.60,.28,.07,.15); label separate | Lode/ring (.55,.51,.08,.07); label close to ship | Ring partly behind inventory; label overlaps ship |
+
+The highest-value visible gaps are the flat sandy plane and empty horizon, target-label collision/occlusion, a map aperture that uses only about 7% of frame width (canon about 11%) despite a correctly sized overall chart frame, and a stretched low-contrast toast. Inventory and overall panel proportions are already close; preserve them. The ship is too large in the V01 view but close to canon scale in the corrected V04 view. Use these as a measured starting point, not a quality score.
+
+Re-review the integrated runtime only after both HUD and world changes are present: broad continuous sampled geography, clear landmark/target framing, legible sampled chart, compact high-contrast event notice, recognizable counted 6×2 inventory, and the scout unobscured by the fixed HUD. Neither branch capture establishes player acceptance, native input, performance, or final fidelity.
+
+## Integrated Morrow HUD and surface runtime — 26 September 2026
+
+Capture: ignored 1920x1080 actual-renderer state at artifacts/visual-critic-surface-pass/mining/surface-mining-after-1080.png, produced by tests/review_surface_mining.gd on codex/r01-v01-v04-transition-audit. It shows the integrated V01 chart/HUD and V04 shared-sampler surface in one synthetic mining state. The frame includes the scout, 3/4 remaining seam, full inventory, compact ALT/status, and surface chart. It is an isolated scripted view, not native play or performance evidence.
+
+An independent critic compared it with the approved [Morrow surface canon](../../art/visual-canon/morrow-surface-ground-truth.png). The chart plus rail occupies about (.01,.75,.16,.22), and inventory/status about (.65,.75,.35,.22), close to the approved overall panel proportions. Remaining issues:
+- Nearly all playfield area, roughly x=0–1 and y=.12–.78, is still pale open ground without nearby water, readable rock forms, vegetation, or a distinctive regional landmark; the canon has layered terrain, a pond, formations, and life.
+- The dark seam interaction card sits detached around (.28,.83,.18,.13), competing with chart and inventory instead of reading as compact context near the selected item.
+- The pickup notice is faint around (.03,.09,.13,.03). The seam ring is around (.55,.51,.07,.07), while its label is separated above/right around (.62,.41,.10,.03).
+- Chart proportions are closer, but map marks remain coarse and abstract versus the canon's recognizable water, obstacles, and landmark detail.
+
+This is a meaningful integration checkpoint, not visual acceptance. A bounded HUD pass now targets toast contrast and seam-card/label anchoring; a separate world pass targets deterministic biome-aware feature groupings beyond the landing-centered area. Re-review the same integrated state after those exact commits. Focused code checks passed: planet generation 21 assertions / 0.67 s after correcting the lake/landing overlap; surface exploration 63 assertions / 37.78 s after importing ignored assets; flight HUD 64 assertions / 18.43 s after adding six pixels between the toast backing and objective. No full suite, native-input playtest, player fun review, packaged build, or performance measurement was done.

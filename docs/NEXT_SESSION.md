@@ -1,39 +1,35 @@
 # Resume here
 
-Updated 26 September 2026. This is the operational handoff, not a second queue. TASK_BOARD.md is the sole production queue; PRODUCTION_GOAL.md owns the objective and ROADMAP.md owns milestone gates. Main checkout remains protected.
+Updated 26 September 2026. TASK_BOARD.md is the sole production queue; PRODUCTION_GOAL.md owns the objective and ROADMAP.md owns milestone gates. This handoff records the current Sol integration checkpoint.
 
-## Direction
+## Direction and evidence boundaries
 
-The source → approved mock → runtime audit is closed with an insufficiency finding. Available Spore stills and the manual establish scale-specific states and documented controls, not continuous motion, timing, or audio. Do not claim source/runtime transition parity. The five approved/liked stills remain together under art/visual-canon: Morrow surface, orbit, system, approach, and supporting galaxy composition.
+The five approved or user-liked stills are together in [art/visual-canon](../art/visual-canon/README.md). The Spore evidence audit is closed with an insufficiency finding; it does not establish continuous motion, timing, input, or audio. The current V01/V04 runtime comparison remains open and rejected. Preserve the user's surface-follow camera, full 6x2 inventory, upper-left notifications, upper-right Marks, surface-only local chart, compact ALT, separate system/galaxy maps, and Field Instruments materials.
 
-Worlds follow the existing pipeline in systems/PLANET_GENERATION.md: persistent recipe → one spherical sampler → stable regions and independent feature streams → biome habitat kits → bounded moving window → sparse stable-ID changes → one connected playable expedition. Do not add planets, species, or decorative density ahead of the Morrow movement/persistence gate. Actual runtime visuals remain rejected against the pinned surface target.
+Build worlds through the documented recipe pipeline: persistent identity/seed/version and authored sites, one spherical geography sampler, stable regions and independent feature streams, reusable habitat kits, bounded scout-centered streaming, sparse stable-ID changes, and a connected expedition. Morrow remains the proving world; do not add ad-hoc decoration or planet families ahead of it. See [PLANET_GENERATION.md](systems/PLANET_GENERATION.md).
 
-## Protected checkout and active branches
+## Protected checkout and integration branch
 
-- Main checkout: C:\Users\zephy\Documents\ChatGPT\New project, branch codex/frontier-prototype, HEAD 46fc837c3a745c5147ce6d127e2704a4eb6c026d. It has unrelated dirty edits and was last known six commits behind origin. Do not stage, reset, merge, rebase, or overwrite it.
-- Clean Sol integration worktree: C:\Users\zephy\.codex\worktrees\r01-transition-audit\New project, branch codex/r01-v01-v04-transition-audit, HEAD c9f44065dc0fab4aa06e1f3ba6ab6197a7314793. It is clean and is the integration point after worker patches are reviewed. Remote verification previously failed because GitHub port 443 was unreachable; retry only when checkpointing.
-- V04 worker worktree: C:\Users\zephy\.codex\worktrees\v04-morrow-world-pipeline\New project, branch codex/v04-morrow-whole-planet, baseline c9f44065dc0fab4aa06e1f3ba6ab6197a7314793. The runtime façade and semantic feature streams are committed and pushed; remote hash verified at 3c5d75fd6b4884ff09893a200bdf0d65e2a8297d. Godot imports left generated .import edits and .uid sidecars; keep them out of Git.
-- Older V01 review worktree: C:\Users\zephy\.codex\worktrees\v01-field-instruments-runtime\New project, branch codex/v01-field-instruments-runtime, baseline c9f44065dc0fab4aa06e1f3ba6ab6197a7314793. Preserve its uncommitted HUD patch and generated .import/.uid metadata. Its CaptureFlightScene attempt stalled over two minutes without PNGs; do not repeat that command unchanged.
-- Active V01 HUD worker: C:\Users\zephy\.codex\worktrees\v01-hud-surface-pass\New project, branch codex/v01-hud-surface-pass, baseline a51f167a8037cbb9253ad2f433950f14d3f2fdb3. It owns a HUD-only recompose against the approved surface mock. Sol serialized Godot runs; visual acceptance awaits an independent critic.
+- Main checkout: C:\Users\zephy\Documents\ChatGPT\New project, branch codex/frontier-prototype, last observed HEAD 46fc837c3a745c5147ce6d127e2704a4eb6c026d, dirty and six commits behind at that inspection. It remains untouched.
+- Sol integration worktree: C:\Users\zephy\.codex\worktrees\r01-transition-audit\New project, branch codex/r01-v01-v04-transition-audit. Current integration HEAD at the beginning of this checkpoint was 873da01090d631bdec2d7df69b8b263e6ae702a8. The working checkpoint includes reviewed HUD, movement, persistence, Morrow recipe and surface-scene commits plus local recipe/HUD corrections.
+- HUD implementer worktree: C:\Users\zephy\.codex\worktrees\v01-hud-surface-pass\New project, branch codex/v01-hud-surface-pass, last confirmed HEAD c7180177ead36de3db33c061efbccfddb37b8b8d. A bounded notice/card pass is in progress.
+- World implementer worktree: C:\Users\zephy\.codex\worktrees\v04-morrow-world-pipeline\New project, branch codex/v04-morrow-whole-planet, last confirmed HEAD 5e30fd3d3721a164f00028337ee9630a59b4ff40. A bounded deterministic habitat-coverage pass is in progress.
+- Remote hash for the current integration branch is not verified. The previous live GitHub check could not connect on port 443. Cached tracking refs are not proof.
 
-Other existing worktrees are historical or inactive; preserve them unless their status and contents are inspected first. All worktrees belong to the same Git repository. Do not create another project copy or another production queue.
+## Integrated changes and verification
 
-## V04 world checkpoint and evidence
+The integrated surface chart now fills more of its existing frame. The Morrow recipe supplies the same sampled relief and waterbody used by the local surface renderer and map; saved radial direction drives movement/re-entry, the feature window recenters at region boundaries, and sparse stable-ID changes survive save/reload and inactive-world migration.
 
-The prototype now routes Morrow height/color through PlanetGenerator and features through PlanetSurfaceWindow. PlanetSurfaceRuntime groups sample, color, geodesic advance, bounded window, and local projection calls. Named provisional values include 16 km radius, 512 m region cells, 1.5 km feature window, 34 m height scale, and a 1.2 km tangent-frame limit.
+Focused results on the integrated branch:
+- test_planet_generation.gd: 21 assertions, zero failures, 0.67 seconds after moving the authored lake out of the landable site.
+- test_surface_exploration.gd: 63 assertions, zero failures, 37.78 seconds after one-time ignored asset import.
+- test_flight_hud.gd: 64 assertions, zero failures, 18.43 seconds after adding a six-pixel gap between discovery toast and objective.
+No full suite was run. The imported Godot cache and generated .import/.uid sidecars are worktree-local; do not stage them.
 
-This is not yet spherical player movement or streaming. Encounter still moves in flat X/Z from a fixed landing anchor, builds one static terrain mesh and landing-centered feature window, and returns from tangent coordinates. Saved surface_direction remains derived metadata. The session test teleports to the adjacent seam, so a player-steered region crossing is unproven.
-
-Before the façade, test_surface_exploration passed 50 assertions in 1.65 s and test_expedition_session passed 52 in 18.85 s. After scale/cache revisions, the session check passed 52 assertions in 42.18 s; that is test wall time, not a runtime performance profile. The final cache hot-path change removed full-recipe JSON serialization, then test_planet_surface_runtime passed 12 checks in 0.59 s. The follow-up test_planet_surface_window passed 330 assertions in 0.61 s after semantic streams were isolated. The session check was not rerun after the cache optimization. It teleports to the 620 m seam, so player-steered crossing remains unproven.
-
-The live 1920×1080 Morrow surface capture is ignored at artifacts/visual-critic-surface-pass/actual-surface-1080.png in the V04 worktree. Independent critique rejects it: flat olive terrain, faceted props, sparse foreground plants, no visible lake/fauna/ship, distant relay, low-contrast chart, and competing HUD panels. This is not visual acceptance. No performance measurement, native-input playtest, or fun review was done.
+The actual-renderer 1920x1080 synthetic mining capture is ignored at artifacts/visual-critic-surface-pass/mining/surface-mining-after-1080.png. An independent critic confirms the HUD and world changes are integrated together. The chart/inventory footprint is close to canon, but the playfield is still mostly empty pale ground; the seam card is detached and too large; the top-left pickup notice is faint; and the seam label is separated from its ring. This is not visual acceptance, native-input play, fun evidence, or performance measurement. The computer is in Silent mode; make no performance claim.
 
 ## Next work
 
-Region and semantic-kind streams now generate independent feature records with kind-local slot IDs; test_planet_surface_window verifies a cover-count/draw change does not move or rename rocks, flora, fauna or mineral. No saved feature deltas exist yet, so migration is untested. Next make the saved radial direction authoritative for movement and return, recenter the bounded terrain/feature window around it, and persist sparse changes by stable feature/site ID. Prove a player-steered Basin → adjacent-region trip with one useful opportunity, then leave for orbit, save/reload, and return to the same place. Keep scene composition and the full HUD against the pinned mock as a separate visual gate. Do not widen the travel radius again or claim whole-planet exploration.
+Finish the two bounded visual lanes, integrate their exact commits, run only the directly relevant checks, and capture/review the same integrated Morrow state again. Keep the full inventory and chart/inventory frame sizes. The visual gate remains open until world features, target anchoring, interaction-card placement, and notice readability materially improve. Then resume the next task-board priority in the connected voyage.
 
-V01 HUD recomposition is active in its own worktree. Diagnose the old capture stall before any retry; require a same-state runtime capture and independent critique before claiming mock fidelity. After both V01 and V04 are reviewed, use the clean Sol integration worktree, then continue system-map composition and the M1 connected voyage as ordered in TASK_BOARD.md.
-
-## Run discipline
-
-Use Godot 4.7.2. Check existing processes and serialize imports, tests, and captures. Use per-worktree RunGodot.ps1 profiles. Select only tests that cover changed behavior; no full suite unless a major integration gate or explicit request. Use the bundled Python executable for tools/DocumentationReport.py after documentation moves/additions. Keep generated captures and imported runtimes out of Git. Do not make purchases or accept paid terms without explicit approval.
+Use Godot 4.7.2. Serialize imports, tests, and captures; use unique per-worktree run profiles. Keep generated captures, saves, runtimes, and rejected art out of Git. No purchases or paid terms without explicit approval.

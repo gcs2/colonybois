@@ -382,7 +382,7 @@ func _build() -> void:
 	progress_bar.visible = false
 	add_child(progress_bar)
 	progress_bar.size.y = 4
-	objective = label_at("",Rect2(36,126,540,34),12,Color("1c2426"))
+	objective = label_at("",Rect2(36,132,540,34),12,Color("1c2426"))
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	paused_badge = label_at("",Rect2(650,25,300,24),15,Art.GOLD)
 	paused_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
