@@ -1,0 +1,255 @@
+extends RefCounted
+## Deterministic, bounded data window for a planet-fixed surface view.
+
+const Coordinates = preload("res://scripts/planet_surface_coordinates.gd")
+const PlanetGenerator = preload("res://scripts/planet_generator.gd")
+
+const DEFAULT_PLANET_RADIUS_M: float = 16000.0
+const DEFAULT_REGION_SIZE_M: float = 512.0
+const DEFAULT_VIEW_RADIUS_M: float = 1100.0
+const _MIN_ANGULAR_STEP: float = PI / 65536.0
+const _MAX_ANGULAR_STEP: float = PI / 4.0
+const _MAX_BANDS: int = 65536
+const _MAX_LONGITUDE_CELLS: int = 131072
+const _MAX_QUERY_RADIUS_CELLS: float = 16.0
+const _MAX_CANDIDATE_CELLS: int = 1024
+const MAX_WINDOW_REGIONS: int = 512
+const MAX_WINDOW_FEATURES: int = 8192
+const _TAU: float = PI * 2.0
+
+## Returns nearest deterministic region and feature records in one tangent frame.
+## Cells use the requested scale up to the explicit grid and query bounds.
+static func build(world: Dictionary, center_up: Vector3, planet_radius_m: float = DEFAULT_PLANET_RADIUS_M, region_size_m: float = DEFAULT_REGION_SIZE_M, view_radius_m: float = DEFAULT_VIEW_RADIUS_M) -> Dictionary:
+	var radius: float = planet_radius_m if is_finite(planet_radius_m) and planet_radius_m > 0.0 else DEFAULT_PLANET_RADIUS_M
+	var requested_region_size: float = region_size_m if is_finite(region_size_m) and region_size_m > 0.0 else DEFAULT_REGION_SIZE_M
+	var requested_view_radius: float = view_radius_m if is_finite(view_radius_m) and view_radius_m > 0.0 else DEFAULT_VIEW_RADIUS_M
+	var center: Vector3 = _unit_or_north(center_up)
+	var grid: Dictionary = _grid(radius, requested_region_size)
+	var effective_region_size: float = float(grid.cell_m)
+	var bounded_view_radius: float = minf(requested_view_radius, effective_region_size * _MAX_QUERY_RADIUS_CELLS)
+	bounded_view_radius = minf(bounded_view_radius, PI * radius)
+	var regions: Array[Dictionary] = []
+	var features: Array[Dictionary] = []
+	var generator: Object = PlanetGenerator.new(_generator_recipe(world))
+	var center_latitude: float = asin(clampf(center.y, -1.0, 1.0))
+	var center_longitude: float = atan2(center.x, center.z)
+	var angular_radius: float = bounded_view_radius / radius
+	var first_band: int = maxi(0, int(floor((center_latitude - angular_radius + PI * 0.5) / grid.lat_step)))
+	var last_band: int = mini(grid.band_count - 1, int(floor((center_latitude + angular_radius + PI * 0.5) / grid.lat_step)))
+	var cosine_limit: float = cos(angular_radius)
+	var examined: int = 0
+	var truncated: bool = false
+	var center_cell: Vector2i = _cell_for_up(center, grid)
+	var center_region_id: String = _region_id(world, grid, center_cell.x, center_cell.y)
+	var center_region_up: Vector3 = _center_up(center_cell.x, center_cell.y, grid)
+	var center_biome: String = str(generator.call("sample", center_region_up).biome)
+	for band: int in range(first_band, last_band + 1):
+		var latitude: float = -PI * 0.5 + (float(band) + 0.5) * grid.lat_step
+		var longitude_count: int = int(grid.longitude_counts[band])
+		var longitude_step: float = _TAU / float(longitude_count)
+		var center_index: int = int(floor(fposmod(center_longitude + PI, _TAU) / _TAU * longitude_count))
+		var denominator: float = cos(latitude) * cos(center_latitude)
+		var max_delta: float = PI
+		if denominator > 1.0e-10:
+			var threshold: float = (cosine_limit - sin(latitude) * sin(center_latitude)) / denominator
+			if threshold > 1.0:
+				continue
+			if threshold > -1.0:
+				max_delta = acos(clampf(threshold, -1.0, 1.0))
+		var index_radius: int = mini(longitude_count / 2, int(ceil(max_delta / longitude_step)) + 1)
+		var seen_longitudes: Dictionary = {}
+		for offset: int in range(-index_radius, index_radius + 1):
+			if examined >= _MAX_CANDIDATE_CELLS or regions.size() >= MAX_WINDOW_REGIONS:
+				truncated = true
+				break
+			var longitude_index: int = posmod(center_index + offset, longitude_count)
+			if seen_longitudes.has(longitude_index):
+				continue
+			seen_longitudes[longitude_index] = true
+			examined += 1
+			var region_up: Vector3 = _center_up(band, longitude_index, grid)
+			if _great_circle_distance(center, region_up, radius) > bounded_view_radius + 1.0e-5:
+				continue
+			var region_id: String = _region_id(world, grid, band, longitude_index)
+			var sample: Dictionary = generator.call("sample", region_up)
+			var biome: String = str(sample.biome)
+			var region_position: Vector2 = Coordinates.local_offset(center, region_up, radius)
+			regions.append({
+				"id": region_id,
+				"biome": biome,
+				"up": region_up,
+				"position_m": region_position,
+				"distance_m": region_position.length(),
+				"features": []
+			})
+		if truncated:
+			break
+	regions.sort_custom(func(first: Dictionary, second: Dictionary) -> bool:
+		var distance_delta: float = float(first.distance_m) - float(second.distance_m)
+		if absf(distance_delta) > 1.0e-5:
+			return distance_delta < 0.0
+		return str(first.id) < str(second.id)
+	)
+	for region_index: int in range(regions.size()):
+		if features.size() >= MAX_WINDOW_FEATURES:
+			truncated = true
+			regions.resize(region_index)
+			break
+		var region: Dictionary = regions[region_index]
+		var band_and_longitude: Vector2i = _cell_for_up(region.up, grid)
+		var region_features: Array[Dictionary] = _make_features(str(region.id), band_and_longitude.x, band_and_longitude.y, grid, str(region.biome), center, radius)
+		for feature: Dictionary in region_features:
+			if features.size() >= MAX_WINDOW_FEATURES:
+				truncated = true
+				break
+			features.append(feature.duplicate(true))
+			region.features.append(feature)
+		regions[region_index] = region
+		if truncated:
+			regions.resize(region_index + 1)
+			break
+	return {
+		"center_up": center,
+		"current_region_id": center_region_id,
+		"current_biome": center_biome,
+		"planet_radius_m": radius,
+		"requested_region_size_m": requested_region_size,
+		"effective_region_size_m": effective_region_size,
+		"view_radius_m": bounded_view_radius,
+		"regions": regions,
+		"features": features,
+		"examined_cells": examined,
+		"truncated": truncated
+	}
+
+static func _grid(radius: float, requested_size: float) -> Dictionary:
+	var angular_step: float = clampf(requested_size / radius, _MIN_ANGULAR_STEP, _MAX_ANGULAR_STEP)
+	var band_count: int = clampi(int(ceil(PI / angular_step)), 1, _MAX_BANDS)
+	var lat_step: float = PI / float(band_count)
+	var effective_size: float = radius * lat_step
+	var longitude_counts: Array[int] = []
+	for band: int in range(band_count):
+		var latitude: float = -PI * 0.5 + (float(band) + 0.5) * lat_step
+		var circumference: float = _TAU * radius * maxf(0.0, cos(latitude))
+		longitude_counts.append(clampi(int(round(circumference / effective_size)), 1, _MAX_LONGITUDE_CELLS))
+	return {
+		"radius_m": radius,
+		"cell_m": effective_size,
+		"lat_step": lat_step,
+		"band_count": band_count,
+		"longitude_counts": longitude_counts,
+		"size_key": "radius:%d|bands:%d" % [roundi(radius), band_count]
+	}
+
+static func _make_features(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _stable_seed(region_id)
+	var counts: Array[int] = _feature_counts(biome, rng)
+	var kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
+	var serial: int = 0
+	for kind_index: int in range(kinds.size()):
+		for _item: int in range(counts[kind_index]):
+			serial += 1
+			var feature_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
+			var feature_id: String = "%s|feature|%s|%d" % [region_id, kinds[kind_index], serial]
+			var local_position: Vector2 = Coordinates.local_offset(center, feature_up, radius)
+			result.append({
+				"id": feature_id,
+				"region_id": region_id,
+				"kind": kinds[kind_index],
+				"biome": biome,
+				"up": feature_up,
+				"position_m": local_position,
+				"variant": rng.randi_range(0, {"cover": 5, "rock": 4, "flora": 6, "fauna": 3}[kinds[kind_index]]),
+				"size": rng.randf_range(0.85, 1.15) if kinds[kind_index] == "fauna" else rng.randf_range(0.65, 1.45),
+				"yaw": rng.randf_range(-PI, PI)
+			})
+	if rng.randf() < 0.035:
+		serial += 1
+		var mineral_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
+		var mineral_id: String = "%s|feature|mineral|%d" % [region_id, serial]
+		result.append({
+			"id": mineral_id,
+			"region_id": region_id,
+			"kind": "mineral",
+			"biome": biome,
+			"up": mineral_up,
+			"position_m": Coordinates.local_offset(center, mineral_up, radius),
+			"variant": rng.randi_range(0, 2),
+			"size": rng.randf_range(0.65, 1.45),
+			"yaw": rng.randf_range(-PI, PI)
+		})
+	return result
+
+static func _feature_counts(biome: String, rng: RandomNumberGenerator) -> Array[int]:
+	var ranges_by_biome: Dictionary = {
+		"ocean": [[0, 1], [0, 1], [0, 0], [0, 1]],
+		"ice": [[1, 3], [0, 2], [0, 1], [0, 1]],
+		"highland": [[1, 3], [1, 3], [0, 2], [0, 1]],
+		"dryland": [[1, 3], [0, 2], [0, 2], [0, 1]],
+		"lowland": [[2, 5], [0, 2], [1, 3], [0, 2]],
+		"forest": [[3, 5], [0, 2], [2, 4], [1, 2]]
+	}
+	var ranges: Array = ranges_by_biome.get(biome, ranges_by_biome.lowland)
+	var counts: Array[int] = []
+	for range_values: Array in ranges:
+		counts.append(rng.randi_range(int(range_values[0]), int(range_values[1])))
+	return counts
+
+static func _random_direction_in_cell(band: int, longitude_index: int, grid: Dictionary, rng: RandomNumberGenerator) -> Vector3:
+	var longitude_step: float = _TAU / float(grid.longitude_counts[band])
+	var longitude: float = -PI + (float(longitude_index) + rng.randf()) * longitude_step
+	var latitude: float = -PI * 0.5 + (float(band) + rng.randf()) * grid.lat_step
+	return _direction(clampf(latitude, -PI * 0.5, PI * 0.5), longitude)
+
+static func _region_id(world: Dictionary, grid: Dictionary, band: int, longitude_index: int) -> String:
+	return "%s|%d|%d|%s|%d|%d" % [
+		str(world.get("id", world.get("planet_id", ""))).to_lower(),
+		int(world.get("geography_seed", world.get("seed", 0))),
+		int(world.get("generator_version", 1)),
+		grid.size_key,
+		band,
+		longitude_index
+	]
+
+static func _generator_recipe(world: Dictionary) -> Dictionary:
+	var recipe: Dictionary = world.duplicate(true)
+	recipe["id"] = str(world.get("id", world.get("planet_id", ""))).to_lower()
+	recipe["geography_seed"] = int(world.get("geography_seed", world.get("seed", 0)))
+	recipe["generator_version"] = int(world.get("generator_version", 1))
+	recipe["archetype"] = str(world.get("archetype", "temperate"))
+	if not recipe.get("sites", []) is Array:
+		recipe["sites"] = []
+	return recipe
+
+static func _center_up(band: int, longitude_index: int, grid: Dictionary) -> Vector3:
+	var latitude: float = -PI * 0.5 + (float(band) + 0.5) * grid.lat_step
+	var longitude: float = -PI + (float(longitude_index) + 0.5) * _TAU / float(grid.longitude_counts[band])
+	return _direction(latitude, longitude)
+
+static func _cell_for_up(up: Vector3, grid: Dictionary) -> Vector2i:
+	var unit: Vector3 = _unit_or_north(up)
+	var latitude: float = asin(clampf(unit.y, -1.0, 1.0))
+	var band: int = clampi(int(floor((latitude + PI * 0.5) / grid.lat_step)), 0, grid.band_count - 1)
+	var longitude_count: int = int(grid.longitude_counts[band])
+	var longitude: float = atan2(unit.x, unit.z)
+	var longitude_index: int = mini(longitude_count - 1, int(floor(fposmod(longitude + PI, _TAU) / _TAU * longitude_count)))
+	return Vector2i(band, longitude_index)
+
+static func _direction(latitude: float, longitude: float) -> Vector3:
+	return Vector3(cos(latitude) * sin(longitude), sin(latitude), cos(latitude) * cos(longitude)).normalized()
+
+static func _great_circle_distance(first: Vector3, second: Vector3, radius: float) -> float:
+	return acos(clampf(first.dot(second), -1.0, 1.0)) * radius
+
+static func _unit_or_north(value: Vector3) -> Vector3:
+	if not is_finite(value.length_squared()) or value.length_squared() <= 1.0e-12:
+		return Vector3.UP
+	return value.normalized()
+
+static func _stable_seed(source: String) -> int:
+	var value: int = 104729
+	for index: int in range(source.length()):
+		value = int((value * 257 + source.unicode_at(index) + index) % 2147483647)
+	return maxi(1, value)
