@@ -46,6 +46,7 @@ Far-side landing previously treated every arc waypoint as a stopping destination
 - Ordinary wheel input now zooms the camera. Surface range: 12–110 local units; orbital range: 18–320. Camera distance eases toward the requested value. Dedicated arrow/numpad/WASD flight and altitude controls remain intact; Ctrl-wheel changes altitude.
 - Another outward scroll at the surface overview limit starts actual ascent. Scrolling back in or pressing Stop cancels that camera-requested ascent. The view does not instantly teleport the ship into orbit. Plus/minus buttons beside the chart support mouse-only zoom.
 - Wider orbital framing balances ship and planet; the camera avoids entering the globe. A brief world-only veil and location label cover the local reference-frame swap. This is not seamless planetary flight or system/galaxy integration.
+- During ordinary orbit contact and service panels, the camera remains focused on the scout instead of shifting to a cinematic planet-relative midpoint; focus smoothing responds more promptly to ship movement. This corrects the ordinary gameplay view only. A moving-ship runtime capture and human feel review are still open.
 - Coarse distant terrain surrounds the detailed basin, using the same height function. It is scenery; the playable travel radius remains unchanged. No additional settlements, resources or advertised destinations are fabricated.
 - Two exhaust emitters respond to motion; atmospheric ground dust is restricted to low surface flight. Validated tool execution drives scan/thermal sweeps and directional specimen particles. Successful actions trigger a short burst; rejected operations cannot trigger success effects.
 - All five particle emitters are reused and capped at **184 particles total**, simulated at 30 Hz. They reset on cancellation, pause/inspection and reference-frame transitions. They cannot change inventory, simulation time or rewards.
@@ -54,7 +55,7 @@ The implementation uses Godot's [CPUParticles3D](https://docs.godotengine.org/en
 
 ## Evidence and limits
 
-`tests/test_flight_presentation.gd` adds 21 checks for scroll intent, ascent/cancellation, manual-control priority, orbit arrival, preserved simulation time/history, wide-camera bounds, inspection guards, fixed particle budget, orbit dust suppression, effect reset and separation from saved state. Headless checks do not prove visual quality.
+`tests/test_flight_presentation.gd` adds 21 checks for scroll intent, ascent/cancellation, manual-control priority, orbit arrival, preserved simulation time/history, wide-camera bounds, inspection guards, fixed particle budget, orbit dust suppression, effect reset and separation from saved state. The 25 September integrated run passed all 21 in 3.79 seconds. Headless checks and a stationary GUI capture do not prove camera response while steering or visual quality.
 
 `tests/review_flight_effects.gd` renders arranged source-engine states to ignored `artifacts/flight_effects_*.png`: wide surface, thrust, active scan and wide orbit. These captures demonstrate actual components with scripted review inputs, not native player footage. Native flight feel, listening and human art approval remain open.
 

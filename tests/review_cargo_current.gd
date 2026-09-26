@@ -36,6 +36,19 @@ func run() -> void:
 		scene._update_camera(1)
 		scene._refresh_ui()
 		var before: Dictionary = game.snapshot().duplicate(true)
+		if fixture == "freight":
+			for group: String in ["Main tools", "Inventory"]:
+				scene.hud.palette_expanded = true
+				scene.hud.show_group(group)
+				scene._refresh_ui()
+				view.size = Vector2i(1920, 1080)
+				for frame: int in range(8): await process_frame
+				await RenderingServer.frame_post_draw
+				var flight_path: String = OUTPUT + "/current-flight-%s-1080.png" % ("tools" if group == "Main tools" else "inventory")
+				assert(view.get_texture().get_image().save_png(flight_path) == OK)
+				evidence.append({"fixture": fixture, "view": group, "size": [1920, 1080], "image": flight_path,
+					"freight_used": game.commerce.used_space(game), "freight_capacity": game.commerce.capacity(),
+					"specimens": game.biosphere.used(), "surface_produce": game.field.state.produce})
 		for dimensions: Vector2i in [Vector2i(1920,1080), Vector2i(2560,1440)]:
 			view.size = dimensions
 			scene._cargo_tab(fixture if fixture in ["specimens", "surface"] else "ship")
@@ -51,5 +64,5 @@ func run() -> void:
 		view.free()
 	var file := FileAccess.open(OUTPUT + "/current-evidence.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"kind": "actual UI; synthetic isolated state; no native-input or audio evidence", "captures": evidence}, "\t"))
-	print("Cargo baseline: 10 captures; five campaign immutability checks passed.")
+	print("Cargo baseline: 12 captures; five campaign immutability checks passed.")
 	quit()

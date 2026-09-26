@@ -13,13 +13,21 @@ func run() -> void:
 	var original: Dictionary = game.snapshot()
 	for dimensions: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 		view.size = dimensions; game.restore_snapshot(original); scene.model = game.field; scene._open_system_view("s2")
-		for phase: String in ["overview","selected","transit","sector"]:
+		for phase: String in ["overview","selected","transit","sector","sector_route"]:
 			# Capture fixtures keep focus-loss pause separate from the actual travel state.
 			scene.paused = false; scene._refresh_ui()
 			if phase == "selected": scene.system_map.select_planet("s2p1")
 			if phase == "transit":
 				scene._launch_journey("s2p1"); game.tick(); game.tick(); game.tick(); scene.system_map.refresh()
-			if phase == "sector": scene._toggle_sector_map()
+			if phase in ["sector","sector_route"] and not scene.sector_map.visible: scene._toggle_sector_map()
+			if phase == "sector_route":
+				var current_id: String = game.sector.state.flagship.system
+				for star: Dictionary in game.sector.state.systems:
+					if star.id == current_id or not game.sector.is_revealed(star.id): continue
+					var planet_id: String = Session.local_id(star.planets[0])
+					if game.quote(planet_id).reason.is_empty():
+						scene.sector_map.select_system(star.id)
+						break
 			scene._refresh_ui()
 			for i: int in range(10):
 				scene.paused = false; scene._refresh_ui(); await process_frame
