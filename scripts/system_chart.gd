@@ -405,7 +405,7 @@ func update_target_overlay() -> void:
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
 	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker.visible and not camera.is_position_behind(ship_marker.global_position)
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
-	card_rect = Rect2(destination_card.position,destination_card.size)
+	var card_rect: Rect2 = Rect2(destination_card.position,destination_card.size)
 	var card_left: bool = destination_card.position.x > center.x
 	var card_bottom: float = maxf(card_rect.end.y,card_rect.position.y+16)
 	var card_y: float = clampf(center.y,card_rect.position.y+8,card_bottom-8)

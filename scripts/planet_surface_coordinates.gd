@@ -33,13 +33,12 @@ static func local_offset(origin_up: Vector3, target_up: Vector3, radius_m: float
 	var frame: Dictionary = tangent_frame(origin_up)
 	var target: Vector3 = _unit_or_north(target_up)
 	var dot: float = clampf(frame.up.dot(target), -1.0, 1.0)
-	var angle: float = acos(dot)
-	if angle <= 0.0:
-		return Vector2.ZERO
 	var tangent: Vector3 = target - frame.up * dot
 	if tangent.length_squared() <= _EPSILON_SQUARED:
 		# Antipodes have no unique shortest-path direction; keep the result finite.
 		return Vector2.ZERO
+	# atan2 retains precision for short hops, where acos(dot) loses low bits near 1.
+	var angle: float = atan2(tangent.length(), dot)
 	var offset: Vector3 = tangent.normalized() * (angle * radius_m)
 	return Vector2(offset.dot(frame.east), offset.dot(frame.north))
 

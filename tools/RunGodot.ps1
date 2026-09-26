@@ -20,7 +20,8 @@ $normalizedRoot = $projectRoot.Replace('\', '/').ToLowerInvariant()
 $sha256 = [Security.Cryptography.SHA256]::Create()
 try {
     $pathBytes = [Text.Encoding]::UTF8.GetBytes($normalizedRoot)
-    $pathHash = [Convert]::ToHexString($sha256.ComputeHash($pathBytes)).Substring(0, 16).ToLowerInvariant()
+    # Use APIs available in both Windows PowerShell 5 and PowerShell 7.
+    $pathHash = [BitConverter]::ToString($sha256.ComputeHash($pathBytes)).Replace('-', '').Substring(0, 16).ToLowerInvariant()
 } finally {
     $sha256.Dispose()
 }
