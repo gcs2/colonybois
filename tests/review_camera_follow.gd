@@ -17,7 +17,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func parse_arguments() -> bool:
-	for argument: String in get_cmdline_user_args():
+	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--mode="):
 			review_mode = argument.trim_prefix("--mode=")
 		elif argument.begins_with("--frames="):
@@ -88,7 +88,6 @@ func run() -> void:
 	root.add_child(scene)
 	await process_frame
 	scene.audio.set_volume("voice",0.0)
-	Input.release_all()
 	if review_mode == "orbit":
 		scene._change_flight_mode("orbit")
 		scene.yaw = 0.3
