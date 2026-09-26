@@ -16,7 +16,14 @@ const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
-const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * 59 - 3
+const PALETTE_SLOT_WIDTH := 60.0
+const PALETTE_COLUMN_GAP := 6.0
+const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
+const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * PALETTE_COLUMN_STRIDE - PALETTE_COLUMN_GAP
+const CONSOLE_NATIVE_WIDTH := 184.0
+const CONSOLE_VISIBLE_WIDTH := 144.0
+const CONSOLE_RIGHT_EDGE := 1592.0
+const ASSEMBLY_RAISE := 27.0
 
 class TabCardArtwork extends Control:
 	var accent: Color = Color("8cc9d0")
@@ -249,7 +256,8 @@ func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, s
 	button.add_theme_color_override("icon_hover_color",tint.lightened(0.32))
 	button.add_theme_color_override("icon_pressed_color",tint.lightened(0.08))
 	button.add_theme_color_override("icon_disabled_color",Color("687370"))
-	artwork.accent = tint
+	# The active edge is warm gold while the icon keeps its category color.
+	artwork.accent = Art.GOLD if selected else tint
 	artwork.selected = selected
 	artwork.disabled = palette_locked
 	artwork.queue_redraw()
@@ -487,20 +495,20 @@ func _build() -> void:
 
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
-	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width",48)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.add_theme_constant_override("icon_max_width",52)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
 	shortcut.position = Vector2(3,38)
-	shortcut.size = Vector2(50,14)
+	shortcut.size = Vector2(54,14)
 	shortcut.add_theme_font_size_override("font_size",10)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
 	var count := Label.new()
 	count.position = Vector2(2,1)
-	count.size = Vector2(52,15)
+	count.size = Vector2(56,15)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size",11)
 	count.add_theme_color_override("font_color", Art.PAPER)
@@ -514,7 +522,7 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	var id: String = str(entry.id)
 	var title: String = str(entry.title)
 	var icon: String = str(entry.get("icon", "cargo"))
-	var button: Button = symbol_at(icon, Rect2(0, 0, 56, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
+	var button: Button = symbol_at(icon, Rect2(0, 0, PALETTE_SLOT_WIDTH, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
 	var item_texture: Texture2D = CargoIcon.texture_for(id)
 	if item_texture != null:
 		# Keep authored owned-item art large and separate from its live stack count.
@@ -524,16 +532,16 @@ func _make_campaign_item(entry: Dictionary) -> void:
 		pictogram.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		pictogram.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		pictogram.position = Vector2(4, 1)
-		pictogram.size = Vector2(48, 38)
+		pictogram.size = Vector2(52, 38)
 		pictogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(pictogram)
-	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width", 44)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.add_theme_constant_override("icon_max_width",48)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
 	count.position = Vector2(2, 39)
-	count.size = Vector2(52, 15)
+	count.size = Vector2(56, 15)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size", 11)
 	count.add_theme_color_override("font_color", Art.PAPER)
@@ -621,52 +629,53 @@ func show_group(group: String) -> void:
 	var page_start: int = palette_page * PALETTE_PAGE_CAPACITY
 	var visible_items: int = mini(PALETTE_PAGE_CAPACITY, maxi(0, entries.size()-page_start))
 	var pages: int = maxi(1,int(ceil(entries.size()/float(PALETTE_PAGE_CAPACITY))))
-	# Keep the compact category and paging rail on the same fitted width as the
-	# six-column matrix so its right edge meets the condition instrument cleanly.
-	var controls_width: float = float(5*40+4*6+4+(124 if pages > 1 else 32))
 	var grid_width: float = float(PALETTE_GRID_WIDTH)
-	var content_width: float = maxf(controls_width,grid_width)
 	var panel_height: float = 192.0
-	var panel_top: float = 870.0-panel_height
-	# Keep the matrix and condition console together at the right edge in both
-	# flight modes. The housing grows left to fit the category and paging rail.
-	inventory_grid_origin = Vector2(1402.0-8.0-content_width,panel_top+68.0)
+	var panel_top: float = 870.0-panel_height-ASSEMBLY_RAISE
+	# The six-column tray meets the narrowed status pod inside one continuous
+	# shell. The transformed status edge stays aligned to the original right edge.
+	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_VISIBLE_WIDTH
+	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+56.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
 	grid_backing.size = Vector2(grid_width+8, 118)
 	grid_backing.visible = palette_expanded
 	for slot: int in range(PALETTE_PAGE_CAPACITY):
 		var empty_cell: Panel = empty_slot_backings[slot]
-		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
-		empty_cell.size = Vector2(56, 54)
+		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
+		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,54)
 		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
-		console_pod.position = Vector2(1402,inventory_grid_origin.y-24)
-		console_pod.size = Vector2(184,148)
-	altitude_backing.position = Vector2(1508,inventory_grid_origin.y-24)
-	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
-	flight_readout.size = Vector2(168,16)
+		console_pod.position = Vector2(console_left,panel_top+18.0)
+		console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH,148)
+		console_pod.scale = Vector2(CONSOLE_VISIBLE_WIDTH/CONSOLE_NATIVE_WIDTH,1.0)
+	altitude_backing.position = Vector2(console_left+106,panel_top-6)
+	flight_readout.position = Vector2(console_left+8,panel_top+21)
+	flight_readout.size = Vector2(CONSOLE_VISIBLE_WIDTH-16,16)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if item_buttons[id].visible:
-			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
+			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
+			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,54)
 			slot_labels[id].text = ("Ctrl+" if slot >= PALETTE_COLUMNS else "")+str(slot%PALETTE_COLUMNS+1)
 	for id: String in campaign_inventory_ids:
 		var slot: int = entries.find(id)-page_start
 		var button: Button = campaign_item_buttons[id]
 		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
-			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
+			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
+			button.size = Vector2(PALETTE_SLOT_WIDTH,54)
 	# Five category cards retain their approved scale in every pagination state.
 	# Page controls use the unused second line of the compact console header.
 	var tab_width: float = 56.0
 	var tab_gap: float = 7.0
-	var tab_start_x: float = inventory_grid_origin.x+8.0
+	var tab_total_width: float = 5.0*56.0+4.0*7.0
+	var tab_start_x: float = inventory_grid_origin.x+(grid_width-tab_total_width)*0.5
 	var tab_index: int = 0
 	for key: String in GROUPS:
 		var button: Button = category_buttons[key]
 		var tint: Color = Palette.entry(GROUPS[key][0]).tint
-		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
+		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
 		button.size = Vector2(tab_width,42)
 		button.add_theme_constant_override("icon_max_width",28)
 		button.visible = true
@@ -676,7 +685,7 @@ func show_group(group: String) -> void:
 		artwork.visible = button.visible
 		_set_tab_appearance(button,artwork,tint,key == group)
 		tab_index += 1
-	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
+	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
 	communications_button.size = Vector2(tab_width,42)
 	communications_button.add_theme_constant_override("icon_max_width",28)
 	communications_button.visible = true
@@ -688,10 +697,9 @@ func show_group(group: String) -> void:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	palette_backing.visible = true
-	# The same angular Field Instruments housing encloses categories, real slots,
-	# altitude strip and condition console in both modes.
+	# The compact angled housing encloses tabs, live inventory and status in both modes.
 	palette_backing.position = Vector2(inventory_grid_origin.x-8,panel_top)
-	palette_backing.size = Vector2(content_width+206,panel_height)
+	palette_backing.size = Vector2(CONSOLE_RIGHT_EDGE-palette_backing.position.x,panel_height)
 	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"

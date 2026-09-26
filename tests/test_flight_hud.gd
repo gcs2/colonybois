@@ -80,7 +80,7 @@ func run() -> void:
 	check(hud.navigation.size.x >= 238 and hud.navigation.size.y == 170 and not hud.navigation_backing.visible and hud.navigation_menu_button.position.y >= hud.navigation.position.y + hud.navigation.size.y,"Surface chart uses the full corner aperture with controls in its footer")
 	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
 	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
-	check(not hud.altitude_backing.visible and hud.flight_readout.size.x >= 160 and hud.flight_readout.position.x == hud.console_pod.position.x+8 and hud.flight_readout.position.y >= hud.console_pod.position.y,"ALT sits in the right console header instead of a detached inset")
+	check(not hud.altitude_backing.visible and hud.flight_readout.size.x == 128 and hud.flight_readout.position.x == hud.console_pod.position.x+8 and hud.flight_readout.position.y >= hud.console_pod.position.y,"ALT sits in the right console header instead of a detached inset")
 	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
 	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
@@ -100,8 +100,14 @@ func run() -> void:
 	category_tabs_fit = category_tabs_fit and is_equal_approx(hud.communications_button.position.x-last_category.position.x,last_category.size.x+7.0) and hud.communications_button.size == last_category.size
 	category_tabs_fit = category_tabs_fit and hud.GROUPS.size() == 4 and hud.category_buttons["Main tools"].button_pressed and not hud.communications_button.toggle_mode
 	check(category_tabs_fit,"Four category cards and direct Communications card have aligned hit areas, even gaps, focus, named help and separate selection")
+	var inventory_housing_fits: bool = hud.grid_backing.position.x+hud.grid_backing.size.x == hud.console_pod.position.x and is_equal_approx(hud.console_pod.position.x+hud.console_pod.size.x*hud.console_pod.scale.x,hud.palette_backing.position.x+hud.palette_backing.size.x)
+	inventory_housing_fits = inventory_housing_fits and hud.console_pod.scale.x < 0.8 and hud.grid_backing.size.x == hud.PALETTE_GRID_WIDTH+8 and hud.item_buttons.values().all(func(button: Button) -> bool: return button.size.x == 60)
+	check(inventory_housing_fits,"Wider real item cells and the narrowed status segment meet flush inside a shared right-aligned housing")
+	var tabs_attached: bool = is_equal_approx(hud.category_buttons["Main tools"].position.x,hud.inventory_grid_origin.x+(hud.PALETTE_GRID_WIDTH-(5.0*56.0+4.0*7.0))*0.5)
+	tabs_attached = tabs_attached and hud.category_buttons["Main tools"].position.y+42+2 == hud.grid_backing.position.y and hud.palette_backing.position.y <= 652 and hud.category_tab_cards["Main tools"].accent == hud.Art.GOLD
+	check(tabs_attached,"Tabs attach to the inventory inset with a gold selected edge and the assembly sits higher")
 	var console_controls_fit: bool = hud.collapse_button.position.y == hud.console_pod.position.y+20 and hud.page_previous.position.y == hud.collapse_button.position.y and hud.page_label.position.y == hud.collapse_button.position.y and hud.page_next.position.y == hud.collapse_button.position.y
-	console_controls_fit = console_controls_fit and hud.page_next.position.x+hud.page_next.size.x <= hud.console_pod.position.x+hud.console_pod.size.x and hud.collapse_button.position.x+hud.collapse_button.size.x < hud.page_previous.position.x and hud.page_previous.position.x+hud.page_previous.size.x < hud.page_label.position.x and hud.page_label.position.x+hud.page_label.size.x < hud.page_next.position.x
+	console_controls_fit = console_controls_fit and hud.page_next.position.x+hud.page_next.size.x <= hud.console_pod.position.x+hud.console_pod.size.x*hud.console_pod.scale.x and hud.collapse_button.position.x+hud.collapse_button.size.x < hud.page_previous.position.x and hud.page_previous.position.x+hud.page_previous.size.x < hud.page_label.position.x and hud.page_label.position.x+hud.page_label.size.x < hud.page_next.position.x
 	check(console_controls_fit,"Collapse and page controls fit the console header row without reducing the five category cards")
 	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")
 	check(icon_style is StyleBoxFlat and icon_style.corner_radius_top_left == 0 and not icon_style is StyleBoxTexture,"Icon controls do not use rounded decorative wells or metallic border textures")
@@ -180,7 +186,7 @@ func run() -> void:
 	check("Cargo: 2 / 2" in hud.quick_cargo.tooltip_text,"Quick cargo reflects actual onboard capacity")
 	scene._change_flight_mode("orbit")
 	scene._refresh_ui()
-	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 168 and hud.flight_readout.size.y <= 16 and not hud.altitude_backing.visible and hud.flight_readout.position.x == hud.console_pod.position.x+8
+	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 128 and hud.flight_readout.size.y <= 16 and not hud.altitude_backing.visible and hud.flight_readout.position.x == hud.console_pod.position.x+8
 	check(orbital_readout_is_compact,"Orbital ALT remains compact in the right console header")
 	check(scene.use_button.disabled and scene.toolbar.all(func(b: Button) -> bool: return b.disabled),"Surface equipment is unavailable in orbit")
 	hud.category_buttons.Environment.pressed.emit()
