@@ -82,20 +82,20 @@ func _rebuild_terrain() -> void:
 				# sampled relief read as landforms instead of a single flat fill.
 				var upland_mix: float = _smooth_range(relief,0.0,0.58)
 				var ridge_mix: float = _smooth_range(relief,0.52,1.0)
-				color = Color("554b3d").lerp(Color("a37c58"),upland_mix)
-				color = color.lerp(Color("d0ac7a"),ridge_mix)
+				color = Color("403c35").lerp(Color("a17850"),upland_mix)
+				color = color.lerp(Color("e0bd83"),ridge_mix)
 			# Shade opposite terrain slopes from adjacent real elevation samples.
 			var left: float = elevations[y*96+maxi(0,x-1)]
 			var right: float = elevations[y*96+mini(95,x+1)]
 			var above: float = elevations[maxi(0,y-1)*96+x]
 			var below: float = elevations[mini(95,y+1)*96+x]
-			var slope_shade: float = clampf(((right-left)-(below-above))*0.045,-0.28,0.28)
+			var slope_shade: float = clampf(((right-left)-(below-above))*0.085,-0.42,0.42)
 			if slope_shade > 0.0: color = color.lightened(slope_shade)
 			elif slope_shade < 0.0: color = color.darkened(-slope_shade)
 			# A narrow shore tint and contours reinforce coast and ridge shape while
 			# remaining derived entirely from the current terrain samples.
 			if h >= -0.6 and h < 0.8: color = color.lerp(Color("d6bd8a"),0.34)
-			if h >= -0.6 and fposmod(relief*8.0,1.0) < 0.035: color = color.darkened(0.22)
+			if h >= -0.6 and fposmod(relief*7.0,1.0) < 0.045: color = color.darkened(0.30)
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()

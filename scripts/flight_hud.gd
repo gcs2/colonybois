@@ -212,9 +212,9 @@ func _build() -> void:
 	console_pod.size = Vector2(184, 117)
 	add_child(console_pod)
 	altitude_backing = ColorRect.new()
-	altitude_backing.position = Vector2(1402, 664)
-	altitude_backing.size = Vector2(184, 26)
-	# ALT is a dark inset readout within the shared ivory instrument housing.
+	altitude_backing.position = Vector2(1508, 664)
+	altitude_backing.size = Vector2(78, 20)
+	# ALT is a compact secondary inset aligned over the right edge of the condition pod.
 	altitude_backing.color = Color("1c2426")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
@@ -309,7 +309,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1410,669,168,18),11,Color("f6f2e8"))
+	flight_readout = label_at("",Rect2(1512,666,70,15),9,Color("c4c9bd"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -421,7 +421,16 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	var button: Button = symbol_at(icon, Rect2(0, 0, 56, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
 	var item_texture: Texture2D = CargoIcon.texture_for(id)
 	if item_texture != null:
-		button.icon = item_texture
+		# Keep authored owned-item art large and separate from its live stack count.
+		button.icon = null
+		var pictogram := TextureRect.new()
+		pictogram.texture = item_texture
+		pictogram.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pictogram.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pictogram.position = Vector2(4, 1)
+		pictogram.size = Vector2(48, 38)
+		pictogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(pictogram)
 	button.size = Vector2(56, 54)
 	button.add_theme_constant_override("icon_max_width", 44)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
@@ -537,8 +546,8 @@ func show_group(group: String) -> void:
 	if console_pod != null:
 		console_pod.position = Vector2(1402,inventory_grid_origin.y)
 		console_pod.size = Vector2(184,124 if not orbital_mode else 117)
-	altitude_backing.position = Vector2(1402,inventory_grid_origin.y-26)
-	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
+	altitude_backing.position = Vector2(1508,inventory_grid_origin.y-23)
+	flight_readout.position = Vector2(1512,inventory_grid_origin.y-21)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
@@ -736,8 +745,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.icon = null
 		departure_button.add_theme_font_size_override("font_size",11)
 		departure_button.tooltip_text = ""
-		altitude_backing.position = Vector2(1402, 664)
-		flight_readout.position = Vector2(1410, 669)
+		altitude_backing.position = Vector2(1508, 664)
+		flight_readout.position = Vector2(1512, 666)
 		if console_pod != null:
 			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)
@@ -794,8 +803,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		chart_heading.size = Vector2(198, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
-		altitude_backing.position = Vector2(1402, 664)
-		flight_readout.position = Vector2(1410, 669)
+		altitude_backing.position = Vector2(1508, 664)
+		flight_readout.position = Vector2(1512, 666)
 		if console_pod != null:
 			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)

@@ -35,6 +35,14 @@ func test_surface_chart_sampling() -> void:
 	var water_color: Color = surface_map.get_pixel(pond_pixel.x,pond_pixel.y)
 	var land_color: Color = surface_map.get_pixel(48,48)
 	check(absf(water_color.r-land_color.r)+absf(water_color.g-land_color.g)+absf(water_color.b-land_color.b) > 0.35,"Sampled water and surrounding relief use clearly distinct map colors")
+	var darkest: float = 1.0
+	var brightest: float = 0.0
+	for y: int in range(surface_map.get_height()):
+		for x: int in range(surface_map.get_width()):
+			var value: float = surface_map.get_pixel(x,y).get_luminance()
+			darkest = minf(darkest,value)
+			brightest = maxf(brightest,value)
+	check(brightest-darkest > 0.35,"Terrain chart preserves strong sampled relief contrast")
 	var ruler_px: float = chart._scale_width_pixels(chart.chart_rect())
 	check(is_equal_approx(ruler_px,chart.chart_rect().size.x*0.4),"The 50 m ruler matches the 125 m chart extent")
 	chart.recenter_surface(Vector2(160,-100))
@@ -70,6 +78,7 @@ func run() -> void:
 	check(hud.empty_slot_backings.size() == 12 and hud.empty_slot_backings[0].position.y < hud.empty_slot_backings[6].position.y,"Inventory grid retains all six columns and both carried-item rows")
 	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
 	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
+	check(hud.altitude_backing.size.x <= 80 and hud.altitude_backing.size.y <= 20 and hud.flight_readout.size.x <= 72 and hud.altitude_backing.position.x >= hud.console_pod.position.x+100,"ALT stays a compact secondary readout within the existing right-side housing")
 	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
 	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
