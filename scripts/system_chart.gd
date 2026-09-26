@@ -308,12 +308,10 @@ func refresh() -> void:
 	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
-	var current_body: String = Session.local_id(str(record.planet))
-	var target_body: String = Session.local_id(str(record.target_planet))
-	ship_marker.visible = bodies.has(current_body) or (campaign.traveling() and bodies.has(target_body))
+	ship_marker.visible = bodies.has(record.planet) or (campaign.traveling() and bodies.has(record.target_planet))
 	if not ship_marker.visible: return
-	var from: Vector3 = bodies[current_body].position if bodies.has(current_body) else Vector3(-40,0,-40)
-	var to: Vector3 = bodies[target_body].position if campaign.traveling() and bodies.has(target_body) else Vector3(40,0,40)
+	var from: Vector3 = bodies[record.planet].position if bodies.has(record.planet) else Vector3(-40,0,-40)
+	var to: Vector3 = bodies[record.target_planet].position if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,0,40)
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
 	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,5+(sin(fraction*PI)*4 if campaign.traveling() else 0),0)
 
