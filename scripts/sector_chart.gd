@@ -204,7 +204,7 @@ class StarGraph extends Control:
 				draw_string(font,at+Vector2(17,24),"DESTINATION · "+destination_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f0dfae"))
 				var route_quote: String = "%.1f pc · %d energy · %d s" % [offer.distance,offer.energy,offer.seconds]
 				var quote_size: Vector2 = font.get_string_size(route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14)
-				var quote_at: Vector2 = origin.lerp(at,0.5)+Vector2(0,20)
+				var quote_at: Vector2 = origin.lerp(at,0.68)+Vector2(0,20)
 				draw_rect(Rect2(quote_at-Vector2(7,17),quote_size+Vector2(14,9)),Color("0b1419"))
 				draw_string(font,quote_at,route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e4e5df"))
 		if campaign.traveling():
