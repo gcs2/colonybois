@@ -4,11 +4,28 @@ const Field = preload("res://scripts/encounter_state.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const DEFAULT_OUT := "res://artifacts/visual-critic-surface-pass/mining"
 var output_dir: String = DEFAULT_OUT
+var capture_size := Vector2i(1920, 1080)
+var capture_label: String = "1080p"
 
 func _initialize() -> void:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--output-dir="):
 			output_dir = argument.trim_prefix("--output-dir=")
+		elif argument.begins_with("--resolution="):
+			var resolution_spec: String = argument.trim_prefix("--resolution=")
+			var dimensions: PackedStringArray = resolution_spec.split("x", false)
+			if dimensions.size() != 2:
+				push_error("Use --resolution=1920x1080 or another 16:9 size.")
+				quit(2)
+				return
+			var width: int = dimensions[0].to_int()
+			var height: int = dimensions[1].to_int()
+			if width < 1280 or height < 720 or width * 9 != height * 16:
+				push_error("Capture resolution must be at least 1280x720 and 16:9.")
+				quit(2)
+				return
+			capture_size = Vector2i(width, height)
+			capture_label = "%dp" % height
 	call_deferred("_run")
 
 func _save_frame(view: SubViewport, name: String) -> void:
@@ -21,7 +38,7 @@ func _save_frame(view: SubViewport, name: String) -> void:
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output_dir))
-	var resolution := Vector2i(1920,1080)
+	var resolution: Vector2i = capture_size
 	root.size = resolution
 	var view := SubViewport.new()
 	view.size = resolution
@@ -59,7 +76,7 @@ func _run() -> void:
 	scene._refresh_ui()
 	var mining_range: float = scene.ship.position.distance_to(scene._target_position("vein"))
 	assert(game.mining_reason(mining_range).is_empty(), "Capture setup must be in valid mining range")
-	await _save_frame(view,"surface-mining-before-1080")
+	await _save_frame(view,"surface-mining-before-"+capture_label)
 
 	scene.held = true
 	scene._operate(3.0)
@@ -67,6 +84,6 @@ func _run() -> void:
 	assert(game.commerce.quantity("glass") == 1, "The cut crystal enters real cargo")
 	scene._update_visuals()
 	scene._refresh_ui()
-	await _save_frame(view,"surface-mining-after-1080")
+	await _save_frame(view,"surface-mining-after-"+capture_label)
 	print("Mining capture assertions passed; Silent-mode performance is not measured.")
 	quit()

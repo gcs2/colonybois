@@ -76,7 +76,7 @@ func run() -> void:
 	hud.navigation_menu_button.pressed.emit()
 	check(not hud.navigation_popup_backing.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible),"Navigation menu closes back to the two-control strip")
 	check(hud.empty_slot_backings.size() == 12 and hud.empty_slot_backings[0].position.y < hud.empty_slot_backings[6].position.y,"Inventory grid retains all six columns and both carried-item rows")
-	check(hud.item_buttons.values().all(func(button: Button) -> bool: return button.get_theme_constant_override("icon_max_width") >= 48),"Equipment pictograms use most of each square inventory slot")
+	check(hud.item_buttons.values().all(func(button: Button) -> bool: return button.get_theme_constant("icon_max_width") >= 48),"Equipment pictograms use most of each square inventory slot")
 	check(hud.navigation.size.x >= 238 and hud.navigation.size.y == 170 and not hud.navigation_backing.visible and hud.navigation_menu_button.position.y >= hud.navigation.position.y + hud.navigation.size.y,"Surface chart uses the full corner aperture with controls in its footer")
 	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
 	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
