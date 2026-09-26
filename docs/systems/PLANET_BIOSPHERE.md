@@ -8,6 +8,8 @@ Fly close to a visible lifeform with the scanner selected and click it. Select t
 
 Open Inventory → Specimens, or select the Environment deployer icon, to choose a carried specimen. Click a surface habitat to release it. It is consumed only after arrival and completion; its position and established species persist. Distinct species, not repeated copies, fill ecological slots. Incompatible releases explain the missing slot or food supply and preserve cargo. Every playable species has an original mesh-kit representative, bounded procedural motion and a portrait rendered from that geometry. See [asset specification](../art/BIOSPHERE_ASSET_SPEC.md).
 
+Morrow's existing native species representatives now occupy deterministic positions across Basin, Glassgrass Reach and Rillstone Shelf rather than clustering only around the landing origin. Introduced placements and save validation use the current 256 m playable radius. This is a consistent regional distribution on a bounded local field; it does not yet populate a streamed whole planet, simulate every fauna marker as an interactive organism, or prove visual acceptance. The approved surface concept remains the art target.
+
 ## Climate, food chains and stakes
 
 Each T tier has a small, medium and large plant, two distinct herbivores and one predator. Its plants stop passive climate drift from crossing out of the supported ring. Animals complete the ecological tier and allow the next tier's introductions. Active climate tools can still push a planet outside that ring; stabilization is not invulnerability.

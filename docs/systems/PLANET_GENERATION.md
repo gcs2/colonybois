@@ -4,6 +4,12 @@
 
 Latest travel checkpoint: [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md) adds 24 orbital destinations and three connected landing regions. Earlier single-world limitations below are historical; strategic climate-project visuals and broader surface/content generation remain unfinished.
 
+## Morrow seeded surface field — 25 September 2026
+
+Morrow's personal surface scene now opens into a bounded 256 m-radius field. The authored basin height is preserved through 39 m and blends into recipe-seeded terrain through 96 m. The same cached recipe noise drives surface height and color. A stable three-region layout names Morrow Basin, Glassgrass Reach and Rillstone Shelf; tile feature records for cover, rock, flora and fauna derive from planet ID, geography seed, generator version and tile coordinates, independent of global gameplay RNG. The existing expedition species representatives are distributed among those regions. Returning from orbit restores the stored surface position; encounter and expedition snapshots migrate old records additively.
+
+This is deterministic local-field exploration, not whole-sphere surface travel or streamed planetary terrain. The playable radius is 256 m around the basin. There is no chunk streaming, spherical surface reference-frame handoff, or measured performance budget, and not every deterministic feature point is an interactive lifeform. The terrain chart is still a close-up 80 m surface chart with panning so nearby targets remain separately selectable; system and galaxy maps stay separate. See [the runtime visual review](../reviews/VIEW_MOCK_COVERAGE.md#morrow-surface-field-and-hud-25-september-2026) for the independent critic's rejection against the approved art target.
+
 ## Implemented checkpoint — 23 September 2026
 
 `planet_generator.gd` generates spherical elevation, latitude/elevation-dependent temperature, humidity, six biome classifications and cloud density from a versioned recipe. `planet_archetypes.json` supplies temperate, frozen and arid climate/palette rules. Morrow has a fixed seed and a land constraint beneath its existing basin coordinate. Sampling is independent of frame rate, camera and gameplay RNG.
