@@ -22,6 +22,7 @@ var preview: SubViewportContainer
 var camera: Camera3D
 var ship_marker: MeshInstance3D
 var selection: MeshInstance3D
+var route: MeshInstance3D
 var heading: Label
 var details: Label
 var status: Label
@@ -30,6 +31,9 @@ var travel: Button
 var close: Button
 var sector: Button
 var progress: ProgressBar
+var stage_root: Control
+var destination_card: PanelContainer
+var target_marks: Array[ColorRect] = []
 var yaw: float = 0.15
 var pitch: float = 0.75
 var distance: float = 78
@@ -46,6 +50,7 @@ func button(text: String, icon: String, hint: String, action: Callable, parent: 
 	item.pressed.connect(func() -> void: ui_cue.emit("ui_confirm"); action.call()); parent.add_child(item); return item
 func _ready() -> void:
 	var stage: Control = Stage.create(self)
+	stage_root = stage
 	var header: HBoxContainer = Stage.header(stage)
 	heading = text_label("SYSTEM VIEW",24); heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(heading)
 	sector = button("Galaxy","systems","Zoom out to the galaxy [G]",func() -> void: sector_requested.emit(),header)
@@ -66,12 +71,19 @@ func _ready() -> void:
 	ship_marker.mesh = ship; ship_marker.material_override = ink(UI.GOLD); world.add_child(ship_marker)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 4.1; torus.outer_radius = 4.25; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
+	route = MeshInstance3D.new(); route.material_override = ink(Color("86e4dc")); world.add_child(route)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
-	var side: VBoxContainer = Stage.sidebar(stage,360)
-	details = text_label(""); details.custom_minimum_size = Vector2(320,115); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(details)
-	travel = button("","ascend","Fly to this destination",activate_selected,side)
-	status = text_label("",15); status.custom_minimum_size = Vector2(320,65); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; side.add_child(status)
-	progress = ProgressBar.new(); progress.custom_minimum_size.y = 8; progress.show_percentage = false; UI.meter(progress,UI.GOLD); side.add_child(progress)
+	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(310,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; stage.add_child(destination_card)
+	var card_style := StyleBoxFlat.new(); card_style.bg_color = Color(0.025,0.045,0.065,0.96); card_style.border_color = Color("c1a94d"); card_style.set_border_width_all(1); card_style.set_content_margin_all(12)
+	destination_card.add_theme_stylebox_override("panel",card_style)
+	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",8); destination_card.add_child(card)
+	details = text_label(""); details.custom_minimum_size = Vector2(280,100); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	travel = button("","ascend","Fly to this destination",activate_selected,card)
+	travel.custom_minimum_size = Vector2(280,44)
+	status = text_label("",15); status.custom_minimum_size = Vector2(280,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(280,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
+	for i: int in range(8):
+		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 4; stage.add_child(mark); target_marks.append(mark)
 	var controls: HBoxContainer = Stage.footer(stage)
 	button("","zoom_in","Zoom toward selected planet [Numpad +]",zoom.bind(-1),controls)
 	button("","zoom_out","Zoom out; at the outer limit, open sector [Numpad −]",zoom.bind(1),controls)
@@ -137,10 +149,10 @@ func refresh() -> void:
 	else:
 		var faction: Dictionary = campaign.sector.faction_by_id(owner)
 		if faction.get("contacted",false): inhabited = faction.name
-	details.text = definition.name+"\n"+definition.archetype.capitalize()+" · "+inhabited+"\n"+("Landing region charted" if surveyed and not definition.sites.is_empty() else "Orbital survey complete" if surveyed else "Orbital survey pending")+"\n"+("Surface access" if not definition.sites.is_empty() else "Orbital destination")
+	details.text = definition.name+"\n"+definition.archetype.capitalize()+" · "+inhabited+"\n"+("Landing region charted" if surveyed and not definition.sites.is_empty() else "Orbital survey complete" if surveyed else "Orbital survey pending")+" · "+("Surface access" if not definition.sites.is_empty() else "Orbital destination")
 	if surveyed: details.text += "\nClimate T%d · ecosystem T%d" % [campaign.climate.score(campaign.climate.world(selected_planet)),campaign.biosphere.complete_tier(selected_planet)]
 	var here: bool = selected_planet == campaign.field.state.planet_id
-	travel.text = "Return to ship" if here else "Fly · %d energy · %d seconds" % [offer.energy,offer.seconds]
+	travel.text = "Return to ship" if here else "Fly  ·  %d energy  ·  %d seconds" % [offer.energy,offer.seconds]
 	travel.disabled = locked or campaign.traveling() or (not here and not offer.reason.is_empty())
 	travel.tooltip_text = "Resume before navigating" if locked else "Return to the current planetary view" if here else offer.reason if not offer.reason.is_empty() else "Spend %d energy to reach %s." % [offer.energy,definition.name]
 	status.text = "INSPECTION PAUSED" if here else offer.reason if not offer.reason.is_empty() else "Energy after departure: %d / %d" % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
@@ -156,7 +168,8 @@ func refresh() -> void:
 		var visited: Dictionary = campaign.field.state if id == campaign.field.state.planet_id else campaign.worlds.get(id,{})
 		bodies[id].site_marker.visible = not Geography.definition(id).sites.is_empty() and int(visited.get("survey_ticks",0)) >= int(Geography.definition(id).survey_seconds)
 		captions[id].add_theme_color_override("font_color",UI.GOLD if id == campaign.field.state.planet_id else UI.NAV if id == selected_planet else UI.PAPER)
-	update_ship(); update_camera()
+	update_ship(); update_route(); update_camera()
+	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
 	ship_marker.visible = bodies.has(record.planet) or (campaign.traveling() and bodies.has(record.target_planet))
@@ -165,6 +178,43 @@ func update_ship() -> void:
 	var to: Vector3 = bodies[record.target_planet].position if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,0,40)
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
 	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,5+(sin(fraction*PI)*4 if campaign.traveling() else 0),0)
+
+func update_route() -> void:
+	var mesh := ImmediateMesh.new()
+	if campaign == null or not bodies.has(campaign.field.state.planet_id) or not bodies.has(selected_planet) or selected_planet == campaign.field.state.planet_id:
+		route.mesh = mesh; return
+	var start: Vector3 = bodies[campaign.field.state.planet_id].position+Vector3(0,4,0)
+	var finish: Vector3 = bodies[selected_planet].position+Vector3(0,4,0)
+	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
+	for i: int in range(24):
+		if i % 2 == 1: continue
+		var a: float = float(i)/24.0; var b: float = float(i+1)/24.0
+		var pa: Vector3 = start.lerp(finish,a)+Vector3(0,sin(a*PI)*6,0)
+		var pb: Vector3 = start.lerp(finish,b)+Vector3(0,sin(b*PI)*6,0)
+		mesh.surface_add_vertex(pa); mesh.surface_add_vertex(pb)
+	mesh.surface_end(); route.mesh = mesh
+
+func update_target_overlay() -> void:
+	if not is_instance_valid(destination_card) or not is_instance_valid(camera) or not bodies.has(selected_planet): return
+	var body: MeshInstance3D = bodies[selected_planet]
+	var screen_scale: Vector2 = preview.size/Vector2(viewport.size)
+	var center: Vector2 = camera.unproject_position(body.position)*screen_scale
+	var rim: Vector2 = camera.unproject_position(body.position+camera.global_basis.y*body.radius)*screen_scale
+	var radius: float = maxf(20,center.distance_to(rim)+8)
+	var viewport_size: Vector2 = stage_root.size
+	var panel_width: float = destination_card.custom_minimum_size.x
+	var panel_height: float = maxf(destination_card.size.y,destination_card.custom_minimum_size.y)
+	var left: float = center.x+radius+18
+	if left+panel_width > viewport_size.x-24: left = center.x-radius-panel_width-18
+	destination_card.position = Vector2(clampf(left,24,viewport_size.x-panel_width-24),clampf(center.y-panel_height*0.5,92,viewport_size.y-panel_height-92))
+	var x0: float = center.x-radius; var x1: float = center.x+radius
+	var y0: float = center.y-radius; var y1: float = center.y+radius
+	var arm: float = 16; var thick: float = 2
+	var rects: Array[Rect2] = [Rect2(x0,y0,arm,thick),Rect2(x0,y0,thick,arm),Rect2(x1-arm,y0,arm,thick),Rect2(x1-thick,y0,thick,arm),Rect2(x0,y1-thick,arm,thick),Rect2(x0,y1-arm,thick,arm),Rect2(x1-arm,y1-thick,arm,thick),Rect2(x1-thick,y1-arm,thick,arm)]
+	var active: bool = visible and not camera.is_position_behind(body.position)
+	for i: int in range(target_marks.size()):
+		target_marks[i].visible = active
+		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
 func select_planet(id: String) -> void:
 	if not bodies.has(id) or campaign.traveling(): return
 	selected_planet = id; refresh()
@@ -217,4 +267,4 @@ func _process(delta: float) -> void:
 	if not visible or campaign == null: return
 	distance = lerpf(distance,target_distance,minf(1,delta*8))
 	var target: Vector3 = bodies[selected_planet].position*(1.0-smoothstep(22,60,distance)) if bodies.has(selected_planet) else Vector3.ZERO
-	focus = focus.lerp(target,minf(1,delta*5)); update_camera()
+	focus = focus.lerp(target,minf(1,delta*5)); update_camera(); update_target_overlay()
