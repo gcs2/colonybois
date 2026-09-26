@@ -207,7 +207,7 @@ static func _make_features_for_counts(region_id: String, band: int, longitude_in
 				"up": feature_up,
 				"position_m": local_position,
 				"variant": rng.randi_range(0, {"cover": 5, "rock": 4, "flora": 6, "fauna": 3}[kind]),
-				"size": rng.randf_range(0.85, 1.15) if kind == "fauna" else rng.randf_range(0.65, 1.45),
+				"size": (rng.randf_range(0.85, 1.15) if kind == "fauna" else rng.randf_range(0.65, 1.45)) * _feature_size_scale(habitat_role, kind),
 				"yaw": rng.randf_range(-PI, PI)
 			})
 	var mineral_rng: RandomNumberGenerator = _feature_rng(region_id, "mineral")
@@ -242,6 +242,11 @@ static func _feature_count_ranges(biome: String, habitat_role: String = "") -> D
 	if _HABITAT_PROFILES.has(habitat_role):
 		ranges_by_biome[biome] = _HABITAT_PROFILES[habitat_role].counts
 	return ranges_by_biome
+
+static func _feature_size_scale(habitat_role: String, kind: String) -> float:
+	var profile: Dictionary = _HABITAT_PROFILES.get(habitat_role, {})
+	var scale_key: String = "%s_scale" % kind
+	return float(profile.get(scale_key, 1.0))
 
 static func _habitat_role(biome: String, region_id: String) -> String:
 	var roles: Array = _HABITAT_ROLES_BY_BIOME.get(biome, _HABITAT_ROLES_BY_BIOME.lowland)

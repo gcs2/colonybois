@@ -18,6 +18,7 @@ func _initialize() -> void:
 	_test_planet_seed_changes_identity()
 	_test_feature_kinds_have_independent_streams()
 	_test_habitat_roles_create_coherent_groups()
+	_test_habitat_roles_scale_visual_presence()
 	_test_habitat_roles_form_stable_worldwide_clusters()
 	_test_output_is_bounded()
 	print("Planet surface window checks: assertions=", checks, " failures=", failures)
@@ -168,6 +169,24 @@ func _test_habitat_roles_form_stable_worldwide_clusters() -> void:
 	_check(repeated, "habitat role clusters are stable at distant coordinates")
 	_check(neighboring_cluster_cells_match, "each habitat role persists across its coarse multi-region cluster")
 	_check(roles.size() >= 2, "distant forest clusters retain more than one habitat role")
+
+func _test_habitat_roles_scale_visual_presence() -> void:
+	var world: Dictionary = _world(1948)
+	var grid: Dictionary = SurfaceWindow._grid(PLANET_RADIUS_M, REGION_SIZE_M)
+	var region_id: String = SurfaceWindow._region_id(world, grid, 50, 80)
+	var center: Vector3 = Coordinates.direction(21.0, 15.0)
+	var counts: Array[int] = [2, 1, 3, 1]
+	var grove: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, 50, 80, grid, "forest", center, PLANET_RADIUS_M, counts, {}, "grove")
+	var clearing: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, 50, 80, grid, "forest", center, PLANET_RADIUS_M, counts, {}, "clearing")
+	for kind: String in ["rock", "flora", "fauna"]:
+		var grove_records: Array[Dictionary] = _records_for_kind(grove, kind)
+		var clearing_records: Array[Dictionary] = _records_for_kind(clearing, kind)
+		_check(grove_records.size() == clearing_records.size() and not grove_records.is_empty(), "%s scale comparison keeps the same stable feature slots" % kind)
+		var expected_ratio: float = SurfaceWindow._feature_size_scale("grove", kind) / SurfaceWindow._feature_size_scale("clearing", kind)
+		for index: int in range(mini(grove_records.size(), clearing_records.size())):
+			var actual_ratio: float = float(grove_records[index].size) / float(clearing_records[index].size)
+			_check(is_equal_approx(actual_ratio, expected_ratio), "%s size follows each habitat role's authored scale" % kind)
+	_check(SurfaceWindow._feature_size_scale("thicket", "flora") > SurfaceWindow._feature_size_scale("clearing", "flora"), "lush thickets give plants stronger visual presence than clearings")
 
 func _test_output_is_bounded() -> void:
 	var world: Dictionary = _world(6421)
