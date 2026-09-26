@@ -14,6 +14,8 @@ const ConsolePod = preload("res://scripts/flight_console_pod.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := 6
+const PALETTE_PAGE_CAPACITY := 12
+const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * 59 - 3
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -35,6 +37,8 @@ var item_buttons: Dictionary = {}
 var slot_labels: Dictionary = {}
 var count_labels: Dictionary = {}
 var palette_backing: Panel
+var grid_backing: Panel
+var empty_slot_backings: Array[Panel] = []
 var collapse_button: Button
 var palette_page: int = 0
 var page_previous: Button
@@ -184,6 +188,29 @@ func _build() -> void:
 	palette_backing.add_theme_stylebox_override("panel", inventory_style)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(palette_backing)
+
+	# One recessed charcoal tray keeps the two-row item matrix visually related
+	# to the condition console. Empty cells are capacity only, never fake items.
+	grid_backing = Panel.new()
+	grid_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var grid_style := StyleBoxFlat.new()
+	grid_style.bg_color = Color("101618")
+	grid_style.border_color = Color("454943")
+	grid_style.set_border_width_all(1)
+	grid_style.set_corner_radius_all(0)
+	grid_backing.add_theme_stylebox_override("panel", grid_style)
+	add_child(grid_backing)
+	for slot: int in range(PALETTE_PAGE_CAPACITY):
+		var empty_slot := Panel.new()
+		empty_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var empty_style := StyleBoxFlat.new()
+		empty_style.bg_color = Color("141b1d")
+		empty_style.border_color = Color("253238")
+		empty_style.set_border_width_all(1)
+		empty_style.set_corner_radius_all(0)
+		empty_slot.add_theme_stylebox_override("panel", empty_style)
+		empty_slot_backings.append(empty_slot)
+		add_child(empty_slot)
 
 	console_pod = ConsolePod.new()
 	console_pod.position = Vector2(1402, 690)
@@ -418,6 +445,10 @@ func _group_entries(group: String) -> Array[String]:
 		return entries
 	for id: String in GROUPS[group]:
 		entries.append(id)
+	if group == "Main tools":
+		# Keep the real field tools beside usable supplies, as in the approved
+		# surface instrument. Counts and availability still come from campaign state.
+		entries.append_array(GROUPS["Inventory"])
 	if group in ["Main tools", "Inventory"]:
 		entries.append_array(campaign_inventory_ids)
 	return entries
@@ -446,7 +477,7 @@ func _refresh_campaign_items(entries: Array[Dictionary], locked: bool) -> void:
 		button.tooltip_text = Art.tooltip("%s × %d\nCarried cargo · click to inspect the existing inventory." % [str(entry.title), count])
 		button.disabled = locked
 		campaign_count_labels[id].text = "× %d" % count
-	palette_page = clampi(palette_page, 0, maxi(0, (_group_entries(active_group).size()-1)/Palette.PAGE_SIZE))
+	palette_page = clampi(palette_page, 0, maxi(0, (_group_entries(active_group).size()-1)/PALETTE_PAGE_CAPACITY))
 	show_group(active_group)
 
 func _internal_action(action: String) -> void:
@@ -459,7 +490,7 @@ func _internal_action(action: String) -> void:
 		palette_expanded = not palette_expanded
 		show_group(active_group)
 	elif action in ["page_previous","page_next"]:
-		palette_page = clampi(palette_page+(-1 if action == "page_previous" else 1),0,maxi(0,(_group_entries(active_group).size()-1)/Palette.PAGE_SIZE))
+		palette_page = clampi(palette_page+(-1 if action == "page_previous" else 1),0,maxi(0,(_group_entries(active_group).size()-1)/PALETTE_PAGE_CAPACITY))
 		show_group(active_group)
 	# Item commands are handled by the scene with a fresh model validation.
 
@@ -467,31 +498,39 @@ func show_group(group: String) -> void:
 	if not GROUPS.has(group): return
 	active_group = group
 	var entries: Array[String] = _group_entries(group)
-	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
-	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
-	var pages: int = maxi(1,int(ceil(entries.size()/float(Palette.PAGE_SIZE))))
+	var page_start: int = palette_page * PALETTE_PAGE_CAPACITY
+	var visible_items: int = mini(PALETTE_PAGE_CAPACITY, maxi(0, entries.size()-page_start))
+	var pages: int = maxi(1,int(ceil(entries.size()/float(PALETTE_PAGE_CAPACITY))))
 	var controls_width: float = float(GROUPS.size()*50+6+40+(108 if pages > 1 else 0))
-	var grid_width: float = float(maxi(0, mini(PALETTE_COLUMNS, visible_items)*59-3))
+	var grid_width: float = float(PALETTE_GRID_WIDTH)
 	var content_width: float = maxf(controls_width,grid_width)
-	var panel_height: float = maxf(192.0,78.0+rows*56.0)
+	var panel_height: float = 192.0
 	var panel_top: float = 870.0-panel_height
-	# Keep the grid snug against the condition console at the right edge in both
-	# flight modes. Visible entries determine the amount of instrument face used.
+	# Keep the fixed-capacity grid snug against the condition console at the
+	# right edge in both flight modes, regardless of the current item count.
 	inventory_grid_origin = Vector2(1402.0-8.0-content_width,panel_top+68.0)
+	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
+	grid_backing.size = Vector2(grid_width+8, 118)
+	grid_backing.visible = palette_expanded
+	for slot: int in range(PALETTE_PAGE_CAPACITY):
+		var empty_cell: Panel = empty_slot_backings[slot]
+		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
+		empty_cell.size = Vector2(56, 54)
+		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
 		console_pod.position = Vector2(1402,inventory_grid_origin.y)
 	altitude_backing.position = Vector2(1402,inventory_grid_origin.y-26)
 	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
 	for id: String in item_buttons:
-		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
-		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
+		var slot: int = entries.find(id)-page_start
+		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if item_buttons[id].visible:
 			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
-			slot_labels[id].text = ("Ctrl+" if slot >= 9 else "")+str(slot%9+1)
+			slot_labels[id].text = ("Ctrl+" if slot >= PALETTE_COLUMNS else "")+str(slot%PALETTE_COLUMNS+1)
 	for id: String in campaign_inventory_ids:
-		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
+		var slot: int = entries.find(id)-page_start
 		var button: Button = campaign_item_buttons[id]
-		button.visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
+		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
 			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 	var category_index: int = 0
@@ -509,7 +548,7 @@ func show_group(group: String) -> void:
 	# The same angular Field Instruments housing encloses categories, real slots,
 	# altitude strip and condition console in both modes.
 	palette_backing.position = Vector2(inventory_grid_origin.x-8,panel_top)
-	palette_backing.size = Vector2(content_width+208,panel_height)
+	palette_backing.size = Vector2(content_width+206,panel_height)
 	palette_style.bg_color = Color("dedad0")
 	palette_style.border_color = Color("454943")
 	palette_style.set_border_width_all(1)
@@ -540,8 +579,12 @@ func cycle_group(direction: int) -> void:
 
 func activate_slot(slot: int) -> void:
 	if palette_locked or not palette_expanded: return
-	var entries: Array = GROUPS[active_group]
-	slot += palette_page*Palette.PAGE_SIZE
+	# Existing input bindings deliver 1–9 and Ctrl+1–9. The two-row grid uses
+	# 1–6 for row one and Ctrl+1–6 for row two; surplus keys remain no-ops.
+	if slot >= PALETTE_COLUMNS and slot < 9: return
+	if slot >= 9: slot = PALETTE_COLUMNS + slot - 9
+	var entries: Array[String] = _group_entries(active_group)
+	slot += palette_page*PALETTE_PAGE_CAPACITY
 	if slot < 0 or slot >= entries.size(): return
 	var button: Button = item_buttons[entries[slot]]
 	if not button.disabled: button.pressed.emit()
@@ -552,7 +595,7 @@ func select_tool(id: String) -> void:
 	selected_tool = id
 	for group: String in GROUPS:
 		if id in GROUPS[group]:
-			palette_page = GROUPS[group].find(id)/Palette.PAGE_SIZE
+			palette_page = GROUPS[group].find(id)/PALETTE_PAGE_CAPACITY
 			show_group(group)
 			break
 	for key: String in item_buttons:
@@ -580,7 +623,7 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 	for button: Button in category_buttons.values(): button.disabled = locked
 	collapse_button.disabled = locked
 	page_previous.disabled = locked or palette_page == 0
-	page_next.disabled = locked or (palette_page+1)*Palette.PAGE_SIZE >= _group_entries(active_group).size()
+	page_next.disabled = locked or (palette_page+1)*PALETTE_PAGE_CAPACITY >= _group_entries(active_group).size()
 	for id: String in item_buttons:
 		var item: Dictionary = Palette.entry(id)
 		var reason: String = Palette.unavailable(id,model)
