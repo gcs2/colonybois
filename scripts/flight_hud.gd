@@ -377,10 +377,11 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	if item_texture != null:
 		button.icon = item_texture
 	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width", 30)
+	button.add_theme_constant_override("icon_max_width", 36)
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
-	count.position = Vector2(2, 1)
+	count.position = Vector2(2, 39)
 	count.size = Vector2(52, 15)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size", 11)
