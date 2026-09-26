@@ -27,6 +27,8 @@ const FIELD_RADIUS := 62.5
 var surface_center := Vector2.ZERO
 var surface_extent: float = FIELD_RADIUS
 var height_sampler: Callable
+var water_center := Vector2.ZERO
+var water_area: int = 0
 
 func _ready() -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -39,10 +41,11 @@ func set_terrain(height_at: Callable, extent: float = FIELD_RADIUS) -> void:
 
 func recenter_surface(at: Vector2) -> void:
 	if orbital or not at.is_finite(): return
-	# Keep the authored landing area and its contacts in view while the scout is
-	# inside the 125 m chart. Rebuild once it leaves that window, then hold the new
-	# center until the next edge crossing instead of chasing the ship every frame.
-	if absf(at.x-surface_center.x) <= surface_extent and absf(at.y-surface_center.y) <= surface_extent:
+	# Keep the chart anchored until the scout leaves its visible 125 m square.
+	# This keeps contacts steady while they are in view, then brings the scout
+	# back to the center when crossing the chart edge.
+	var half_width: float = surface_extent
+	if absf(at.x-surface_center.x) <= half_width and absf(at.y-surface_center.y) <= half_width:
 		return
 	surface_center = at
 	_rebuild_terrain()
@@ -52,6 +55,8 @@ func _rebuild_terrain() -> void:
 	var img := Image.create(96,96,false,Image.FORMAT_RGBA8)
 	var elevations := PackedFloat32Array()
 	elevations.resize(96*96)
+	water_center = Vector2.ZERO
+	water_area = 0
 	var lowest_land: float = INF
 	var highest_land: float = -INF
 	for y: int in range(96):
@@ -62,6 +67,7 @@ func _rebuild_terrain() -> void:
 				lowest_land = minf(lowest_land,height)
 				highest_land = maxf(highest_land,height)
 	var land_range: float = maxf(highest_land-lowest_land,1.0)
+	_find_largest_water_body(elevations)
 	for y: int in range(96):
 		for x: int in range(96):
 			var h: float = elevations[y*96+x]
@@ -69,21 +75,27 @@ func _rebuild_terrain() -> void:
 			var relief: float = 0.0
 			if h < -0.6:
 				var water_depth: float = clampf((-h-0.6)/18.0,0,1)
-				color = Color("4d9c91").lerp(Color("173646"),water_depth)
+				color = Color("397d72").lerp(Color("193a42"),water_depth)
 			else:
 				relief = clampf((h-lowest_land)/land_range,0,1)
-				color = Color("485750").lerp(Color("a99a70"),relief)
+				# Warm basin floors, olive uplands and pale high ridges make the
+				# sampled relief read as landforms instead of a single flat fill.
+				var upland_mix: float = _smooth_range(relief,0.0,0.58)
+				var ridge_mix: float = _smooth_range(relief,0.52,1.0)
+				color = Color("554b3d").lerp(Color("a37c58"),upland_mix)
+				color = color.lerp(Color("d0ac7a"),ridge_mix)
 			# Shade opposite terrain slopes from adjacent real elevation samples.
 			var left: float = elevations[y*96+maxi(0,x-1)]
 			var right: float = elevations[y*96+mini(95,x+1)]
 			var above: float = elevations[maxi(0,y-1)*96+x]
 			var below: float = elevations[mini(95,y+1)*96+x]
-			var slope_shade: float = clampf(((right-left)-(below-above))*0.035,-0.22,0.22)
+			var slope_shade: float = clampf(((right-left)-(below-above))*0.045,-0.28,0.28)
 			if slope_shade > 0.0: color = color.lightened(slope_shade)
 			elif slope_shade < 0.0: color = color.darkened(-slope_shade)
-			# Contours use the sampled local relief range, so small expedition regions
-			# still show landform shape even when their absolute elevation is narrow.
-			if h >= -0.6 and fposmod(relief*7.0,1.0) < 0.045: color = color.darkened(0.16)
+			# A narrow shore tint and contours reinforce coast and ridge shape while
+			# remaining derived entirely from the current terrain samples.
+			if h >= -0.6 and h < 0.8: color = color.lerp(Color("d6bd8a"),0.34)
+			if h >= -0.6 and fposmod(relief*8.0,1.0) < 0.035: color = color.darkened(0.22)
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
@@ -102,6 +114,43 @@ func unproject(at: Vector2) -> Vector2:
 	var extent: float = 90.0 if orbital else surface_extent
 	var origin: Vector2 = Vector2.ZERO if orbital else surface_center
 	return origin+((at-rect.position)/rect.size*2-Vector2.ONE)*extent
+
+func _find_largest_water_body(elevations: PackedFloat32Array) -> void:
+	# Label the largest contiguous sampled water shape, rather than assuming a
+	# named lake sits at one fixed world coordinate as the chart recenters.
+	var visited := PackedByteArray()
+	visited.resize(96*96)
+	var best_count: int = 0
+	var best_sum := Vector2.ZERO
+	for start: int in range(96*96):
+		if visited[start] != 0 or elevations[start] >= -0.6: continue
+		var queue := PackedInt32Array([start])
+		visited[start] = 1
+		var sum := Vector2.ZERO
+		var count: int = 0
+		var cursor: int = 0
+		while cursor < queue.size():
+			var cell: int = queue[cursor]
+			cursor += 1
+			var x: int = cell % 96
+			var y: int = floori(float(cell)/96.0)
+			sum += Vector2(float(x),float(y))
+			count += 1
+			for neighbor: int in [cell-1 if x > 0 else -1,cell+1 if x < 95 else -1,cell-96 if y > 0 else -1,cell+96 if y < 95 else -1]:
+				if neighbor < 0 or visited[neighbor] != 0 or elevations[neighbor] >= -0.6: continue
+				visited[neighbor] = 1
+				queue.append(neighbor)
+		if count > best_count:
+			best_count = count
+			best_sum = sum
+	if best_count >= 3:
+		water_area = best_count
+		var centroid: Vector2 = best_sum/float(best_count)
+		water_center = surface_center+((centroid/95.0)*2.0-Vector2.ONE)*surface_extent
+
+func _smooth_range(value: float, low: float, high: float) -> float:
+	var t: float = clampf((value-low)/maxf(high-low,0.0001),0.0,1.0)
+	return t*t*(3.0-2.0*t)
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_visible_in_tree(): return
@@ -145,8 +194,8 @@ func _draw() -> void:
 			var skiff_color := Color("818793") if guardian_disabled else (Color("ef897f") if guardian_alert >= 3 else Color("eab77e"))
 			draw_arc(skiff,7,0,TAU,24,skiff_color,2,true)
 			draw_circle(skiff,3,skiff_color)
-	if not orbital and terrain != null and _has_local_lake():
-		_draw_local_lake()
+	if not orbital and terrain != null and water_area >= 3:
+		_draw_local_water()
 	var center: Vector2 = rect.get_center()
 	for fraction: float in [0.33,0.66]:
 		var x: float = lerpf(rect.position.x,rect.end.x,fraction)
@@ -175,29 +224,27 @@ func _draw() -> void:
 		_draw_map_label("PORT",port+Vector2(7,12),Color("c2edd6"))
 	var pos: Vector2 = project(ship_at)
 	pos = pos.clamp(rect.position+Vector2(5,5),rect.end-Vector2(5,5))
-	if navigating: draw_line(pos,project(destination).clamp(rect.position,rect.end),Color("f0c972"),1.5,true)
+	if navigating:
+		var route_end: Vector2 = project(destination).clamp(rect.position+Vector2(2,2),rect.end-Vector2(2,2))
+		draw_line(pos,route_end,Color("f0c972"),1.5,true)
+		draw_arc(route_end,4,0,TAU,20,Color("ffdc8d"),1.5,true)
 	var arrow := PackedVector2Array()
 	for p: Vector2 in [Vector2(0,-7),Vector2(5,5),Vector2(0,2),Vector2(-5,5)]: arrow.append(pos+p.rotated(heading))
 	draw_colored_polygon(arrow,Color("fff1cd"))
 	draw_string(ThemeDB.fallback_font,Vector2(rect.get_center().x-4,rect.position.y+14),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("e6e5d5"))
-	var scale_width: float = rect.size.x*0.4
+	var scale_width: float = _scale_width_pixels(rect) if not orbital else rect.size.x*0.4
 	var scale_y: float = rect.end.y-9
 	draw_line(Vector2(rect.end.x-scale_width-12,scale_y),Vector2(rect.end.x-12,scale_y),Color("e6e5d5"),1.5)
+	draw_line(Vector2(rect.end.x-scale_width-12,scale_y-3),Vector2(rect.end.x-scale_width-12,scale_y+1),Color("e6e5d5"),1)
+	draw_line(Vector2(rect.end.x-12,scale_y-3),Vector2(rect.end.x-12,scale_y+1),Color("e6e5d5"),1)
 	draw_string(ThemeDB.fallback_font,Vector2(rect.end.x-48,scale_y-3),"50 m",HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("e6e5d5"))
 
-func _has_local_lake() -> bool:
-	# Morrow's mapped lake sits below the surrounding basin surface. This keeps
-	# surface water visible on the local chart without adding a system map here.
-	return height_sampler.is_valid() and height_sampler.call(-23.0,0.0) < -0.6
+func _draw_local_water() -> void:
+	var label_at: Vector2 = project(water_center)+Vector2(7,-4)
+	if chart_rect().has_point(label_at): _draw_map_label("WATER",label_at,Color("d2e4d8"))
 
-func _draw_local_lake() -> void:
-	var center_at := project(Vector2(-23.0,0.0))
-	var map_center: Vector2 = chart_rect().get_center()
-	# Water is rasterized from the same sampled height map as land. The lake is
-	# near the chart rim, so a separately clipped polygon could fold at the edge.
-	var lake_label_at: Vector2 = center_at+Vector2(17,-3)
-	if chart_rect().has_point(lake_label_at):
-		_draw_map_label("LAKE",lake_label_at,Color("d2e4d8"))
+func _scale_width_pixels(rect: Rect2) -> float:
+	return 50.0/(surface_extent*2.0)*rect.size.x
 
 func _point_name(id: String) -> String:
 	return {"relay":"RELAY","vein":"GLASS","bed":"BED","pod":"PODS","grazer":"GRAZER"}.get(id,id.to_upper())

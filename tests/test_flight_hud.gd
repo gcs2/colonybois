@@ -19,7 +19,37 @@ func press(scene: Node, key: Key, shift: bool = false, ctrl: bool = false) -> vo
 	event.shift_pressed = shift
 	event.ctrl_pressed = ctrl
 	scene._unhandled_input(event)
+func chart_test_height(x: float, z: float) -> float:
+	var at := Vector2(x,z)
+	if at.distance_to(Vector2(-34,22)) < 9 or at.distance_to(Vector2(160,-100)) < 9: return -5.0
+	return 1.0+8.0*exp(-at.distance_to(Vector2(10,-18))/34.0)
+
+func test_surface_chart_sampling() -> void:
+	var chart: Control = load("res://scripts/flight_navigation.gd").new()
+	root.add_child(chart)
+	chart.size = Vector2(220,160)
+	chart.set_terrain(Callable(self,"chart_test_height"))
+	check(chart.terrain != null and chart.water_area > 3 and chart.water_center.distance_to(Vector2(-34,22)) < 3.0,"Surface chart derives a recognizable water contact from sampled terrain")
+	var surface_map: Image = chart.terrain.get_image()
+	var pond_pixel := Vector2i(roundi(((-34.0+62.5)/125.0)*95.0),roundi(((22.0+62.5)/125.0)*95.0))
+	var water_color: Color = surface_map.get_pixel(pond_pixel.x,pond_pixel.y)
+	var land_color: Color = surface_map.get_pixel(48,48)
+	check(absf(water_color.r-land_color.r)+absf(water_color.g-land_color.g)+absf(water_color.b-land_color.b) > 0.35,"Sampled water and surrounding relief use clearly distinct map colors")
+	var ruler_px: float = chart._scale_width_pixels(chart.chart_rect())
+	check(is_equal_approx(ruler_px,chart.chart_rect().size.x*0.4),"The 50 m ruler matches the 125 m chart extent")
+	chart.recenter_surface(Vector2(160,-100))
+	check(chart.surface_center == Vector2(160,-100) and chart.water_area > 3 and chart.water_center.distance_to(Vector2(160,-100)) < 3.0,"Water identification follows sampled terrain when the chart recenters")
+	chart.ship_at = chart.surface_center
+	chart.points["relay"] = Vector2(162,-98)
+	check(chart.project(chart.ship_at).distance_to(chart.chart_rect().get_center()) < 0.01 and chart.unproject(chart.project(chart.points.relay)).distance_to(chart.points.relay) < 0.01,"Ship and known-contact markers remain anchored in world coordinates")
+	chart.free()
+
 func run() -> void:
+	test_surface_chart_sampling()
+	if OS.get_cmdline_user_args().has("chart-only"):
+		print("Surface chart assertions: ",checks,"; failures: ",failures)
+		quit(0 if failures == 0 else 1)
+		return
 	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
 	root.add_child(scene)
 	await process_frame
