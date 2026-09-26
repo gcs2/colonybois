@@ -23,16 +23,35 @@ var guardian_disabled: bool = false
 var guardian_alert: int = 0
 var locked: bool = false
 const FIELD_RADIUS := 40.0
+var surface_center := Vector2.ZERO
+var surface_extent: float = FIELD_RADIUS
+var height_sampler: Callable
 
 func _ready() -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	tooltip_text = "Local chart · click a contact to approach with the selected tool, or open ground to fly. North is up."
 
-func set_terrain(height_at: Callable) -> void:
+func set_terrain(height_at: Callable, extent: float = FIELD_RADIUS) -> void:
+	height_sampler = height_at
+	surface_extent = maxf(8.0, extent)
+	_rebuild_terrain()
+
+func recenter_surface(at: Vector2) -> void:
+	if orbital or not at.is_finite(): return
+	# Rebuild only after crossing a quarter-window. The chart follows the ship without
+	# rasterizing its height texture every frame.
+	var cell: float = surface_extent * 0.5
+	var next_center := Vector2(roundf(at.x / cell) * cell, roundf(at.y / cell) * cell)
+	if next_center == surface_center: return
+	surface_center = next_center
+	_rebuild_terrain()
+
+func _rebuild_terrain() -> void:
+	if not height_sampler.is_valid(): return
 	var img := Image.create(96,96,false,Image.FORMAT_RGBA8)
 	for y: int in range(96):
 		for x: int in range(96):
-			var h: float = height_at.call((float(x)/95*2-1)*FIELD_RADIUS,(float(y)/95*2-1)*FIELD_RADIUS)
+			var h: float = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
 			var color: Color = Color("202d39").lerp(Color("6c7770"),clampf((h+3)/8,0,1))
 			if fposmod(h,0.75) < 0.08: color = color.lightened(0.15)
 			if Vector2(x-47.5,y-47.5).length() > 47.0: color.a = 0
@@ -45,12 +64,15 @@ func chart_rect() -> Rect2:
 
 func project(at: Vector2) -> Vector2:
 	var rect: Rect2 = chart_rect()
-	var extent: float = 90.0 if orbital else FIELD_RADIUS
-	return rect.position+(at/extent+Vector2.ONE)*0.5*rect.size
+	var extent: float = 90.0 if orbital else surface_extent
+	var origin: Vector2 = Vector2.ZERO if orbital else surface_center
+	return rect.position+((at-origin)/extent+Vector2.ONE)*0.5*rect.size
 
 func unproject(at: Vector2) -> Vector2:
 	var rect: Rect2 = chart_rect()
-	return ((at-rect.position)/rect.size*2-Vector2.ONE)*(90.0 if orbital else FIELD_RADIUS)
+	var extent: float = 90.0 if orbital else surface_extent
+	var origin: Vector2 = Vector2.ZERO if orbital else surface_center
+	return origin+((at-rect.position)/rect.size*2-Vector2.ONE)*extent
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_visible_in_tree(): return
@@ -101,13 +123,15 @@ func _draw() -> void:
 	if not orbital:
 		for id: String in points:
 			var p: Vector2 = project(points[id])
+			if p.distance_to(center) > radius-8: continue
 			var known: bool = id in surveyed
 			var color: Color = Color("8ad4a5") if known else Color("d9c6a7")
 			if id == selected: draw_arc(p,8,0,TAU,24,Color("f8cf77"),1.5,true)
 			draw_circle(p,3,color)
 			if not known: draw_circle(p,1.5,Color("27313b"))
 	var port: Vector2 = project(service_at)
-	draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
+	if port.distance_to(center) <= radius-8:
+		draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
 	var pos: Vector2 = project(ship_at)
 	pos = pos.clamp(rect.position+Vector2(5,5),rect.end-Vector2(5,5))
 	if navigating: draw_line(pos,project(destination).clamp(rect.position,rect.end),Color("f0c972"),1.5,true)

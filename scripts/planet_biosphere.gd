@@ -1,6 +1,7 @@
 extends RefCounted
 ## Six ecological slots per tier; bounded populations, no individual creature simulation.
 const Geography = preload("res://scripts/planet_geography.gd")
+const SurfaceLayout = preload("res://scripts/surface_region_layout.gd")
 const Validation = preload("res://scripts/surface_combat.gd")
 const SLOTS := ["small","medium","large","herbivore_a","herbivore_b","predator"]
 const HOLD := 12
@@ -51,6 +52,16 @@ func complete_tier(planet: String) -> int:
 	return count
 static func position(planet: String, id: String) -> Vector3:
 	var index: int = data().keys().find(id)
+	if planet == "morrow":
+		var region_index: int = 0
+		if id in ["ribbon_bush","pocket_manta"]: region_index = 1
+		elif id in ["hollow_crown","button_strider","veil_maw"]: region_index = 2
+		var habitats: Array[Dictionary] = SurfaceLayout.regions(Geography.definition(planet))
+		var habitat: Dictionary = habitats[region_index]
+		var angle: float = float(index)*2.399963
+		var radius: float = 20.0+float(index%3)*5.0 if region_index == 0 else float(habitat.radius)*0.48
+		var flat: Vector2 = habitat.center+Vector2(cos(angle),sin(angle))*radius
+		return Vector3(flat.x,Geography.surface_height(Geography.definition(planet),flat.x,flat.y)+1.5,flat.y)
 	var angle: float = index*2.399963
 	var radius: float = 18.0+float(index%3)*5
 	var flat := Vector2(cos(angle),sin(angle))*radius
@@ -73,7 +84,7 @@ func reason(game: RefCounted, id: String, action: String, at: Vector3, point: Ve
 		if int(world(planet).stock.get(id,0)) <= 0: return "Local population recovering."
 	elif action == "release":
 		if int(state.cargo.get(id,0)) <= 0: return "No specimen aboard."
-		if Vector2(point.x,point.z).length() > 35: return "Choose a site inside the landing region."
+		if Vector2(point.x,point.z).length() > Geography.PLAYABLE_RADIUS: return "Choose a site inside the explorable surface region."
 		if absf(point.y-Geography.surface_height(game.field.definition(),point.x,point.z)-1.5) > 0.1: return "Choose a surface habitat."
 		if id in species(planet): return "Species already established here."
 		if release_slot(game,id).is_empty(): return "Needs a climate tier with a matching slot and an established food supply."
@@ -186,8 +197,10 @@ func restore(source: Variant) -> Error:
 			if not id is String or id not in seen or not Validation.number(local.stock[id],0,4,true): return ERR_INVALID_DATA
 		for id: Variant in local.sites:
 			if not id is String or id not in seen or not local.sites[id] is Array or local.sites[id].size() != 3: return ERR_INVALID_DATA
-			for value: Variant in local.sites[id]:
-				if not Validation.number(value,-40,40): return ERR_INVALID_DATA
-			if Vector2(local.sites[id][0],local.sites[id][2]).length() > 35: return ERR_INVALID_DATA
+			for axis: int in range(3):
+				var value: Variant = local.sites[id][axis]
+				var bound: float = 100.0 if axis == 1 else Geography.PLAYABLE_RADIUS
+				if not Validation.number(value,-bound,bound): return ERR_INVALID_DATA
+			if Vector2(local.sites[id][0],local.sites[id][2]).length() > Geography.PLAYABLE_RADIUS: return ERR_INVALID_DATA
 	state = source.duplicate(true)
 	return OK

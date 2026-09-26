@@ -54,7 +54,8 @@ $registeredTests = @(
     'tests/test_scout.gd',
     'tests/test_audio.gd',
     'tests/test_planet_map.gd',
-    'tests/test_planet_generation.gd'
+    'tests/test_planet_generation.gd',
+    'tests/test_surface_exploration.gd'
 )
 
 function Show-Usage {

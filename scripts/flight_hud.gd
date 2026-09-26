@@ -631,7 +631,7 @@ func set_cargo_readout(used: int, capacity: int) -> void:
 		return
 	# Keep the Marks instrument in its approved upper-right plate; cargo is a
 	# secondary line sourced by the owning campaign HUD refresh.
-	stats.text = "%s Marks\nCargo %d/%d" % [treasury_readout, maxi(0, used), maxi(1, capacity)]
+	stats.text = "%s\nCargo %d/%d" % [treasury_readout, maxi(0, used), maxi(1, capacity)]
 
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled

@@ -38,7 +38,7 @@ static func region_at(world: Dictionary, at: Vector2) -> Dictionary:
 	var nearest := INF
 	for region: Dictionary in regions(world):
 		var distance: float = at.distance_to(region.center)
-		if distance <= float(region.radius) and distance < nearest:
+		if distance < nearest:
 			found = region
 			nearest = distance
 	return found.duplicate(true)
@@ -69,7 +69,7 @@ static func tile_features(world: Dictionary, tile: Vector2i, tile_size: float = 
 			if habitat.is_empty():
 				continue
 			serial += 1
-			var variant_count := {"cover": 6, "rock": 5, "flora": 6, "fauna": 3}[kind]
+			var variant_count: int = {"cover": 6, "rock": 5, "flora": 6, "fauna": 3}[kind]
 			result.append({
 				"id": "%s:%d:v%d:%d:%d:%s:%02d" % [MORROW_ID, _recipe_seed(world), int(world.get("generator_version", 1)), tile.x, tile.y, kind, serial],
 				"kind": kind,
@@ -98,7 +98,7 @@ static func _region_at_cached(candidates: Array[Dictionary], at: Vector2) -> Dic
 	var nearest := INF
 	for region: Dictionary in candidates:
 		var distance: float = at.distance_to(region.center)
-		if distance <= float(region.radius) and distance < nearest:
+		if distance < nearest:
 			found = region
 			nearest = distance
 	return found

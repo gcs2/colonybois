@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 10
+const VERSION := 11
 const Support = preload("res://scripts/ship_support.gd")
 var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
@@ -244,7 +244,7 @@ static func fresh(planet: String = "morrow") -> Dictionary:
 	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3, "ore_remaining":MINERAL_DEPOSIT_UNITS,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
-		"position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
+		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
 		"planet_id":planet, "survey_ticks":0, "survey_active":false,
 		"hull":100.0, "shroud_unlocked":false, "shroud_on":false,
 		"threat_clock":0, "tow_count":0, "last_repair_at":-REPAIR_COOLDOWN,
@@ -409,6 +409,7 @@ func start_survey() -> String:
 func change_flight_mode(mode: String) -> bool:
 	if mode == "surface" and definition().sites.is_empty(): return false
 	if mode not in ["surface","orbit"] or mode == state.flight_mode: return false
+	if state.flight_mode == "surface": state.surface_position = state.position.duplicate(true)
 	state.flight_mode = mode
 	state.guardian_alert = 0
 	state.guardian_fire_at = 0
@@ -417,7 +418,7 @@ func change_flight_mode(mode: String) -> bool:
 		note("first_orbit","Beyond the clouds — reached %s orbit under your own power." % definition().name)
 	else:
 		state.shroud_on = false
-		state.position = [0.0,32.0,12.0]
+		state.position = state.surface_position.duplicate(true)
 		state.landings += 1
 		note("first_return","Returned to %s with the expedition intact." % definition().name)
 	return true
@@ -596,8 +597,11 @@ func restore_snapshot(source: Variant) -> Error:
 		value.version = 9
 		value.support = Support.fresh()
 	if value.get("version") == 9:
-		value.version = VERSION
+		value.version = 10
 		value.ore_remaining = MINERAL_DEPOSIT_UNITS
+	if value.get("version") == 10:
+		value.version = VERSION
+		value.surface_position = value.position.duplicate(true) if value.get("flight_mode", "surface") == "surface" else [0.0,5.0,12.0]
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -650,9 +654,17 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition(value.planet_id).survey_seconds): return ERR_INVALID_DATA
 	if value.survey_ticks == int(Geography.definition(value.planet_id).survey_seconds) and value.survey_active: return ERR_INVALID_DATA
 	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition(value.planet_id).survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
-	if value.position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
-	for coordinate: Variant in value.position:
-		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)) or absf(float(coordinate)) > 100: return ERR_INVALID_DATA
+	if value.position.size() != 3 or value.surface_position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
+	for index: int in range(3):
+		var coordinate: Variant = value.position[index]
+		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)): return ERR_INVALID_DATA
+		var bound: float = Geography.PLAYABLE_RADIUS if value.flight_mode == "surface" and index != 1 else 100.0
+		if absf(float(coordinate)) > bound: return ERR_INVALID_DATA
+		var surface_coordinate: Variant = value.surface_position[index]
+		if not (typeof(surface_coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(surface_coordinate)): return ERR_INVALID_DATA
+		var surface_bound: float = 100.0 if index == 1 else Geography.PLAYABLE_RADIUS
+		if absf(float(surface_coordinate)) > surface_bound: return ERR_INVALID_DATA
+	if Vector2(float(value.surface_position[0]),float(value.surface_position[2])).length() > Geography.PLAYABLE_RADIUS: return ERR_INVALID_DATA
 	for target: Variant in value.scanned:
 		if target not in TARGETS: return ERR_INVALID_DATA
 	for entry: Variant in value.history:

@@ -49,6 +49,7 @@ const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
+const SurfaceLayout = preload("res://scripts/surface_region_layout.gd")
 const FlightHUD = preload("res://scripts/flight_hud.gd")
 const FlightEffects = preload("res://scripts/flight_effects.gd")
 const SurfaceCombat = preload("res://scripts/surface_combat.gd")
@@ -61,6 +62,7 @@ var climate_chart: Control
 var climate_ring: MeshInstance3D
 var climate_signature: String = ""
 var ground_material: ShaderMaterial
+var surface_region_features: Dictionary = {}
 var biosphere_view: Node3D
 var fleet_visual: Node3D
 var fleet_strip: HBoxContainer
@@ -380,14 +382,17 @@ func _make_world() -> void:
 	camera.current = true
 	camera.fov = 52
 	camera.far = 900
+	surface_region_features = _surface_feature_sets()
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	# Distant scenery shares the height function, with coarser cells outside the basin.
-	# Playable travel/interaction bounds stay unchanged; this is not new explorable land.
+	# Keep the first explorable habitats detailed enough for low-altitude flight. The
+	# far shell stays coarse and is only a horizon, beyond the playable surface radius.
 	var coordinates: Array[float] = []
-	for v: int in range(-1250,-50,20): coordinates.append(float(v))
-	for v: int in range(-50,51,2): coordinates.append(float(v))
-	for v: int in range(70,1251,20): coordinates.append(float(v))
+	for v: int in range(-1250,-320,20): coordinates.append(float(v))
+	for v: int in range(-320,-48,8): coordinates.append(float(v))
+	for v: int in range(-48,49,2): coordinates.append(float(v))
+	for v: int in range(56,321,8): coordinates.append(float(v))
+	for v: int in range(340,1251,20): coordinates.append(float(v))
 	for xi: int in range(coordinates.size()-1):
 		for zi: int in range(coordinates.size()-1):
 			for offset: Vector2 in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
@@ -395,25 +400,14 @@ func _make_world() -> void:
 				var pz: float = lerpf(coordinates[zi],coordinates[zi+1],offset.y)
 				var radial_distance: float = Vector2(px,pz).length()
 				var h: float = terrain_height(px,pz)
-				# Fade from the authored local geography to larger irregular terrain forms.
-				# The distant shell is visual only; interaction and movement still use
-				# Geography.surface_height() and their existing bounds.
-				var far_blend: float = smoothstep(55.0,155.0,radial_distance)
+				# The playable region and terrain query must agree; curve only the shell
+				# that sits well beyond the player's bounded expedition envelope.
+				var far_start: float = Geography.PLAYABLE_RADIUS+80.0
+				var far_blend: float = smoothstep(far_start,far_start+220.0,radial_distance)
 				h = lerpf(h,_distant_landform(px,pz),far_blend)
-				# Curve only the distant visual shell away from the local flight area so the
-				# playable surface reads as part of a planet instead of an endless plane.
-				var visual_radius: float = maxf(0.0,radial_distance-50.0)
+				var visual_radius: float = maxf(0.0,radial_distance-far_start)
 				h -= visual_radius*visual_radius/3200.0
-				var local_color_mix: float = clampf((sin(px*0.04+pz*0.015)+cos(pz*0.05))*0.25+0.5,0,1)
-				var far_color_mix: float = clampf(0.52+sin(px*0.006+sin(pz*0.004)*1.8)*0.14+cos(pz*0.007-sin(px*0.003))*0.12,0.25,0.8)
-				var color_mix: float = lerpf(local_color_mix,far_color_mix,far_blend)
-				var color: Color = Color("8c5e4a").lerp(Color("b37d57"),color_mix).lerp(Color("cda077"),smoothstep(1.0,4.0,h))
-				if world_definition.archetype == "temperate":
-					var pond_dist: float = sqrt(pow((px+23.0)/7.2, 2.0) + pow(pz/13.5, 2.0))
-					var shore_factor: float = 1.0 - smoothstep(0.85, 1.35, pond_dist)
-					color = color.lerp(Color("5e4939"), shore_factor * 0.75)
-				elif world_definition.archetype == "frozen": color = Color("708f9b").lerp(Color("a9c2cf"),color_mix).lerp(Color("d1e0e3"),smoothstep(1,5,h))
-				elif world_definition.archetype == "arid": color = Color("735565").lerp(Color("ba8b64"),color_mix).lerp(Color("dac49c"),smoothstep(1,5,h))
+				var color: Color = Geography.surface_color(world_definition,px,pz)
 				surface.set_color(color)
 				surface.add_vertex(Vector3(px,h,pz))
 	surface.generate_normals()
@@ -422,7 +416,7 @@ func _make_world() -> void:
 	ground_material.set_shader_parameter("surface_detail",1.0 if rendered_planet == "morrow" else 0.0)
 	_mesh(surface.commit(),Vector3.ZERO,ground_material)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 739 if rendered_planet == "morrow" else int(world_definition.geography_seed)
+	rng.seed = int(world_definition.geography_seed)
 	var rock_mesh := SphereMesh.new()
 	rock_mesh.radial_segments = 7
 	rock_mesh.rings = 3
@@ -456,6 +450,7 @@ func _make_world() -> void:
 	water.visible = world_definition.archetype != "arid"
 	if world_definition.archetype == "frozen": water.material_override = _mat(Color("83b6c2"))
 	_make_ground_cover(rng)
+	_make_regional_features()
 	for i: int in range(16):
 		var a: float = rng.randf()*TAU
 		var r: float = rng.randf_range(23,33)
@@ -589,13 +584,15 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	batch.use_colors = true
 	batch.mesh = leaf_surface.commit()
 	var morrow_cover: bool = rendered_planet == "morrow"
-	batch.instance_count = 900 if morrow_cover else (160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520)
+	var base_instance_count: int = 900 if morrow_cover else (160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520)
+	var regional_cover: Array = surface_region_features.get("cover",[]) if morrow_cover else []
+	batch.instance_count = base_instance_count+regional_cover.size()
 	var patch_centers: Array[Vector2] = [Vector2(-13,6),Vector2(-9,-4),Vector2(15,6),Vector2(18,-15),Vector2(-20,-13)]
 	var additional_centers: Array[Vector2] = []
 	if morrow_cover:
 		additional_centers = [Vector2(-35,9),Vector2(34,12),Vector2(37,-15),Vector2(-31,-25),Vector2(20,-32)]
 	var additional_rng := RandomNumberGenerator.new()
-	for i: int in range(batch.instance_count):
+	for i: int in range(base_instance_count):
 		var detail_rng: RandomNumberGenerator = rng
 		var center: Vector2
 		if morrow_cover and i >= 520:
@@ -608,10 +605,103 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 		var size: float = detail_rng.randf_range(0.3,0.95)
 		batch.set_instance_transform(i,Transform3D(Basis(Vector3.UP,detail_rng.randf()*TAU).scaled(Vector3.ONE*size),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
 		batch.set_instance_color(i,Color(detail_rng.randf(),0.25,detail_rng.randf()))
+	var cover_palette: Array[Color] = [Color("829780"),Color("93aa90"),Color("a1ad8d"),Color("71918b"),Color("b4a181"),Color("8b7886")]
+	for feature_index: int in range(regional_cover.size()):
+		var feature: Dictionary = regional_cover[feature_index]
+		var at: Vector2 = feature["position"]
+		var index: int = base_instance_count+feature_index
+		var size: float = float(feature["size"])*0.7
+		batch.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(Vector3.ONE*size),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
+		batch.set_instance_color(index,cover_palette[int(feature["variant"])%cover_palette.size()])
 	var node := MultiMeshInstance3D.new()
 	node.multimesh = batch
 	node.material_override = material
 	add_child(node)
+
+func _surface_feature_sets() -> Dictionary:
+	var grouped: Dictionary = {"cover":[],"rock":[],"flora":[],"fauna":[]}
+	if rendered_planet != "morrow": return grouped
+	var tile_size: float = SurfaceLayout.FEATURE_TILE_SIZE
+	var tile_count: int = ceili(Geography.PLAYABLE_RADIUS/tile_size)
+	for tile_x: int in range(-tile_count,tile_count+1):
+		for tile_z: int in range(-tile_count,tile_count+1):
+			for feature: Dictionary in SurfaceLayout.tile_features(world_definition,Vector2i(tile_x,tile_z),tile_size):
+				var at: Vector2 = feature["position"]
+				if at.length() > Geography.PLAYABLE_RADIUS or at.length() < 48.0: continue
+				var kind: String = str(feature["kind"])
+				if grouped.has(kind): grouped[kind].append(feature)
+	return grouped
+
+func _make_regional_features() -> void:
+	var rocks: Array = surface_region_features.get("rock",[])
+	if not rocks.is_empty():
+		var mesh := SphereMesh.new()
+		mesh.radial_segments = 7
+		mesh.rings = 3
+		mesh.radius = 1.0
+		mesh.height = 2.0
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = true
+		multimesh.mesh = mesh
+		multimesh.instance_count = rocks.size()
+		var colors: Array[Color] = [Color("51433f"),Color("755e50"),Color("5a6966"),Color("86705e"),Color("52515b")]
+		for index: int in range(rocks.size()):
+			var feature: Dictionary = rocks[index]
+			var at: Vector2 = feature["position"]
+			var size: float = float(feature["size"])
+			var scale := Vector3(size*1.25,size*2.1,size*(0.78+float(int(feature["variant"])%3)*0.12))
+			multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y)-0.45,at.y)))
+			multimesh.set_instance_color(index,colors[int(feature["variant"])%colors.size()])
+		var rock_material := StandardMaterial3D.new()
+		rock_material.vertex_color_use_as_albedo = true
+		rock_material.roughness = 0.92
+		var rock_batch := MultiMeshInstance3D.new()
+		rock_batch.multimesh = multimesh
+		rock_batch.material_override = rock_material
+		add_child(rock_batch)
+	var flora: Array = surface_region_features.get("flora",[])
+	if not flora.is_empty():
+		var blade_surface := SurfaceTool.new()
+		blade_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for blade: int in range(5):
+			var angle: float = TAU*float(blade)/5.0
+			var outward := Vector3(cos(angle),0,sin(angle))
+			var side := Vector3(-outward.z,0,outward.x)*0.12
+			var base := Vector3.ZERO
+			var bend := outward*0.18+Vector3.UP*0.32
+			var tip := outward*0.42+Vector3.UP*(0.66+0.08*(blade%2))
+			for vertex: Vector3 in [base-side,bend,base+side,bend-side,tip,bend+side]: blade_surface.add_vertex(vertex)
+		blade_surface.generate_normals()
+		var flora_multimesh := MultiMesh.new()
+		flora_multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		flora_multimesh.use_colors = true
+		flora_multimesh.mesh = blade_surface.commit()
+		flora_multimesh.instance_count = flora.size()
+		var flora_colors: Array[Color] = [Color("a8d2a0"),Color("97c5c4"),Color("c4bf8b"),Color("b2a6cb"),Color("72aaa1"),Color("d5ae8b")]
+		for index: int in range(flora.size()):
+			var feature: Dictionary = flora[index]
+			var at: Vector2 = feature["position"]
+			var size: float = float(feature["size"])
+			var scale := Vector3(size*1.5,size*1.7,size*1.5)
+			flora_multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
+			flora_multimesh.set_instance_color(index,flora_colors[int(feature["variant"])%flora_colors.size()])
+		var flora_material := StandardMaterial3D.new()
+		flora_material.vertex_color_use_as_albedo = true
+		flora_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		flora_material.roughness = 0.9
+		var flora_batch := MultiMeshInstance3D.new()
+		flora_batch.multimesh = flora_multimesh
+		flora_batch.material_override = flora_material
+		add_child(flora_batch)
+	var fauna: Array = surface_region_features.get("fauna",[])
+	var fauna_limit: int = mini(12,fauna.size())
+	for index: int in range(fauna_limit):
+		var feature: Dictionary = fauna[index*fauna.size()/fauna_limit]
+		var at: Vector2 = feature["position"]
+		var id: String = "grazer" if int(feature["variant"]) == 0 else "pod"
+		var animal: Node3D = _asset(id,Vector3(at.x,terrain_height(at.x,at.y),at.y),float(feature["size"])*(0.36 if id == "pod" else 0.28))
+		animal.rotation.y = float(feature["rotation"])
 
 func _style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -905,7 +995,7 @@ func _physics_process(delta: float) -> void:
 		if absf(altitude_order-ship.position.y) < 0.2: altitude_order = -1
 	velocity = velocity.move_toward(move,delta*28)
 	ship.position += velocity*delta
-	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else 39)
+	var flat := Vector2(ship.position.x,ship.position.z).limit_length(80 if orbital else Geography.PLAYABLE_RADIUS)
 	ship.position.x = flat.x
 	ship.position.z = flat.y
 	if orbital:
@@ -927,6 +1017,8 @@ func _physics_process(delta: float) -> void:
 	ship.rotation.x = lerpf(ship.rotation.x,-velocity.y*0.015,delta*4)
 
 func _process(delta: float) -> void:
+	if hud != null and model.state.flight_mode == "surface":
+		hud.navigation.recenter_surface(Vector2(ship.position.x,ship.position.z))
 	if campaign != null and recognition_notice != null:
 		var suspended: bool = paused or _inspection_open()
 		recognition_notice.advance(delta,suspended)
@@ -948,6 +1040,7 @@ func _process(delta: float) -> void:
 			var old_pulse: int = model.state.threat_clock
 			var old_escorts: Array = campaign.fleet.active_ids() if campaign != null else []
 			model.state.position = [ship.position.x,ship.position.y,ship.position.z]
+			if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
 			var pulse: String = campaign.tick(distance) if campaign != null else model.tick(distance)
 			if model.state.planet_id != rendered_planet:
 				if not changing_planet: changing_planet = true; call_deferred("_reload_destination")
@@ -1253,7 +1346,7 @@ func _hud_action(action: String) -> void:
 func _chart_navigate(at: Vector2) -> void:
 	if paused or _inspection_open(): return
 	if model.state.flight_mode == "surface":
-		at = at.limit_length(38)
+		at = at.limit_length(Geography.PLAYABLE_RADIUS)
 		_navigate(Vector3(at.x,maxf(ship.position.y,terrain_height(at.x,at.y)+4),at.y))
 	else: _navigate(Vector3(at.x,ship.position.y,at.y))
 
@@ -1672,7 +1765,7 @@ func _pick(screen: Vector2) -> void:
 	for i: int in range(1,480):
 		var at: Vector3 = from+ray*float(i)*0.5
 		if at.y <= terrain_height(at.x,at.z):
-			var flat := Vector2(at.x,at.z).limit_length(38)
+			var flat := Vector2(at.x,at.z).limit_length(Geography.PLAYABLE_RADIUS)
 			_navigate(Vector3(flat.x,maxf(ship.position.y,terrain_height(flat.x,flat.y)+4),flat.y))
 			return
 
@@ -1760,6 +1853,8 @@ func _begin_landing() -> void:
 	audio.play("entry")
 
 func _change_flight_mode(mode: String) -> void:
+	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
+	if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
 	if not model.change_flight_mode(mode): return
 	_cancel_orders()
 	_restore_ship()
@@ -1839,6 +1934,10 @@ func _refresh_ui() -> void:
 	if orbital and model.has_guardian() and not model.has_wreck() and not s.guardian_disabled:
 		hud.guardian_warning.text = ("STRIKE IN %d s · MOVE OUTSIDE THE MARKER" % maxi(0,int(s.guardian_fire_at)-int(s.time))) if s.guardian_fire_at > 0 else (model.enemy_profile().name.to_upper()+" · HOSTILE CONTACT" if s.guardian_alert > 0 else "")
 	hud.refresh_items(model,paused or _inspection_open(),_flight_inventory_entries())
+	if campaign != null:
+		hud.set_cargo_readout(campaign.commerce.used_space(campaign),campaign.commerce.capacity())
+	else:
+		hud.set_cargo_readout(s.samples,2)
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
 	if campaign != null: hud.quick_cargo.tooltip_text = "Freight and kits: %d / %d · Specimens: %d / 12 · Energy packs: %d [I]" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used(),s.energy_packs]
@@ -1851,6 +1950,7 @@ func _refresh_ui() -> void:
 	var service_at: Vector3 = Model.service_position("orbit_tender" if orbital else "basin_port")
 	hud.navigation.service_at = Vector2(service_at.x,service_at.z)
 	hud.navigation.ship_at = Vector2(ship.position.x,ship.position.z)
+	if not orbital: hud.navigation.recenter_surface(hud.navigation.ship_at)
 	hud.navigation.heading = -ship.rotation.y
 	hud.navigation.planet_at = Vector2(orbit.planet.position.x,orbit.planet.position.z)
 	hud.navigation.wreck_at = Vector2(OrbitalScene.WRECK_POSITION.x,OrbitalScene.WRECK_POSITION.z)
@@ -2599,6 +2699,7 @@ func _save(notify: bool = true) -> void:
 		if notify: _toast("Saving disabled: the existing campaign could not be restored.")
 		return
 	model.state.position = [ship.position.x,ship.position.y,ship.position.z]
+	if model.state.flight_mode == "surface": model.state.surface_position = model.state.position.duplicate(true)
 	model.state.yaw = yaw
 	var error: Error = campaign.save_to(_campaign_path(not notify)) if campaign != null else model.save_to(save_path if notify else save_path.replace(".json","_auto.json"))
 	if notify: audio.play("saved" if error == OK else "error")
