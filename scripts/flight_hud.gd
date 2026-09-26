@@ -694,6 +694,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		console_pod.set_orbital(false)
 
 	if enabled:
+		navigation_backing.visible = true
 		nav_pod.position = Vector2(26, 730)
 		nav_pod.size = Vector2(250, 130)
 		chart_backing.position = Vector2(26, 730)
@@ -743,20 +744,22 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# The chart, clear title strip and compact action column share one flush
-		# housing so this useful instrument does not dominate the lower-left view.
+		# The chart and compact action rail sit in one surface-only instrument housing.
 		nav_pod.position = Vector2(26, 660)
-		nav_pod.size = Vector2(210, 210)
+		nav_pod.size = Vector2(286, 210)
 		chart_backing.position = Vector2(26, 660)
-		chart_backing.size = Vector2(210, 210)
-		navigation.position = Vector2(32, 686)
-		navigation.size = Vector2(198, 178)
-		navigation_backing.position = Vector2(236, 660)
+		chart_backing.size = Vector2(286, 210)
+		navigation.position = Vector2(32, 682)
+		navigation.size = Vector2(220, 180)
+		navigation_backing.visible = false
+		navigation_backing.position = Vector2(26, 660)
 		navigation_backing.size = Vector2(54, 210)
-		chart_heading.position = Vector2(36, 663)
+		chart_heading.position = Vector2(38, 663)
+		chart_heading.size = Vector2(220, 16)
+		chart_heading.add_theme_font_size_override("font_size", 10)
 		var rail_actions: Array[Button] = [sector_button, system_button, navigation_actions[0], navigation_actions[1], navigation_actions[2], navigation_actions[3], departure_button]
 		for index: int in range(rail_actions.size()):
-			rail_actions[index].position = Vector2(241, 664 + index * 29)
+			rail_actions[index].position = Vector2(260, 664 + index * 29)
 			rail_actions[index].size = Vector2(44, 28)
 			rail_actions[index].add_theme_constant_override("icon_max_width",22)
 			for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:

@@ -8,6 +8,7 @@ const CHARCOAL := Color("1c2426")
 const DIAL_BG := Color("0e1518")
 const NEEDLE_COLOR := Color("f3c567")
 const RIM_GLOW := Color("6db5e8", 0.7)
+const CHART_RAIL_X := 228.0
 
 var orbital: bool = false
 var altitude_text: String = "420 km"
@@ -29,18 +30,7 @@ func set_mode(is_orbit: bool, alt_str: String = "", angle: float = -1.9) -> void
 
 func _draw() -> void:
 	var chamfer: float = 16.0
-	var offset := Vector2(2, 4)
-	# Drop shadow
-	var shadow_poly := PackedVector2Array([
-		offset + Vector2(0, 0),
-		offset + Vector2(size.x - chamfer, 0),
-		offset + Vector2(size.x, chamfer),
-		offset + Vector2(size.x, size.y),
-		offset + Vector2(0, size.y)
-	])
-	draw_colored_polygon(shadow_poly, Color(0, 0, 0, 0.35))
-
-	# Ivory bezel faceplate
+	# One matte housing unites the local chart and its control rail.
 	var face_poly := PackedVector2Array([
 		Vector2(0, 0),
 		Vector2(size.x - chamfer, 0),
@@ -49,8 +39,6 @@ func _draw() -> void:
 		Vector2(0, size.y)
 	])
 	draw_colored_polygon(face_poly, IVORY)
-
-	# Border & Bevel
 	var border_poly := PackedVector2Array([
 		Vector2(0, 0),
 		Vector2(size.x - chamfer, 0),
@@ -60,16 +48,11 @@ func _draw() -> void:
 		Vector2(0, 0)
 	])
 	draw_polyline(border_poly, Color("6e6c60"), 1.5)
-	draw_line(Vector2(1, 1), Vector2(size.x - chamfer, 1), Color("fbf9f2"), 1.0)
-	draw_line(Vector2(size.x - chamfer, 1), Vector2(size.x - 1, chamfer), Color("fbf9f2"), 1.0)
-	draw_line(Vector2(1, 1), Vector2(1, size.y - 1), Color("fbf9f2"), 1.0)
-	draw_line(Vector2(1, size.y - 1), Vector2(size.x - 1, size.y - 1), IVORY_SHADOW, 1.0)
-	draw_line(Vector2(size.x - 1, chamfer), Vector2(size.x - 1, size.y - 1), IVORY_SHADOW, 1.0)
-
-	# Corner rivets
-	for p: Vector2 in [Vector2(8, 8), Vector2(size.x - chamfer - 6, 8), Vector2(8, size.y - 8), Vector2(size.x - 8, size.y - 8)]:
-		draw_circle(p, 2.5, Color("807e72"))
-		draw_line(p - Vector2(1, 1), p + Vector2(1, 1), Color("343630"), 1.0)
+	draw_line(Vector2(2, 2), Vector2(size.x - chamfer - 2, 2), Color("f6f2e8"), 1.0)
+	draw_line(Vector2(CHART_RAIL_X, 9), Vector2(CHART_RAIL_X, size.y - 9), IVORY_SHADOW, 1.0)
+	draw_line(Vector2(CHART_RAIL_X + 2, 9), Vector2(CHART_RAIL_X + 2, size.y - 9), Color("f6f2e8"), 1.0)
+	if not orbital:
+		return
 
 	# Circular instrument dial on the left
 	var center := Vector2(68, size.y * 0.5)
