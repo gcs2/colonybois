@@ -10,6 +10,30 @@ const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Globe = preload("res://scripts/planet_globe.gd")
 const Session = preload("res://scripts/expedition_session.gd")
+class RouteOverlay extends Control:
+	var origin: Vector2 = Vector2.ZERO
+	var destination: Vector2 = Vector2.ZERO
+	var card_link_start: Vector2 = Vector2.ZERO
+	var card_link_end: Vector2 = Vector2.ZERO
+	var active: bool = false
+	func set_route(from: Vector2, to: Vector2, link_from: Vector2, link_to: Vector2, enabled: bool) -> void:
+		origin = from; destination = to; card_link_start = link_from; card_link_end = link_to; active = enabled; queue_redraw()
+	func _draw() -> void:
+		if not active: return
+		var control: Vector2 = (origin+destination)*0.5+Vector2(0,-clampf(origin.distance_to(destination)*0.16,28,110))
+		var points := PackedVector2Array()
+		for i: int in range(49):
+			var t: float = float(i)/48.0; var inverse: float = 1.0-t
+			points.append(inverse*inverse*origin+2.0*inverse*t*control+t*t*destination)
+		draw_polyline(points,Color(0.015,0.055,0.065,0.96),10,true)
+		for i: int in range(24):
+			if i % 3 == 2: continue
+			var first: int = i*2; var last: int = mini(first+1,points.size()-1)
+			draw_line(points[first],points[last],Color("64dbd5"),4,true)
+		draw_circle(origin,8,Color("172a2c")); draw_arc(origin,10,0,TAU,32,Color("64dbd5"),2,true)
+		draw_circle(destination,5,Color("f1cd55"))
+		draw_line(card_link_start,card_link_end,Color(0.015,0.055,0.065,0.96),7,true)
+		draw_line(card_link_start,card_link_end,Color("f1cd55"),2,true)
 var campaign: RefCounted
 var system_id: String = ""
 var selected_planet: String = ""
@@ -22,7 +46,7 @@ var preview: SubViewportContainer
 var camera: Camera3D
 var ship_marker: MeshInstance3D
 var selection: MeshInstance3D
-var route: MeshInstance3D
+var route_overlay: RouteOverlay
 var heading: Label
 var details: Label
 var status: Label
@@ -52,6 +76,7 @@ func _ready() -> void:
 	var stage: Control = Stage.create(self)
 	stage_root = stage
 	var header: HBoxContainer = Stage.header(stage)
+	header.z_index = 5
 	heading = text_label("SYSTEM VIEW",24); heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(heading)
 	sector = button("Galaxy","systems","Zoom out to the galaxy [G]",func() -> void: sector_requested.emit(),header)
 	close = button("Orbit","planet_map","Return to the ship's current planet [J / Esc]",func() -> void: close_requested.emit(),header)
@@ -71,9 +96,9 @@ func _ready() -> void:
 	ship_marker.mesh = ship; ship_marker.material_override = ink(UI.GOLD); world.add_child(ship_marker)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 4.1; torus.outer_radius = 4.25; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
-	route = MeshInstance3D.new(); route.material_override = ink(Color("86e4dc")); world.add_child(route)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
-	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(310,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; stage.add_child(destination_card)
+	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(310,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
 	var card_style := StyleBoxFlat.new(); card_style.bg_color = Color(0.025,0.045,0.065,0.96); card_style.border_color = Color("c1a94d"); card_style.set_border_width_all(1); card_style.set_content_margin_all(12)
 	destination_card.add_theme_stylebox_override("panel",card_style)
 	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",8); destination_card.add_child(card)
@@ -83,8 +108,9 @@ func _ready() -> void:
 	status = text_label("",15); status.custom_minimum_size = Vector2(280,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
 	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(280,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
-		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 4; stage.add_child(mark); target_marks.append(mark)
+		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
 	var controls: HBoxContainer = Stage.footer(stage)
+	controls.z_index = 5
 	button("","zoom_in","Zoom toward selected planet [Numpad +]",zoom.bind(-1),controls)
 	button("","zoom_out","Zoom out; at the outer limit, open sector [Numpad −]",zoom.bind(1),controls)
 	button("","system_view","Frame all planets [Home / Numpad 5]",reset_camera,controls)
@@ -168,7 +194,7 @@ func refresh() -> void:
 		var visited: Dictionary = campaign.field.state if id == campaign.field.state.planet_id else campaign.worlds.get(id,{})
 		bodies[id].site_marker.visible = not Geography.definition(id).sites.is_empty() and int(visited.get("survey_ticks",0)) >= int(Geography.definition(id).survey_seconds)
 		captions[id].add_theme_color_override("font_color",UI.GOLD if id == campaign.field.state.planet_id else UI.NAV if id == selected_planet else UI.PAPER)
-	update_ship(); update_route(); update_camera()
+	update_ship(); update_camera(); update_target_overlay()
 	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
@@ -178,21 +204,6 @@ func update_ship() -> void:
 	var to: Vector3 = bodies[record.target_planet].position if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,0,40)
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
 	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,5+(sin(fraction*PI)*4 if campaign.traveling() else 0),0)
-
-func update_route() -> void:
-	var mesh := ImmediateMesh.new()
-	if campaign == null or not bodies.has(campaign.field.state.planet_id) or not bodies.has(selected_planet) or selected_planet == campaign.field.state.planet_id:
-		route.mesh = mesh; return
-	var start: Vector3 = bodies[campaign.field.state.planet_id].position+Vector3(0,4,0)
-	var finish: Vector3 = bodies[selected_planet].position+Vector3(0,4,0)
-	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
-	for i: int in range(24):
-		if i % 2 == 1: continue
-		var a: float = float(i)/24.0; var b: float = float(i+1)/24.0
-		var pa: Vector3 = start.lerp(finish,a)+Vector3(0,sin(a*PI)*6,0)
-		var pb: Vector3 = start.lerp(finish,b)+Vector3(0,sin(b*PI)*6,0)
-		mesh.surface_add_vertex(pa); mesh.surface_add_vertex(pb)
-	mesh.surface_end(); route.mesh = mesh
 
 func update_target_overlay() -> void:
 	if not is_instance_valid(destination_card) or not is_instance_valid(camera) or not bodies.has(selected_planet): return
@@ -215,6 +226,15 @@ func update_target_overlay() -> void:
 	for i: int in range(target_marks.size()):
 		target_marks[i].visible = active
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
+	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker.visible and not camera.is_position_behind(ship_marker.global_position)
+	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
+	var card_rect := Rect2(destination_card.position,destination_card.size)
+	var card_left: bool = destination_card.position.x > center.x
+	var card_bottom: float = maxf(card_rect.end.y,card_rect.position.y+16)
+	var card_y: float = clampf(center.y,card_rect.position.y+8,card_bottom-8)
+	var card_edge: Vector2 = Vector2(card_rect.position.x,card_y) if card_left else Vector2(card_rect.end.x,card_y)
+	var enabled: bool = visible and active and selected_planet != campaign.field.state.planet_id and origin.distance_to(center) > 18
+	route_overlay.set_route(origin,center,center,card_edge,enabled)
 func select_planet(id: String) -> void:
 	if not bodies.has(id) or campaign.traveling(): return
 	selected_planet = id; refresh()
