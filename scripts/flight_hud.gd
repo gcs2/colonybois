@@ -657,9 +657,10 @@ func show_group(group: String) -> void:
 		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
 			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
-	var controls_x: float = inventory_grid_origin.x+228
-	var tab_width: float = 30.0 if pages > 1 else 56.0
-	var tab_gap: float = 6.0 if pages > 1 else 7.0
+	# Five category cards retain their approved scale in every pagination state.
+	# Page controls use the unused second line of the compact console header.
+	var tab_width: float = 56.0
+	var tab_gap: float = 7.0
 	var tab_start_x: float = inventory_grid_origin.x+8.0
 	var tab_index: int = 0
 	for key: String in GROUPS:
@@ -667,7 +668,7 @@ func show_group(group: String) -> void:
 		var tint: Color = Palette.entry(GROUPS[key][0]).tint
 		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
 		button.size = Vector2(tab_width,42)
-		button.add_theme_constant_override("icon_max_width",mini(28,int(tab_width-16)))
+		button.add_theme_constant_override("icon_max_width",28)
 		button.visible = true
 		var artwork: TabCardArtwork = category_tab_cards[key] as TabCardArtwork
 		artwork.position = button.position
@@ -677,7 +678,7 @@ func show_group(group: String) -> void:
 		tab_index += 1
 	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+10)
 	communications_button.size = Vector2(tab_width,42)
-	communications_button.add_theme_constant_override("icon_max_width",mini(28,int(tab_width-16)))
+	communications_button.add_theme_constant_override("icon_max_width",28)
 	communications_button.visible = true
 	communications_card.position = communications_button.position
 	communications_card.size = communications_button.size
@@ -694,14 +695,19 @@ func show_group(group: String) -> void:
 	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	page_previous.position = Vector2(controls_x,panel_top+12)
-	page_previous.size = Vector2(26, 40)
-	page_label.position = Vector2(controls_x+27,panel_top+20)
-	page_label.size = Vector2(32, 24)
-	page_next.position = Vector2(controls_x+62,panel_top+12)
-	page_next.size = Vector2(26, 40)
-	collapse_button.position = Vector2(inventory_grid_origin.x+320,panel_top+10)
-	collapse_button.size = Vector2(32, 42)
+	var console_header_row: float = console_pod.position.y+20.0
+	collapse_button.position = Vector2(console_pod.position.x+8.0,console_header_row)
+	collapse_button.size = Vector2(22,20)
+	collapse_button.add_theme_constant_override("icon_max_width",16)
+	page_previous.position = Vector2(console_pod.position.x+34.0,console_header_row)
+	page_previous.size = Vector2(24,20)
+	page_previous.add_theme_constant_override("icon_max_width",16)
+	page_label.position = Vector2(console_pod.position.x+62.0,console_header_row)
+	page_label.size = Vector2(44,20)
+	page_label.add_theme_font_size_override("font_size",11)
+	page_next.position = Vector2(console_pod.position.x+110.0,console_header_row)
+	page_next.size = Vector2(24,20)
+	page_next.add_theme_constant_override("icon_max_width",16)
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
 	page_label.visible = page_previous.visible

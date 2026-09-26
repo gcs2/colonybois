@@ -92,7 +92,7 @@ func run() -> void:
 		var key: String = tab_order[index]
 		var button: Button = hud.category_buttons[key]
 		var card: Control = hud.category_tab_cards[key]
-		category_tabs_fit = category_tabs_fit and card.get_parent() == hud and card.position == button.position and card.size == button.size and button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("normal") is StyleBoxEmpty
+		category_tabs_fit = category_tabs_fit and card.get_parent() == hud and card.position == button.position and card.size == Vector2(56,42) and button.size == Vector2(56,42) and button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("normal") is StyleBoxEmpty
 		if index > 0:
 			var prior: Button = hud.category_buttons[tab_order[index-1]]
 			category_tabs_fit = category_tabs_fit and is_equal_approx(button.position.x-prior.position.x,prior.size.x+7.0)
@@ -100,6 +100,9 @@ func run() -> void:
 	category_tabs_fit = category_tabs_fit and is_equal_approx(hud.communications_button.position.x-last_category.position.x,last_category.size.x+7.0) and hud.communications_button.size == last_category.size
 	category_tabs_fit = category_tabs_fit and hud.GROUPS.size() == 4 and hud.category_buttons["Main tools"].button_pressed and not hud.communications_button.toggle_mode
 	check(category_tabs_fit,"Four category cards and direct Communications card have aligned hit areas, even gaps, focus, named help and separate selection")
+	var console_controls_fit: bool = hud.collapse_button.position.y == hud.console_pod.position.y+20 and hud.page_previous.position.y == hud.collapse_button.position.y and hud.page_label.position.y == hud.collapse_button.position.y and hud.page_next.position.y == hud.collapse_button.position.y
+	console_controls_fit = console_controls_fit and hud.page_next.position.x+hud.page_next.size.x <= hud.console_pod.position.x+hud.console_pod.size.x and hud.collapse_button.position.x+hud.collapse_button.size.x < hud.page_previous.position.x and hud.page_previous.position.x+hud.page_previous.size.x < hud.page_label.position.x and hud.page_label.position.x+hud.page_label.size.x < hud.page_next.position.x
+	check(console_controls_fit,"Collapse and page controls fit the console header row without reducing the five category cards")
 	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")
 	check(icon_style is StyleBoxFlat and icon_style.corner_radius_top_left == 0 and not icon_style is StyleBoxTexture,"Icon controls do not use rounded decorative wells or metallic border textures")
 	scene._activate_selected()
