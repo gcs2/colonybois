@@ -66,6 +66,7 @@ var climate_signature: String = ""
 var ground_material: ShaderMaterial
 var terrain_mesh_instance: MeshInstance3D
 var surface_window_region_id: String = ""
+var surface_habitat_region_id: String = ""
 var regional_cover_instance: MultiMeshInstance3D
 var regional_feature_root: Node3D
 var surface_region_features: Dictionary = {}
@@ -424,6 +425,7 @@ func _make_world() -> void:
 	ground_material.shader = preload("res://assets/shaders/expedition_ground.gdshader")
 	ground_material.set_shader_parameter("surface_detail",1.0 if rendered_planet == "morrow" else 0.0)
 	surface_window_region_id = Geography.surface_region_id(world_definition,_saved_surface_up()) if rendered_planet == "morrow" else ""
+	surface_habitat_region_id = Geography.surface_runtime(world_definition).habitat_region_id(_saved_surface_up()) if rendered_planet == "morrow" else ""
 	surface_region_features = _surface_feature_sets(_saved_surface_up())
 	_rebuild_surface_terrain(_saved_surface_up())
 	var rng := RandomNumberGenerator.new()
@@ -691,13 +693,24 @@ func _surface_feature_sets(center_up: Vector3 = Vector3.ZERO) -> Dictionary:
 	if rendered_planet != "morrow": return grouped
 	var anchor: Vector3 = Geography.site_direction("morrow")
 	var query_center: Vector3 = center_up.normalized() if center_up.length_squared() > 0.000001 else _saved_surface_up()
-	var window: Dictionary = Geography.surface_runtime(world_definition).window(query_center)
+	var runtime: Object = Geography.surface_runtime(world_definition)
+	var query_position: Vector2 = runtime.local_offset(anchor,query_center)
+	var nearfield_radius: float = 192.0
+	var window: Dictionary = runtime.window(query_center)
 	for feature: Dictionary in window.features:
 		var kind: String = str(feature.get("kind", ""))
 		if not grouped.has(kind): continue
 		if model.state.surface_changes.has(str(feature.id)): continue
-		var position: Vector2 = Geography.surface_runtime(world_definition).local_offset(anchor,feature.up)
-		if position.distance_to(Geography.surface_local_position(world_definition,query_center)) < 48.0: continue
+		var position: Vector2 = runtime.local_offset(anchor,feature.up)
+		if kind in ["rock","flora","fauna"] and position.distance_to(query_position) < nearfield_radius: continue
+		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
+	var habitat_window: Dictionary = runtime.habitat_window(query_center)
+	for feature: Dictionary in habitat_window.features:
+		var kind: String = str(feature.get("kind", ""))
+		if kind not in ["rock","flora","fauna"]: continue
+		if model.state.surface_changes.has(str(feature.id)): continue
+		var position: Vector2 = runtime.local_offset(anchor,feature.up)
+		if position.distance_to(query_position) < 8.0: continue
 		grouped[kind].append({"id":feature.id,"region_id":feature.region_id,"kind":kind,"position":position,"variant":feature.variant,"size":feature.size,"rotation":feature.yaw})
 	return grouped
 
@@ -1180,14 +1193,20 @@ func _advance_surface_motion(delta: float) -> void:
 func _refresh_surface_geography() -> void:
 	if rendered_planet != "morrow": return
 	var up: Vector3 = _saved_surface_up()
-	var next_region_id: String = Geography.surface_region_id(world_definition,up)
-	if next_region_id == surface_window_region_id: return
+	var runtime: Object = Geography.surface_runtime(world_definition)
+	var next_region_id: String = runtime.region_id(up)
+	var next_habitat_region_id: String = runtime.habitat_region_id(up)
+	var region_changed: bool = next_region_id != surface_window_region_id
+	var habitat_changed: bool = next_habitat_region_id != surface_habitat_region_id
+	if not region_changed and not habitat_changed: return
 	surface_window_region_id = next_region_id
+	surface_habitat_region_id = next_habitat_region_id
 	surface_region_features = _surface_feature_sets(up)
-	_rebuild_surface_terrain(up)
-	var cover_rng := RandomNumberGenerator.new()
-	cover_rng.seed = int(world_definition.geography_seed)
-	_make_ground_cover(cover_rng)
+	if region_changed:
+		_rebuild_surface_terrain(up)
+		var cover_rng := RandomNumberGenerator.new()
+		cover_rng.seed = int(world_definition.geography_seed)
+		_make_ground_cover(cover_rng)
 	_make_regional_features()
 
 func _process(delta: float) -> void:
@@ -2338,8 +2357,8 @@ func _layout_seam_context_card() -> void:
 	if camera.is_position_behind(seam_at): return
 	var anchor: Vector2 = camera.unproject_position(seam_at)
 	var view_size: Vector2 = get_viewport().get_visible_rect().size
-	var card_at: Vector2 = anchor+Vector2(70,-40)
-	if card_at.x+card_size.x > view_size.x-20: card_at.x = anchor.x-card_size.x-70
+	var card_at: Vector2 = Vector2(anchor.x-card_size.x*0.5,anchor.y+54.0)
+	if card_at.y+card_size.y > 660.0: card_at.y = anchor.y-card_size.y-38.0
 	card_at.x = clampf(card_at.x,300.0,view_size.x-card_size.x-20.0)
 	card_at.y = clampf(card_at.y,140.0,580.0)
 	hud.context_card.position = card_at

@@ -1,6 +1,7 @@
 extends SceneTree
 const Session = preload("res://scripts/expedition_session.gd")
 const Field = preload("res://scripts/encounter_state.gd")
+const Geography = preload("res://scripts/planet_geography.gd")
 const OUT = "res://artifacts/visual-critic-surface-pass/mining"
 
 func _initialize() -> void:
@@ -39,9 +40,12 @@ func _run() -> void:
 	await process_frame
 	scene.audio.muted = true
 	scene.save_path = OUT + "/isolated-save.fw"
-	scene.ship.position = scene._target_position("vein") + Vector3(-4,3,6)
-	scene.camera_distance_target = 28
-	scene.distance = 28
+	var desired_ship_position: Vector3 = scene._target_position("vein") + Vector3(-4,0,6)
+	scene._set_surface_up(Geography.surface_direction(scene.world_definition,desired_ship_position.x,desired_ship_position.z))
+	scene._refresh_surface_geography()
+	scene.ship.position.y = scene.terrain_height(scene.ship.position.x,scene.ship.position.z)+3.0
+	scene.camera_distance_target = 38
+	scene.distance = 38
 	scene.yaw = 0.12
 	scene.pitch = 0.43
 	scene.selected = "vein"
