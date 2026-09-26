@@ -1042,7 +1042,10 @@ func _process(delta: float) -> void:
 func _update_camera(delta: float) -> void:
 	distance = lerpf(distance,camera_distance_target,minf(1,delta*8))
 	var focus: Vector3 = ship.position+Vector3(0,-1,0)
-	# Keep the scout centered during ordinary flight and while inspection panels are open.
+	if model.state.flight_mode == "surface":
+		# A slightly wider follow view keeps the scout readable against the terrain.
+		# Looking a little behind the ship places it lower in frame while preserving follow.
+		focus -= Vector3(sin(yaw),0,cos(yaw))*3.0
 	camera_focus = camera_focus.lerp(focus,minf(1,delta*14))
 	var offset := Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.position = camera_focus+offset
@@ -1786,7 +1789,7 @@ func _apply_flight_mode(preserve_zoom: bool = false) -> void:
 	if orbital: hud.set_active_group("Weapons")
 	use_button.disabled = orbital
 	if not preserve_zoom:
-		distance = 85 if orbital else 32
+		distance = 85 if orbital else 38
 		camera_distance_target = distance
 	else:
 		# Reference-frame changes keep scale; settle gently instead of snapping.
