@@ -2,6 +2,7 @@ extends Control
 ## Field Instruments Navigation / Altitude Pod.
 ## Displays altitude horizon dial in orbit, and frames the local terrain chart on planet surfaces.
 const FONT = preload("res://assets/fonts/Barlow-Regular.ttf")
+const InstrumentFrame = preload("res://scripts/flight_instrument_frame.gd")
 const IVORY := Color("dedad0")
 const IVORY_SHADOW := Color("8d8c80")
 const CHARCOAL := Color("1c2426")
@@ -29,26 +30,7 @@ func set_mode(is_orbit: bool, alt_str: String = "", angle: float = -1.9) -> void
 	queue_redraw()
 
 func _draw() -> void:
-	var chamfer: float = 16.0
-	# One matte housing unites the local chart and its control rail.
-	var face_poly := PackedVector2Array([
-		Vector2(0, 0),
-		Vector2(size.x - chamfer, 0),
-		Vector2(size.x, chamfer),
-		Vector2(size.x, size.y),
-		Vector2(0, size.y)
-	])
-	draw_colored_polygon(face_poly, IVORY)
-	var border_poly := PackedVector2Array([
-		Vector2(0, 0),
-		Vector2(size.x - chamfer, 0),
-		Vector2(size.x, chamfer),
-		Vector2(size.x, size.y),
-		Vector2(0, size.y),
-		Vector2(0, 0)
-	])
-	draw_polyline(border_poly, Color("6e6c60"), 1.5)
-	draw_line(Vector2(2, 2), Vector2(size.x - chamfer - 2, 2), Color("f6f2e8"), 1.0)
+	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 14.0)
 	draw_line(Vector2(CHART_RAIL_X, 9), Vector2(CHART_RAIL_X, size.y - 9), IVORY_SHADOW, 1.0)
 	draw_line(Vector2(CHART_RAIL_X + 2, 9), Vector2(CHART_RAIL_X + 2, size.y - 9), Color("f6f2e8"), 1.0)
 	if not orbital:

@@ -3,6 +3,7 @@ extends Control
 ## Displays segmented HULL and ENERGY meters, category sockets with active LED indicators,
 ## and active comms / signal state. The Marks balance belongs to FlightHUD's top-right anchor.
 const FONT = preload("res://assets/fonts/Barlow-Regular.ttf")
+const InstrumentFrame = preload("res://scripts/flight_instrument_frame.gd")
 const SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
 const IVORY := Color("dedad0")
 const IVORY_SHADOW := Color("8d8c80")
@@ -45,57 +46,9 @@ func set_orbital(is_orbit: bool) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var chamfer: float = 6.0
 	var offset := Vector2(2, 4)
-
-	# Drop shadow
-	var shadow_poly := PackedVector2Array([
-		offset + Vector2(chamfer, 0),
-		offset + Vector2(size.x - chamfer, 0),
-		offset + Vector2(size.x, chamfer),
-		offset + Vector2(size.x, size.y - chamfer),
-		offset + Vector2(size.x - chamfer, size.y),
-		offset + Vector2(chamfer, size.y),
-		offset + Vector2(0, size.y - chamfer),
-		offset + Vector2(0, chamfer)
-	])
-	draw_colored_polygon(shadow_poly, Color(0, 0, 0, 0.35))
-
-	# Ivory faceplate
-	var face_poly := PackedVector2Array([
-		Vector2(chamfer, 0),
-		Vector2(size.x - chamfer, 0),
-		Vector2(size.x, chamfer),
-		Vector2(size.x, size.y - chamfer),
-		Vector2(size.x - chamfer, size.y),
-		Vector2(chamfer, size.y),
-		Vector2(0, size.y - chamfer),
-		Vector2(0, chamfer)
-	])
-	draw_colored_polygon(face_poly, IVORY)
-
-	# Border & Bevel
-	var border_poly := PackedVector2Array([
-		Vector2(chamfer, 0),
-		Vector2(size.x - chamfer, 0),
-		Vector2(size.x, chamfer),
-		Vector2(size.x, size.y - chamfer),
-		Vector2(size.x - chamfer, size.y),
-		Vector2(chamfer, size.y),
-		Vector2(0, size.y - chamfer),
-		Vector2(0, chamfer),
-		Vector2(chamfer, 0)
-	])
-	draw_polyline(border_poly, Color("6e6c60"), 1.5)
-	draw_line(Vector2(chamfer, 1), Vector2(size.x - chamfer, 1), Color("fbf9f2"), 1.0)
-	draw_line(Vector2(1, chamfer), Vector2(1, size.y - chamfer), Color("fbf9f2"), 1.0)
-	draw_line(Vector2(chamfer, size.y - 1), Vector2(size.x - chamfer, size.y - 1), IVORY_SHADOW, 1.0)
-	draw_line(Vector2(size.x - 1, chamfer), Vector2(size.x - 1, size.y - chamfer), IVORY_SHADOW, 1.0)
-
-	# Corner rivets
-	for p: Vector2 in [Vector2(8, 8), Vector2(size.x - 8, 8), Vector2(8, size.y - 8), Vector2(size.x - 8, size.y - 8)]:
-		draw_circle(p, 2.5, Color("807e72"))
-		draw_line(p - Vector2(1, 1), p + Vector2(1, 1), Color("343630"), 1.0)
+	InstrumentFrame.draw_shadow(self, Rect2(offset, size), 8.0)
+	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
 
 	if size.x <= 400.0:
 		# Compact layout beside the item grid for both flight scales.

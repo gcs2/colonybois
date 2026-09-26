@@ -22,15 +22,15 @@ var guardian_known: bool = false
 var guardian_disabled: bool = false
 var guardian_alert: int = 0
 var locked: bool = false
-## The local terrain window is a 50 m square centered on the ship.
-const FIELD_RADIUS := 25.0
+## The local terrain window is a 125 m square centered on the ship.
+const FIELD_RADIUS := 62.5
 var surface_center := Vector2.ZERO
 var surface_extent: float = FIELD_RADIUS
 var height_sampler: Callable
 
 func _ready() -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	tooltip_text = "Local chart · 50 m across. Click a contact to approach with the selected tool, or open ground to fly. North is up."
+	tooltip_text = "Local chart · 125 m across. The scale bar marks 50 m. Click a contact to approach with the selected tool, or open ground to fly. North is up."
 
 func set_terrain(height_at: Callable, extent: float = FIELD_RADIUS) -> void:
 	height_sampler = height_at
@@ -39,12 +39,12 @@ func set_terrain(height_at: Callable, extent: float = FIELD_RADIUS) -> void:
 
 func recenter_surface(at: Vector2) -> void:
 	if orbital or not at.is_finite(): return
-	# Rebuild only after crossing a quarter-window. The chart follows the ship without
-	# rasterizing its height texture every frame.
-	var cell: float = surface_extent * 0.5
-	var next_center := Vector2(roundf(at.x / cell) * cell, roundf(at.y / cell) * cell)
-	if next_center == surface_center: return
-	surface_center = next_center
+	# Keep the authored landing area and its contacts in view while the scout is
+	# inside the 125 m chart. Rebuild once it leaves that window, then hold the new
+	# center until the next edge crossing instead of chasing the ship every frame.
+	if absf(at.x-surface_center.x) <= surface_extent and absf(at.y-surface_center.y) <= surface_extent:
+		return
+	surface_center = at
 	_rebuild_terrain()
 
 func _rebuild_terrain() -> void:
@@ -53,10 +53,13 @@ func _rebuild_terrain() -> void:
 	for y: int in range(96):
 		for x: int in range(96):
 			var h: float = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
-			var color: Color = Color("53665e").lerp(Color("a99b7d"),clampf((h+2.5)/7.5,0,1))
+			var color: Color
+			if h < -0.6:
+				color = Color("174958").lerp(Color("347a78"),clampf((-h-0.6)/1.2,0,1))
+			else:
+				color = Color("53665e").lerp(Color("a99b7d"),clampf((h+2.5)/7.5,0,1))
 			# Sparse elevation lines retain terrain shape without turning the chart into speckles.
 			if fposmod(h+6.0,2.0) < 0.045: color = color.darkened(0.12)
-			if Vector2(x-47.5,y-47.5).length() > 47.0: color.a = 0
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
@@ -80,7 +83,7 @@ func _gui_input(event: InputEvent) -> void:
 	if not is_visible_in_tree(): return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
-		if locked or event.position.distance_to(size*0.5) > size.x*0.5-6: return
+		if locked or not chart_rect().has_point(event.position): return
 		if event.position.distance_to(project(service_at)) < 9:
 			target_requested.emit("service")
 			return
@@ -102,7 +105,8 @@ func _gui_input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	var rect: Rect2 = chart_rect()
-	draw_circle(size*0.5,size.x*0.5-5,Color("0d202b"))
+	draw_rect(rect,Color("0d202b"))
+	draw_rect(rect,Color("7b887f"),false,1.0)
 	if not orbital and terrain != null: draw_texture_rect(terrain,rect,false)
 	else:
 		draw_circle(project(planet_at),19,Color("69639b"))
@@ -119,15 +123,16 @@ func _draw() -> void:
 			draw_circle(skiff,3,skiff_color)
 	if not orbital and terrain != null and _has_local_lake():
 		_draw_local_lake()
-	var center: Vector2 = size*0.5
-	var radius: float = size.x*0.5-7
-	for ring: float in [0.33,0.66,1.0]: draw_arc(center,radius*ring,0,TAU,64,Color(0.45,0.77,0.78,0.16),1,true)
-	draw_line(center-Vector2(radius,0),center+Vector2(radius,0),Color(0.45,0.77,0.78,0.16))
-	draw_line(center-Vector2(0,radius),center+Vector2(0,radius),Color(0.45,0.77,0.78,0.16))
+	var center: Vector2 = rect.get_center()
+	for fraction: float in [0.33,0.66]:
+		var x: float = lerpf(rect.position.x,rect.end.x,fraction)
+		var y: float = lerpf(rect.position.y,rect.end.y,fraction)
+		draw_line(Vector2(x,rect.position.y),Vector2(x,rect.end.y),Color(0.45,0.77,0.78,0.13))
+		draw_line(Vector2(rect.position.x,y),Vector2(rect.end.x,y),Color(0.45,0.77,0.78,0.13))
 	if not orbital:
 		for id: String in points:
 			var p: Vector2 = project(points[id])
-			if p.distance_to(center) > radius-8: continue
+			if not rect.grow(-7).has_point(p): continue
 			var known: bool = id in surveyed
 			var color: Color = Color("8ad4a5") if known else Color("d9c6a7")
 			if id == "relay":
@@ -141,7 +146,7 @@ func _draw() -> void:
 			if id == "relay" or (known and id in ["vein","bed","pod","grazer"]):
 				_draw_map_label(_point_name(id),p+Vector2(7,-4),Color("f5ead1"))
 	var port: Vector2 = project(service_at)
-	if port.distance_to(center) <= radius-8:
+	if rect.grow(-7).has_point(port):
 		draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
 		_draw_map_label("PORT",port+Vector2(7,12),Color("c2edd6"))
 	var pos: Vector2 = project(ship_at)
@@ -150,7 +155,11 @@ func _draw() -> void:
 	var arrow := PackedVector2Array()
 	for p: Vector2 in [Vector2(0,-7),Vector2(5,5),Vector2(0,2),Vector2(-5,5)]: arrow.append(pos+p.rotated(heading))
 	draw_colored_polygon(arrow,Color("fff1cd"))
-	draw_string(ThemeDB.fallback_font,Vector2(size.x*0.5-4,17),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("c1c9cf"))
+	draw_string(ThemeDB.fallback_font,Vector2(rect.get_center().x-4,rect.position.y+14),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("e6e5d5"))
+	var scale_width: float = rect.size.x*0.4
+	var scale_y: float = rect.end.y-9
+	draw_line(Vector2(rect.end.x-scale_width-12,scale_y),Vector2(rect.end.x-12,scale_y),Color("e6e5d5"),1.5)
+	draw_string(ThemeDB.fallback_font,Vector2(rect.end.x-48,scale_y-3),"50 m",HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("e6e5d5"))
 
 func _has_local_lake() -> bool:
 	# Morrow's mapped lake sits below the surrounding basin surface. This keeps
@@ -159,23 +168,11 @@ func _has_local_lake() -> bool:
 
 func _draw_local_lake() -> void:
 	var center_at := project(Vector2(-23.0,0.0))
-	var shore := PackedVector2Array()
 	var map_center: Vector2 = chart_rect().get_center()
-	var map_rx: float = chart_rect().size.x*0.5-7.0
-	var map_ry: float = chart_rect().size.y*0.5-7.0
-	for index: int in range(49):
-		var angle: float = TAU*float(index)/48.0
-		var shoreline: float = 1.0+sin(angle*3.0+0.6)*0.07+cos(angle*5.0-0.4)*0.035
-		var edge: Vector2 = project(Vector2(-23.0+cos(angle)*6.2*shoreline,sin(angle)*12.5*shoreline))
-		var normalized: Vector2 = Vector2((edge.x-map_center.x)/map_rx,(edge.y-map_center.y)/map_ry)
-		if normalized.length() > 1.0:
-			normalized = normalized.normalized()
-			edge = map_center+Vector2(normalized.x*map_rx,normalized.y*map_ry)
-		shore.append(edge)
-	draw_colored_polygon(shore,Color("174958",0.96))
-	draw_polyline(shore,Color("75b7ae",0.9),1.2,true)
+	# Water is rasterized from the same sampled height map as land. The lake is
+	# near the chart rim, so a separately clipped polygon could fold at the edge.
 	var lake_label_at: Vector2 = center_at+Vector2(17,-3)
-	if lake_label_at.distance_to(map_center) < size.x*0.5-18:
+	if chart_rect().has_point(lake_label_at):
 		_draw_map_label("LAKE",lake_label_at,Color("d2e4d8"))
 
 func _point_name(id: String) -> String:

@@ -47,6 +47,7 @@ const FlightInputSettings = preload("res://scripts/flight_input_settings.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
+const TOAST_SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const SurfaceLayout = preload("res://scripts/surface_region_layout.gd")
@@ -78,6 +79,7 @@ const SURFACE_ZOOM_MIN := 12.0
 const SURFACE_ZOOM_MAX := 110.0
 const ORBIT_ZOOM_MIN := 18.0
 const ORBIT_ZOOM_MAX := 320.0
+const SURFACE_VISUAL_RADIUS := 1100.0
 const LANDING_VEIL_OPACITY := 0.62
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam"}
 const Equipment = preload("res://scripts/equipment_catalog.gd")
@@ -668,12 +670,15 @@ func _surface_feature_sets() -> Dictionary:
 	var grouped: Dictionary = {"cover":[],"rock":[],"flora":[],"fauna":[]}
 	if rendered_planet != "morrow": return grouped
 	var tile_size: float = SurfaceLayout.FEATURE_TILE_SIZE
-	var tile_count: int = ceili(Geography.PLAYABLE_RADIUS/tile_size)
+	# Seeded environmental dressing extends to the rendered horizon. The smaller
+	# PLAYABLE_RADIUS remains the current interaction boundary until spherical
+	# streaming replaces this local field.
+	var tile_count: int = ceili(SURFACE_VISUAL_RADIUS/tile_size)
 	for tile_x: int in range(-tile_count,tile_count+1):
 		for tile_z: int in range(-tile_count,tile_count+1):
 			for feature: Dictionary in SurfaceLayout.tile_features(world_definition,Vector2i(tile_x,tile_z),tile_size):
 				var at: Vector2 = feature["position"]
-				if at.length() > Geography.PLAYABLE_RADIUS or at.length() < 48.0: continue
+				if at.length() > SURFACE_VISUAL_RADIUS or at.length() < 48.0: continue
 				var kind: String = str(feature["kind"])
 				if grouped.has(kind): grouped[kind].append(feature)
 	return grouped
@@ -911,26 +916,27 @@ func _make_ui() -> void:
 	hud.navigation.target_requested.connect(_command_target)
 	hud.navigation.landing_requested.connect(func() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
-	status = _label("",18,Color("ffe0a8"))
+	status = _label("",14,Color("ffe0a8"))
 	status_backing = ColorRect.new()
-	status_backing.position = Vector2(28,116)
-	status_backing.size = Vector2(406,56)
-	status_backing.color = Color("1c2426",0.9)
+	status_backing.position = Vector2(28,78)
+	status_backing.size = Vector2(260,40)
+	status_backing.color = Color("1c2426",0.96)
 	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_backing.hide()
 	root.add_child(status_backing)
-	status.position = Vector2(36,120)
-	status.size = Vector2(390,48)
+	status.position = Vector2(68,81)
+	status.size = Vector2(212,32)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(36,120)
-	status_icon.size = Vector2(40,40)
-	status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png")
+	status_icon.position = Vector2(36,82)
+	status_icon.size = Vector2(24,24)
+	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	status_icon.modulate = Color("e9b72f")
 	status_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_icon.hide()
 	root.add_child(status_icon)
@@ -966,6 +972,7 @@ func _make_ui() -> void:
 	guardian_label = _label("◇  CUSTODIAN SKIFF",13,Instruments.CARGO)
 	for locator: Label in [ship_locator,planet_locator,wreck_label,guardian_label]:
 		locator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		locator.hide()
 		locator.add_theme_color_override("font_outline_color",Color("151322"))
 		locator.add_theme_constant_override("outline_size",4)
 		root.add_child(locator)
@@ -1234,7 +1241,7 @@ func _process(delta: float) -> void:
 	toast_time -= delta
 	status.visible = toast_time > 0 or paused
 	if is_instance_valid(status_backing): status_backing.visible = status.visible
-	if is_instance_valid(status_icon): status_icon.visible = toast_time > 0 and toast_item_icon == "glass" and not paused
+	if is_instance_valid(status_icon): status_icon.visible = toast_time > 0 and not paused
 	if paused: status.text = "Paused — Space to resume"
 	if "--field-capture" in OS.get_cmdline_user_args(): _capture(delta)
 	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
@@ -2024,7 +2031,7 @@ func _select_tool(value: String) -> void:
 func _refresh_ui() -> void:
 	var s: Dictionary = model.state
 	var orbital: bool = s.flight_mode == "orbit"
-	location_label.text = model.definition().name.capitalize() + (" orbit" if orbital else "")
+	location_label.text = model.definition().name.capitalize()
 	stats.text = "%d Marks   ·   Cargo %d/2   ·   %d surveys" % [model.marks,s.samples,s.scanned.size()]
 	if campaign != null: stats.text = "%d Marks   ·   Cargo %d/%d   ·   Specimens %d/12" % [model.marks,campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used()]
 	energy_bar.max_value = model.max_capacity("energy")
@@ -2153,7 +2160,7 @@ func _refresh_ui() -> void:
 		objective.text = "Recover cargo or continue exploring." if s.guardian_disabled else "Hostile contact · dodge the marked strike or retreat."
 	departure_button.disabled = paused or _inspection_open() or (orbital and model.definition().sites.is_empty())
 	departure_button.text = ("Cancel approach" if landing else "Descend") if orbital else "Leave atmosphere"
-	location_label.text = model.definition().name.capitalize() + (" orbit" if orbital else "")
+	location_label.text = model.definition().name.capitalize()
 	if kit_mode or deploy_order:
 		objective.text = "Choose a clear surface site for your colony hub."
 		subject.text = "Colony kit / landing footprint"
@@ -2283,12 +2290,16 @@ func _update_guidance() -> void:
 func _toast(text: String, item_icon: String = "") -> void:
 	toast_item_icon = item_icon
 	if is_instance_valid(status_icon):
-		status_icon.visible = item_icon == "glass"
-		status_icon.size = Vector2(40,40)
+		status_icon.visible = true
+		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
+		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
+		status_icon.position = Vector2(36,82)
+		status_icon.size = Vector2(24,24)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(82,120) if item_icon == "glass" else Vector2(36,120)
-		status.size = Vector2(344,48) if item_icon == "glass" else Vector2(390,48)
+		status.position = Vector2(68,81)
+		status.size = Vector2(212,32)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		status_backing.size = Vector2(260,40)
 	status.text = text
 	toast_time = 6
 

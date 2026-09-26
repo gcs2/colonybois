@@ -6,6 +6,7 @@ signal altitude_requested(direction: float)
 signal ui_cue(cue: String)
 const Art = preload("res://scripts/flight_interface.gd")
 const Navigation = preload("res://scripts/flight_navigation.gd")
+const InstrumentFrame = preload("res://scripts/flight_instrument_frame.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Palette = preload("res://scripts/flight_palette.gd")
@@ -36,7 +37,7 @@ var palette_locked: bool = false
 var item_buttons: Dictionary = {}
 var slot_labels: Dictionary = {}
 var count_labels: Dictionary = {}
-var palette_backing: Panel
+var palette_backing: Control
 var grid_backing: Panel
 var empty_slot_backings: Array[Panel] = []
 var collapse_button: Button
@@ -57,8 +58,9 @@ var quick_cargo: Button
 var location_label: Label
 var stats: Label
 var treasury_readout: String = ""
-var treasury_backing: Panel
+var treasury_backing: Control
 var treasury_icon: TextureRect
+var mode_label: Label
 var altitude_backing: ColorRect
 var objective: Label
 var subject: Label
@@ -173,19 +175,9 @@ func _build() -> void:
 	chart_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(chart_backing)
 
-	palette_backing = Panel.new()
+	palette_backing = InstrumentFrame.new()
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
 	palette_backing.size = Vector2(150, 68)
-	var inventory_style := StyleBoxFlat.new()
-	inventory_style.bg_color = Color("dedad0")
-	inventory_style.border_color = Color("454943")
-	inventory_style.set_border_width_all(1)
-	inventory_style.set_corner_radius_all(0)
-	inventory_style.content_margin_left = 0
-	inventory_style.content_margin_right = 0
-	inventory_style.content_margin_top = 0
-	inventory_style.content_margin_bottom = 0
-	palette_backing.add_theme_stylebox_override("panel", inventory_style)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(palette_backing)
 
@@ -231,38 +223,29 @@ func _build() -> void:
 	add_child(navigation_backing)
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
-	treasury_backing = Panel.new()
-	treasury_backing.position = Vector2(1396, 18)
-	treasury_backing.size = Vector2(188, 48)
-	var treasury_style := StyleBoxFlat.new()
-	treasury_style.bg_color = Color("dedad0")
-	treasury_style.border_color = Color("454943")
-	treasury_style.set_border_width_all(1)
-	treasury_style.set_corner_radius_all(0)
-	treasury_style.content_margin_left = 0
-	treasury_style.content_margin_right = 0
-	treasury_style.content_margin_top = 0
-	treasury_style.content_margin_bottom = 0
-	treasury_backing.add_theme_stylebox_override("panel", treasury_style)
+	treasury_backing = InstrumentFrame.new()
+	treasury_backing.position = Vector2(1440, 18)
+	treasury_backing.size = Vector2(144, 40)
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1408, 30)
-	treasury_icon.size = Vector2(22, 22)
+	treasury_icon.position = Vector2(1451, 27)
+	treasury_icon.size = Vector2(20, 20)
 	treasury_icon.texture = MARK_ICON
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	treasury_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1442, 22, 130, 36), 13, Color("1c2426"))
+	stats = label_at("", Rect2(1477, 23, 98, 28), 13, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
 
 	# Top-left clean location header matching Field Instruments
 	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Color("1c2426"))
-	chart_heading = label_at("LOCAL SURFACE CHART · 50 m", Rect2(36, 663, 196, 18), 11, Color("1c2426"))
+	mode_label = label_at("SURFACE", Rect2(36, 53, 140, 18), 11, Color("58646b"))
+	chart_heading = label_at("LOCAL SURFACE CHART", Rect2(36, 663, 218, 18), 10, Color("1c2426"))
 	chart_heading.visible = false
 
 	# Local navigation chart mounted cleanly inside the dial of nav_pod
@@ -385,7 +368,7 @@ func _build() -> void:
 	progress_bar.visible = false
 	add_child(progress_bar)
 	progress_bar.size.y = 4
-	objective = label_at("",Rect2(36,58,420,56),14,Color("1c2426"))
+	objective = label_at("",Rect2(36,126,540,34),12,Color("1c2426"))
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	paused_badge = label_at("",Rect2(650,25,300,24),15,Art.GOLD)
 	paused_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -394,7 +377,7 @@ func _build() -> void:
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
 	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width",30)
+	button.add_theme_constant_override("icon_max_width",42)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
@@ -425,7 +408,7 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	if item_texture != null:
 		button.icon = item_texture
 	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width", 36)
+	button.add_theme_constant_override("icon_max_width", 44)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
@@ -545,14 +528,11 @@ func show_group(group: String) -> void:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	palette_backing.visible = true
-	var palette_style := palette_backing.get_theme_stylebox("panel") as StyleBoxFlat
 	# The same angular Field Instruments housing encloses categories, real slots,
 	# altitude strip and condition console in both modes.
 	palette_backing.position = Vector2(inventory_grid_origin.x-8,panel_top)
 	palette_backing.size = Vector2(content_width+206,panel_height)
-	palette_style.bg_color = Color("dedad0")
-	palette_style.border_color = Color("454943")
-	palette_style.set_border_width_all(1)
+	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
 	var controls_x: float = inventory_grid_origin.x+GROUPS.size()*50+6
@@ -602,7 +582,7 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		Art.symbol(item_buttons[key],item.icon,item.tint,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",30)
+		item_buttons[key].add_theme_constant_override("icon_max_width",42)
 		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
@@ -673,12 +653,14 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 func set_cargo_readout(used: int, capacity: int) -> void:
 	if stats == null:
 		return
-	# Keep the Marks instrument in its approved upper-right plate; cargo is a
-	# secondary line sourced by the owning campaign HUD refresh.
-	stats.text = "%s\nCargo %d/%d" % [treasury_readout, maxi(0, used), maxi(1, capacity)]
+	# The upper-right instrument is the Marks balance. Cargo and carried items
+	# stay together in the lower-right inventory panel.
+	stats.text = treasury_readout
 
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
+	mode_label.text = "ORBIT" if enabled else "SURFACE"
+	mode_label.add_theme_color_override("font_color",Art.PAPER if enabled else Color("58646b"))
 	location_label.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
 	objective.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
 	navigation.visible = not enabled
@@ -744,23 +726,23 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# The chart and compact action rail sit in one surface-only instrument housing.
-		nav_pod.position = Vector2(26, 660)
-		nav_pod.size = Vector2(286, 210)
-		chart_backing.position = Vector2(26, 660)
-		chart_backing.size = Vector2(286, 210)
-		navigation.position = Vector2(32, 682)
-		navigation.size = Vector2(220, 180)
+		# The square 50 m chart and its action rail share one surface-only housing.
+		nav_pod.position = Vector2(26, 650)
+		nav_pod.size = Vector2(330, 220)
+		chart_backing.position = Vector2(26, 650)
+		chart_backing.size = Vector2(330, 220)
+		navigation.position = Vector2(32, 670)
+		navigation.size = Vector2(196, 196)
 		navigation_backing.visible = false
-		navigation_backing.position = Vector2(26, 660)
-		navigation_backing.size = Vector2(54, 210)
-		chart_heading.position = Vector2(38, 663)
-		chart_heading.size = Vector2(220, 16)
+		navigation_backing.position = Vector2(26, 650)
+		navigation_backing.size = Vector2(54, 220)
+		chart_heading.position = Vector2(38, 653)
+		chart_heading.size = Vector2(218, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		var rail_actions: Array[Button] = [sector_button, system_button, navigation_actions[0], navigation_actions[1], navigation_actions[2], navigation_actions[3], departure_button]
 		for index: int in range(rail_actions.size()):
-			rail_actions[index].position = Vector2(260, 664 + index * 29)
-			rail_actions[index].size = Vector2(44, 28)
+			rail_actions[index].position = Vector2(286, 654 + index * 31)
+			rail_actions[index].size = Vector2(44, 30)
 			rail_actions[index].add_theme_constant_override("icon_max_width",22)
 			for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
 				var compact_style := rail_actions[index].get_theme_stylebox(state).duplicate() as StyleBoxFlat
