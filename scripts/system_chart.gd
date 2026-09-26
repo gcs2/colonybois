@@ -145,7 +145,7 @@ func _build_system_instruments(stage: Control) -> void:
 	var mark_icon := TextureRect.new(); mark_icon.texture = MARK_ICON; mark_icon.custom_minimum_size = Vector2(26,26); mark_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; mark_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; mark_icon.modulate = Color("a98427"); money_row.add_child(mark_icon)
 	treasury_amount = text_label("0 Marks",19); treasury_amount.add_theme_color_override("font_color",Color("1c2426")); treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; money_row.add_child(treasury_amount)
 	inventory_pod = PanelContainer.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -424; inventory_pod.offset_right = -24; inventory_pod.offset_top = -206; inventory_pod.offset_bottom = -72
+	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -550; inventory_pod.offset_right = -24; inventory_pod.offset_top = -230; inventory_pod.offset_bottom = -72
 	var pod_style := StyleBoxFlat.new(); pod_style.bg_color = Color("dedad0"); pod_style.border_color = Color("6e6c60"); pod_style.set_border_width_all(1); pod_style.set_content_margin_all(9)
 	inventory_pod.add_theme_stylebox_override("panel",pod_style); stage.add_child(inventory_pod)
 	var pod_row := HBoxContainer.new(); pod_row.add_theme_constant_override("separation",9); inventory_pod.add_child(pod_row)
@@ -194,14 +194,14 @@ func _refresh_instruments() -> void:
 	hull_meter.value = 100.0*float(state.hull)/hull_max; energy_meter.value = 100.0*float(state.energy)/energy_max
 	hull_readout.text = "HULL  %d%%" % int(hull_meter.value); energy_readout.text = "ENERGY  %d%%" % int(energy_meter.value)
 	for child: Node in inventory_grid.get_children(): child.queue_free()
-	var entries: Array[Dictionary] = _campaign_inventory(); var shown: int = mini(entries.size(),6)
+	var entries: Array[Dictionary] = _campaign_inventory(); var shown: int = mini(entries.size(),12)
 	for i: int in range(shown):
-		var entry: Dictionary = entries[i]; var slot := Control.new(); slot.custom_minimum_size = Vector2(34,29); slot.tooltip_text = "%s × %d" % [entry.title,entry.count]; inventory_grid.add_child(slot)
+		var entry: Dictionary = entries[i]; var slot := Control.new(); slot.custom_minimum_size = Vector2(50,48); slot.tooltip_text = "%s × %d" % [entry.title,entry.count]; inventory_grid.add_child(slot)
 		var texture: Texture2D = CargoIcon.texture_for(str(entry.id))
 		if texture == null: texture = UI.icon(str(entry.icon))
 		if texture != null:
-			var image := TextureRect.new(); image.texture = texture; image.position = Vector2(1,0); image.size = Vector2(28,24); image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; slot.add_child(image)
-		var count := text_label("×%d" % int(entry.count),9); count.position = Vector2(16,15); count.size = Vector2(18,13); count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; count.add_theme_color_override("font_color",Color("1c2426")); slot.add_child(count)
+			var image := TextureRect.new(); image.texture = texture; image.position = Vector2(1,0); image.size = Vector2(46,38); image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; slot.add_child(image)
+		var count := text_label("×%d" % int(entry.count),10); count.position = Vector2(27,32); count.size = Vector2(22,15); count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; count.add_theme_color_override("font_color",Color("1c2426")); slot.add_child(count)
 	inventory_overflow.text = "+%d more carried items" % (entries.size()-shown) if entries.size() > shown else ("No carried items" if entries.is_empty() else "")
 
 func _format_marks(value: int) -> String:
@@ -329,13 +329,13 @@ func update_target_overlay() -> void:
 	if card_rect.intersects(Rect2(viewport_size.x-250,78,230,62)):
 		destination_card.position.y = clampf(142,92,viewport_size.y-panel_height-92)
 		card_rect.position = destination_card.position
-	var pod_rect := Rect2(viewport_size.x-424,viewport_size.y-206,400,134)
+	var pod_rect := Rect2(viewport_size.x-550,viewport_size.y-230,526,158)
 	if card_rect.intersects(pod_rect):
 		var alternate_x: float = center.x-radius-panel_width-18 if left > center.x else center.x+radius+18
 		destination_card.position.x = clampf(alternate_x,24,viewport_size.x-panel_width-24)
 		card_rect.position = destination_card.position
 		if card_rect.intersects(pod_rect):
-			destination_card.position.x = clampf(viewport_size.x-panel_width-442,24,viewport_size.x-panel_width-24)
+			destination_card.position.x = clampf(viewport_size.x-panel_width-568,24,viewport_size.x-panel_width-24)
 			card_rect.position = destination_card.position
 			if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-220,142,viewport_size.y-panel_height-92)
 	var x0: float = center.x-radius; var x1: float = center.x+radius
