@@ -532,20 +532,24 @@ The highest-value visible gaps are the flat sandy plane and empty horizon, targe
 
 This comparison predates the integrated HUD/world recapture below. The next section records that same-state re-review, its remaining visual failures, and its separate native-input, performance, and player-acceptance limits.
 
-## Integrated Morrow HUD and surface runtime — 26 September 2026
+## Integrated Morrow world and HUD runtime — 26 September 2026
 
-Capture: ignored actual-renderer 1920×1080 synthetic mining state at artifacts/visual-critic-surface-pass/mining/surface-mining-after-1080.png, produced from the isolated codex/r01-v01-v04-transition-audit worktree. It shows the current surface-follow camera, 3/4 seam, prospecting card, chart, full 6×2 inventory, status, and Marks. The harness now aims the saved spherical pose at the seam and refreshes the same production regional stream before framing. This is scripted scene evidence, not native input or performance measurement.
+Capture: ignored actual-renderer 1920×1080 synthetic mining state at artifacts/visual-critic-surface-pass/integrated-mining/surface-mining-after-1080.png, produced in the isolated codex/r01-v01-v04-transition-audit worktree. The harness points the planet-fixed camera at the Resonant Glass seam, performs one valid mining cycle, and refreshes the actual surface chart and 6×2 inventory. This is scripted runtime evidence, not native input or performance evidence.
 
-The integrated code keeps the broader 512 m opportunity regions and stable deltas while adding deterministic habitat queries at an effective 64 m patch scale within a bounded 192 m radius. The scout-centered fine window refreshes independently from the macro terrain rebuild. Stable feature IDs and per-kind random streams remain tied to the versioned recipe. The new groups are visible in the capture, but remain small and sparse; this is a data-query and rendering connection, not a finished ecosystem or a biome-composition system.
+The integrated code adds repeatable 3×4 spherical-cell habitat-role clusters without changing region IDs or sparse deltas; Morrow nearfield terrain comes from the shared versioned recipe, the water mesh uses the authored waterbody spec, and the far visual shell also samples recipe elevation/ruggedness. The local surface chart samples terrain_height, recenters while keeping ship/contact coordinates world-anchored, marks the largest sampled water body when it appears in its 125 m window, and derives its 50 m scale from that window. It does not read waterbody_specs directly.
 
-An independent critic reviewed this exact capture against the approved [Morrow surface canon](../../art/visual-canon/morrow-surface-ground-truth.png) and **fails the visual gate**. The runtime is a broad, nearly featureless brown plane with a low empty horizon, versus the canon’s layered ridges, rocky forms, pond, varied plants, and creature silhouettes. The chart is legible but pale, large, and mostly abstract. The scout remains visible and reasonably central, while the seam label and action card still feel detached from the target. Inventory and status are readable, but the flat panel materials, sparse cargo, synthetic balance of 0 Marks, and current toast differ from the canon. A separate earlier re-review also found the card no longer obscures the ship; lack of overlap does not make its target relationship clear.
+The HUD adjustment places the 6×2 grid 8 px from the condition console, aligns its category/page/collapse rail, gives ALT a dark inset, and raises the framed surface chart and its scale title. These changes pass interaction assertions; they do not establish the intended visual quality.
 
-Focused verification on the integrated source:
-- test_flight_hud.gd: 64 assertions, zero failures, 20.28 s.
-- test_surface_exploration.gd: 63 assertions, zero failures, 38.36 s.
-- test_planet_surface_runtime.gd: 18 checks, zero failures, 0.47 s.
-- tests/review_surface_mining.gd produced before/after captures and passed its scripted assertions.
+A fresh independent critic compared this exact integrated capture with the approved Morrow surface canon. World composition: FAIL. HUD composition: FAIL. The world still reads as a smooth, nearly featureless brown plane. Habitat forms are small and sparse; the distant slope looks traversable rather than like a distinct far mountain profile. Water is outside this mining location and was not treated as a defect. The chart’s terrain contrast is too weak to convey sampled geography. Cargo/map footprints and edge alignment are broadly comparable to the reference, but the cargo icons remain small and most slots are empty in the synthetic save; the dark ALT strip is detached and too prominent. The seam card and label still lack a strong visual tether to the world target.
 
-No full suite, native-input playtest, exported-build check, player acceptance, fun review, or performance measurement was performed. The workstation may be in Silent mode; the capture explicitly makes no performance claim.
+Focused verification on this integrated source:
+- test_surface_exploration.gd: 63 assertions, zero failures, 46.31 s.
+- test_planet_surface_runtime.gd: 18 checks, zero failures, 0.62 s.
+- test_planet_surface_window.gd: 608 assertions, zero failures, 0.57 s.
+- Chart-only checks: 5 assertions, zero failures.
+- Full test_flight_hud.gd: 69 assertions, zero failures, 21.63 s.
+- The actual capture harness passed its scripted mining/cargo assertions and wrote before/after frames.
 
-Next is a composition pass using shared sampled geography and reusable regional rules: establish the Morrow ridgeline, terrain relief, water/coast, readable rock formations, clustered life, and a landmark that ties the surface chart to play. Keep the existing HUD footprint and player-follow framing while correcting the target tether. Review this same camera scale plus an adjacent region; do not add hand-placed camera-only dressing or new planet families.
+No full suite, native-input playtest, exported-build check, user acceptance, fun review, or performance measurement was performed. Isolated worker tests encountered missing generated import caches; integrated bounded runs used the existing Godot 4.7.2 runtime and unique profiles. Generated .import and .uid sidecars and the capture files remain local and unstaged.
+
+The next pass should make a whole reusable Morrow region read clearly at follow-camera scale: visible relief, large enough role-specific habitat silhouettes, chart terrain with useful contrast, and a distinct nonwalkable distant background. Correct ALT by placing a compact readout inside the right status housing. Compare the authored basin and one adjacent region; do not treat passing assertions as visual acceptance.

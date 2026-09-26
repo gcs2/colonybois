@@ -4,22 +4,23 @@ Updated 26 September 2026. The task board is the only production queue; the prod
 
 ## Current checkpoint
 
-The available Spore navigation-source review is closed with an insufficiency finding. Paused samples and manual controls do not show a continuous transition or bind its input, duration, and audio. This does not close R01’s broader feature inventory or the runtime-motion, visual, and playability gates.
+The available Spore navigation-source review remains closed with an insufficiency finding. Paused samples and manual controls do not establish continuous transition timing, input, or audio. R01, runtime-motion parity, presentation, and playability remain open.
 
-The integrated implementation checkpoint on codex/r01-v01-v04-transition-audit is commit 54b72dfe9c046479e39d0c5b78b0a3123dbb0079; it was pushed and git ls-remote verified the same full hash. It combines the HUD, Morrow recipe, radial surface movement, bounded region windows, persistent stable-ID changes, deterministic 64 m habitat queries within 192 m, and prospecting. The dirty main checkout at C:\Users\zephy\Documents\ChatGPT\New project remains untouched.
+The isolated worktree C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project is on codex/r01-v01-v04-transition-audit. Its implementation is four commits ahead of the last remotely verified base 89910c1781b45f63b51fe3e4e48cab16320399cd; code HEAD is 88877e43f4b2b2abe4b9a99888916551595ebff9. This combined checkpoint adds deterministic habitat-role clusters, recipe-derived Morrow relief and water rendering, a terrain-sampled local chart, and a more compact Field Instruments layout. Documentation is being checkpointed; remote publication remains pending. The dirty main checkout at C:/Users/zephy/Documents/ChatGPT/New project was not modified.
 
-Focused results on the current source:
-- test_flight_hud.gd: 64 assertions, zero failures, 20.28 s.
-- test_surface_exploration.gd: 63 assertions, zero failures, 38.36 s.
-- test_planet_surface_runtime.gd: 18 checks, zero failures, 0.47 s.
-- tests/review_surface_mining.gd generated before/after actual-renderer captures and passed its scripted assertions.
+Focused checks on the combined source:
+- test_surface_exploration.gd: 63 assertions, zero failures, 46.31 s.
+- test_planet_surface_runtime.gd: 18 checks, zero failures, 0.62 s.
+- test_planet_surface_window.gd: 608 assertions, zero failures, 0.57 s.
+- Chart-only checks in test_flight_hud.gd: 5 assertions, zero failures.
+- Full test_flight_hud.gd: 69 assertions, zero failures, 21.63 s.
+- The actual-renderer capture harness saved before/after 1920×1080 frames and passed its scripted mining/cargo assertions.
 
-The fresh 1920×1080 capture is artifacts/visual-critic-surface-pass/mining/surface-mining-after-1080.png in the integration worktree. Two independent critics reject it against art/visual-canon/morrow-surface-ground-truth.png: world ground and horizon remain mostly empty and flat; relief, water, rock formations, dense varied life, and landmark depth are absent. The chart is pale and abstract. The HUD is broadly legible, and the seam card no longer obscures the scout, but label/card anchoring and Field Instruments materials remain weak. Synthetic 0 Marks are not the canon’s 248 Marks. No native playtest, player acceptance, packaged-build review, fun, or performance result is claimed.
+The combined capture is at C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project/artifacts/visual-critic-surface-pass/integrated-mining/surface-mining-after-1080.png. An independent reviewer fails both visual gates: terrain and habitat remain sparse and smooth; the distant shell reads as potentially traversable; chart contrast is weak; item icons are undersized and ALT remains a detached strip. The mining position is away from the authored basin, so water is not expected in this view. No full suite, native-input playtest, exported-build review, user acceptance, player-fun review, or performance measurement was done. The focused suite used the existing Godot 4.7.2 binary with isolated worktree profiles; the full HUD attempt in its own worktree stopped after missing generated import caches.
 
 ## Next work
 
-Continue V04 as a reusable Morrow composition pipeline, using the existing planet recipe and spherical samples to shape a ridgeline, relief, water/coast, geological forms, clustered habitats, opportunities, and matching chart detail. Keep the current HUD layout, stable IDs, independent seeded streams, bounded 64 m detail query and 192 m radius, macro regions, and sparse persistent changes. Review the same camera scale and an adjacent region; preserve the gate as open until the live scene materially approaches the canon. Then continue the connected voyage task on the board.
-
+Push and verify the current code-plus-record checkpoint. Then continue a bounded Morrow composition pass: larger readable deterministic habitat kits, clearer sampled terrain/contacts, and a far-scene horizon that does not look like a walkable slope. Review both the authored basin and one adjacent region; keep the HUD corrections in the same view. If the next pass still falls far short, reassess scope rather than polishing one more isolated asset. After a materially stronger scene, return to the connected-voyage task board item.
 ## Checkpoint handling
 
 Keep all work in the isolated integration worktree and branch. Do not stage or alter the dirty main checkout. Stage only intentional source, tests, and owning documentation; preserve but do not stage Godot .import/.uid sidecar changes from the local import run. Keep user data, builds, and captures local/ignored. Serialize imports, tests, and captures. The workstation may be in Silent mode, so make no profiling claims. Push a validated checkpoint and verify its remote hash; cached tracking data is insufficient. No purchase or paid terms are authorized without a concrete price/license decision.
