@@ -472,12 +472,15 @@ func show_group(group: String) -> void:
 	var controls_width: float = float(GROUPS.size()*50+6+40+(108 if pages > 1 else 0))
 	var grid_width: float = float(maxi(0, mini(PALETTE_COLUMNS, visible_items)*59-3))
 	var content_width: float = maxf(controls_width,grid_width)
-	if orbital_mode:
-		inventory_grid_origin = PALETTE_ORIGIN
-	else:
-		# Keep the grid snug against the condition console at the right edge. The
-		# tabs and visible real entries determine how much instrument face is used.
-		inventory_grid_origin = Vector2(1402.0-8.0-content_width,690)
+	var panel_height: float = maxf(192.0,78.0+rows*56.0)
+	var panel_top: float = 870.0-panel_height
+	# Keep the grid snug against the condition console at the right edge in both
+	# flight modes. Visible entries determine the amount of instrument face used.
+	inventory_grid_origin = Vector2(1402.0-8.0-content_width,panel_top+68.0)
+	if console_pod != null:
+		console_pod.position = Vector2(1402,inventory_grid_origin.y)
+	altitude_backing.position = Vector2(1402,inventory_grid_origin.y-26)
+	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
@@ -493,41 +496,32 @@ func show_group(group: String) -> void:
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
-		if orbital_mode:
-			category_buttons[key].position = Vector2(772 + category_index * 74, 686)
-			category_buttons[key].size = Vector2(64, 54)
-		else:
-			category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 50, 630)
-			category_buttons[key].size = Vector2(48, 48)
+		category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 50, panel_top+8)
+		category_buttons[key].size = Vector2(48, 48)
 		category_buttons[key].visible = true
 		category_index += 1
 	if console_pod != null:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
-	palette_backing.visible = palette_expanded or not orbital_mode
+	palette_backing.visible = true
 	var palette_style := palette_backing.get_theme_stylebox("panel") as StyleBoxFlat
-	if orbital_mode:
-		palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
-		palette_backing.size = Vector2(16+PALETTE_COLUMNS*59, 16+rows*56)
-		palette_style.bg_color = Color(0.045, 0.05, 0.05, 0.72)
-		palette_style.set_border_width_all(0)
-	else:
-		# The angular housing ends around the visible inventory and attached console.
-		palette_backing.position = inventory_grid_origin-Vector2(8,68)
-		palette_backing.size = Vector2(content_width+208,maxf(190.0,78.0+rows*56.0))
-		palette_style.bg_color = Color("dedad0")
-		palette_style.border_color = Color("454943")
-		palette_style.set_border_width_all(1)
+	# The same angular Field Instruments housing encloses categories, real slots,
+	# altitude strip and condition console in both modes.
+	palette_backing.position = Vector2(inventory_grid_origin.x-8,panel_top)
+	palette_backing.size = Vector2(content_width+208,panel_height)
+	palette_style.bg_color = Color("dedad0")
+	palette_style.border_color = Color("454943")
+	palette_style.set_border_width_all(1)
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
 	var controls_x: float = inventory_grid_origin.x+GROUPS.size()*50+6
-	page_previous.position = Vector2(1238, 634) if orbital_mode else Vector2(controls_x,634)
+	page_previous.position = Vector2(controls_x,panel_top+12)
 	page_previous.size = Vector2(32, 42)
-	page_label.position = Vector2(1272, 642) if orbital_mode else Vector2(controls_x+34,642)
+	page_label.position = Vector2(controls_x+34,panel_top+20)
 	page_label.size = Vector2(36, 24)
-	page_next.position = Vector2(1310, 634) if orbital_mode else Vector2(controls_x+72,634)
+	page_next.position = Vector2(controls_x+72,panel_top+12)
 	page_next.size = Vector2(32, 42)
-	collapse_button.position = Vector2(1348, 634) if orbital_mode else Vector2(controls_x+(108 if pages>1 else 0),634)
+	collapse_button.position = Vector2(controls_x+(108 if pages>1 else 0),panel_top+12)
 	collapse_button.size = Vector2(40, 42)
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
@@ -632,6 +626,8 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
+	location_label.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
+	objective.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
 	navigation.visible = not enabled
 	# The orbital dial is replaced by a small ALT line beside the condition panel;
 	# the local terrain chart itself remains surface-only.
@@ -651,19 +647,19 @@ func set_orbital_mode(enabled: bool) -> void:
 		chart_backing.size = Vector2(250, 130)
 		navigation.position = Vector2(48, 749)
 		navigation.size = Vector2(92, 92)
-		navigation_backing.position = Vector2(281, 726)
-		navigation_backing.size = Vector2(108, 174)
-		sector_button.position = Vector2(285, 730)
-		system_button.position = Vector2(337, 730)
-		navigation_actions[0].position = Vector2(285, 776)
-		navigation_actions[1].position = Vector2(337, 776)
-		navigation_actions[2].position = Vector2(285, 822)
-		navigation_actions[3].position = Vector2(337, 822)
-		departure_button.position = Vector2(285, 872)
-		altitude_backing.position = Vector2(1402, 718)
-		flight_readout.position = Vector2(1410, 722)
+		navigation_backing.position = Vector2(281, 680)
+		navigation_backing.size = Vector2(108, 190)
+		sector_button.position = Vector2(285, 686)
+		system_button.position = Vector2(337, 686)
+		navigation_actions[0].position = Vector2(285, 732)
+		navigation_actions[1].position = Vector2(337, 732)
+		navigation_actions[2].position = Vector2(285, 778)
+		navigation_actions[3].position = Vector2(337, 778)
+		departure_button.position = Vector2(285, 824)
+		altitude_backing.position = Vector2(1402, 664)
+		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
-			console_pod.position = Vector2(1402, 744)
+			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)
 		hull_bar.position = Vector2(1410, 758)
 		hull_bar.size = Vector2(168, 10)
