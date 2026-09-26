@@ -31,12 +31,27 @@ const BINDINGS := {
 
 static func install() -> void:
 	for action: String in BINDINGS:
-		if InputMap.has_action(action): continue
-		InputMap.add_action(action)
+		if not InputMap.has_action(action): InputMap.add_action(action)
 		for key: int in BINDINGS[action]:
-			var event := InputEventKey.new()
-			event.physical_keycode = key
-			InputMap.action_add_event(action,event)
+			if _has_key(action,key): continue
+			InputMap.action_add_event(action,_key_event(key))
+
+static func key_event(key: int) -> InputEventKey:
+	return _key_event(key)
+
+static func has_key(action: String, key: int) -> bool:
+	return _has_key(action,key)
+
+static func _key_event(key: int) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = key
+	return event
+
+static func _has_key(action: String, key: int) -> bool:
+	if not InputMap.has_action(action): return false
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventKey and event.physical_keycode == key: return true
+	return false
 
 static func direction() -> Vector3:
 	return Vector3(Input.get_axis("flight_left","flight_right"),

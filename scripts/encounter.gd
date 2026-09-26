@@ -43,6 +43,7 @@ var kit_marker: MeshInstance3D
 var persistence_blocked: bool = false
 const Sound = preload("res://scripts/flight_audio.gd")
 const FlightControls = preload("res://scripts/flight_controls.gd")
+const FlightInputSettings = preload("res://scripts/flight_input_settings.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
@@ -187,6 +188,11 @@ var weapon_selected: bool = false
 var menu_return: bool = false
 var menu_shade: ColorRect
 var weapon_beam: MeshInstance3D
+var flight_input_settings := FlightInputSettings.new()
+var flight_rebind_action: String = ""
+var flight_binding_labels: Dictionary = {}
+var flight_rebind_buttons: Dictionary = {}
+var flight_rebind_status: Label
 
 func _exit_tree() -> void:
 	if is_instance_valid(suspended_session) and not suspended_session.is_inside_tree():
@@ -213,7 +219,7 @@ func _ready() -> void:
 	persistence_blocked = startup_error != OK
 	rendered_planet = model.state.planet_id
 	world_definition = model.definition()
-	FlightControls.install()
+	flight_input_settings.install()
 	add_child(audio)
 	_make_world()
 	var shield_mesh := TorusMesh.new()
@@ -1504,6 +1510,14 @@ func _commit_tool_action(action: String, target: String, gap: float) -> String:
 	return model.act(action,target,gap)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not flight_rebind_action.is_empty():
+		if event is InputEventKey and event.pressed and not event.echo:
+			if event.physical_keycode == KEY_ESCAPE:
+				_cancel_flight_rebind()
+			else:
+				_capture_flight_key(event)
+			get_viewport().set_input_as_handled()
+		return
 	if system_map != null and system_map.visible and not popup.visible:
 		if event is InputEventKey and event.pressed and not event.echo:
 			match event.physical_keycode:
@@ -2097,6 +2111,47 @@ func _menu_page(kind: String) -> void:
 	menu_return = true
 	_show_popup(kind)
 
+func flight_rebinding_ui_reset() -> void:
+	flight_rebind_action = ""
+	flight_binding_labels.clear()
+	flight_rebind_buttons.clear()
+	flight_rebind_status = null
+
+func _flight_action_name(action: String) -> String:
+	return {"flight_forward":"Forward","flight_back":"Back","flight_left":"Left","flight_right":"Right",
+		"flight_rise":"Ascend","flight_descend":"Descend","flight_brake":"Brake"}.get(action,action)
+
+func _start_flight_rebind(action: String) -> void:
+	flight_rebind_action = action
+	flight_rebind_status.text = "Press a key for %s · Esc cancels." % _flight_action_name(action)
+	flight_rebind_buttons[action].text = "Press key…"
+
+func _cancel_flight_rebind() -> void:
+	var action := flight_rebind_action
+	flight_rebind_action = ""
+	flight_rebind_status.text = "Key capture cancelled."
+	flight_rebind_buttons[action].text = "Set key"
+
+func _capture_flight_key(event: InputEventKey) -> void:
+	var action := flight_rebind_action
+	var key := int(event.physical_keycode)
+	var error := flight_input_settings.assign_key(action,key)
+	if not error.is_empty():
+		flight_rebind_status.text = error+" Try another key, or press Esc to cancel."
+		return
+	flight_rebind_action = ""
+	flight_binding_labels[action].text = "%s  ·  %s" % [_flight_action_name(action),flight_input_settings.binding_text(action)]
+	flight_rebind_buttons[action].text = "Set key"
+	flight_rebind_status.text = "Saved. Built-in flight keys remain available."
+
+func _reset_flight_rebinds() -> void:
+	if not flight_rebind_action.is_empty(): _cancel_flight_rebind()
+	var error: Error = flight_input_settings.reset()
+	for action: String in FlightControls.BINDINGS:
+		flight_binding_labels[action].text = "%s  ·  %s" % [_flight_action_name(action),flight_input_settings.binding_text(action)]
+	if error == OK: flight_rebind_status.text = "Flight keys reset to defaults."
+	else: flight_rebind_status.text = "Could not save reset flight keys."
+
 func _inventory_action(action: String, panel: String) -> void:
 	# The item invokes the same validated command; keep inventory open for feedback.
 	if paused: return
@@ -2105,6 +2160,7 @@ func _inventory_action(action: String, panel: String) -> void:
 	_show_popup(panel)
 
 func _show_popup(kind: String) -> void:
+	if not flight_rebind_action.is_empty(): _cancel_flight_rebind()
 	var shop_actor: String = _service_representative() if kind == "service" else ""
 	if kind not in ["contact","service"] or not popup.visible or (kind == "service" and shop_actor.is_empty()):
 		_reset_contact_presentation()
@@ -2231,10 +2287,36 @@ func _show_popup(kind: String) -> void:
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		popup_body.add_child(copy)
 	elif kind == "controls":
-		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover pulse ward\n\nFly: arrows / numpad 8, 4, 2, 6 / WASD\nAscend: Home / Page Up / numpad 9 or + / E\nDescend: End / Page Down / numpad 3 or − / Q\nBrake: numpad 5 or 0 / Stop button\nEscape: game menu / close current window\n\nG: galaxy · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",16)
+		flight_rebinding_ui_reset()
+		var scroll := ScrollContainer.new()
+		scroll.custom_minimum_size = Vector2(470,440)
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		popup_body.add_child(scroll)
+		var content := VBoxContainer.new()
+		content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		content.add_theme_constant_override("separation",7)
+		scroll.add_child(content)
+		var copy: Label = _label("Click terrain: fly there\nClick subject: approach and use selected tool\nClick planet in orbit: approach and descend\nSelect Weapon, then click custodian: approach and fire\nClick wreck or Salvage: approach and recover pulse ward\n\nG: galaxy · M: planet overview\nWheel: camera zoom · Ctrl + wheel: altitude\nPull back past the surface limit to ascend\nScroll in during ascent to cancel; zoom toward the planet to land\nIn orbit, Descend begins approach; scroll out or Stop cancels\nRight drag: rotate camera\nTab / Shift-Tab: browse tool categories\n1–9: visible tool slots · Ctrl + 1–9: second row\nY: communicate · I: inventory · K: equipment\nF: optional tool hold\nSpace: pause · F5: save · F9: load\n\nMouse buttons follow Windows primary-button settings. Flight buttons also support mouse-only play.",15)
 		copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		copy.custom_minimum_size.x = 450
-		popup_body.add_child(copy)
+		content.add_child(copy)
+		content.add_child(_label("FLIGHT KEYS  ·  Add a key; built-in alternatives stay active",13,Color("a2bacb")))
+		for action: String in FlightControls.BINDINGS:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation",8)
+			content.add_child(row)
+			var binding_label: Label = _label("%s  ·  %s" % [_flight_action_name(action),flight_input_settings.binding_text(action)],13)
+			binding_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			binding_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			row.add_child(binding_label)
+			flight_binding_labels[action] = binding_label
+			var bind_button := _button("Set key",_start_flight_rebind.bind(action),row,"")
+			bind_button.custom_minimum_size = Vector2(110,30)
+			flight_rebind_buttons[action] = bind_button
+		flight_rebind_status = _label("",13,Color("d9bc85"))
+		flight_rebind_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		content.add_child(flight_rebind_status)
+		_button("Reset custom flight keys",_reset_flight_rebinds,content)
 		_button("Audio settings",_show_popup.bind("audio"),popup_body)
 	elif kind == "journal":
 		if campaign != null:

@@ -46,6 +46,7 @@ $registeredTests = @(
     'tests/test_planet_climate.gd',
     'tests/test_planet_biosphere.gd',
     'tests/test_flight.gd',
+    'tests/test_flight_controls.gd',
     'tests/test_flight_transitions.gd',
     'tests/test_flight_hud.gd',
     'tests/test_palette_capacity.gd',
