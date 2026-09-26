@@ -7,6 +7,7 @@ signal ui_cue(cue: String)
 const Art = preload("res://scripts/flight_interface.gd")
 const Navigation = preload("res://scripts/flight_navigation.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
+const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Palette = preload("res://scripts/flight_palette.gd")
 const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
@@ -372,6 +373,9 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	var title: String = str(entry.title)
 	var icon: String = str(entry.get("icon", "cargo"))
 	var button: Button = symbol_at(icon, Rect2(0, 0, 56, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
+	var item_texture: Texture2D = CargoIcon.texture_for(id)
+	if item_texture != null:
+		button.icon = item_texture
 	button.size = Vector2(56, 54)
 	button.add_theme_constant_override("icon_max_width", 30)
 	_style_inventory_slot(button)
