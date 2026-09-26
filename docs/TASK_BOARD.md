@@ -10,7 +10,7 @@ For every material presentation change, use the independent visual-critic loop i
 
 ### Local inventory/camera review checkpoint — 25 September 2026
 
-The 18-portrait mapping, flight HUD icon-sizing adjustment and camera-trace harness are local on `codex/orbital-hud-camera-review-warm` at `bf14235dd946b2beabf2116fd9d51ab2eef1499d`. Focused `test_flight_hud.gd` passed 50 assertions with zero failures in 4.41 seconds. The fresh 12-image cargo review was stopped after 216.11 seconds without new output or captures; the camera harness has not run. The existing cargo captures and critic notes are a pre-change baseline from 25 September 2026 at 18:40 local. There is no new critic verdict or visual acceptance for these changes.
+The 18-portrait mapping, flight HUD icon-sizing adjustment and camera-trace harness are integrated on `codex/orbital-transition-gate`; code commit `bf14235dd946b2beabf2116fd9d51ab2eef1499d` is included in the pushed checkpoint `8385386e0cee75b4ce360465492c03035341149b`, whose remote hash was verified. Focused `test_flight_hud.gd` passed 50 assertions with zero failures in 4.41 seconds. The fresh 12-image cargo review was stopped after 216.11 seconds without new output or captures; the camera harness has not run. The existing cargo captures and critic notes are a pre-change baseline from 25 September 2026 at 18:40 local. There is no new critic verdict, user verdict or visual acceptance for these changes.
 
 ## Latest user visual direction — 25 September 2026
 

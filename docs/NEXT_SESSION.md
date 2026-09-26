@@ -4,7 +4,7 @@ Updated 25 September 2026. This is the operational handoff, not a second queue. 
 
 ## Checkout and hashes
 
-Continue in `C:\Users\zephy\.codex\worktrees\orbit-surface-gate\New project` on `codex/orbital-hud-camera-review-warm`. The current tree was clean at code checkpoint `bf14235dd946b2beabf2116fd9d51ab2eef1499d`; the goal/roadmap/task-board clarification is commit `38b3e41d6a5dc3eca997cdbbcdaf41f730dcf6ea`. This branch is local and has not been pushed or verified as an off-device backup. The main checkout at `C:\Users\zephy\Documents\ChatGPT\New project` remains untouched.
+Continue in `C:\Users\zephy\.codex\worktrees\orbit-surface-gate\New project` on `codex/orbital-transition-gate`. The code checkpoint is `bf14235dd946b2beabf2116fd9d51ab2eef1499d`; the acceptance-criteria docs commit is `38b3e41d6a5dc3eca997cdbbcdaf41f730dcf6ea`. This checkpoint was pushed normally and `origin/codex/orbital-transition-gate` matched full hash `8385386e0cee75b4ce360465492c03035341149b` before this handoff-only update. Verify the final hash after committing and pushing this update before claiming backup. The main checkout at `C:\Users\zephy\Documents\ChatGPT\New project` remains untouched.
 
 ## Current verification
 
