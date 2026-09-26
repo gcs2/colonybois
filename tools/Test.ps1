@@ -57,7 +57,8 @@ $registeredTests = @(
     'tests/test_planet_generation.gd',
     'tests/test_surface_exploration.gd',
     'tests/test_planet_surface_runtime.gd',
-    'tests/test_planet_surface_coordinates.gd'
+    'tests/test_planet_surface_coordinates.gd',
+    'tests/test_planet_surface_window.gd'
 )
 
 function Show-Usage {

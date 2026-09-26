@@ -10,13 +10,15 @@ const VIEW_RADIUS_M: float = 1100.0
 const MAX_WINDOW_REGIONS: int = 512
 const MAX_WINDOW_FEATURES: int = 8192
 var failures: int = 0
+var checks: int = 0
 
 func _initialize() -> void:
 	_test_repeatable_window_and_local_positions()
 	_test_center_crossing_changes_region_window()
 	_test_planet_seed_changes_identity()
+	_test_feature_kinds_have_independent_streams()
 	_test_output_is_bounded()
-	print("Planet surface window checks: failures=", failures)
+	print("Planet surface window checks: assertions=", checks, " failures=", failures)
 	quit(0 if failures == 0 else 1)
 
 func _test_repeatable_window_and_local_positions() -> void:
@@ -58,6 +60,39 @@ func _test_planet_seed_changes_identity() -> void:
 	_check(not first.features.is_empty() and not second.features.is_empty(), "both planet recipes produce feature data")
 	_check(first.features[0].id != second.features[0].id, "planet seed participates in stable feature identity")
 
+func _test_feature_kinds_have_independent_streams() -> void:
+	var world: Dictionary = _world(6421)
+	var grid: Dictionary = SurfaceWindow._grid(PLANET_RADIUS_M, REGION_SIZE_M)
+	var region_id: String = SurfaceWindow._region_id(world, grid, 50, 80)
+	var center: Vector3 = Coordinates.direction(21.0, 15.0)
+	var counts: Array[int] = [2, 1, 2, 1]
+	var changed_cover_counts: Array[int] = [5, 1, 2, 1]
+	var baseline: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, 50, 80, grid, "lowland", center, PLANET_RADIUS_M, counts)
+	var changed: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, 50, 80, grid, "lowland", center, PLANET_RADIUS_M, changed_cover_counts, {"cover": 7})
+	var test_longitude_index: int = 80
+	var test_band: int = 50
+	_check(_records_for_kind(baseline, "rock") == _records_for_kind(changed, "rock"), "cover count and draw changes leave rock records unchanged")
+	_check(_records_for_kind(baseline, "flora") == _records_for_kind(changed, "flora"), "cover count and draw changes leave flora records unchanged")
+	_check(_records_for_kind(baseline, "fauna") == _records_for_kind(changed, "fauna"), "cover count and draw changes leave fauna records unchanged")
+	_check(_records_for_kind(baseline, "rock")[0].id == "%s|feature|rock|1" % region_id, "each kind starts its IDs from its own slot")
+	_check(_records_for_kind(baseline, "flora")[0].id == "%s|feature|flora|1" % region_id, "flora identity does not inherit another kind's serial")
+	_check(_records_for_kind(baseline, "mineral") == _records_for_kind(changed, "mineral"), "cover count and draw changes leave mineral records unchanged")
+	var mineral_found: bool = not _records_for_kind(baseline, "mineral").is_empty()
+	for candidate: int in range(1, 150):
+		if mineral_found:
+			break
+		test_longitude_index = 20 + candidate
+		region_id = SurfaceWindow._region_id(world, grid, test_band, test_longitude_index)
+		baseline = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, counts)
+		changed = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, changed_cover_counts, {"cover": 7})
+		mineral_found = not _records_for_kind(baseline, "mineral").is_empty()
+	if mineral_found:
+		_check(_records_for_kind(baseline, "mineral") == _records_for_kind(changed, "mineral"), "mineral identity and placement survive unrelated stream changes")
+	else:
+		_check(false, "test recipes include a mineral for stream-isolation coverage")
+	var repeat: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, counts)
+	_check(_records_for_kind(baseline, "cover") == _records_for_kind(repeat, "cover"), "identical feature recipes reproduce category records")
+
 func _test_output_is_bounded() -> void:
 	var world: Dictionary = _world(6421)
 	var result: Dictionary = SurfaceWindow.build(world, Coordinates.direction(0.0, 0.0), PLANET_RADIUS_M, 0.1, 1.0e30)
@@ -82,7 +117,15 @@ func _region_ids(regions: Array) -> Array[String]:
 		result.append(str(region.id))
 	return result
 
+func _records_for_kind(records: Array[Dictionary], kind: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for record: Dictionary in records:
+		if str(record.kind) == kind:
+			result.append(record)
+	return result
+
 func _check(condition: bool, message: String) -> void:
+	checks += 1
 	if not condition:
 		failures += 1
 		printerr("FAIL: ", message)

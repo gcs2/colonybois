@@ -13,6 +13,7 @@ const _MAX_BANDS: int = 65536
 const _MAX_LONGITUDE_CELLS: int = 131072
 const _MAX_QUERY_RADIUS_CELLS: float = 16.0
 const _MAX_CANDIDATE_CELLS: int = 1024
+const _FEATURE_STREAM_VERSION: int = 1
 const MAX_WINDOW_REGIONS: int = 512
 const MAX_WINDOW_FEATURES: int = 8192
 const _TAU: float = PI * 2.0
@@ -142,33 +143,46 @@ static func _grid(radius: float, requested_size: float) -> Dictionary:
 	}
 
 static func _make_features(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float) -> Array[Dictionary]:
+	var ranges_by_biome: Dictionary = _feature_count_ranges(biome)
+	var ranges: Array = ranges_by_biome.get(biome, ranges_by_biome.lowland)
+	var counts: Array[int] = []
+	for kind_index: int in range(4):
+		var kind: String = ["cover", "rock", "flora", "fauna"][kind_index]
+		var count_rng: RandomNumberGenerator = _feature_rng(region_id, kind)
+		var range_values: Array = ranges[kind_index]
+		counts.append(count_rng.randi_range(int(range_values[0]), int(range_values[1])))
+	return _make_features_for_counts(region_id, band, longitude_index, grid, biome, center, radius, counts)
+
+## Builds records with explicit category counts; stream burns are a contract-test seam for draw isolation.
+static func _make_features_for_counts(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float, counts: Array[int], stream_burns: Dictionary = {}) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	var rng := RandomNumberGenerator.new()
-	rng.seed = _stable_seed(region_id)
-	var counts: Array[int] = _feature_counts(biome, rng)
 	var kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
-	var serial: int = 0
 	for kind_index: int in range(kinds.size()):
-		for _item: int in range(counts[kind_index]):
-			serial += 1
+		var kind: String = kinds[kind_index]
+		var rng: RandomNumberGenerator = _feature_rng(region_id, kind)
+		for _burn: int in range(int(stream_burns.get(kind, 0))):
+			rng.randi()
+		for slot: int in range(counts[kind_index]):
 			var feature_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
-			var feature_id: String = "%s|feature|%s|%d" % [region_id, kinds[kind_index], serial]
+			var feature_id: String = "%s|feature|%s|%d" % [region_id, kind, slot + 1]
 			var local_position: Vector2 = Coordinates.local_offset(center, feature_up, radius)
 			result.append({
 				"id": feature_id,
 				"region_id": region_id,
-				"kind": kinds[kind_index],
+				"kind": kind,
 				"biome": biome,
 				"up": feature_up,
 				"position_m": local_position,
-				"variant": rng.randi_range(0, {"cover": 5, "rock": 4, "flora": 6, "fauna": 3}[kinds[kind_index]]),
-				"size": rng.randf_range(0.85, 1.15) if kinds[kind_index] == "fauna" else rng.randf_range(0.65, 1.45),
+				"variant": rng.randi_range(0, {"cover": 5, "rock": 4, "flora": 6, "fauna": 3}[kind]),
+				"size": rng.randf_range(0.85, 1.15) if kind == "fauna" else rng.randf_range(0.65, 1.45),
 				"yaw": rng.randf_range(-PI, PI)
 			})
-	if rng.randf() < 0.035:
-		serial += 1
-		var mineral_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
-		var mineral_id: String = "%s|feature|mineral|%d" % [region_id, serial]
+	var mineral_rng: RandomNumberGenerator = _feature_rng(region_id, "mineral")
+	for _burn: int in range(int(stream_burns.get("mineral", 0))):
+		mineral_rng.randi()
+	if mineral_rng.randf() < 0.035:
+		var mineral_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, mineral_rng)
+		var mineral_id: String = "%s|feature|mineral|1" % region_id
 		result.append({
 			"id": mineral_id,
 			"region_id": region_id,
@@ -176,13 +190,13 @@ static func _make_features(region_id: String, band: int, longitude_index: int, g
 			"biome": biome,
 			"up": mineral_up,
 			"position_m": Coordinates.local_offset(center, mineral_up, radius),
-			"variant": rng.randi_range(0, 2),
-			"size": rng.randf_range(0.65, 1.45),
-			"yaw": rng.randf_range(-PI, PI)
+			"variant": mineral_rng.randi_range(0, 2),
+			"size": mineral_rng.randf_range(0.65, 1.45),
+			"yaw": mineral_rng.randf_range(-PI, PI)
 		})
 	return result
 
-static func _feature_counts(biome: String, rng: RandomNumberGenerator) -> Array[int]:
+static func _feature_count_ranges(biome: String) -> Dictionary:
 	var ranges_by_biome: Dictionary = {
 		"ocean": [[0, 1], [0, 1], [0, 0], [0, 1]],
 		"ice": [[1, 3], [0, 2], [0, 1], [0, 1]],
@@ -191,11 +205,12 @@ static func _feature_counts(biome: String, rng: RandomNumberGenerator) -> Array[
 		"lowland": [[2, 5], [0, 2], [1, 3], [0, 2]],
 		"forest": [[3, 5], [0, 2], [2, 4], [1, 2]]
 	}
-	var ranges: Array = ranges_by_biome.get(biome, ranges_by_biome.lowland)
-	var counts: Array[int] = []
-	for range_values: Array in ranges:
-		counts.append(rng.randi_range(int(range_values[0]), int(range_values[1])))
-	return counts
+	return ranges_by_biome
+
+static func _feature_rng(region_id: String, kind: String) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _stable_seed("%s|feature-stream|%d|%s" % [region_id, _FEATURE_STREAM_VERSION, kind])
+	return rng
 
 static func _random_direction_in_cell(band: int, longitude_index: int, grid: Dictionary, rng: RandomNumberGenerator) -> Vector3:
 	var longitude_step: float = _TAU / float(grid.longitude_counts[band])
