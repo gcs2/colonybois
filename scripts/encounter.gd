@@ -940,26 +940,31 @@ func _make_ui() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",14,Color("ffe0a8"))
 	status_backing = ColorRect.new()
-	status_backing.position = Vector2(28,78)
-	status_backing.size = Vector2(210,48)
-	status_backing.color = Color("1c2426",0.96)
+	status_backing.position = Vector2(28,74)
+	status_backing.size = Vector2(216,48)
+	status_backing.color = Color("1c2426",0.98)
 	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_backing.z_index = 20
 	status_backing.hide()
 	root.add_child(status_backing)
-	status.position = Vector2(68,82)
-	status.size = Vector2(160,38)
+	status.position = Vector2(68,74)
+	status.size = Vector2(168,48)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	status.add_theme_color_override("font_color",Color("fff0cb"))
+	status.z_index = 21
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(36,89)
-	status_icon.size = Vector2(22,22)
+	status_icon.position = Vector2(36,86)
+	status_icon.size = Vector2(24,24)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon.modulate = Color("e9b72f")
 	status_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_icon.z_index = 21
 	status_icon.hide()
 	root.add_child(status_icon)
 	guide_caption = _label("",16,Color("b7d2e0"))
@@ -1416,7 +1421,7 @@ func _update_visuals() -> void:
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
 	ring.visible = not kit_mode and not deploy_order and not camera.is_position_behind(_target_position())
 	for id: String in labels:
-		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
+		var at: Vector3 = _target_position(id)+Vector3(0,0.5 if id == "vein" else 3,0)
 		var label: Label = labels[id]
 		if id == "vein": label.text = "RESONANT SEAM · %d / %d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if model.state.ore_remaining > 0 else "DEPLETED CRYSTAL SEAM"
 		var screen_at: Vector2 = camera.unproject_position(at)
@@ -2304,6 +2309,7 @@ func _refresh_ui() -> void:
 	if system_map != null:
 		system_map.locked = paused or popup.visible
 		if system_map.visible: system_map.refresh()
+	_layout_seam_context_card()
 	var local_view: bool = not orbital and not (system_map != null and system_map.visible) and not (sector_map != null and sector_map.visible)
 	hud.navigation.visible = local_view; hud.chart_backing.visible = local_view; hud.chart_heading.visible = local_view
 	_update_guidance()
@@ -2314,6 +2320,35 @@ func _refresh_ui() -> void:
 	guide_caption.visible = guide_caption.visible and not modal_open
 	if contact_status_pod != null and contact_status_pod.visible and campaign != null:
 		contact_status_pod.update_status(campaign.field.state.hull, campaign.field.max_capacity("hull"), campaign.field.state.energy, campaign.field.max_capacity("energy"), campaign.field.marks)
+
+func _layout_seam_context_card() -> void:
+	if not is_instance_valid(hud) or not is_instance_valid(hud.context_card): return
+	var compact: bool = model.state.flight_mode != "orbit" and selected == "vein" and not _inspection_open()
+	if not compact:
+		hud.context_card.position = Vector2(450,744)
+		hud.context_card.size = Vector2(290,117)
+		hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
+		hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
+		hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
+		hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
+		hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
+		return
+	var card_size := Vector2(252,80)
+	var seam_at: Vector3 = _target_position("vein")
+	if camera.is_position_behind(seam_at): return
+	var anchor: Vector2 = camera.unproject_position(seam_at)
+	var view_size: Vector2 = get_viewport().get_visible_rect().size
+	var card_at: Vector2 = anchor+Vector2(70,-40)
+	if card_at.x+card_size.x > view_size.x-20: card_at.x = anchor.x-card_size.x-70
+	card_at.x = clampf(card_at.x,300.0,view_size.x-card_size.x-20.0)
+	card_at.y = clampf(card_at.y,140.0,580.0)
+	hud.context_card.position = card_at
+	hud.context_card.size = card_size
+	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(150,19); hud.subject.add_theme_font_size_override("font_size",13)
+	hud.action_state.position = card_at+Vector2(163,8); hud.action_state.size = Vector2(79,17); hud.action_state.add_theme_font_size_override("font_size",9)
+	hud.explanation.position = card_at+Vector2(10,29); hud.explanation.size = Vector2(232,27); hud.explanation.add_theme_font_size_override("font_size",11)
+	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(78,22); hud.use_button.add_theme_font_size_override("font_size",11)
+	hud.progress_bar.position = card_at+Vector2(0,76); hud.progress_bar.size = Vector2(252,4)
 
 func _flight_inventory_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -2406,13 +2441,17 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(36,89)
-		status_icon.size = Vector2(22,22)
+		status_icon.position = Vector2(36,86)
+		status_icon.size = Vector2(24,24)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(68,82)
-		status.size = Vector2(160,38)
+		status.position = Vector2(68,74)
+		status.size = Vector2(168,48)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		status_backing.size = Vector2(210,48)
+		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		status_backing.position = Vector2(28,74)
+		status_backing.size = Vector2(216,48)
+		status_backing.show()
+		status.show()
 	status.text = text
 	toast_time = 6
 
