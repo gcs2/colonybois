@@ -16,10 +16,10 @@ The user's correction is authoritative: Terraform T2 is the climate T-score, not
 
 ### Current execution order
 
-1. Close the current HUD gate without another spacing-only loop: preserve the passed console, map, and tethered callout; make only readability-driven icon/casing changes. Keep the full inventory, Marks, notifications, surface-only chart, recognizable controls, named tooltips, and compact ALT distinct from any T-score.
-2. Run a bounded player-follow camera comparison against the approved surface view. The camera must read as gameplay framing around the ship; cinematic presentation is later work. Inspect the recorded camera harness before reuse because its previous run stalled. Do not add a cinematic mode or change the default based on a mock alone.
-3. Enrich the whole Morrow planet using shared seeded geography, habitat and landmark placement across adjacent traversable regions. Preserve revisit consistency and saved local changes; do not hide an empty planet behind a lush local patch. Treat T2 as the climate target, not an ecology-tier shortcut.
-4. Resume the connected-voyage task-board work once camera and world presentation have moved materially toward the approved canon.
+1. Bring V01 materially closer to the approved surface HUD: retain its outer footprint, raise/widen/deepen the five overlapping tab cards, improve truthful pictorial item occupancy, integrate the condition pod and compact ALT, use the approved dark chart, compact discovery notice and far-right Marks anchor, and provide world-tethered target feedback. Compare a legitimately populated campaign state at 1920×1080 and 2560×1440. Preserve real quantities, input, focus, and tooltips; keep unused inventory cells empty. The current narrow component pass and synthetic mining screenshot are not acceptance.
+2. After V01 is materially closer, compare current perspective with one or two slightly higher player-follow views in uncut ordinary play. Assess ship/landmark scale, miniature feeling, targeting, navigation, and motion. Keep perspective as default until evidence supports a decision; cinematic mode remains later work.
+3. Enrich the whole Morrow planet using shared seeded geography, habitat and landmark placement across adjacent traversable regions. Preserve revisit consistency and saved local changes; do not hide an empty planet behind a lush local patch. Treat Terraform T2 as the climate target, separate from ALT and biosphere tier.
+4. Resume the connected-voyage task-board work once HUD, camera, and world presentation have moved materially toward the approved canon.
 
 The pinned task `Frontier Worlds: art sourcing and production` already contains a completed image-service and licensed-asset comparison plus a bounded cutout pilot. Use it as non-blocking reference. The user explicitly said not to suggest buying human labor; do not reopen commissions, contact vendors, purchase, or accept paid terms without a changed user decision.
 
