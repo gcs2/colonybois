@@ -196,12 +196,15 @@ func _refresh_instruments() -> void:
 	for child: Node in inventory_grid.get_children(): child.queue_free()
 	var entries: Array[Dictionary] = _campaign_inventory(); var shown: int = mini(entries.size(),12)
 	for i: int in range(shown):
-		var entry: Dictionary = entries[i]; var slot := Control.new(); slot.custom_minimum_size = Vector2(50,48); slot.tooltip_text = "%s × %d" % [entry.title,entry.count]; inventory_grid.add_child(slot)
+		var entry: Dictionary = entries[i]; var slot := Panel.new(); slot.custom_minimum_size = Vector2(50,48); slot.tooltip_text = "%s × %d" % [entry.title,entry.count]; slot.clip_contents = true
+		var slot_style := StyleBoxFlat.new(); slot_style.bg_color = Color("101618"); slot_style.border_color = Color("283437"); slot_style.set_border_width_all(1); slot_style.set_corner_radius_all(0); slot.add_theme_stylebox_override("panel",slot_style)
+		inventory_grid.add_child(slot)
 		var texture: Texture2D = CargoIcon.texture_for(str(entry.id))
 		if texture == null: texture = UI.icon(str(entry.icon))
 		if texture != null:
-			var image := TextureRect.new(); image.texture = texture; image.position = Vector2(1,0); image.size = Vector2(46,38); image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; slot.add_child(image)
-		var count := text_label("×%d" % int(entry.count),10); count.position = Vector2(27,32); count.size = Vector2(22,15); count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; count.add_theme_color_override("font_color",Color("1c2426")); slot.add_child(count)
+			var image := TextureRect.new(); image.texture = texture; image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			image.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); image.offset_left = 3; image.offset_top = 2; image.offset_right = -3; image.offset_bottom = -11; slot.add_child(image)
+		var count := text_label("×%d" % int(entry.count),10); count.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); count.offset_left = -27; count.offset_top = -17; count.offset_right = -2; count.offset_bottom = -1; count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; count.add_theme_color_override("font_color",Color("e9efe5")); count.add_theme_color_override("font_shadow_color",Color("101618")); count.add_theme_constant_override("shadow_offset_x",1); count.add_theme_constant_override("shadow_offset_y",1); slot.add_child(count)
 	inventory_overflow.text = "+%d more carried items" % (entries.size()-shown) if entries.size() > shown else ("No carried items" if entries.is_empty() else "")
 
 func _format_marks(value: int) -> String:
