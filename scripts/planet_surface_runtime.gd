@@ -26,13 +26,17 @@ var _view_radius_m: float
 static func normalized_recipe(source_recipe: Dictionary) -> Dictionary:
 	var climate: Variant = source_recipe.get("climate", {})
 	var sites: Variant = source_recipe.get("sites", [])
+	var basins: Variant = source_recipe.get("basins", [])
+	var waterbodies: Variant = source_recipe.get("waterbodies", [])
 	return {
 		"id": str(source_recipe.get("id", source_recipe.get("planet_id", ""))).to_lower(),
 		"geography_seed": int(source_recipe.get("geography_seed", source_recipe.get("seed", 0))),
 		"generator_version": int(source_recipe.get("generator_version", 1)),
 		"archetype": str(source_recipe.get("archetype", "temperate")),
 		"climate": climate.duplicate(true) if climate is Dictionary else {},
-		"sites": sites.duplicate(true) if sites is Array else []
+		"sites": sites.duplicate(true) if sites is Array else [],
+		"basins": basins.duplicate(true) if basins is Array else [],
+		"waterbodies": waterbodies.duplicate(true) if waterbodies is Array else []
 	}
 
 func _init(
@@ -54,8 +58,12 @@ func matches_recipe(source_recipe: Dictionary) -> bool:
 	var source_id: String = str(source_recipe.get("id", source_recipe.get("planet_id", ""))).to_lower()
 	var climate: Variant = source_recipe.get("climate", {})
 	var sites: Variant = source_recipe.get("sites", [])
+	var basins: Variant = source_recipe.get("basins", [])
+	var waterbodies: Variant = source_recipe.get("waterbodies", [])
 	if not climate is Dictionary: climate = {}
 	if not sites is Array: sites = []
+	if not basins is Array: basins = []
+	if not waterbodies is Array: waterbodies = []
 	return (
 		recipe.id == source_id
 		and int(recipe.geography_seed) == int(source_recipe.get("geography_seed", source_recipe.get("seed", 0)))
@@ -63,6 +71,8 @@ func matches_recipe(source_recipe: Dictionary) -> bool:
 		and str(recipe.archetype) == str(source_recipe.get("archetype", "temperate"))
 		and recipe.climate == climate
 		and recipe.sites == sites
+		and recipe.basins == basins
+		and recipe.waterbodies == waterbodies
 	)
 
 func sample(up: Vector3) -> Dictionary:
