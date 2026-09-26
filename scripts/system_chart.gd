@@ -10,6 +10,10 @@ const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Globe = preload("res://scripts/planet_globe.gd")
 const Session = preload("res://scripts/expedition_session.gd")
+const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
+const Climate = preload("res://scripts/planet_climate.gd")
+const Biosphere = preload("res://scripts/planet_biosphere.gd")
+const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 class RouteOverlay extends Control:
 	var origin: Vector2 = Vector2.ZERO
 	var destination: Vector2 = Vector2.ZERO
@@ -57,6 +61,15 @@ var sector: Button
 var progress: ProgressBar
 var stage_root: Control
 var destination_card: PanelContainer
+var treasury: PanelContainer
+var treasury_amount: Label
+var inventory_pod: PanelContainer
+var hull_meter: ProgressBar
+var energy_meter: ProgressBar
+var hull_readout: Label
+var energy_readout: Label
+var inventory_grid: GridContainer
+var inventory_overflow: Label
 var target_marks: Array[ColorRect] = []
 var yaw: float = 0.15
 var pitch: float = 0.75
@@ -117,8 +130,86 @@ func _ready() -> void:
 	button("","system_view","Frame all planets [Home / Numpad 5]",reset_camera,controls)
 	instruction = text_label("Wheel: zoom · Right-drag: rotate · Click a planet to fly",15)
 	controls.add_child(instruction)
+	_build_system_instruments(stage)
 	visibility_changed.connect(func() -> void: viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if visible else SubViewport.UPDATE_DISABLED; dragging = false)
 	hide()
+
+func _build_system_instruments(stage: Control) -> void:
+	# The flight HUD is intentionally suppressed while navigating. Keep its real treasury
+	# and compact cargo/status readouts present on this separate full-screen chart.
+	treasury = PanelContainer.new(); treasury.name = "SystemTreasury"; treasury.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	treasury.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT); treasury.offset_left = -238; treasury.offset_right = -24; treasury.offset_top = 84; treasury.offset_bottom = 132
+	var money_style := StyleBoxFlat.new(); money_style.bg_color = Color("dedad0"); money_style.border_color = Color("8d8c80"); money_style.set_border_width_all(1); money_style.set_content_margin_all(8)
+	treasury.add_theme_stylebox_override("panel",money_style); stage.add_child(treasury)
+	var money_row := HBoxContainer.new(); money_row.add_theme_constant_override("separation",8); treasury.add_child(money_row)
+	var mark_icon := TextureRect.new(); mark_icon.texture = MARK_ICON; mark_icon.custom_minimum_size = Vector2(26,26); mark_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; mark_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; mark_icon.modulate = Color("a98427"); money_row.add_child(mark_icon)
+	treasury_amount = text_label("0 Marks",19); treasury_amount.add_theme_color_override("font_color",Color("1c2426")); treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; money_row.add_child(treasury_amount)
+	inventory_pod = PanelContainer.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT); inventory_pod.offset_left = 24; inventory_pod.offset_right = 284; inventory_pod.offset_top = -206; inventory_pod.offset_bottom = -72
+	var pod_style := StyleBoxFlat.new(); pod_style.bg_color = Color("dedad0"); pod_style.border_color = Color("6e6c60"); pod_style.set_border_width_all(1); pod_style.set_content_margin_all(9)
+	inventory_pod.add_theme_stylebox_override("panel",pod_style); stage.add_child(inventory_pod)
+	var pod_column := VBoxContainer.new(); pod_column.add_theme_constant_override("separation",5); inventory_pod.add_child(pod_column)
+	var pod_title := text_label("SHIP STATUS  /  CARRIED",12); pod_title.add_theme_color_override("font_color",Color("58646b")); pod_column.add_child(pod_title)
+	var status_row := HBoxContainer.new(); status_row.add_theme_constant_override("separation",8); pod_column.add_child(status_row)
+	hull_readout = text_label("HULL  0%",12); hull_readout.add_theme_color_override("font_color",Color("1c2426")); hull_readout.custom_minimum_size.x = 108; status_row.add_child(hull_readout)
+	energy_readout = text_label("ENERGY  0%",12); energy_readout.add_theme_color_override("font_color",Color("1c2426")); energy_readout.custom_minimum_size.x = 108; status_row.add_child(energy_readout)
+	var meter_row := HBoxContainer.new(); meter_row.add_theme_constant_override("separation",8); pod_column.add_child(meter_row)
+	hull_meter = _instrument_meter(Color("dd8565")); hull_meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL; meter_row.add_child(hull_meter)
+	energy_meter = _instrument_meter(Color("dca842")); energy_meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL; meter_row.add_child(energy_meter)
+	inventory_grid = GridContainer.new(); inventory_grid.columns = 6; inventory_grid.add_theme_constant_override("h_separation",5); inventory_grid.add_theme_constant_override("v_separation",3); pod_column.add_child(inventory_grid)
+	inventory_overflow = text_label("",11); inventory_overflow.add_theme_color_override("font_color",Color("58646b")); pod_column.add_child(inventory_overflow)
+	_refresh_instruments()
+
+func _instrument_meter(tint: Color) -> ProgressBar:
+	var meter := ProgressBar.new(); meter.custom_minimum_size = Vector2(96,9); meter.min_value = 0; meter.max_value = 100; meter.show_percentage = false
+	var back := StyleBoxFlat.new(); back.bg_color = Color("1c2426"); back.set_corner_radius_all(0)
+	var fill := StyleBoxFlat.new(); fill.bg_color = tint; fill.set_corner_radius_all(0)
+	meter.add_theme_stylebox_override("background",back); meter.add_theme_stylebox_override("fill",fill); return meter
+
+func _campaign_inventory() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var climate_tools: Dictionary = Climate.data().tools
+	for id: String in campaign.climate.state.charges:
+		var spec: Dictionary = climate_tools[id] if climate_tools.has(id) else {}
+		var count: int = int(campaign.climate.state.charges[id])
+		if count > 0 and not spec.is_empty(): entries.append({"id":id,"title":str(spec.name),"count":count,"icon":id})
+	var cargo: Dictionary = {}
+	for lot: Dictionary in campaign.commerce.state.cargo:
+		var id: String = str(lot.get("item","")); var count: int = int(lot.get("quantity",0))
+		if count > 0 and campaign.commerce.catalog.goods.has(id): cargo[id] = int(cargo.get(id,0))+count
+	var cargo_ids: Array = cargo.keys(); cargo_ids.sort()
+	for id: String in cargo_ids: entries.append({"id":"cargo:"+id,"title":str(campaign.commerce.catalog.goods[id].name),"count":int(cargo[id]),"icon":"cargo"})
+	if campaign.colonies.reserved_space() > 0: entries.append({"id":"cargo:colony_kit","title":"Colony landing kit","count":1,"icon":"badge_colonist"})
+	var species_ids: Array = campaign.biosphere.state.cargo.keys(); species_ids.sort(); var species_catalog: Dictionary = Biosphere.data()
+	for id: String in species_ids:
+		var count: int = int(campaign.biosphere.state.cargo[id])
+		if count > 0 and species_catalog.has(id): entries.append({"id":"specimen:"+str(id),"title":str(species_catalog[id].name),"count":count,"icon":"pod"})
+	return entries
+
+func _refresh_instruments() -> void:
+	if campaign == null or not is_instance_valid(treasury): return
+	treasury_amount.text = "%s Marks" % _format_marks(int(campaign.field.marks))
+	var state: Dictionary = campaign.field.state
+	var hull_max: float = maxf(1.0,campaign.field.max_capacity("hull")); var energy_max: float = maxf(1.0,campaign.field.max_capacity("energy"))
+	hull_meter.value = 100.0*float(state.hull)/hull_max; energy_meter.value = 100.0*float(state.energy)/energy_max
+	hull_readout.text = "HULL  %d%%" % int(hull_meter.value); energy_readout.text = "ENERGY  %d%%" % int(energy_meter.value)
+	for child: Node in inventory_grid.get_children(): child.queue_free()
+	var entries: Array[Dictionary] = _campaign_inventory(); var shown: int = mini(entries.size(),6)
+	for i: int in range(shown):
+		var entry: Dictionary = entries[i]; var slot := Control.new(); slot.custom_minimum_size = Vector2(34,29); slot.tooltip_text = "%s × %d" % [entry.title,entry.count]; inventory_grid.add_child(slot)
+		var texture: Texture2D = CargoIcon.texture_for(str(entry.id))
+		if texture == null: texture = UI.icon(str(entry.icon))
+		if texture != null:
+			var image := TextureRect.new(); image.texture = texture; image.position = Vector2(1,0); image.size = Vector2(28,24); image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; slot.add_child(image)
+		var count := text_label("×%d" % int(entry.count),9); count.position = Vector2(16,15); count.size = Vector2(18,13); count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; count.add_theme_color_override("font_color",Color("1c2426")); slot.add_child(count)
+	inventory_overflow.text = "+%d more carried items" % (entries.size()-shown) if entries.size() > shown else ("No carried items" if entries.is_empty() else "")
+
+func _format_marks(value: int) -> String:
+	var digits: String = str(value); var result := ""
+	for i: int in range(digits.length()):
+		if i > 0 and (digits.length()-i) % 3 == 0: result += ","
+		result += digits[i]
+	return result
 func ink(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new(); material.albedo_color = color; material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; return material
 func add_starfield() -> void:
@@ -210,7 +301,7 @@ func refresh() -> void:
 		var visited: Dictionary = campaign.field.state if id == campaign.field.state.planet_id else campaign.worlds.get(id,{})
 		bodies[id].site_marker.visible = not Geography.definition(id).sites.is_empty() and int(visited.get("survey_ticks",0)) >= int(Geography.definition(id).survey_seconds)
 		captions[id].add_theme_color_override("font_color",UI.GOLD if id == campaign.field.state.planet_id else UI.NAV if id == selected_planet else UI.PAPER)
-	update_ship(); update_camera(); update_target_overlay()
+	update_ship(); update_camera(); update_target_overlay(); _refresh_instruments()
 	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
@@ -234,6 +325,16 @@ func update_target_overlay() -> void:
 	var left: float = center.x+radius+18
 	if left+panel_width > viewport_size.x-24: left = center.x-radius-panel_width-18
 	destination_card.position = Vector2(clampf(left,24,viewport_size.x-panel_width-24),clampf(center.y-panel_height*0.5,92,viewport_size.y-panel_height-92))
+	var card_rect := Rect2(destination_card.position,destination_card.size)
+	if card_rect.intersects(Rect2(viewport_size.x-250,78,230,62)):
+		destination_card.position.y = clampf(142,92,viewport_size.y-panel_height-92)
+		card_rect.position = destination_card.position
+	var pod_rect := Rect2(24,viewport_size.y-206,260,134)
+	if card_rect.intersects(pod_rect):
+		var alternate_x: float = center.x+radius+18 if left < center.x else center.x-radius-panel_width-18
+		destination_card.position.x = clampf(alternate_x,24,viewport_size.x-panel_width-24)
+		card_rect.position = destination_card.position
+		if card_rect.intersects(pod_rect): destination_card.position.y = clampf(viewport_size.y-panel_height-178,92,viewport_size.y-panel_height-92)
 	var x0: float = center.x-radius; var x1: float = center.x+radius
 	var y0: float = center.y-radius; var y1: float = center.y+radius
 	var arm: float = 16; var thick: float = 2
@@ -244,7 +345,7 @@ func update_target_overlay() -> void:
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
 	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker.visible and not camera.is_position_behind(ship_marker.global_position)
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
-	var card_rect := Rect2(destination_card.position,destination_card.size)
+	card_rect = Rect2(destination_card.position,destination_card.size)
 	var card_left: bool = destination_card.position.x > center.x
 	var card_bottom: float = maxf(card_rect.end.y,card_rect.position.y+16)
 	var card_y: float = clampf(center.y,card_rect.position.y+8,card_bottom-8)
