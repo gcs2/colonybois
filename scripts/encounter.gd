@@ -54,6 +54,7 @@ const SurfaceCombat = preload("res://scripts/surface_combat.gd")
 const SurfaceVisual = preload("res://scripts/surface_combat_visual.gd")
 const FleetVisual = preload("res://scripts/allied_fleet_visual.gd")
 const Climate = preload("res://scripts/planet_climate.gd")
+const Biosphere = preload("res://scripts/planet_biosphere.gd")
 var climate_tool: String = ""
 var climate_chart: Control
 var climate_ring: MeshInstance3D
@@ -1537,7 +1538,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_Y: _toggle_drawer("contact")
 			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
 				if not paused and not _inspection_open():
-					hud.refresh_items(model,false)
+					hud.refresh_items(model,false,_flight_inventory_entries())
 					hud.activate_slot(event.physical_keycode-KEY_1+(9 if event.ctrl_pressed else 0))
 			KEY_TAB:
 				if not paused and not _inspection_open():
@@ -1812,7 +1813,7 @@ func _refresh_ui() -> void:
 	hud.guardian_warning.text = "CUSTODIAN LOCKING · %d s" % [3-int(s.guardian_alert)] if orbital and s.guardian_alert > 0 and s.guardian_alert < 3 else ("CUSTODIAN FIRING · %d s TO NEXT SHOT" % maxi(0,int(s.guardian_ready_at)-int(s.time)) if orbital and s.guardian_alert >= 3 and not s.guardian_disabled else "")
 	if orbital and model.has_guardian() and not model.has_wreck() and not s.guardian_disabled:
 		hud.guardian_warning.text = ("STRIKE IN %d s · MOVE OUTSIDE THE MARKER" % maxi(0,int(s.guardian_fire_at)-int(s.time))) if s.guardian_fire_at > 0 else (model.enemy_profile().name.to_upper()+" · HOSTILE CONTACT" if s.guardian_alert > 0 else "")
-	hud.refresh_items(model,paused or _inspection_open())
+	hud.refresh_items(model,paused or _inspection_open(),_flight_inventory_entries())
 	hud.quick_cargo.text = "Inventory"
 	hud.quick_cargo.tooltip_text = "Cargo: %d / 2 specimens · Energy packs: %d [I]" % [s.samples,s.energy_packs]
 	if campaign != null: hud.quick_cargo.tooltip_text = "Freight and kits: %d / %d · Specimens: %d / 12 · Energy packs: %d [I]" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity(),campaign.biosphere.used(),s.energy_packs]
@@ -1961,6 +1962,44 @@ func _refresh_ui() -> void:
 	guide_caption.visible = guide_caption.visible and not modal_open
 	if contact_status_pod != null and contact_status_pod.visible and campaign != null:
 		contact_status_pod.update_status(campaign.field.state.hull, campaign.field.max_capacity("hull"), campaign.field.state.energy, campaign.field.max_capacity("energy"), campaign.field.marks)
+
+func _flight_inventory_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	if campaign == null:
+		return entries
+	for item_id: String in campaign.climate.state.charges:
+		var spec: Dictionary = Climate.data().tools[item_id]
+		entries.append({"id":item_id,"title":str(spec.name),"count":int(campaign.climate.state.charges[item_id]),"icon":item_id})
+	var cargo_totals: Dictionary = {}
+	for lot: Dictionary in campaign.commerce.state.cargo:
+		var item_id: String = str(lot.get("item", ""))
+		if not item_id.is_empty() and campaign.commerce.catalog.goods.has(item_id):
+			cargo_totals[item_id] = int(cargo_totals.get(item_id, 0)) + int(lot.get("quantity", 0))
+	var cargo_ids: Array = cargo_totals.keys()
+	cargo_ids.sort()
+	for item_id: String in cargo_ids:
+		entries.append({
+			"id": "cargo:"+item_id,
+			"title": str(campaign.commerce.catalog.goods[item_id].name),
+			"count": int(cargo_totals[item_id]),
+			"icon": "cargo"
+		})
+	if campaign.colonies.reserved_space() > 0:
+		entries.append({"id":"cargo:colony_kit","title":"Colony landing kit","count":1,"icon":"badge_colonist"})
+	var specimen_totals: Dictionary = campaign.biosphere.state.cargo
+	var species_ids: Array = specimen_totals.keys()
+	species_ids.sort()
+	var species: Dictionary = Biosphere.data()
+	for item_id: String in species_ids:
+		var count: int = int(specimen_totals[item_id])
+		if count > 0 and species.has(item_id):
+			entries.append({
+				"id": "specimen:"+item_id,
+				"title": str(species[item_id].name),
+				"count": count,
+				"icon": "pod"
+			})
+	return entries
 
 func _short_reason(reason: String) -> String:
 	# Keep the full validated reason on hover; the instrument shows one short cause.

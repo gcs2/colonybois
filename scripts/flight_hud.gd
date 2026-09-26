@@ -39,6 +39,10 @@ var palette_page: int = 0
 var page_previous: Button
 var page_next: Button
 var page_label: Label
+var campaign_inventory_ids: Array[String] = []
+var campaign_item_buttons: Dictionary = {}
+var campaign_count_labels: Dictionary = {}
+var campaign_owned_counts: Dictionary = {}
 var orbital_mode: bool = false
 var selected_tool: String = "scan"
 var tool_title: Label
@@ -363,6 +367,62 @@ func _make_item(id: String, item: Dictionary) -> void:
 	slot_labels[id] = shortcut
 	count_labels[id] = count
 
+func _make_campaign_item(entry: Dictionary) -> void:
+	var id: String = str(entry.id)
+	var title: String = str(entry.title)
+	var icon: String = str(entry.get("icon", "cargo"))
+	var button: Button = symbol_at(icon, Rect2(0, 0, 56, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
+	button.size = Vector2(56, 54)
+	button.add_theme_constant_override("icon_max_width", 30)
+	_style_inventory_slot(button)
+	var count := Label.new()
+	count.position = Vector2(2, 1)
+	count.size = Vector2(52, 15)
+	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	count.add_theme_font_size_override("font_size", 11)
+	count.add_theme_color_override("font_color", Art.PAPER)
+	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(count)
+	campaign_item_buttons[id] = button
+	campaign_count_labels[id] = count
+
+func _group_entries(group: String) -> Array[String]:
+	var entries: Array[String] = []
+	if not GROUPS.has(group):
+		return entries
+	for id: String in GROUPS[group]:
+		entries.append(id)
+	if group in ["Main tools", "Inventory"]:
+		entries.append_array(campaign_inventory_ids)
+	return entries
+
+func _refresh_campaign_items(entries: Array[Dictionary], locked: bool) -> void:
+	campaign_inventory_ids.clear()
+	campaign_owned_counts.clear()
+	for button: Button in campaign_item_buttons.values():
+		button.visible = false
+	var seen: Dictionary = {}
+	for entry: Dictionary in entries:
+		var id: String = str(entry.get("id", ""))
+		var count: int = int(entry.get("count", 0))
+		if id.is_empty() or seen.has(id):
+			continue
+		seen[id] = true
+		if item_buttons.has(id):
+			campaign_owned_counts[id] = count
+			continue
+		if count <= 0:
+			continue
+		if not campaign_item_buttons.has(id):
+			_make_campaign_item(entry)
+		campaign_inventory_ids.append(id)
+		var button: Button = campaign_item_buttons[id]
+		button.tooltip_text = Art.tooltip("%s × %d\nCarried cargo · click to inspect the existing inventory." % [str(entry.title), count])
+		button.disabled = locked
+		campaign_count_labels[id].text = "× %d" % count
+	palette_page = clampi(palette_page, 0, maxi(0, (_group_entries(active_group).size()-1)/Palette.PAGE_SIZE))
+	show_group(active_group)
+
 func _internal_action(action: String) -> void:
 	if palette_locked: return
 	if action.begins_with("category:"):
@@ -373,20 +433,26 @@ func _internal_action(action: String) -> void:
 		palette_expanded = not palette_expanded
 		show_group(active_group)
 	elif action in ["page_previous","page_next"]:
-		palette_page = clampi(palette_page+(-1 if action == "page_previous" else 1),0,maxi(0,(GROUPS[active_group].size()-1)/Palette.PAGE_SIZE))
+		palette_page = clampi(palette_page+(-1 if action == "page_previous" else 1),0,maxi(0,(_group_entries(active_group).size()-1)/Palette.PAGE_SIZE))
 		show_group(active_group)
 	# Item commands are handled by the scene with a fresh model validation.
 
 func show_group(group: String) -> void:
 	if not GROUPS.has(group): return
 	active_group = group
-	var entries: Array = GROUPS[group]
+	var entries: Array[String] = _group_entries(group)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
 		if item_buttons[id].visible:
 			item_buttons[id].position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 			slot_labels[id].text = ("Ctrl+" if slot >= 9 else "")+str(slot%9+1)
+	for id: String in campaign_inventory_ids:
+		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
+		var button: Button = campaign_item_buttons[id]
+		button.visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
+		if button.visible:
+			button.position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
@@ -452,8 +518,9 @@ func select_tool(id: String) -> void:
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
 
-func refresh_items(model: RefCounted, locked: bool) -> void:
+func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dictionary] = []) -> void:
 	palette_locked = locked
+	_refresh_campaign_items(inventory_entries, locked)
 	for id: String in support_badges:
 		var chip: Button = support_badges[id]
 		chip.visible = model.Support.active(model,id)
@@ -468,7 +535,7 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 	for button: Button in category_buttons.values(): button.disabled = locked
 	collapse_button.disabled = locked
 	page_previous.disabled = locked or palette_page == 0
-	page_next.disabled = locked or (palette_page+1)*Palette.PAGE_SIZE >= GROUPS[active_group].size()
+	page_next.disabled = locked or (palette_page+1)*Palette.PAGE_SIZE >= _group_entries(active_group).size()
 	for id: String in item_buttons:
 		var item: Dictionary = Palette.entry(id)
 		var reason: String = Palette.unavailable(id,model)
@@ -490,6 +557,8 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 			count_labels[id].text += " · %ds" % int(ceil(ready_at-model.state.time))
 			item_buttons[id].tooltip_text += "\nReady in %d s." % int(ceil(ready_at-model.state.time))
 		item_buttons[id].tooltip_text = Art.tooltip(item_buttons[id].tooltip_text)
+	for id: String in campaign_owned_counts:
+		count_labels[id].text = "× %d" % int(campaign_owned_counts[id])
 	if model != null and model.state != null:
 		var s: Dictionary = model.state
 		stats.text = "%s Marks" % _format_marks(model.marks)
