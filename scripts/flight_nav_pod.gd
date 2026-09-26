@@ -16,7 +16,7 @@ var needle_angle: float = -1.75 # Pointing ~11:30 o'clock
 func _ready() -> void:
 	custom_minimum_size = Vector2(250, 130)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tooltip_text = "Local chart · 80 m across. Click a contact to approach with the selected tool."
+	tooltip_text = "Local chart · 50 m across. Click a contact to approach with the selected tool."
 	resized.connect(queue_redraw)
 
 

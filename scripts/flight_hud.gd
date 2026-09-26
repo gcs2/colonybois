@@ -262,7 +262,7 @@ func _build() -> void:
 
 	# Top-left clean location header matching Field Instruments
 	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Color("1c2426"))
-	chart_heading = label_at("LOCAL SURFACE CHART · 80 m", Rect2(36, 663, 196, 18), 11, Color("1c2426"))
+	chart_heading = label_at("LOCAL SURFACE CHART · 50 m", Rect2(36, 663, 196, 18), 11, Color("1c2426"))
 	chart_heading.visible = false
 
 	# Local navigation chart mounted cleanly inside the dial of nav_pod
