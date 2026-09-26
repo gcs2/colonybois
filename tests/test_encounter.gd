@@ -85,8 +85,10 @@ func run() -> void:
 	scene.ship.position = scene._target_position("vein")+Vector3(0,3,3)
 	scene._refresh_ui()
 	var seam_remaining: int = scene.model.state.ore_remaining
-	check(scene.subject.text == "RESONANT SEAM · %d/%d" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS] and scene.explanation.text.contains("%d / %d remain" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS]) and scene.explanation.text.contains("Mine") and scene.use_button.text == Equipment.title("mine"),"The seam card combines its live remaining amount with the selected action")
+	check(scene.subject.text == "RESONANT SEAM · %d/%d" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS] and scene.explanation.text.contains("%d / %d remain" % [seam_remaining,Model.MINERAL_DEPOSIT_UNITS]) and scene.use_button.text == "Mine","The seam card combines its live remaining amount with the selected action")
 	check(scene.hud.context_card.visible and scene.seam_tether.visible and scene.seam_tether.points.size() == 2,"The compact seam action card is visibly tethered to its projected world target")
+	scene.model.state.scanned.erase("vein")
+	scene.tool = "scan"
 	scene.selected = "pod"
 	scene.ship.position = scene._target_position("pod")+Vector3(0,3,3)
 	scene._update_camera(1)

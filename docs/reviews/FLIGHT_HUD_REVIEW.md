@@ -70,3 +70,11 @@ The focused test_flight_hud.gd passed 78 assertions, zero failures, in 13.02 sec
 Whole-screen verdict remains rejected. The flat, sparse world and oversized/cropped props remain far from the approved Terraform T2 target; seam name/progress/action remain detached from the world marker. This is an isolated synthetic mining state, so its inventory and Marks are not content-quality evidence. T2 means climate T-score; it is not ALT and not the biosphere tier. These captures do not show T-score or establish Morrow's current T2 state.
 
 This is renderer and focused-test evidence only. There was no native-input playtest, exported-build review, performance measurement, user acceptance, or fun review.
+
+## Seam-target feedback integration — 26 September 2026
+
+The mining action card now follows the projected resonant seam with a visible leader. The compact card sits lower and farther from the ship; its action button shows a short verb such as “Mine” while the explanatory copy retains the full tool description. The live remaining count and exhausted state remain tied to the surface model.
+
+Actual-renderer captures at 1920×1080 and 2560×1440 are in `artifacts/visual-critic-surface-pass/hud-seam-integration-20260926/`. `tests/test_encounter.gd` passed 56 assertions, zero failures, in 20.53 seconds. That focused run also exposed and fixed JSON round-trip normalization for depleted-seam counts and a malformed legacy-save migration that accessed a missing position without returning an error.
+
+Independent review passes console composition, surface map, and tethered seam callout at both resolutions. It rejects the full scene: the terrain remains broad and flat, with sparse oversized/cropped props far below the approved lush Morrow target. Three tool glyphs and casing depth remain minor HUD refinements. The results do not establish user acceptance, native-input playability, performance, export quality, or fun. Godot emitted the existing `SpatialMaterial` `specular` remap warning.

@@ -1,25 +1,28 @@
 # Resume here
 
-Updated 26 September 2026. docs/TASK_BOARD.md is the only production queue; docs/PRODUCTION_GOAL.md owns the objective and docs/ROADMAP.md owns milestone gates.
+Updated 26 September 2026. `docs/TASK_BOARD.md` is the only production queue; `docs/PRODUCTION_GOAL.md` owns the objective and `docs/ROADMAP.md` owns milestone gates.
 
 ## Current checkpoint
 
-Continue on the isolated worktree C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project, branch codex/r01-v01-v04-transition-audit. Keep the dirty main checkout C:/Users/zephy/Documents/ChatGPT/New project untouched. The source-to-mock audit remains insufficient: paused Spore frames/manual controls do not prove continuous transition timing, input, or audio.
+Work in the isolated checkout `C:/Users/zephy/.codex/worktrees/r01-transition-audit/New project`, branch `codex/r01-v01-v04-transition-audit`. Preserve the dirty main checkout at `C:/Users/zephy/Documents/ChatGPT/New project`.
 
-The latest HUD change narrows the status segment, raises the shell, enlarges the six-by-two inventory cells, attaches the category rail, and highlights the selected category in warm gold. The local surface chart uses the dark-charcoal relief palette. Latest captures are artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/hud-console-1080/surface-mining-after-1080p.png and .../hud-console-1440/surface-mining-after-1440p.png (1920×1080 and 2560×1440, Godot 4.7.2 Compatibility renderer).
+The Spore source-to-mock audit remains insufficient: paused frames/manual controls do not establish continuous scale-transition timing, input, or audio. The HUD work now has a focused local pass: the console and surface chart remain readable at 1920×1080 and 2560×1440, and the mining action card is attached to its visible seam target. Captures: `artifacts/visual-critic-surface-pass/hud-seam-integration-20260926/surface-mining-after-1080p.png` and `.../surface-mining-after-1440p.png`.
 
-Verification: the focused test_flight_hud.gd passed 78 assertions, zero failures, in 13.02 seconds. One strict independent review passed the console composition and map readability at both resolutions. Whole-screen review still rejects the world and target feedback. The live scene remains far below the approved surface image; no human or user acceptance, native-input playtest, performance, exported-build, or fun claim was made. The workstation's performance mode was not measured. Godot emitted an existing SpatialMaterial remap warning from encounter.gd.
+Verification: `test_flight_hud.gd` passed 78 assertions in 13.02 s; `test_encounter.gd` passed 56 assertions with zero failures in 20.53 s. The encounter run covers seam feedback and save/restore. It led to fixes that normalize numeric seam-depletion values after JSON load and return `ERR_INVALID_DATA` for a malformed old save instead of dereferencing a missing position. Godot emits an existing SpatialMaterial `specular` remap warning. No full suite or performance profile was run; the machine was in Silent mode.
 
-Important direction: Terraform T2 is climate T-score, not Biosphere/ecological T2. The lush pinned Morrow image sets the intended Terraform T2 visual direction. The latest captures show altitude (ALT), not T-score, and do not establish that Morrow has reached T2. Keep T-score and biosphere state independent.
+Independent critic: console PASS, map PASS, tethered callout PASS at both resolutions; whole scene REJECTED because Morrow remains a broad, flat tan field with sparse oversized/cropped props. Minor icon/casing refinement remains, but do not spend another milestone on spacing alone. There is no user acceptance, native-input playtest, exported-build review, performance result, or fun claim.
 
-Generated .import/.uid sidecars and capture artifacts remain local; do not stage them. Run only focused tests affected by a change. Serialize imports, tests, and renderer captures.
+T-score means the Terraform climate score. It is separate from biosphere/ecological tier and altitude. The approved lush Morrow surface is the intended Terraform T2 visual target; current captures do not show that score or establish Morrow's T2 state.
+
+Keep generated `.import`/`.uid` sidecars and capture artifacts out of Git. Stage only the named source, test, and owning documentation files. Use relevant focused checks and record their duration; serialize imports, game instances, and captures.
 
 ## Next work
 
-Follow the task-board order. First improve Morrow as a reusable whole-planet environment at the actual player-follow camera scale: terrain and role-based flora/fauna should stay spatially consistent across the globe and adjacent regions, with seeded repeatability and preserved traversal. Start from the authored basin and continue into an adjacent region, using the pinned Terraform T2 image as the visual target. Do not fake a lush local camera patch while leaving the planet empty. Then tether the seam feedback to its target and retain the newly passed console footprint.
+1. Close the current HUD gate with only readability-driven icon/casing changes; preserve the passed console, map, and seam callout. Keep the complete inventory, recognizable controls/tooltips, top-left notifications, top-right Marks, surface-only local chart, and compact ALT. Do not relabel ALT as T-score.
+2. Compare a small number of player-follow camera framings against the approved surface view. The gameplay camera must track the ship and read as interactive; cinematic framing/mode is later work. Inspect the earlier camera harness and diagnose its recorded stall before reuse. Do not change the default based only on a static mock.
+3. Enrich Morrow across the whole traversable planet: shared seeded terrain/ecology/landmark geography across adjacent regions, consistent revisits, and preserved saved local changes. Avoid an isolated lush patch that leaves the rest of the globe empty.
+4. Return to the connected-voyage task-board work after the camera/world gap has moved materially.
 
-Use the strict visual critic after the integrated runtime change. Keep world appearance, map legibility, HUD console, camera scale, and native playability as separate verdicts. Avoid spending another checkpoint on spacing alone.
+The pinned `Frontier Worlds: art sourcing and production` task has already delivered a non-blocking comparison of external image services and licensed assets, with a small cutout pilot. The user explicitly ruled out buying human labor. Do not reopen commissions, vendor contact, purchases, or paid terms without a changed user decision.
 
-The separately pinned Codex task Frontier Worlds: art sourcing and production contains the requested asset/image-source investigation, project canon links, and prompt context. It is a non-blocking sidecar: do not duplicate its queue or let sourcing research block the world pass. No human commissions, vendor contact, purchases, or paid-term acceptance without explicit approval.
-
-At the next meaningful verified checkpoint, update the owning review, this handoff, and the task board; make a small commit, push it, and confirm the full remote hash. Never stage the main checkout's unrelated changes.
+At the next verified checkpoint, update the owning records, make a small commit, push it, and verify the full remote hash. Never stage or overwrite unrelated main-checkout changes.

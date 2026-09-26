@@ -607,7 +607,12 @@ func restore_snapshot(source: Variant) -> Error:
 		value.ore_remaining = MINERAL_DEPOSIT_UNITS
 	if value.get("version") == 10:
 		value.version = 11
-		value.surface_position = value.position.duplicate(true) if value.get("flight_mode", "surface") == "surface" else [0.0,5.0,12.0]
+		var old_position: Variant = value.get("position")
+		if value.get("flight_mode", "surface") == "surface":
+			if not old_position is Array or old_position.size() != 3: return ERR_INVALID_DATA
+			value.surface_position = old_position.duplicate(true)
+		else:
+			value.surface_position = [0.0,5.0,12.0]
 	if value.get("version") == 11:
 		value.version = 12
 		# Old local coordinates have no defined planetary frame. Anchor migrated saves
@@ -642,6 +647,7 @@ func restore_snapshot(source: Variant) -> Error:
 		if surface_id == "%s|site|vein" % str(value.planet_id):
 			var remaining: Variant = change.get("remaining")
 			if change.size() != 1 or not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floorf(float(remaining)) or int(remaining) != int(value.ore_remaining): return ERR_INVALID_DATA
+			change["remaining"] = int(remaining)
 		elif "|feature|" in surface_id:
 			if change != {"removed":true}: return ERR_INVALID_DATA
 		else:

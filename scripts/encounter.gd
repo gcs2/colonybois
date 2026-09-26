@@ -2367,7 +2367,10 @@ func _refresh_ui() -> void:
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
 	if not orbital:
-		use_button.text = "Cancel" if (held and not latched) or approach_subject else (Equipment.title(tool) if selected == "vein" else "Use")
+		var seam_action: String = "Approach"
+		if ship.position.distance_to(_target_position("vein")) <= Equipment.reach(tool):
+			seam_action = {"scan":"Scan","collect":"Collect","warm":"Warm","seed":"Plant","mine":"Mine"}.get(tool,"Use")
+		use_button.text = "Cancel" if (held and not latched) or approach_subject else (seam_action if selected == "vein" else "Use")
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not _tool_reason(tool,selected,0).is_empty()
@@ -2443,7 +2446,7 @@ func _layout_seam_context_card() -> void:
 	if camera.is_position_behind(seam_at): return
 	var anchor: Vector2 = camera.unproject_position(seam_at)
 	var view_size: Vector2 = get_viewport().get_visible_rect().size
-	var card_at: Vector2 = Vector2(clampf(anchor.x-card_size.x*0.5,300.0,view_size.x-card_size.x-20.0),clampf(anchor.y+34.0,140.0,640.0-card_size.y))
+	var card_at: Vector2 = Vector2(clampf(anchor.x-card_size.x*0.5,300.0,view_size.x-card_size.x-20.0),clampf(anchor.y+50.0,140.0,640.0-card_size.y))
 	var ship_screen: Vector2 = camera.unproject_position(ship.position)
 	var ship_rect := Rect2(ship_screen-Vector2(78,38),Vector2(156,76))
 	if Rect2(card_at,card_size).intersects(ship_rect):
@@ -2454,7 +2457,7 @@ func _layout_seam_context_card() -> void:
 	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(162,19); hud.subject.add_theme_font_size_override("font_size",12)
 	hud.action_state.position = card_at+Vector2(174,8); hud.action_state.size = Vector2(68,17); hud.action_state.add_theme_font_size_override("font_size",9)
 	hud.explanation.position = card_at+Vector2(10,29); hud.explanation.size = Vector2(232,27); hud.explanation.add_theme_font_size_override("font_size",11)
-	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(78,22); hud.use_button.add_theme_font_size_override("font_size",11)
+	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(68,22); hud.use_button.add_theme_font_size_override("font_size",11)
 	hud.progress_bar.position = card_at+Vector2(0,76); hud.progress_bar.size = Vector2(252,4)
 	var card_rect := Rect2(card_at,card_size)
 	var edge := Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_at.y if card_at.y > anchor.y else card_rect.end.y)
