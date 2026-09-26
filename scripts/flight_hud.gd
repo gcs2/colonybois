@@ -224,12 +224,14 @@ func _build() -> void:
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
 	treasury_backing = InstrumentFrame.new()
-	treasury_backing.position = Vector2(1440, 18)
+	# The recognition control occupies the extreme upper-right corner; keep this
+	# Marks plate beside it with a visible gap instead of drawing under that button.
+	treasury_backing.position = Vector2(1380, 18)
 	treasury_backing.size = Vector2(144, 40)
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1451, 27)
+	treasury_icon.position = Vector2(1391, 27)
 	treasury_icon.size = Vector2(20, 20)
 	treasury_icon.texture = MARK_ICON
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -237,7 +239,7 @@ func _build() -> void:
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1477, 23, 98, 28), 13, Color("1c2426"))
+	stats = label_at("", Rect2(1417, 23, 98, 28), 13, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
@@ -726,22 +728,23 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# The square 50 m chart and its action rail share one surface-only housing.
-		nav_pod.position = Vector2(26, 650)
-		nav_pod.size = Vector2(330, 220)
-		chart_backing.position = Vector2(26, 650)
-		chart_backing.size = Vector2(330, 220)
-		navigation.position = Vector2(32, 670)
-		navigation.size = Vector2(196, 196)
+		# A slightly larger chart stays inside the left bay; its seven controls sit
+		# in the same housing, and the entire instrument remains bottom-anchored.
+		nav_pod.position = Vector2(26, 626)
+		nav_pod.size = Vector2(360, 244)
+		chart_backing.position = Vector2(26, 626)
+		chart_backing.size = Vector2(360, 244)
+		navigation.position = Vector2(32, 646)
+		navigation.size = Vector2(220, 220)
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(26, 650)
 		navigation_backing.size = Vector2(54, 220)
-		chart_heading.position = Vector2(38, 653)
+		chart_heading.position = Vector2(38, 629)
 		chart_heading.size = Vector2(218, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		var rail_actions: Array[Button] = [sector_button, system_button, navigation_actions[0], navigation_actions[1], navigation_actions[2], navigation_actions[3], departure_button]
 		for index: int in range(rail_actions.size()):
-			rail_actions[index].position = Vector2(286, 654 + index * 31)
+			rail_actions[index].position = Vector2(310, 654 + index * 31)
 			rail_actions[index].size = Vector2(44, 30)
 			rail_actions[index].add_theme_constant_override("icon_max_width",22)
 			for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:

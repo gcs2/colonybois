@@ -9,7 +9,8 @@ const CHARCOAL := Color("1c2426")
 const DIAL_BG := Color("0e1518")
 const NEEDLE_COLOR := Color("f3c567")
 const RIM_GLOW := Color("6db5e8", 0.7)
-const CHART_RAIL_X := 228.0
+const SURFACE_CHART_RAIL_X := 252.0
+const ORBIT_READOUT_RAIL_X := 228.0
 
 var orbital: bool = false
 var altitude_text: String = "420 km"
@@ -31,8 +32,9 @@ func set_mode(is_orbit: bool, alt_str: String = "", angle: float = -1.9) -> void
 
 func _draw() -> void:
 	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 14.0)
-	draw_line(Vector2(CHART_RAIL_X, 9), Vector2(CHART_RAIL_X, size.y - 9), IVORY_SHADOW, 1.0)
-	draw_line(Vector2(CHART_RAIL_X + 2, 9), Vector2(CHART_RAIL_X + 2, size.y - 9), Color("f6f2e8"), 1.0)
+	var rail_x: float = ORBIT_READOUT_RAIL_X if orbital else SURFACE_CHART_RAIL_X
+	draw_line(Vector2(rail_x, 9), Vector2(rail_x, size.y - 9), IVORY_SHADOW, 1.0)
+	draw_line(Vector2(rail_x + 2, 9), Vector2(rail_x + 2, size.y - 9), Color("f6f2e8"), 1.0)
 	if not orbital:
 		return
 
