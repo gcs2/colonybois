@@ -52,6 +52,7 @@ var tool_spec: Label
 var quick_cargo: Button
 var location_label: Label
 var stats: Label
+var treasury_readout: String = ""
 var treasury_backing: Panel
 var treasury_icon: TextureRect
 var altitude_backing: ColorRect
@@ -227,7 +228,7 @@ func _build() -> void:
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1442, 22, 130, 36), 16, Color("1c2426"))
+	stats = label_at("", Rect2(1442, 22, 130, 36), 13, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
@@ -605,7 +606,8 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 		count_labels[id].text = "× %d" % int(campaign_owned_counts[id])
 	if model != null and model.state != null:
 		var s: Dictionary = model.state
-		stats.text = "%s Marks" % _format_marks(model.marks)
+		treasury_readout = "%s Marks" % _format_marks(model.marks)
+		stats.text = treasury_readout
 		if console_pod != null:
 			console_pod.update_status(s.hull, model.max_capacity("hull"), s.energy, model.max_capacity("energy"), model.marks, active_group)
 		if orbital_mode and nav_pod != null:
@@ -623,6 +625,13 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 		explanation.visible = has_order
 		use_button.visible = has_order
 		progress_bar.visible = has_order
+
+func set_cargo_readout(used: int, capacity: int) -> void:
+	if stats == null:
+		return
+	# Keep the Marks instrument in its approved upper-right plate; cargo is a
+	# secondary line sourced by the owning campaign HUD refresh.
+	stats.text = "%s Marks\nCargo %d/%d" % [treasury_readout, maxi(0, used), maxi(1, capacity)]
 
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
