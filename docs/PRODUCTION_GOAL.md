@@ -4,7 +4,7 @@ Recorded objective installed on 23 September 2026, without a token budget. This 
 
 ## Replacement objective
 
-Build Frontier Worlds into a polished, playable Windows single-player spiritual successor to Spore's Space Stage in Godot 4.7.2: personally fly a ship, discover a vibrant galaxy and living worlds, meet expressive civilizations, collect and trade resources, upgrade equipment, face consequential danger, develop colonies, and earn memorable achievements. Prioritize satisfying play and connected systems over feature counts.
+Build Frontier Worlds into a polished, playable, replayable Windows single-player spiritual successor to Spore's Space Stage in Godot 4.7.2: personally fly a ship, discover a vibrant galaxy and living worlds, meet expressive civilizations, collect and trade resources, upgrade equipment, face consequential danger, develop colonies, and earn memorable achievements. Prioritize satisfying play and connected systems over feature counts.
 
 Use docs/TASK_BOARD.md as the canonical feature ledger. Maintain a MECE inventory of Space Stage systems and every current screen/substate. Pursue functional Space Stage parity before a separate content-enrichment epic, honoring approved exclusions: no creature creator, coloring or terrain sculpting; further planet modification deferred; no compulsory gopher missions. Cities support exploration and trade through aggregate simulation. On-foot play, full fleet battles, factories, skill trees and engine migration are not automatic scope additions.
 
