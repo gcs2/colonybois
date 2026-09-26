@@ -27,6 +27,9 @@ func run() -> void:
 	scene.set_physics_process(false)
 	scene.audio.muted = true
 	var hud: Control = scene.hud
+	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
+	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
+	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
 	check(not hud.tool_title.visible and not hud.tool_spec.visible,"Persistent text above tool icons is removed; identity and costs belong in hover help")
 	check(hud.item_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.category_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.navigation_actions.all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()),"Every tool, category and navigation icon has named hover help")
 	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")

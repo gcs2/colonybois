@@ -140,8 +140,9 @@ func button_at(text: String, rect: Rect2, action: String, tint: Color = Art.NAV,
 	button.size = rect.size
 	button.add_theme_font_size_override("font_size",16)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_ALL
 	Art.instrument(button,icon,tint)
+	Art.focus_cue(button)
 	button.pressed.connect(func() -> void: action_requested.emit(action))
 	button.mouse_entered.connect(func() -> void: ui_cue.emit("ui_hover"))
 	add_child(button)

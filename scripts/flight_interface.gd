@@ -43,6 +43,19 @@ static func instrument(button: Button, id: String, tint: Color, selected: bool =
 	button.expand_icon = true
 	if not id.is_empty(): button.icon = icon(id)
 
+static func focus_cue(button: Button) -> void:
+	# A restrained warm edge keeps keyboard focus legible without changing the instrument palette.
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = Color("e9efe5", 0.12)
+	focus.border_color = Color("f3c567")
+	focus.set_border_width_all(2)
+	focus.set_corner_radius_all(1)
+	focus.content_margin_left = 9
+	focus.content_margin_right = 9
+	focus.content_margin_top = 5
+	focus.content_margin_bottom = 5
+	button.add_theme_stylebox_override("focus", focus)
+
 static func meter(bar: ProgressBar, tint: Color) -> void:
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color("100e19")

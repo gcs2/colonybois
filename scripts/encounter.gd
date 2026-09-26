@@ -631,8 +631,9 @@ func _button(text: String, callback: Callable, parent: Control, cue: String = "u
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size.y = 42
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_ALL
 	Instruments.instrument(button,"",Instruments.NAV)
+	Instruments.focus_cue(button)
 	button.mouse_entered.connect(func() -> void:
 		if not button.disabled: audio.play("ui_hover")
 	)
