@@ -214,9 +214,10 @@ func _build() -> void:
 	altitude_backing = ColorRect.new()
 	altitude_backing.position = Vector2(1508, 666)
 	altitude_backing.size = Vector2(78, 24)
-	# ALT is a compact secondary inset that meets the top edge of the condition pod.
+	# Keep the former inset node hidden; ALT now shares the console header.
 	altitude_backing.color = Color("1c2426")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	altitude_backing.hide()
 	add_child(altitude_backing)
 
 	navigation_backing = InstrumentFrame.new()
@@ -309,8 +310,9 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1512,667,70,23),9,Color("c4c9bd"))
+	flight_readout = label_at("",Rect2(1410,749,168,16),9,Color("1c2426"))
 	flight_readout.visible = false
+	flight_readout.clip_text = true
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
 	energy_label = label_at("",Rect2(1324,750,230,17),11,Art.GOLD)
@@ -392,7 +394,7 @@ func _build() -> void:
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
 	button.size = Vector2(56, 54)
-	button.add_theme_constant_override("icon_max_width",42)
+	button.add_theme_constant_override("icon_max_width",48)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
@@ -544,10 +546,11 @@ func show_group(group: String) -> void:
 		empty_cell.size = Vector2(56, 54)
 		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
-		console_pod.position = Vector2(1402,inventory_grid_origin.y)
-		console_pod.size = Vector2(184,124 if not orbital_mode else 117)
+		console_pod.position = Vector2(1402,inventory_grid_origin.y-24)
+		console_pod.size = Vector2(184,148)
 	altitude_backing.position = Vector2(1508,inventory_grid_origin.y-24)
-	flight_readout.position = Vector2(1512,inventory_grid_origin.y-23)
+	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
+	flight_readout.size = Vector2(168,16)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
@@ -625,7 +628,7 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		Art.symbol(item_buttons[key],item.icon,item.tint,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",42)
+		item_buttons[key].add_theme_constant_override("icon_max_width",48)
 		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
@@ -775,24 +778,26 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# The wide map gets the old rail width. Its two-control tab strip opens
-		# secondary navigation actions only when needed.
+		# The surface map uses the left instrument while secondary controls remain
+		# available from its footer and expandable tab.
 		nav_pod.position = Vector2(16, 674)
 		nav_pod.size = Vector2(250, 196)
-		# Lift the map aperture inside its corner housing so the scale title has
-		# its own line below the chart rather than crowding the lower map edge.
+		# Use the same-width chart frame as the corner pod, with its title on the
+		# reserved footer line below the map field.
 		chart_backing.position = Vector2(16, 650)
-		chart_backing.size = Vector2(224, 220)
-		navigation.position = Vector2(21, 664)
-		navigation.size = Vector2(212, 170)
-		navigation_backing.visible = true
+		chart_backing.size = Vector2(250, 220)
+		navigation.position = Vector2(20, 660)
+		navigation.size = Vector2(238, 170)
+		# Give the sampled chart the full instrument aperture. The two secondary
+		# actions share its quiet footer instead of consuming a narrow side rail.
+		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
-		navigation_menu_button.position = Vector2(242, 731)
-		navigation_menu_button.size = Vector2(22, 34)
+		navigation_menu_button.position = Vector2(198, 840)
+		navigation_menu_button.size = Vector2(22, 24)
 		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
-		departure_button.position = Vector2(242, 773)
-		departure_button.size = Vector2(22, 32)
+		departure_button.position = Vector2(224, 840)
+		departure_button.size = Vector2(22, 24)
 		Art.symbol(departure_button,"ascend",Art.NAV)
 		departure_button.add_theme_constant_override("icon_max_width",22)
 		departure_button.tooltip_text = "Leave atmosphere · ascend to orbit"
@@ -800,7 +805,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
 		chart_heading.position = Vector2(28, 844)
-		chart_heading.size = Vector2(198, 18)
+		chart_heading.size = Vector2(166, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1508, 666)

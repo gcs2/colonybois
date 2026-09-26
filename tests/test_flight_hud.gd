@@ -67,8 +67,8 @@ func run() -> void:
 	var hud: Control = scene.hud
 	check(hud.navigation.size.x >= 200 and hud.navigation.size.y >= 160 and hud.navigation.tooltip_text.contains("50 m"),"Surface chart expands its terrain aperture while keeping the 50 m scale")
 	check(hud.chart_heading.visible and hud.chart_heading.position.y >= hud.navigation.position.y + hud.navigation.size.y - 6,"Surface chart keeps its name below the map field")
-	check(hud.chart_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.chart_backing.size.x <= 230 and not hud.nav_pod.visible,"Surface chart uses one fitted Field Instruments frame without a blank altitude bay")
-	check(hud.navigation_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.navigation_backing.visible and hud.navigation_backing.size.x <= 40 and hud.navigation_backing.size.y <= 90,"Local navigation uses a narrow angular Field Instruments tab strip")
+	check(hud.chart_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.chart_backing.size.x == 250 and not hud.nav_pod.visible,"Surface chart uses one fitted Field Instruments frame without a blank altitude bay")
+	check(hud.navigation_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and not hud.navigation_backing.visible,"Surface navigation leaves the chart aperture free of a side rail")
 	check(hud.navigation_menu_button.visible and hud.departure_button.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible) and not hud.sector_button.visible and not hud.system_button.visible,"Surface keeps two navigation controls visible and tucks secondary actions away")
 	check(hud.departure_button.get_theme_font_size("font_size") == 1 and not hud.departure_button.tooltip_text.is_empty(),"The ascent tab stays icon-only and keeps its named hover tooltip")
 	hud.navigation_menu_button.pressed.emit()
@@ -76,9 +76,11 @@ func run() -> void:
 	hud.navigation_menu_button.pressed.emit()
 	check(not hud.navigation_popup_backing.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible),"Navigation menu closes back to the two-control strip")
 	check(hud.empty_slot_backings.size() == 12 and hud.empty_slot_backings[0].position.y < hud.empty_slot_backings[6].position.y,"Inventory grid retains all six columns and both carried-item rows")
+	check(hud.item_buttons.values().all(func(button: Button) -> bool: return button.get_theme_constant_override("icon_max_width") >= 48),"Equipment pictograms use most of each square inventory slot")
+	check(hud.navigation.size.x >= 238 and hud.navigation.size.y == 170 and not hud.navigation_backing.visible and hud.navigation_menu_button.position.y >= hud.navigation.position.y + hud.navigation.size.y,"Surface chart uses the full corner aperture with controls in its footer")
 	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
 	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
-	check(hud.altitude_backing.size.x <= 80 and hud.altitude_backing.size.y <= 24 and hud.flight_readout.size.x <= 72 and hud.altitude_backing.position.x >= hud.console_pod.position.x+100,"ALT stays a compact secondary readout joined to the existing right-side housing")
+	check(not hud.altitude_backing.visible and hud.flight_readout.size.x >= 160 and hud.flight_readout.position.x == hud.console_pod.position.x+8 and hud.flight_readout.position.y >= hud.console_pod.position.y,"ALT sits in the right console header instead of a detached inset")
 	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
 	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
@@ -161,8 +163,8 @@ func run() -> void:
 	check("Cargo: 2 / 2" in hud.quick_cargo.tooltip_text,"Quick cargo reflects actual onboard capacity")
 	scene._change_flight_mode("orbit")
 	scene._refresh_ui()
-	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 72 and hud.flight_readout.size.y <= hud.altitude_backing.size.y
-	check(orbital_readout_is_compact,"Orbital ALT remains compact inside its joined instrument inset")
+	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 168 and hud.flight_readout.size.y <= 16 and not hud.altitude_backing.visible and hud.flight_readout.position.x == hud.console_pod.position.x+8
+	check(orbital_readout_is_compact,"Orbital ALT remains compact in the right console header")
 	check(scene.use_button.disabled and scene.toolbar.all(func(b: Button) -> bool: return b.disabled),"Surface equipment is unavailable in orbit")
 	hud.category_buttons.Environment.pressed.emit()
 	var orbit_tool: String = scene.tool

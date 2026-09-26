@@ -51,39 +51,41 @@ func _draw() -> void:
 	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
 
 	if size.x <= 400.0:
-		# Compact layout beside the item grid for both flight scales.
+		# Compact layout beside the item grid for both flight scales. A reserved
+		# top strip carries ALT from the parent HUD; meters begin below that header.
+		var readout_offset: float = 24.0
 		# HULL row
-		draw_string(FONT, Vector2(8, 32), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var hull_recess := Rect2(48, 18, 100, 18)
+		draw_string(FONT, Vector2(8, 32+readout_offset), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		var hull_recess := Rect2(48, 18+readout_offset, 100, 18)
 		draw_rect(hull_recess, Color("0e1518"))
 		draw_rect(Rect2(hull_recess.position + Vector2(1, 1), hull_recess.size - Vector2(2, 2)), Color("182022"))
 		var hull_pct: float = clampf(float(hull_val) / float(max_hull_val), 0.0, 1.0)
 		var hull_bars: int = int(round(hull_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(52 + i * 9.0, 21, 7.5, 12)
+			var bar_rect := Rect2(52 + i * 9.0, 21+readout_offset, 7.5, 12)
 			draw_rect(bar_rect, HULL_TINT if i < hull_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(154, 32), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		draw_string(FONT, Vector2(154, 32+readout_offset), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# ENERGY row
-		draw_string(FONT, Vector2(8, 62), "ENERGY", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var energy_recess := Rect2(48, 48, 100, 18)
+		draw_string(FONT, Vector2(8, 62+readout_offset), "ENERGY", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		var energy_recess := Rect2(48, 48+readout_offset, 100, 18)
 		draw_rect(energy_recess, Color("0e1518"))
 		draw_rect(Rect2(energy_recess.position + Vector2(1, 1), energy_recess.size - Vector2(2, 2)), Color("182022"))
 		var energy_pct: float = clampf(float(energy_val) / float(max_energy_val), 0.0, 1.0)
 		var energy_bars: int = int(round(energy_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(52 + i * 9.0, 51, 7.5, 12)
+			var bar_rect := Rect2(52 + i * 9.0, 51+readout_offset, 7.5, 12)
 			draw_rect(bar_rect, ENERGY_TINT if i < energy_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(154, 62), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		draw_string(FONT, Vector2(154, 62+readout_offset), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# Divider line
-		draw_line(Vector2(14, 76), Vector2(size.x - 14, 76), Color("b4b0a4"), 1.0)
+		draw_line(Vector2(14, 76+readout_offset), Vector2(size.x - 14, 76+readout_offset), Color("b4b0a4"), 1.0)
 
-		# Row 3: Signal state. Marks live once in the top-right treasury anchor.
-		var sig_rect := Rect2(20, 83, 30, 20)
+		# Signal state stays below the compact meters; Marks live once at top-right.
+		var sig_rect := Rect2(20, 83+readout_offset, 30, 20)
 		if SIGNAL_ICON != null:
 			draw_texture_rect(SIGNAL_ICON, sig_rect, false, SIGNAL_GREEN)
-		var sig_led := Vector2(58, 93)
+		var sig_led := Vector2(58, 93+readout_offset)
 		draw_circle(sig_led, 4.0, Color(SIGNAL_GREEN.r, SIGNAL_GREEN.g, SIGNAL_GREEN.b, 0.3))
 		draw_circle(sig_led, 2.0, SIGNAL_GREEN)
 	elif not orbital:
