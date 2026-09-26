@@ -196,7 +196,7 @@ func update_route() -> void:
 
 func update_target_overlay() -> void:
 	if not is_instance_valid(destination_card) or not is_instance_valid(camera) or not bodies.has(selected_planet): return
-	var body: MeshInstance3D = bodies[selected_planet]
+	var body: Globe = bodies[selected_planet]
 	var screen_scale: Vector2 = preview.size/Vector2(viewport.size)
 	var center: Vector2 = camera.unproject_position(body.position)*screen_scale
 	var rim: Vector2 = camera.unproject_position(body.position+camera.global_basis.y*body.radius)*screen_scale
