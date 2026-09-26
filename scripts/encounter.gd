@@ -1019,17 +1019,10 @@ func _process(delta: float) -> void:
 	if "--flight-capture" in OS.get_cmdline_user_args(): _capture_flight(delta)
 
 func _update_camera(delta: float) -> void:
-	if popup != null and popup.visible and popup_kind in ["contact","service"] and model.state.flight_mode == "orbit":
-		var target_pos: Vector3 = orbit.planet.position + Vector3(20, 8, 44)
-		var target_focus: Vector3 = orbit.planet.position + Vector3(24, 0, 0)
-		camera.position = camera.position.lerp(target_pos, minf(1.0, delta * 6.0))
-		camera_focus = camera_focus.lerp(target_focus, minf(1.0, delta * 6.0))
-		camera.look_at(camera_focus)
-		return
 	distance = lerpf(distance,camera_distance_target,minf(1,delta*8))
 	var focus: Vector3 = ship.position+Vector3(0,-1,0)
-	# Ordinary flight stays locked to the scout at every zoom distance.
-	camera_focus = camera_focus.lerp(focus,minf(1,delta*5))
+	# Keep the scout centered during ordinary flight and while inspection panels are open.
+	camera_focus = camera_focus.lerp(focus,minf(1,delta*14))
 	var offset := Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.position = camera_focus+offset
 	if model.state.flight_mode == "surface": camera.position.y = maxf(camera.position.y,terrain_height(camera.position.x,camera.position.z)+1.5)
