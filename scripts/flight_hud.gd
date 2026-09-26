@@ -519,6 +519,7 @@ func show_group(group: String) -> void:
 		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
 		console_pod.position = Vector2(1402,inventory_grid_origin.y)
+		console_pod.size = Vector2(184,124 if not orbital_mode else 117)
 	altitude_backing.position = Vector2(1402,inventory_grid_origin.y-26)
 	flight_readout.position = Vector2(1410,inventory_grid_origin.y-21)
 	for id: String in item_buttons:
@@ -738,21 +739,24 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
+		# One flush instrument rail gives the surface chart a useful face while
+		# keeping the world open above it. The adjacent navigation block begins
+		# at the chart pod's edge and shares its matte-ivory housing.
 		nav_pod.position = Vector2(26, 680)
-		nav_pod.size = Vector2(250, 190)
+		nav_pod.size = Vector2(210, 190)
 		chart_backing.position = Vector2(26, 680)
-		chart_backing.size = Vector2(250, 190)
-		navigation.position = Vector2(20, 700)
-		navigation.size = Vector2(160, 160)
-		navigation_backing.position = Vector2(281, 680)
-		navigation_backing.size = Vector2(108, 190)
-		sector_button.position = Vector2(285, 686)
-		system_button.position = Vector2(337, 686)
-		navigation_actions[0].position = Vector2(285, 732)
-		navigation_actions[1].position = Vector2(337, 732)
-		navigation_actions[2].position = Vector2(285, 778)
-		navigation_actions[3].position = Vector2(337, 778)
-		departure_button.position = Vector2(285, 824)
+		chart_backing.size = Vector2(210, 190)
+		navigation.position = Vector2(32, 686)
+		navigation.size = Vector2(198, 178)
+		navigation_backing.position = Vector2(236, 680)
+		navigation_backing.size = Vector2(153, 190)
+		sector_button.position = Vector2(242, 686)
+		system_button.position = Vector2(315, 686)
+		navigation_actions[0].position = Vector2(242, 732)
+		navigation_actions[1].position = Vector2(315, 732)
+		navigation_actions[2].position = Vector2(242, 778)
+		navigation_actions[3].position = Vector2(315, 778)
+		departure_button.position = Vector2(260, 824)
 		altitude_backing.position = Vector2(1402, 664)
 		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
