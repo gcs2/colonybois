@@ -14,7 +14,14 @@ Use approved surface environmental fidelity and the chosen Field Instruments UI:
 
 Deliver a coherent loop with responsive mouse-first flight, optional arrows/numpad, altitude/ascent/descent, clear wheel-based scale navigation, fog of discovery, parsec-limited engine upgrades, inhabited worlds, alien communications, pictorial inventory and shops, finite resources, readable combat and satisfying badges. Energy never regenerates passively: inventory packs or docking; homeworld recharge free, other service prices visible. Trade, diplomacy, colonies, encounters and progression affect one persistent campaign and timeline. Mining and harvestables like lantern gel lead future crafting; creature kills may reward resources without mandatory grinding.
 
-After each visual milestone, use an independent critic to compare actual captures and motion evidence with approved mocks and Spore references. Resolve major playability and presentation gaps before adding breadth. Verify deterministic simulation, persistence, costs, access rules, inputs, layouts, performance and exported builds. Native playability, audio and user acceptance are separate gates. Tests and attractive mocks alone do not establish AAA quality or completion.
+## Acceptance criteria
+
+- For every implemented view and state, trace to approved canon, capture the same state in the running build, and record independent critic and user verdicts separately. Mock approval alone is not runtime acceptance.
+- Before passing or scaling a relevant gate, define and record a performance budget on named target hardware. Set any numeric threshold from measurement; this goal does not invent one.
+- Complete a bounded accessibility and input review covering legibility at supported resolutions, visible keyboard focus, mouse and supported keyboard paths, reduced motion, and visual or caption equivalents for essential audio/VO.
+- Before M1 closes, smoke-launch a clean Windows export and verify that it can save and reload the milestone voyage.
+
+Resolve major playability and presentation gaps before adding breadth. Verify deterministic simulation, persistence, costs and access rules alongside the criteria above. Native playability, audio and user acceptance remain separate gates. Tests and attractive mocks alone do not establish AAA quality or completion.
 
 Preserve the forgotten-outpost/Vanguard/ancestors campaign, morally complex civilizations and planetary rivalries; prove the space loop first. Retain sandbox and eventual story unlocks without compulsory grind. Specify reusable original assets and audio before multiplying content; get concrete price/license approval before purchases.
 

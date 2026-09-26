@@ -8,6 +8,10 @@ The bounded Morrow mining-to-production pilot is integrated, but it is one recip
 
 For every material presentation change, use the independent visual-critic loop in [NEXT_SESSION.md](NEXT_SESSION.md): matched Spore evidence, approved target and same-state runtime captures; evidence-backed findings; implement; recapture; critic re-review. Current critic findings and limits are recorded under [surface prospecting](systems/SHIP_COMMERCE.md#visual-critic-review-25-september-2026).
 
+### Local inventory/camera review checkpoint — 25 September 2026
+
+The 18-portrait mapping, flight HUD icon-sizing adjustment and camera-trace harness are local on `codex/orbital-hud-camera-review-warm` at `bf14235dd946b2beabf2116fd9d51ab2eef1499d`. Focused `test_flight_hud.gd` passed 50 assertions with zero failures in 4.41 seconds. The fresh 12-image cargo review was stopped after 216.11 seconds without new output or captures; the camera harness has not run. The existing cargo captures and critic notes are a pre-change baseline from 25 September 2026 at 18:40 local. There is no new critic verdict or visual acceptance for these changes.
+
 ## Latest user visual direction — 25 September 2026
 
 The user selected the pinned surface target and approved the three v2 flight-view compositions as design canon. The user also asked to include the earlier galaxy-scale reference. The single tracked home is [art/visual-canon](../art/visual-canon/README.md), with exact Morrow prompts and source provenance. Keep the full pictorial inventory and quantities, notifications top-left, Marks top-right, separate surface/system/galaxy navigation, compact secondary ALT, practical player-follow camera and broad world-to-scout scale. The galaxy reference supports scale composition; its older sample inventory is not a runtime data contract. See the [Morrow mock brief](art/mock-requests/MORROW_ORBIT_APPROACH_SURFACE.md).
