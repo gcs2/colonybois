@@ -6,7 +6,7 @@ The active app-goal prompt still says to close the R01/V01/V04 source-to-mock au
 
 ## Checkout and hashes
 
-Continue in `C:\Users\zephy\.codex\worktrees\orbit-surface-gate\New project` on `codex/orbital-transition-gate`. The verified code checkpoint is `0ae53885cac767644b1b9a94f35d3740f1e49f48`; it builds on the earlier goal/roadmap checkpoint `39719a6893b36a2f330246fc3e9b6d6730e06c01`. The remote still needs a live hash check after this documentation checkpoint is committed and pushed. The main checkout at `C:\Users\zephy\Documents\ChatGPT\New project` remains untouched.
+Continue in `C:\Users\zephy\.codex\worktrees\orbit-surface-gate\New project` on `codex/orbital-transition-gate`. The verified code checkpoint is `0ae53885cac767644b1b9a94f35d3740f1e49f48`; it builds on the earlier goal/roadmap checkpoint `39719a6893b36a2f330246fc3e9b6d6730e06c01`. The code plus first owning-record push was live-verified at full hash `2e11383c7f32d7da71a460fe1fb533a15adb8e80`; this handoff wording update needs its own push and verification. The main checkout at `C:\Users\zephy\Documents\ChatGPT\New project` remains untouched.
 
 ## Current verification
 
