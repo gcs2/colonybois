@@ -14,6 +14,8 @@ const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Climate = preload("res://scripts/planet_climate.gd")
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const ORBIT_BASE_RADIUS: float = 22.0
+const ORBIT_SPACING: float = 17.0
 class RouteOverlay extends Control:
 	var origin: Vector2 = Vector2.ZERO
 	var destination: Vector2 = Vector2.ZERO
@@ -246,11 +248,11 @@ func build_system(system: Dictionary) -> void:
 	for caption: Node in captions.values(): caption.free()
 	bodies.clear(); captions.clear()
 	for i: int in range(system.planets.size()):
-		var id: String = Session.local_id(system.planets[i]); var radius: float = 12+i*10
+		var id: String = Session.local_id(system.planets[i]); var radius: float = orbital_radius(i)
 		var orbit := MeshInstance3D.new(); var path := ImmediateMesh.new()
 		path.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
 		for j: int in range(129): path.surface_add_vertex(Vector3(cos(TAU*j/128)*radius,0,sin(TAU*j/128)*radius))
-		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("263f50")); planets_root.add_child(orbit)
+		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("40505d")); planets_root.add_child(orbit)
 		var globe := Globe.new(); globe.radius = 4.6+float(i%2)*0.5; globe.planet_definition = Geography.definition(id); planets_root.add_child(globe)
 		bodies[id] = globe
 		var caption := text_label(globe.planet_definition.name,15); caption.add_theme_color_override("font_color",UI.PAPER); preview.add_child(caption); captions[id] = caption
@@ -259,10 +261,15 @@ func update_bodies() -> void:
 	var index: int = 0
 	for id: String in bodies:
 		var angle: float = float(system_id.trim_prefix("s").to_int())*0.61+index*2.35+0.45
-		bodies[id].position = Vector3(cos(angle),0,sin(angle))*(12+index*10)
+		bodies[id].position = Vector3(cos(angle),0,sin(angle))*orbital_radius(index)
 		index += 1
+
+func orbital_radius(index: int) -> float:
+	return ORBIT_BASE_RADIUS+float(index)*ORBIT_SPACING
+
 func reset_camera() -> void:
-	yaw = 0.15; pitch = 0.75; distance = 78 if bodies.size() == 3 else 65; target_distance = distance; focus = Vector3.ZERO; update_camera()
+	var outer_orbit: float = orbital_radius(maxi(0,bodies.size()-1))
+	yaw = 0.15; pitch = 0.75; distance = outer_orbit+28.0; target_distance = distance; focus = Vector3.ZERO; update_camera()
 func update_camera() -> void:
 	camera.position = focus+Vector3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch))*distance
 	camera.look_at(focus)
