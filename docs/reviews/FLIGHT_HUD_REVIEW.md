@@ -56,3 +56,17 @@ Ran `tests/review_flight_interface.gd` on Godot 4.7.2 from the `codex/morrow-min
 Root visually inspected the surface 1080p, orbit 1440p, palette, low-energy refusal, active approach, uncharted atlas and Escape-menu captures against the inspected Spore surface frame at 1805.490461 seconds and the surface/orbit Field Instruments composition references. On the surface, the local chart appears in the right scale and the orbit state switches to an altitude gauge; this preserves the user's scale-specific map rule. The live surface still has broad, bright low-detail ground, repeated small props and weak contrast in the upper status copy. Tool glyphs remain temporary and small. Orbit keeps the terrain chart hidden, but the live planet/ship/world composition and separated lower instrument groups remain much less resolved than the orbit reference. The sampled shortage and approach states expose clear text reasons and cancellation, but their static captures do not verify responsive input or travel feel.
 
 The user-rejected type, planet art and provisional glyph/material treatment remain rejected. These captures do not approve the mock's art or close V01/N01/N02/N05. No independent visual-critic tool was available for this pass, so there is no second critic verdict and no acceptance credit. Keep the matched reference/current/mock comparison open; the next pass should cover orbital approach and scale-change motion states, not add decorative HUD breadth.
+
+## Surface console assembly recheck — 26 September 2026
+
+The focused pass raises the console 27 logical pixels, attaches the category cards to the top inset, gives the selected card a warm-gold edge, expands each live inventory cell to 60 px with 6 px gutters, and reduces the right status segment to 144 px inside the continuous housing. The ALT line remains a compact altitude readout in the status header. The chart's dark charcoal field uses terrain-derived relief and water color; it remains a surface-only map.
+
+Actual-renderer captures at 1920×1080 and 2560×1440:
+- artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/hud-console-1080/surface-mining-after-1080p.png
+- artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/hud-console-1440/surface-mining-after-1440p.png
+
+The focused test_flight_hud.gd passed 78 assertions, zero failures, in 13.02 seconds on Godot 4.7.2 Compatibility. Its map-color checks were adjusted from the superseded bright palette to retain explicit minimum land/water and relief contrast for the approved charcoal instrument. The independent critic passes console composition and map readability at both resolutions. Remaining local refinements are pictorial weight/contrast for three tool glyphs and stronger casing bevel/inner-rim depth.
+
+Whole-screen verdict remains rejected. The flat, sparse world and oversized/cropped props remain far from the approved Terraform T2 target; seam name/progress/action remain detached from the world marker. This is an isolated synthetic mining state, so its inventory and Marks are not content-quality evidence. T2 means climate T-score; it is not ALT and not the biosphere tier. These captures do not show T-score or establish Morrow's current T2 state.
+
+This is renderer and focused-test evidence only. There was no native-input playtest, exported-build review, performance measurement, user acceptance, or fun review.
