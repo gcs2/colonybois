@@ -50,16 +50,34 @@ func recenter_surface(at: Vector2) -> void:
 func _rebuild_terrain() -> void:
 	if not height_sampler.is_valid(): return
 	var img := Image.create(96,96,false,Image.FORMAT_RGBA8)
+	var elevations := PackedFloat32Array()
+	elevations.resize(96*96)
 	for y: int in range(96):
 		for x: int in range(96):
-			var h: float = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
+			elevations[y*96+x] = height_sampler.call(surface_center.x+(float(x)/95*2-1)*surface_extent,surface_center.y+(float(y)/95*2-1)*surface_extent)
+	for y: int in range(96):
+		for x: int in range(96):
+			var h: float = elevations[y*96+x]
 			var color: Color
 			if h < -0.6:
-				color = Color("174958").lerp(Color("347a78"),clampf((-h-0.6)/1.2,0,1))
+				var water_depth: float = clampf((-h-0.6)/18.0,0,1)
+				color = Color("285b5d").lerp(Color("102d3b"),water_depth)
 			else:
-				color = Color("53665e").lerp(Color("a99b7d"),clampf((h+2.5)/7.5,0,1))
-			# Sparse elevation lines retain terrain shape without turning the chart into speckles.
-			if fposmod(h+6.0,2.0) < 0.045: color = color.darkened(0.12)
+				var relief: float = clampf(h/28.0,0,1)
+				if relief < 0.56:
+					color = Color("35423c").lerp(Color("777359"),relief/0.56)
+				else:
+					color = Color("777359").lerp(Color("b9a77f"),(relief-0.56)/0.44)
+			# Shade opposite terrain slopes from adjacent real elevation samples.
+			var left: float = elevations[y*96+maxi(0,x-1)]
+			var right: float = elevations[y*96+mini(95,x+1)]
+			var above: float = elevations[maxi(0,y-1)*96+x]
+			var below: float = elevations[mini(95,y+1)*96+x]
+			var slope_shade: float = clampf(((right-left)-(below-above))*0.035,-0.14,0.14)
+			if slope_shade > 0.0: color = color.lightened(slope_shade)
+			elif slope_shade < 0.0: color = color.darkened(-slope_shade)
+			# Sparse sampled elevation bands retain shape without turning the chart into speckles.
+			if h >= -0.6 and fposmod(h,4.0) < 0.18: color = color.darkened(0.18)
 			img.set_pixel(x,y,color)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()

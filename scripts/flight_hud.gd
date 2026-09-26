@@ -25,8 +25,11 @@ var navigation := Navigation.new()
 var sector_button: Button
 var system_button: Button
 var chart_heading: Label
-var chart_backing: ColorRect
-var navigation_backing: ColorRect
+var chart_backing: Control
+var navigation_backing: Control
+var navigation_popup_backing: Control
+var navigation_menu_button: Button
+var navigation_menu_open: bool = false
 var navigation_actions: Array[Button] = []
 var toolbar: Array[Button] = []
 var support_badges: Dictionary = {}
@@ -168,11 +171,11 @@ func _build() -> void:
 	nav_pod.size = Vector2(250, 190)
 	add_child(nav_pod)
 
-	chart_backing = ColorRect.new()
+	chart_backing = InstrumentFrame.new()
 	chart_backing.position = Vector2(26, 680)
 	chart_backing.size = Vector2(250, 190)
-	chart_backing.color = Color(0, 0, 0, 0)
 	chart_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chart_backing.hide()
 	add_child(chart_backing)
 
 	palette_backing = InstrumentFrame.new()
@@ -215,10 +218,9 @@ func _build() -> void:
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
 
-	navigation_backing = ColorRect.new()
+	navigation_backing = InstrumentFrame.new()
 	navigation_backing.position = Vector2(281, 680)
 	navigation_backing.size = Vector2(108, 190)
-	navigation_backing.color = Color("dedad0")
 	navigation_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation_backing)
 
@@ -254,6 +256,12 @@ func _build() -> void:
 	navigation.position = Vector2(20, 700)
 	navigation.size = Vector2(160, 160)
 	add_child(navigation)
+	navigation_popup_backing = InstrumentFrame.new()
+	navigation_popup_backing.position = Vector2(47, 690)
+	navigation_popup_backing.size = Vector2(108, 144)
+	navigation_popup_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	navigation_popup_backing.hide()
+	add_child(navigation_popup_backing)
 
 	# Compact navigation controls
 	sector_button = symbol_at("systems", Rect2(285, 686, 48, 42), "sector", "Galaxy · select a star and orbital destination [G]", Art.GOLD)
@@ -266,6 +274,10 @@ func _build() -> void:
 	navigation_actions[-1].tooltip_text = "Zoom out · at surface limit, ascend to orbit"
 	navigation_actions.append(symbol_at("zoom_in", Rect2(337, 778, 48, 42), "zoom_in", "Zoom in", Art.NAV))
 	navigation_actions[-1].tooltip_text = "Zoom in · move camera closer"
+	navigation_menu_button = symbol_at("systems", Rect2(276, 731, 28, 34), "navigation_menu", "Navigation controls · open map, contact and zoom actions")
+	navigation_menu_button.add_theme_constant_override("icon_max_width",22)
+	navigation_menu_button.pressed.connect(_toggle_navigation_menu)
+	navigation_menu_button.hide()
 	# Ship and palette are adjacent, with selected equipment above its slots.
 	tool_title = label_at("",Rect2(772,634,516,26),18)
 	tool_spec = label_at("",Rect2(772,661,516,25),12,Art.MUTED)
@@ -479,6 +491,23 @@ func _internal_action(action: String) -> void:
 		show_group(active_group)
 	# Item commands are handled by the scene with a fresh model validation.
 
+func _toggle_navigation_menu() -> void:
+	if orbital_mode: return
+	_set_navigation_menu_open(not navigation_menu_open)
+
+func _set_navigation_menu_open(open: bool) -> void:
+	navigation_menu_open = open
+	navigation_popup_backing.visible = open
+	var controls: Array[Button] = [sector_button, system_button]
+	controls.append_array(navigation_actions)
+	for index: int in range(controls.size()):
+		var control: Button = controls[index]
+		control.visible = open
+		if open:
+			control.position = Vector2(52 + (index % 2) * 52, 696 + (index / 2) * 42)
+			control.size = Vector2(48, 36)
+			control.add_theme_constant_override("icon_max_width",22)
+
 func show_group(group: String) -> void:
 	if not GROUPS.has(group): return
 	active_group = group
@@ -668,7 +697,7 @@ func set_orbital_mode(enabled: bool) -> void:
 	navigation.visible = not enabled
 	# The orbital dial is replaced by a small ALT line beside the condition panel;
 	# the local terrain chart itself remains surface-only.
-	if nav_pod != null: nav_pod.visible = not enabled
+	if nav_pod != null: nav_pod.visible = false
 	chart_heading.visible = not enabled
 	chart_backing.visible = not enabled
 	if nav_pod != null:
@@ -676,6 +705,12 @@ func set_orbital_mode(enabled: bool) -> void:
 	if console_pod != null:
 		# Keep the same compact condition readout beside the item grid in both scales.
 		console_pod.set_orbital(false)
+	navigation_menu_button.visible = not enabled
+	_set_navigation_menu_open(false)
+	for control: Button in [sector_button, system_button]:
+		control.visible = enabled
+	for control: Button in navigation_actions:
+		control.visible = enabled
 
 	if enabled:
 		navigation_backing.visible = true
@@ -728,37 +763,32 @@ func set_orbital_mode(enabled: bool) -> void:
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
-		# A slightly larger chart stays inside the left bay; its seven controls sit
-		# in the same housing, and the entire instrument remains bottom-anchored.
-		nav_pod.position = Vector2(26, 626)
-		nav_pod.size = Vector2(360, 244)
-		chart_backing.position = Vector2(26, 626)
-		chart_backing.size = Vector2(360, 244)
-		navigation.position = Vector2(32, 646)
-		navigation.size = Vector2(220, 220)
-		navigation_backing.visible = false
-		navigation_backing.position = Vector2(26, 650)
-		navigation_backing.size = Vector2(54, 220)
-		chart_heading.position = Vector2(38, 629)
-		chart_heading.size = Vector2(218, 18)
-		chart_heading.add_theme_font_size_override("font_size", 10)
-		var rail_actions: Array[Button] = [sector_button, system_button, navigation_actions[0], navigation_actions[1], navigation_actions[2], navigation_actions[3], departure_button]
-		for index: int in range(rail_actions.size()):
-			rail_actions[index].position = Vector2(310, 654 + index * 31)
-			rail_actions[index].size = Vector2(44, 30)
-			rail_actions[index].add_theme_constant_override("icon_max_width",22)
-			for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-				var compact_style := rail_actions[index].get_theme_stylebox(state).duplicate() as StyleBoxFlat
-				compact_style.content_margin_left = 2
-				compact_style.content_margin_right = 2
-				compact_style.content_margin_top = 1
-				compact_style.content_margin_bottom = 1
-				rail_actions[index].add_theme_stylebox_override(state,compact_style)
+		# The wide map gets the old rail width. Its two-control tab strip opens
+		# secondary navigation actions only when needed.
+		nav_pod.position = Vector2(16, 674)
+		nav_pod.size = Vector2(250, 196)
+		chart_backing.position = Vector2(16, 674)
+		chart_backing.size = Vector2(206, 196)
+		navigation.position = Vector2(21, 692)
+		navigation.size = Vector2(172, 148)
+		navigation_backing.visible = true
+		navigation_backing.position = Vector2(228, 727)
+		navigation_backing.size = Vector2(36, 82)
+		navigation_menu_button.position = Vector2(232, 731)
+		navigation_menu_button.size = Vector2(28, 34)
+		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
+		departure_button.position = Vector2(232, 773)
+		departure_button.size = Vector2(28, 32)
 		Art.symbol(departure_button,"ascend",Art.NAV)
+		departure_button.add_theme_constant_override("icon_max_width",22)
 		departure_button.tooltip_text = "Leave atmosphere · ascend to orbit"
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
+		chart_heading.position = Vector2(28, 844)
+		chart_heading.size = Vector2(174, 18)
+		chart_heading.add_theme_font_size_override("font_size", 10)
+		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1402, 664)
 		flight_readout.position = Vector2(1410, 669)
 		if console_pod != null:
