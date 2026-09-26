@@ -18,6 +18,7 @@ func _initialize() -> void:
 	_test_planet_seed_changes_identity()
 	_test_feature_kinds_have_independent_streams()
 	_test_habitat_roles_create_coherent_groups()
+	_test_habitat_roles_form_stable_worldwide_clusters()
 	_test_output_is_bounded()
 	print("Planet surface window checks: assertions=", checks, " failures=", failures)
 	quit(0 if failures == 0 else 1)
@@ -32,9 +33,11 @@ func _test_repeatable_window_and_local_positions() -> void:
 	var flattened_ids: Dictionary = {}
 	for feature: Dictionary in first.features:
 		flattened_ids[feature.id] = feature
+	var grid: Dictionary = SurfaceWindow._grid(PLANET_RADIUS_M, REGION_SIZE_M)
 	for region: Dictionary in first.regions:
 		_check(region.up.length_squared() > 0.999, "region source direction is normalized")
-		_check(region.habitat_role == SurfaceWindow._habitat_role(region.biome, region.id), "region habitat role follows its biome and stable identity")
+		var region_cell: Vector2i = SurfaceWindow._cell_for_up(region.up, grid)
+		_check(region.habitat_role == SurfaceWindow._habitat_role_for_cell(region.biome, region.id, region_cell.x, region_cell.y), "region habitat role follows biome and stable spherical cluster coordinates")
 		_check(region.position_m.distance_to(Coordinates.local_offset(center, region.up, PLANET_RADIUS_M)) < 0.001, "region position uses the shared tangent transform")
 		for feature: Dictionary in region.features:
 			_check(feature.region_id == region.id, "feature record retains its parent region id")
@@ -122,13 +125,49 @@ func _test_habitat_roles_create_coherent_groups() -> void:
 	var repeated: Array[Dictionary] = SurfaceWindow._make_features(region_id, cell.x, cell.y, grid, "forest", center, PLANET_RADIUS_M)
 	_check(role == repeated_role and features == repeated, "a biome habitat role produces stable clustered records")
 	var grouped_kinds: Dictionary = {}
+	var kind_counts: Dictionary = {}
 	var compact: bool = true
 	for feature: Dictionary in features:
 		grouped_kinds[feature.kind] = true
+		kind_counts[feature.kind] = int(kind_counts.get(feature.kind, 0)) + 1
 		compact = compact and SurfaceWindow._great_circle_distance(region_up, feature.up, PLANET_RADIUS_M) < 160.0
 		_check(feature.habitat_role == role, "feature records retain their reusable habitat role")
 	_check(grouped_kinds.has("rock") and grouped_kinds.has("flora") and grouped_kinds.has("fauna"), "forest habitat roles yield grouped rocks, plants and wildlife")
 	_check(compact, "habitat feature positions cluster around their stable region patch")
+	var role_ranges: Array = SurfaceWindow._feature_count_ranges("forest", role).forest
+	var role_kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
+	for kind_index: int in range(role_kinds.size()):
+		var role_count_range: Array = role_ranges[kind_index]
+		var role_count: int = int(kind_counts.get(role_kinds[kind_index], 0))
+		_check(role_count >= int(role_count_range[0]) and role_count <= int(role_count_range[1]), "habitat role selects its authored group-size range")
+	_check(SurfaceWindow._HABITAT_PROFILES["scree"].spread < SurfaceWindow._HABITAT_PROFILES["meadow"].spread, "rocky and meadow roles retain distinct cluster spreads")
+
+func _test_habitat_roles_form_stable_worldwide_clusters() -> void:
+	var world: Dictionary = _world(1948)
+	var grid: Dictionary = SurfaceWindow._grid(PLANET_RADIUS_M, REGION_SIZE_M)
+	var roles: Dictionary = {}
+	var repeated: bool = true
+	var neighboring_cluster_cells_match: bool = true
+	var candidate_regions: int = 0
+	for band: int in range(24, 48, 3):
+		for longitude_index: int in range(0, 60, 4):
+			var region_id: String = SurfaceWindow._region_id(world, grid, band, longitude_index)
+			var role: String = SurfaceWindow._habitat_role_for_cell("forest", region_id, band, longitude_index)
+			var repeated_role: String = SurfaceWindow._habitat_role_for_cell("forest", region_id, band, longitude_index)
+			repeated = repeated and role == repeated_role
+			roles[role] = true
+			candidate_regions += 1
+			for local_band: int in range(3):
+				for local_longitude: int in range(4):
+					var neighbor_band: int = band + local_band
+					var neighbor_longitude: int = longitude_index + local_longitude
+					var neighbor_id: String = SurfaceWindow._region_id(world, grid, neighbor_band, neighbor_longitude)
+					var neighbor_role: String = SurfaceWindow._habitat_role_for_cell("forest", neighbor_id, neighbor_band, neighbor_longitude)
+					neighboring_cluster_cells_match = neighboring_cluster_cells_match and role == neighbor_role
+	_check(candidate_regions >= 30, "habitat role survey spans many spherical cells beyond one landing region")
+	_check(repeated, "habitat role clusters are stable at distant coordinates")
+	_check(neighboring_cluster_cells_match, "each habitat role persists across its coarse multi-region cluster")
+	_check(roles.size() >= 2, "distant forest clusters retain more than one habitat role")
 
 func _test_output_is_bounded() -> void:
 	var world: Dictionary = _world(6421)

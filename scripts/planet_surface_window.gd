@@ -14,6 +14,10 @@ const _MAX_LONGITUDE_CELLS: int = 131072
 const _MAX_QUERY_RADIUS_CELLS: float = 16.0
 const _MAX_CANDIDATE_CELLS: int = 1024
 const _FEATURE_STREAM_VERSION: int = 1
+# Habitat identity follows coarse spherical coordinates so neighboring macro
+# regions form readable, repeatable patches instead of changing role per cell.
+const _HABITAT_CLUSTER_LAT_CELLS: int = 3
+const _HABITAT_CLUSTER_LON_CELLS: int = 4
 # Current gameplay persists only the authored seam delta; generated feature IDs have no removal writer.
 # Before adding persistent feature actions, version placement in feature IDs and migrate legacy deltas.
 const MAX_WINDOW_REGIONS: int = 512
@@ -100,10 +104,11 @@ static func build(world: Dictionary, center_up: Vector3, planet_radius_m: float 
 			var sample: Dictionary = generator.call("sample", region_up)
 			var biome: String = str(sample.biome)
 			var region_position: Vector2 = Coordinates.local_offset(center, region_up, radius)
+			var habitat_role: String = _habitat_role_for_cell(biome, region_id, band, longitude_index)
 			regions.append({
 				"id": region_id,
 				"biome": biome,
-				"habitat_role": _habitat_role(biome, region_id),
+				"habitat_role": habitat_role,
 				"up": region_up,
 				"position_m": region_position,
 				"distance_m": region_position.length(),
@@ -242,6 +247,25 @@ static func _habitat_role(biome: String, region_id: String) -> String:
 	var roles: Array = _HABITAT_ROLES_BY_BIOME.get(biome, _HABITAT_ROLES_BY_BIOME.lowland)
 	var rng: RandomNumberGenerator = _feature_rng(region_id, "habitat")
 	return str(roles[rng.randi_range(0, roles.size()-1)])
+
+static func _habitat_role_for_cell(biome: String, region_id: String, band: int, longitude_index: int) -> String:
+	var roles: Array = _HABITAT_ROLES_BY_BIOME.get(biome, _HABITAT_ROLES_BY_BIOME.lowland)
+	var cluster_band: int = floori(float(band) / float(_HABITAT_CLUSTER_LAT_CELLS))
+	var cluster_longitude: int = floori(float(longitude_index) / float(_HABITAT_CLUSTER_LON_CELLS))
+	# Remove only the final band/longitude coordinates from the unchanged region ID.
+	var longitude_separator: int = region_id.rfind("|")
+	var band_separator: int = region_id.rfind("|", longitude_separator - 1)
+	var world_key: String = region_id.substr(0, band_separator)
+	var cluster_id: String = "%s|habitat|%s|%d|%d|%s" % [
+		world_key,
+		_FEATURE_STREAM_VERSION,
+		cluster_band,
+		cluster_longitude,
+		biome
+	]
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = _stable_seed(cluster_id)
+	return str(roles[rng.randi_range(0, roles.size() - 1)])
 
 static func _random_direction_in_habitat(band: int, longitude_index: int, grid: Dictionary, rng: RandomNumberGenerator, habitat_role: String, kind: String) -> Vector3:
 	var longitude_count: int = int(grid.longitude_counts[band])
