@@ -53,7 +53,7 @@ func write_sample(trace: FileAccess, scene: Node, frame: int, phase: String, inp
 	var camera_position: Vector3 = scene.camera.global_position
 	var velocity: Vector3 = scene.velocity
 	var viewport_size: Vector2i = root.get_visible_rect().size
-	trace.store_line("%s,%s,%d,%.3f,%s,%s,true,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%d,%d" % [
+	trace.store_line("%s,%s,%d,%.3f,%s,%s,true,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%d,%d" % [
 		review_mode,phase,frame,frame*DT,scene.model.state.flight_mode,input_used,
 		ship.x,ship.y,ship.z,focus.x,focus.y,focus.z,
 		camera_position.x,camera_position.y,camera_position.z,
