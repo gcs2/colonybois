@@ -51,41 +51,20 @@ func _draw() -> void:
 	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
 
 	if size.x <= 400.0:
-		# Compact layout beside the item grid for both flight scales. A reserved
-		# top strip carries ALT from the parent HUD; meters begin below that header.
-		var readout_offset: float = 24.0
-		# HULL row
-		draw_string(FONT, Vector2(8, 32+readout_offset), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var hull_recess := Rect2(48, 18+readout_offset, 100, 18)
-		draw_rect(hull_recess, Color("0e1518"))
-		draw_rect(Rect2(hull_recess.position + Vector2(1, 1), hull_recess.size - Vector2(2, 2)), Color("182022"))
-		var hull_pct: float = clampf(float(hull_val) / float(max_hull_val), 0.0, 1.0)
-		var hull_bars: int = int(round(hull_pct * 10.0))
-		for i: int in range(10):
-			var bar_rect := Rect2(52 + i * 9.0, 21+readout_offset, 7.5, 12)
-			draw_rect(bar_rect, HULL_TINT if i < hull_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(154, 32+readout_offset), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		# ALT is supplied by FlightHUD in the quiet header above this pod. Stack
+		# each live meter across the available width, as in the approved mock.
+		var meter_left: float = 10.0
+		var meter_width: float = maxf(24.0, size.x - meter_left * 2.0)
+		var bar_height: float = 8.0
+		_draw_compact_meter("HULL", hull_val, max_hull_val, HULL_TINT, meter_left, 40.0, 44.0, 60.0, meter_width, bar_height)
+		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 71.0, 75.0, 91.0, meter_width, bar_height)
 
-		# ENERGY row
-		draw_string(FONT, Vector2(8, 62+readout_offset), "ENERGY", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var energy_recess := Rect2(48, 48+readout_offset, 100, 18)
-		draw_rect(energy_recess, Color("0e1518"))
-		draw_rect(Rect2(energy_recess.position + Vector2(1, 1), energy_recess.size - Vector2(2, 2)), Color("182022"))
-		var energy_pct: float = clampf(float(energy_val) / float(max_energy_val), 0.0, 1.0)
-		var energy_bars: int = int(round(energy_pct * 10.0))
-		for i: int in range(10):
-			var bar_rect := Rect2(52 + i * 9.0, 51+readout_offset, 7.5, 12)
-			draw_rect(bar_rect, ENERGY_TINT if i < energy_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(154, 62+readout_offset), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-
-		# Divider line
-		draw_line(Vector2(14, 76+readout_offset), Vector2(size.x - 14, 76+readout_offset), Color("b4b0a4"), 1.0)
-
-		# Signal state stays below the compact meters; Marks live once at top-right.
-		var sig_rect := Rect2(20, 83+readout_offset, 30, 20)
+		# Signal state stays below the meters; Marks live once at top-right.
+		draw_line(Vector2(10, 98), Vector2(size.x - 10, 98), Color("b4b0a4"), 1.0)
+		var sig_rect := Rect2(20, 99, 30, 18)
 		if SIGNAL_ICON != null:
 			draw_texture_rect(SIGNAL_ICON, sig_rect, false, SIGNAL_GREEN)
-		var sig_led := Vector2(58, 93+readout_offset)
+		var sig_led := Vector2(58, 108)
 		draw_circle(sig_led, 4.0, Color(SIGNAL_GREEN.r, SIGNAL_GREEN.g, SIGNAL_GREEN.b, 0.3))
 		draw_circle(sig_led, 2.0, SIGNAL_GREEN)
 	elif not orbital:
@@ -199,3 +178,15 @@ func _format_number(n: int) -> String:
 		res = s[i] + res
 		count += 1
 	return res
+
+
+func _draw_compact_meter(label: String, value: int, maximum: int, tint: Color, left: float, label_baseline: float, bar_top: float, value_baseline: float, width: float, bar_height: float) -> void:
+	var ratio: float = clampf(float(value) / float(maxi(1, maximum)), 0.0, 1.0)
+	draw_string(FONT, Vector2(left, label_baseline), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+	var recess := Rect2(left, bar_top, width, bar_height)
+	draw_rect(recess, Color("0e1518"))
+	draw_rect(Rect2(recess.position + Vector2(1, 1), recess.size - Vector2(2, 2)), Color("182022"))
+	var fill_width: float = maxf(0.0, (recess.size.x - 2.0) * ratio)
+	if fill_width > 0.0:
+		draw_rect(Rect2(recess.position + Vector2(1, 1), Vector2(fill_width, recess.size.y - 2.0)), tint)
+	draw_string(FONT, Vector2(left, value_baseline), "%d/%d" % [value, maximum], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
