@@ -413,6 +413,7 @@ func _make_world() -> void:
 	surface.generate_normals()
 	ground_material = ShaderMaterial.new()
 	ground_material.shader = preload("res://assets/shaders/expedition_ground.gdshader")
+	ground_material.set_shader_parameter("surface_detail",1.0 if rendered_planet == "morrow" else 0.0)
 	_mesh(surface.commit(),Vector3.ZERO,ground_material)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 739 if rendered_planet == "morrow" else int(world_definition.geography_seed)
@@ -581,13 +582,26 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	batch.use_colors = true
 	batch.mesh = leaf_surface.commit()
-	batch.instance_count = 160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520
+	var morrow_cover: bool = rendered_planet == "morrow"
+	batch.instance_count = 900 if morrow_cover else (160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520)
+	var patch_centers: Array[Vector2] = [Vector2(-13,6),Vector2(-9,-4),Vector2(15,6),Vector2(18,-15),Vector2(-20,-13)]
+	var additional_centers: Array[Vector2] = []
+	if morrow_cover:
+		additional_centers = [Vector2(-35,9),Vector2(34,12),Vector2(37,-15),Vector2(-31,-25),Vector2(20,-32)]
+	var additional_rng := RandomNumberGenerator.new()
 	for i: int in range(batch.instance_count):
-		var center: Vector2 = [Vector2(-13,6),Vector2(-9,-4),Vector2(15,6),Vector2(18,-15),Vector2(-20,-13)][i%5]
-		var at: Vector2 = center+Vector2(rng.randfn(0,3.5),rng.randfn(0,3))
-		var size: float = rng.randf_range(0.3,0.95)
-		batch.set_instance_transform(i,Transform3D(Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*size),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
-		batch.set_instance_color(i,Color(rng.randf(),0.25,rng.randf()))
+		var detail_rng: RandomNumberGenerator = rng
+		var center: Vector2
+		if morrow_cover and i >= 520:
+			if i == 520: additional_rng.state = rng.state
+			detail_rng = additional_rng
+			center = additional_centers[(i-520)%additional_centers.size()]
+		else:
+			center = patch_centers[i%patch_centers.size()]
+		var at: Vector2 = center+Vector2(detail_rng.randfn(0,3.5),detail_rng.randfn(0,3))
+		var size: float = detail_rng.randf_range(0.3,0.95)
+		batch.set_instance_transform(i,Transform3D(Basis(Vector3.UP,detail_rng.randf()*TAU).scaled(Vector3.ONE*size),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
+		batch.set_instance_color(i,Color(detail_rng.randf(),0.25,detail_rng.randf()))
 	var node := MultiMeshInstance3D.new()
 	node.multimesh = batch
 	node.material_override = material

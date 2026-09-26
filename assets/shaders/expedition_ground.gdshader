@@ -5,6 +5,7 @@ uniform float temperature = 50.0;
 uniform float pressure = 50.0;
 uniform float baseline_temperature = 50.0;
 uniform bool frozen = false;
+uniform float surface_detail = 0.0;
 void vertex(){ wp=VERTEX; }
 float hash_dot(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float ground_noise(vec2 p){
@@ -31,6 +32,14 @@ void fragment(){
     vec3 mineral_tint=mix(vec3(0.91,0.84,0.76),vec3(1.14,1.04,0.88),mineral);
     float climate_detail=climate_active ? mix(1.0,0.12,freeze) : 1.0;
     float tonal_depth=0.80+macro*0.31+mid*0.12;
-    ALBEDO=ground*mix(vec3(1.0),mineral_tint,0.65*climate_detail)*tonal_depth;
+    float mottling=1.0;
+    float grain=1.0;
+    if(surface_detail>0.0){
+        float soil_breakup=ground_noise(wp.xz*0.31);
+        float fine_grain=ground_noise(wp.xz*1.15);
+        mottling=mix(1.0,0.79+soil_breakup*0.34,surface_detail);
+        grain=mix(1.0,0.93+fine_grain*0.14,surface_detail);
+    }
+    ALBEDO=ground*mix(vec3(1.0),mineral_tint,0.65*climate_detail)*tonal_depth*mottling*grain;
     ROUGHNESS=0.88;
 }
