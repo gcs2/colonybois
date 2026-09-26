@@ -345,18 +345,20 @@ func _terrain_base(x: float, z: float) -> float:
 func _distant_landform(x: float, z: float) -> float:
 	# Warped, offset ranges layer a stronger silhouette behind the playable basin.
 	# This only shapes the distant rendered shell; gameplay terrain queries stay put.
-	var warp_x: float = sin((x+z)*0.006)*42.0
-	var warp_z: float = cos((x-z)*0.004)*54.0
-	var ridge: float = sin((x+warp_x)*0.018+cos((z+warp_z)*0.009)*1.4)
-	var shoulder: float = sin((z+warp_z)*0.013+sin((x+warp_x)*0.007)*1.1)
-	var broken_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*1.8
-	var far_ridge: float = sin((z+warp_z)*0.008+sin((x+warp_x)*0.006)*1.6)
-	var peak: float = pow(maxf(0.0,cos((x+warp_x)*0.011+sin((z+warp_z)*0.007))),6.0)
+	var recipe_phase: float = float(int(world_definition.get("geography_seed",0))%997)*0.001
+	var warp_x: float = sin((x+z)*0.006+recipe_phase)*42.0
+	var warp_z: float = cos((x-z)*0.004-recipe_phase*1.7)*54.0
+	var ridge: float = sin((x+warp_x)*0.018+cos((z+warp_z)*0.009+recipe_phase)*1.4)
+	var shoulder: float = sin((z+warp_z)*0.013+sin((x+warp_x)*0.007-recipe_phase)*1.1)
+	var broken_edge: float = cos((x-z)*0.025+sin((x+z)*0.008+recipe_phase))*1.8
+	var far_ridge: float = sin((z+warp_z)*0.008+sin((x+warp_x)*0.006+recipe_phase)*1.6)
+	var peak: float = pow(maxf(0.0,cos((x+warp_x)*0.011+sin((z+warp_z)*0.007-recipe_phase))),6.0)
+	var foothill: float = sin((z+warp_z)*0.022+sin((x+warp_x)*0.01+recipe_phase)*1.4)
 	var amplitude: float = 0.8 if world_definition.archetype == "frozen" else 1.0
 	if rendered_planet != "morrow":
 		var legacy_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*0.35
 		return (3.0+ridge*6.0+shoulder*2.0+legacy_edge)*amplitude
-	return (10.0+ridge*13.0+shoulder*6.0+broken_edge+far_ridge*3.0+peak*7.0)*amplitude
+	return (12.0+ridge*16.0+shoulder*8.0+broken_edge*2.0+far_ridge*7.0+peak*3.0+foothill*5.0)*amplitude
 
 func _mat(color: Color, emissive: bool = false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -424,6 +426,7 @@ func _make_world() -> void:
 	ground_material = ShaderMaterial.new()
 	ground_material.shader = preload("res://assets/shaders/expedition_ground.gdshader")
 	ground_material.set_shader_parameter("surface_detail",1.0 if rendered_planet == "morrow" else 0.0)
+	ground_material.set_shader_parameter("recipe_seed",float(int(world_definition.get("geography_seed",0))%8192))
 	surface_window_region_id = Geography.surface_region_id(world_definition,_saved_surface_up()) if rendered_planet == "morrow" else ""
 	surface_habitat_region_id = Geography.surface_runtime(world_definition).habitat_region_id(_saved_surface_up()) if rendered_planet == "morrow" else ""
 	surface_region_features = _surface_feature_sets(_saved_surface_up())
@@ -615,21 +618,41 @@ func _make_morrow_waterbodies() -> void:
 		var water_level: float = float(waterbody.get("surface_elevation", -0.025))*SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M+0.12
 		var water_surface := SurfaceTool.new()
 		water_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var segments: int = 72
-		for index: int in range(segments):
-			var angle_a: float = TAU*float(index)/float(segments)
-			var angle_b: float = TAU*float(index+1)/float(segments)
-			var edge_a := Vector3(cos(angle_a)*east_radius*1.16,0.0,sin(angle_a)*north_radius*1.16)
-			var edge_b := Vector3(cos(angle_b)*east_radius*1.16,0.0,sin(angle_b)*north_radius*1.16)
-			water_surface.add_vertex(Vector3.ZERO)
-			water_surface.add_vertex(edge_b)
-			water_surface.add_vertex(edge_a)
+		var segments: int = 96
+		var rings: int = 10
+		var water_color := Color("286c70")
+		var shore_color := Color("75aaa0")
+		for ring_index: int in range(rings):
+			var radius_a: float = 1.16*float(ring_index)/float(rings)
+			var radius_b: float = 1.16*float(ring_index+1)/float(rings)
+			for index: int in range(segments):
+				var angle_a: float = TAU*float(index)/float(segments)
+				var angle_b: float = TAU*float(index+1)/float(segments)
+				var point_aa: Vector3 = _morrow_water_vertex(runtime,anchor,center_up,east_radius,north_radius,radius_a,angle_a,center_offset,water_level)
+				var point_ab: Vector3 = _morrow_water_vertex(runtime,anchor,center_up,east_radius,north_radius,radius_a,angle_b,center_offset,water_level)
+				var point_ba: Vector3 = _morrow_water_vertex(runtime,anchor,center_up,east_radius,north_radius,radius_b,angle_a,center_offset,water_level)
+				var point_bb: Vector3 = _morrow_water_vertex(runtime,anchor,center_up,east_radius,north_radius,radius_b,angle_b,center_offset,water_level)
+				var tone_a: Color = water_color.lerp(shore_color,smoothstep(0.70,1.16,radius_a))
+				var tone_b: Color = water_color.lerp(shore_color,smoothstep(0.70,1.16,radius_b))
+				water_surface.set_color(tone_a); water_surface.add_vertex(point_aa)
+				water_surface.set_color(tone_b); water_surface.add_vertex(point_bb)
+				water_surface.set_color(tone_b); water_surface.add_vertex(point_ba)
+				water_surface.set_color(tone_a); water_surface.add_vertex(point_aa)
+				water_surface.set_color(tone_a); water_surface.add_vertex(point_ab)
+				water_surface.set_color(tone_b); water_surface.add_vertex(point_bb)
 		water_surface.generate_normals()
 		var water_shader := Shader.new()
-		water_shader.code = "shader_type spatial; varying vec3 lp; void vertex(){lp=VERTEX;} void fragment(){float ring=sin(length(lp.xz)*0.11-TIME*0.48+sin(lp.x*0.22+lp.y*0.17)*0.45); float drift=sin(dot(lp.xz,vec2(0.32,0.18))+TIME*0.24); float sheen=clamp(0.62+ring*0.18+drift*0.07,0.0,1.0); ALBEDO=mix(vec3(0.09,0.24,0.30),vec3(0.23,0.47,0.50),sheen); ROUGHNESS=0.24; METALLIC=0.04;}"
+		water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){float ripple=sin(length(wp.xz)*0.16-TIME*0.36+sin(wp.x*0.12+wp.z*0.14)*0.5); float glint=sin(dot(wp.xz,vec2(0.19,0.11))+TIME*0.22); float sheen=clamp(0.88+ripple*0.07+glint*0.035,0.72,1.0); ALBEDO=COLOR.rgb*sheen; ROUGHNESS=0.32; METALLIC=0.02;}"
 		var water_material := ShaderMaterial.new()
 		water_material.shader = water_shader
 		_mesh(water_surface.commit(),Vector3(center_offset.x,water_level,center_offset.y),water_material)
+
+func _morrow_water_vertex(runtime: Object, anchor: Vector3, center_up: Vector3, east_radius: float, north_radius: float, radial: float, angle: float, center_offset: Vector2, water_level: float) -> Vector3:
+	var east: float = cos(angle)*east_radius*radial
+	var north: float = sin(angle)*north_radius*radial
+	var up: Vector3 = runtime.advance(center_up,east,north)
+	var offset: Vector2 = runtime.local_offset(anchor,up)
+	return Vector3(offset.x-center_offset.x,0.0,offset.y-center_offset.y)
 
 func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	var morrow_cover: bool = rendered_planet == "morrow"
@@ -2076,10 +2099,14 @@ func _rebuild_surface_terrain(center_up: Vector3) -> void:
 				var color: Color
 				var vertex_x: float = px
 				var vertex_z: float = pz
+				var recipe_ruggedness: float = 0.0
+				var recipe_elevation: float = 0.0
 				if rendered_planet == "morrow":
 					var sample_up: Vector3 = runtime.advance(center_up,px,pz)
 					var sample: Dictionary = runtime.sample(sample_up)
-					h = float(sample.elevation)*SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M
+					recipe_elevation = float(sample.elevation)
+					recipe_ruggedness = float(sample.ruggedness)
+					h = recipe_elevation*SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M
 					var absolute_offset: Vector2 = runtime.local_offset(anchor,sample_up)
 					vertex_x = absolute_offset.x-center_offset.x
 					vertex_z = absolute_offset.y-center_offset.y
@@ -2089,9 +2116,14 @@ func _rebuild_surface_terrain(center_up: Vector3) -> void:
 					var absolute_z: float = pz+center_offset.y
 					h = terrain_height(absolute_x,absolute_z)
 					color = Geography.surface_color(world_definition,absolute_x,absolute_z)
-				var far_start: float = Geography.surface_travel_radius(rendered_planet)+80.0
-				var far_blend: float = smoothstep(far_start,far_start+220.0,radial_distance)
-				h = lerpf(h,_distant_landform(px,pz),far_blend)
+				var far_start: float = 260.0 if rendered_planet == "morrow" else Geography.surface_travel_radius(rendered_planet)+80.0
+				var far_blend: float = smoothstep(far_start,far_start+(560.0 if rendered_planet == "morrow" else 220.0),radial_distance)
+				var distant_height: float = _distant_landform(vertex_x+center_offset.x,vertex_z+center_offset.y) if rendered_planet == "morrow" else _distant_landform(px,pz)
+				if rendered_planet == "morrow":
+					# The distant shell is a stable visual continuation of the sampled
+					# recipe. Local gameplay height and its 1.2 km travel envelope stay exact.
+					distant_height += maxf(0.0,recipe_elevation)*24.0+recipe_ruggedness*32.0
+				h = lerpf(h,distant_height,far_blend)
 				var visual_radius: float = maxf(0.0,radial_distance-far_start)
 				h -= visual_radius*visual_radius/3200.0
 				if rendered_planet == "morrow":
