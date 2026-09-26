@@ -26,6 +26,20 @@ Persist an ID, full integer seed, generator version, archetype, authored sites a
 
 `sample(direction)` is the source of geographic truth. `region_sample(latitude, longitude, east_km, north_km)` queries that same field in a local tangent frame. The globe shader reads textures baked from these samples. Longitude wraps continuously; the two poles are spherical rather than special random tiles. Authored land constraints affect only their neighborhood and cannot eliminate oceans globally.
 
+## Recipe-to-play production pipeline
+
+Build worlds from a stable recipe and a player-facing vertical slice, not by scattering unrelated scenery.
+
+1. **Identity:** persist planet ID, full seed, generator version, archetype, authored sites, and intentional climate overrides. Never silently reroll an established planet. Treat the region-grid resolution and coordinate convention as versioned data contracts.
+2. **One geography query:** map the saved planet-fixed direction to one spherical sample. The globe, landing terrain, coastline, elevation, temperature, moisture, and biome must all agree with that sample. Keep local tangent coordinates as a view of the sphere, not an independent plane.
+3. **Stable regions:** derive each region ID from recipe identity/version and integer spherical cell coordinates. Give terrain dressing, flora, fauna, resources, and authored points of interest separate deterministic streams keyed by stable region/feature IDs. Adding a plant species must not relocate an ore seam.
+4. **Habitat kits:** choose a small authored kit from sampled biome and conditions: ground material, geological silhouettes, clustered plants, a few readable fauna roles, weather/audio, and one distinctive landmark or interaction. Density alone does not make a world distinct.
+5. **Bounded streaming:** sample shared chunk edges from the same geography function and load only a small neighborhood around the scout. Keep ambient life as capped visual effects; simulate offscreen population and recovery in aggregate.
+6. **Persistent change:** store sparse deltas keyed by stable feature/site ID—discovery, depletion, construction, and meaningful ecological change—separately from the generated baseline. Re-entering a region must regenerate its unchanged content and reapply its deltas.
+7. **Prove one connected slice:** use Morrow Basin and one adjacent 512 m region. Fly across the boundary, see and use a region-specific opportunity, leave for orbit, save/reload, return to the same planet-fixed location, and confirm both repeatable geography and preserved change. Only then widen travel or add planet families. Review same-state runtime captures against the approved canon; tests do not establish art acceptance or fun.
+
+**Current gap:** the orbital renderer samples PlanetGenerator, while Encounter still gets surface height/color from PlanetGeography's planar field. PlanetSurfaceWindow uses the spherical recipe for regional feature data, but that is not streamed terrain. Saved surface direction advances during local motion, yet the playable radius remains clamped to 256 m. This partial groundwork is not whole-planet exploration. The first production step is to make terrain and movement cross one real region boundary together. See [TASK_BOARD.md](../TASK_BOARD.md) and the [latest runtime comparison](../reviews/VIEW_MOCK_COVERAGE.md#morrow-surface-runtime-recheck-26-september-2026).
+
 ## Work still required to make every world visitable
 
 1. Persist one shared ship/location/cargo/chronicle across strategic and personal flight. Select a real planet ID through system travel rather than launching a second isolated scenario.
