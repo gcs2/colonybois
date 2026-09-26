@@ -264,7 +264,16 @@ func _ready() -> void:
 	graph.activated.connect(activate_system)
 	Stage.world(stage,graph)
 	var side: VBoxContainer = Stage.sidebar(stage,360)
-	side.get_parent().hide() # Inspection is a separate system view, not a destination card.
+	var destination_plate := StyleBoxFlat.new()
+	destination_plate.bg_color = Color("11171a")
+	destination_plate.border_color = Color("c9c2ad")
+	destination_plate.set_border_width_all(1)
+	destination_plate.set_corner_radius_all(0)
+	destination_plate.set_content_margin_all(16)
+	side.get_parent().add_theme_stylebox_override("panel",destination_plate)
+	var destination_heading: Label = label("SYSTEM DESTINATIONS",13)
+	destination_heading.add_theme_color_override("font_color",Color("d7c99e"))
+	side.add_child(destination_heading)
 	worlds = VBoxContainer.new()
 	side.add_child(worlds)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
@@ -274,6 +283,7 @@ func _ready() -> void:
 	details = label("")
 	details.custom_minimum_size = Vector2(320,100)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	details.add_theme_color_override("font_color",Color("e4e5df"))
 	side.add_child(details)
 	travel = button("",func() -> void: travel_requested.emit(selected_planet))
 	side.add_child(travel)
@@ -342,6 +352,7 @@ func select_system(id: String) -> void:
 		if not system.visited and not system.get("charted",false) and pid != system.planets[0]: continue
 		var title: String = Geography.definition(world).name if system.visited or system.get("charted",false) else "Approach first orbital body"
 		var item: Button = button(title,func() -> void: selected_planet = world; refresh())
+		item.icon = UI.icon("planet_map")
 		item.set_meta("planet",world)
 		item.disabled = campaign.traveling()
 		worlds.add_child(item)
