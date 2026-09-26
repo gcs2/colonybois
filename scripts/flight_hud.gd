@@ -10,8 +10,9 @@ const Equipment = preload("res://scripts/equipment_catalog.gd")
 const Palette = preload("res://scripts/flight_palette.gd")
 const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
-const PALETTE_ORIGIN := Vector2(1000, 690)
-const PALETTE_COLUMNS := 9
+const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const PALETTE_ORIGIN := Vector2(1034, 690)
+const PALETTE_COLUMNS := 6
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -46,6 +47,7 @@ var quick_cargo: Button
 var location_label: Label
 var stats: Label
 var treasury_backing: ColorRect
+var treasury_icon: TextureRect
 var altitude_backing: ColorRect
 var objective: Label
 var subject: Label
@@ -86,6 +88,46 @@ func label_at(text: String, rect: Rect2, font_size: int = 16, tint: Color = Art.
 	add_child(label)
 	return label
 
+func _style_inventory_slot(button: Button, selected: bool = false) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("11191b")
+	normal.border_color = Color("425055")
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(0)
+	normal.content_margin_left = 2
+	normal.content_margin_right = 2
+	normal.content_margin_top = 2
+	normal.content_margin_bottom = 2
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color("263235")
+	hover.border_color = Color("819197")
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = Color("1b2628")
+	var disabled := normal.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color("141b1d")
+	disabled.border_color = Color("303b3f")
+	if selected:
+		normal.bg_color = Color("202b2d")
+		normal.border_color = Color("d5dfdf")
+		normal.border_width_bottom = 2
+		hover.bg_color = Color("293639")
+		hover.border_color = Color("e5ecea")
+		hover.border_width_bottom = 2
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_color_override("icon_disabled_color", Color("667579"))
+
+func _format_marks(value: int) -> String:
+	var digits: String = str(value)
+	var formatted: String = ""
+	for i: int in range(digits.length()):
+		if i > 0 and (digits.length() - i) % 3 == 0:
+			formatted += ","
+		formatted += digits[i]
+	return formatted
+
 func button_at(text: String, rect: Rect2, action: String, tint: Color = Art.NAV, icon: String = "") -> Button:
 	var button := Button.new()
 	button.text = text
@@ -120,12 +162,12 @@ func _build() -> void:
 	add_child(chart_backing)
 
 	console_pod = ConsolePod.new()
-	console_pod.position = Vector2(1436, 744)
-	console_pod.size = Vector2(160, 117)
+	console_pod.position = Vector2(1402, 744)
+	console_pod.size = Vector2(184, 117)
 	add_child(console_pod)
 	altitude_backing = ColorRect.new()
-	altitude_backing.position = Vector2(1436, 718)
-	altitude_backing.size = Vector2(160, 26)
+	altitude_backing.position = Vector2(1402, 718)
+	altitude_backing.size = Vector2(184, 26)
 	altitude_backing.color = Color("dedad0")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
@@ -144,15 +186,25 @@ func _build() -> void:
 	navigation_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation_backing)
 
-	# Treasury and cargo stay in a distinct, high-contrast corner anchor in both views.
+	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
 	treasury_backing = ColorRect.new()
-	treasury_backing.position = Vector2(1146, 18)
-	treasury_backing.size = Vector2(434, 38)
+	treasury_backing.position = Vector2(1290, 18)
+	treasury_backing.size = Vector2(230, 48)
 	treasury_backing.color = Color("dedad0")
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
-	stats = label_at("", Rect2(1160, 25, 404, 24), 14, Color("1c2426"))
-	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	treasury_icon = TextureRect.new()
+	treasury_icon.position = Vector2(1304, 30)
+	treasury_icon.size = Vector2(22, 22)
+	treasury_icon.texture = MARK_ICON
+	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	treasury_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	treasury_icon.modulate = Color("a98427")
+	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(treasury_icon)
+	stats = label_at("", Rect2(1336, 22, 174, 36), 17, Color("1c2426"))
+	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
 
 	# Top-left clean location header matching Field Instruments
@@ -206,7 +258,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1444,722,144,18),11,Color("1c2426"))
+	flight_readout = label_at("",Rect2(1410,722,168,18),11,Color("1c2426"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -288,18 +340,23 @@ func _build() -> void:
 
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
-	button.size = Vector2(46, 48)
-	button.add_theme_constant_override("icon_max_width",24)
+	button.size = Vector2(56, 54)
+	button.add_theme_constant_override("icon_max_width",30)
+	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
-	shortcut.position = Vector2(2,30)
-	shortcut.add_theme_font_size_override("font_size",11)
+	shortcut.position = Vector2(3,38)
+	shortcut.size = Vector2(50,14)
+	shortcut.add_theme_font_size_override("font_size",10)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
 	var count := Label.new()
-	count.position = Vector2(3,-2)
+	count.position = Vector2(2,1)
+	count.size = Vector2(52,15)
+	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size",11)
+	count.add_theme_color_override("font_color", Art.PAPER)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	item_buttons[id] = button
@@ -328,12 +385,12 @@ func show_group(group: String) -> void:
 		var slot: int = entries.find(id)-palette_page*Palette.PAGE_SIZE
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < Palette.PAGE_SIZE
 		if item_buttons[id].visible:
-			item_buttons[id].position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 47, (slot / PALETTE_COLUMNS) * 50)
+			item_buttons[id].position = PALETTE_ORIGIN + Vector2((slot % PALETTE_COLUMNS) * 59, (slot / PALETTE_COLUMNS) * 56)
 			slot_labels[id].text = ("Ctrl+" if slot >= 9 else "")+str(slot%9+1)
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
-		category_buttons[key].position = Vector2(1000 + category_index * 52, 630)
+		category_buttons[key].position = Vector2(1034 + category_index * 50, 630)
 		category_buttons[key].size = Vector2(48, 48)
 		category_buttons[key].visible = true
 		category_index += 1
@@ -344,17 +401,17 @@ func show_group(group: String) -> void:
 	var visible_items: int = mini(Palette.PAGE_SIZE, maxi(0, entries.size()-palette_page*Palette.PAGE_SIZE))
 	var rows: int = int(ceil(visible_items/float(PALETTE_COLUMNS)))
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
-	palette_backing.size = Vector2(16+PALETTE_COLUMNS*47, 16+rows*50)
+	palette_backing.size = Vector2(16+PALETTE_COLUMNS*59, 16+rows*56)
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	page_previous.position = Vector2(1220, 634)
-	page_previous.size = Vector2(34, 42)
-	page_label.position = Vector2(1256, 642)
+	page_previous.position = Vector2(1238, 634)
+	page_previous.size = Vector2(32, 42)
+	page_label.position = Vector2(1272, 642)
 	page_label.size = Vector2(36, 24)
-	page_next.position = Vector2(1294, 634)
-	page_next.size = Vector2(34, 42)
-	collapse_button.position = Vector2(1332, 634)
-	collapse_button.size = Vector2(42, 42)
+	page_next.position = Vector2(1310, 634)
+	page_next.size = Vector2(32, 42)
+	collapse_button.position = Vector2(1348, 634)
+	collapse_button.size = Vector2(40, 42)
 	var pages: int = maxi(1,int(ceil(entries.size()/float(Palette.PAGE_SIZE))))
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
@@ -390,7 +447,8 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		Art.symbol(item_buttons[key],item.icon,item.tint,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",24)
+		item_buttons[key].add_theme_constant_override("icon_max_width",30)
+		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
 
@@ -434,6 +492,7 @@ func refresh_items(model: RefCounted, locked: bool) -> void:
 		item_buttons[id].tooltip_text = Art.tooltip(item_buttons[id].tooltip_text)
 	if model != null and model.state != null:
 		var s: Dictionary = model.state
+		stats.text = "%s Marks" % _format_marks(model.marks)
 		if console_pod != null:
 			console_pod.update_status(s.hull, model.max_capacity("hull"), s.energy, model.max_capacity("energy"), model.marks, active_group)
 		if orbital_mode and nav_pod != null:
@@ -468,12 +527,12 @@ func set_orbital_mode(enabled: bool) -> void:
 
 	if enabled:
 		if console_pod != null:
-			console_pod.position = Vector2(1436, 744)
-			console_pod.size = Vector2(160, 117)
-		hull_bar.position = Vector2(1032, 796)
-		hull_bar.size = Vector2(110, 10)
-		energy_bar.position = Vector2(1032, 828)
-		energy_bar.size = Vector2(110, 10)
+			console_pod.position = Vector2(1402, 744)
+			console_pod.size = Vector2(184, 117)
+		hull_bar.position = Vector2(1410, 758)
+		hull_bar.size = Vector2(168, 10)
+		energy_bar.position = Vector2(1410, 788)
+		energy_bar.size = Vector2(168, 10)
 		hull_bar.modulate.a = 0.0
 		energy_bar.modulate.a = 0.0
 		hull_label.visible = false
@@ -496,16 +555,16 @@ func set_orbital_mode(enabled: bool) -> void:
 		show_group(active_group)
 	else:
 		if console_pod != null:
-			console_pod.position = Vector2(1436, 744)
-			console_pod.size = Vector2(160, 117)
-		hull_bar.position = Vector2(1444, 758)
-		hull_bar.size = Vector2(240, 10)
-		energy_bar.position = Vector2(1444, 788)
-		energy_bar.size = Vector2(240, 10)
+			console_pod.position = Vector2(1402, 744)
+			console_pod.size = Vector2(184, 117)
+		hull_bar.position = Vector2(1410, 758)
+		hull_bar.size = Vector2(168, 10)
+		energy_bar.position = Vector2(1410, 788)
+		energy_bar.size = Vector2(168, 10)
 		hull_bar.modulate.a = 0.0
 		energy_bar.modulate.a = 0.0
-		hull_label.position = Vector2(1444, 717)
-		energy_label.position = Vector2(1444, 750)
+		hull_label.position = Vector2(1410, 717)
+		energy_label.position = Vector2(1410, 750)
 		hull_label.visible = false
 		energy_label.visible = false
 		quick_cargo.visible = false

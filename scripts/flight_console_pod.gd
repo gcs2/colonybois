@@ -101,27 +101,27 @@ func _draw() -> void:
 		# Compact layout beside the item grid for both flight scales.
 		# HULL row
 		draw_string(FONT, Vector2(8, 32), "HULL", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var hull_recess := Rect2(42, 18, 86, 18)
+		var hull_recess := Rect2(48, 18, 100, 18)
 		draw_rect(hull_recess, Color("0e1518"))
 		draw_rect(Rect2(hull_recess.position + Vector2(1, 1), hull_recess.size - Vector2(2, 2)), Color("182022"))
 		var hull_pct: float = clampf(float(hull_val) / float(max_hull_val), 0.0, 1.0)
 		var hull_bars: int = int(round(hull_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(46 + i * 7.8, 21, 6.2, 12)
+			var bar_rect := Rect2(52 + i * 9.0, 21, 7.5, 12)
 			draw_rect(bar_rect, HULL_TINT if i < hull_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(132, 32), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		draw_string(FONT, Vector2(154, 32), "%d%%" % int(hull_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# ENERGY row
-		draw_string(FONT, Vector2(8, 62), "ENG", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
-		var energy_recess := Rect2(42, 48, 86, 18)
+		draw_string(FONT, Vector2(8, 62), "ENERGY", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		var energy_recess := Rect2(48, 48, 100, 18)
 		draw_rect(energy_recess, Color("0e1518"))
 		draw_rect(Rect2(energy_recess.position + Vector2(1, 1), energy_recess.size - Vector2(2, 2)), Color("182022"))
 		var energy_pct: float = clampf(float(energy_val) / float(max_energy_val), 0.0, 1.0)
 		var energy_bars: int = int(round(energy_pct * 10.0))
 		for i: int in range(10):
-			var bar_rect := Rect2(46 + i * 7.8, 51, 6.2, 12)
+			var bar_rect := Rect2(52 + i * 9.0, 51, 7.5, 12)
 			draw_rect(bar_rect, ENERGY_TINT if i < energy_bars else EMPTY_TINT)
-		draw_string(FONT, Vector2(132, 62), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+		draw_string(FONT, Vector2(154, 62), "%d%%" % int(energy_pct * 100.0), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
 
 		# Divider line
 		draw_line(Vector2(14, 76), Vector2(size.x - 14, 76), Color("b4b0a4"), 1.0)
