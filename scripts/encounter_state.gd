@@ -1,6 +1,6 @@
 extends RefCounted
 ## Local encounter rules. A campaign may bind its shared treasury as the account.
-const VERSION := 11
+const VERSION := 12
 const Support = preload("res://scripts/ship_support.gd")
 var shield_hit_time: int = -10
 const Encounters = preload("res://scripts/orbital_encounters.gd")
@@ -244,7 +244,7 @@ static func fresh(planet: String = "morrow") -> Dictionary:
 	return {"version":VERSION, "support":Support.fresh(), "time":0, "scanned":[], "samples":0, "native_stock":3, "ore_remaining":MINERAL_DEPOSIT_UNITS,
 		"warm":false, "seeded":false, "growth":0.0, "produce":0, "marks":0, "buyer_remaining":6,
 		"route":false, "route_clock":0, "harvest_clock":0, "energy":100.0, "history":[],
-		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
+		"position":[0.0,5.0,12.0], "surface_position":[0.0,5.0,12.0], "surface_direction":[0.0,0.0,1.0], "yaw":0.0, "flight_mode":"surface", "landings":0,
 		"planet_id":planet, "survey_ticks":0, "survey_active":false,
 		"hull":100.0, "shroud_unlocked":false, "shroud_on":false,
 		"threat_clock":0, "tow_count":0, "last_repair_at":-REPAIR_COOLDOWN,
@@ -600,8 +600,13 @@ func restore_snapshot(source: Variant) -> Error:
 		value.version = 10
 		value.ore_remaining = MINERAL_DEPOSIT_UNITS
 	if value.get("version") == 10:
-		value.version = VERSION
+		value.version = 11
 		value.surface_position = value.position.duplicate(true) if value.get("flight_mode", "surface") == "surface" else [0.0,5.0,12.0]
+	if value.get("version") == 11:
+		value.version = VERSION
+		# Old local coordinates have no defined planetary frame. Anchor migrated saves
+		# to the authored landing direction; keep the exact planar return position too.
+		value.surface_direction = [0.0,0.0,1.0]
 	var defaults: Dictionary = fresh()
 	for key: String in defaults:
 		if not value.has(key): return ERR_INVALID_DATA
@@ -654,7 +659,7 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition(value.planet_id).survey_seconds): return ERR_INVALID_DATA
 	if value.survey_ticks == int(Geography.definition(value.planet_id).survey_seconds) and value.survey_active: return ERR_INVALID_DATA
 	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition(value.planet_id).survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
-	if value.position.size() != 3 or value.surface_position.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
+	if value.position.size() != 3 or value.surface_position.size() != 3 or value.surface_direction.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
 	for index: int in range(3):
 		var coordinate: Variant = value.position[index]
 		if not (typeof(coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(coordinate)): return ERR_INVALID_DATA
@@ -664,7 +669,13 @@ func restore_snapshot(source: Variant) -> Error:
 		if not (typeof(surface_coordinate) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(surface_coordinate)): return ERR_INVALID_DATA
 		var surface_bound: float = 100.0 if index == 1 else Geography.PLAYABLE_RADIUS
 		if absf(float(surface_coordinate)) > surface_bound: return ERR_INVALID_DATA
+		var direction_component: Variant = value.surface_direction[index]
+		if not (typeof(direction_component) in [TYPE_INT,TYPE_FLOAT]) or not is_finite(float(direction_component)): return ERR_INVALID_DATA
 	if Vector2(float(value.surface_position[0]),float(value.surface_position[2])).length() > Geography.PLAYABLE_RADIUS: return ERR_INVALID_DATA
+	var saved_direction := Vector3(float(value.surface_direction[0]),float(value.surface_direction[1]),float(value.surface_direction[2]))
+	if saved_direction.length_squared() < 0.000001 or absf(saved_direction.length()-1.0) > 0.01: return ERR_INVALID_DATA
+	saved_direction = saved_direction.normalized()
+	value.surface_direction = [saved_direction.x,saved_direction.y,saved_direction.z]
 	for target: Variant in value.scanned:
 		if target not in TARGETS: return ERR_INVALID_DATA
 	for entry: Variant in value.history:

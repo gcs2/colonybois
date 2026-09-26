@@ -4,6 +4,7 @@ const Geography = preload("res://scripts/planet_geography.gd")
 const SurfaceLayout = preload("res://scripts/surface_region_layout.gd")
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const Field = preload("res://scripts/encounter_state.gd")
+const Session = preload("res://scripts/expedition_session.gd")
 
 var checks: int = 0
 var failures: int = 0
@@ -65,10 +66,39 @@ func run() -> void:
 	check(Vector2(species_sites.ribbon_bush[0],species_sites.ribbon_bush[2]).distance_to(Vector2(species_sites.moss_lantern[0],species_sites.moss_lantern[2])) > 100,"Native species occupy distinct, explorable habitats")
 	var field := Field.new()
 	field.state.position = [170.0,5.0,25.0]
+	check(field.state.surface_direction == [0.0,0.0,1.0],"New expeditions start with a normalized landing-site direction")
 	check(field.change_flight_mode("orbit"),"A scout can leave a distant surface region")
 	check(field.state.surface_position == [170.0,5.0,25.0],"Leaving surface stores the exact return site")
 	check(field.change_flight_mode("surface") and field.state.position == [170.0,5.0,25.0],"Returning from orbit restores the same surface position")
 	var restored := Field.new()
-	check(restored.restore_snapshot(field.snapshot()) == OK and restored.state.surface_position == field.state.surface_position,"The regional surface pose survives save validation")
+	check(restored.restore_snapshot(field.snapshot()) == OK and restored.state.surface_position == field.state.surface_position and restored.state.surface_direction == field.state.surface_direction,"The planar pose and planet-fixed direction survive save validation")
+	var legacy: Dictionary = field.snapshot()
+	legacy.version = 11
+	legacy.erase("surface_direction")
+	var migrated := Field.new()
+	check(migrated.restore_snapshot(legacy) == OK and migrated.state.surface_position == field.state.surface_position and migrated.state.surface_direction == [0.0,0.0,1.0],"Legacy field saves keep their exact planar site and receive a safe landing-direction anchor")
+	var invalid_direction: Dictionary = field.snapshot()
+	invalid_direction.surface_direction = [0.0,0.0,0.0]
+	check(Field.new().restore_snapshot(invalid_direction) == ERR_INVALID_DATA,"Zero-length planet directions are rejected")
+	invalid_direction = field.snapshot()
+	invalid_direction.surface_direction = [0.0,2.0,0.0]
+	check(Field.new().restore_snapshot(invalid_direction) == ERR_INVALID_DATA,"Non-normalized planet directions are rejected")
+	var campaign := Session.new()
+	var remote := Field.new()
+	remote.state.planet_id = "s1p0"
+	remote.state.surface_direction = [0.6,0.0,0.8]
+	var remote_record: Dictionary = {}
+	for key: String in Session.LOCAL_KEYS: remote_record[key] = remote.state[key]
+	campaign.worlds["s1p0"] = remote_record
+	var campaign_copy := Session.new()
+	check(campaign_copy.restore_snapshot(campaign.snapshot()) == OK and campaign_copy.worlds.s1p0.surface_direction == [0.6,0.0,0.8],"Inactive planet snapshots require and preserve their own direction anchor")
+	var old_campaign: Dictionary = campaign.snapshot()
+	old_campaign.version = 21
+	old_campaign.field.version = 11
+	old_campaign.field.erase("surface_direction")
+	old_campaign.worlds.s1p0.erase("surface_direction")
+	var migrated_campaign := Session.new()
+	var campaign_migration_error: Error = migrated_campaign.restore_snapshot(old_campaign)
+	check(campaign_migration_error == OK and migrated_campaign.field.state.surface_direction == [0.0,0.0,1.0] and migrated_campaign.worlds.s1p0.surface_direction == [0.0,0.0,1.0],"Older campaign and inactive-world records migrate to stable landing anchors")
 	print("Surface exploration assertions: ",checks,"; failures: ",failures)
 	quit(0 if failures == 0 else 1)
