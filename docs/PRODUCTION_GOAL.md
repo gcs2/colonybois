@@ -20,6 +20,7 @@ Deliver a coherent loop with responsive mouse-first flight, optional arrows/nump
 - Before passing or scaling a relevant gate, define and record a performance budget on named target hardware. Set any numeric threshold from measurement; this goal does not invent one.
 - Complete a bounded accessibility and input review covering legibility at supported resolutions, visible keyboard focus, mouse and supported keyboard paths, reduced motion, and visual or caption equivalents for essential audio/VO.
 - Before M1 closes, smoke-launch a clean Windows export and verify that it can save and reload the milestone voyage.
+- Keep the project portable and reviewable from its canonical Git repository: approved visual canon, mock briefs/prompts, source provenance and required implementation assets must live in documented, tracked homes. A clean checkout must be able to reproduce the documented import/build/run path without depending on ignored files in an agent worktree. Evidence and handoffs must point to stable repo paths or explicitly label local-only captures.
 
 Resolve major playability and presentation gaps before adding breadth. Verify deterministic simulation, persistence, costs and access rules alongside the criteria above. Native playability, audio and user acceptance remain separate gates. Tests and attractive mocks alone do not establish AAA quality or completion.
 

@@ -14,6 +14,8 @@ Reference research and every-view mocks support all milestones; they do not repl
 
 Across M1-M3, every implemented view/state must trace to approved canon, have same-state runtime evidence, and receive separate independent-critic and user verdicts. A bounded accessibility/input review covers legibility at supported resolutions, visible keyboard focus, mouse and supported keyboard paths, reduced motion, and visual or caption equivalents for essential audio/VO. Define and record each relevant performance budget on named target hardware before passing or scaling that gate; numeric thresholds come from measurement, not this roadmap.
 
+Every milestone must remain reproducible and reviewable from a clean checkout of the canonical Git repository. Keep approved canon, prompts/briefs, provenance and required source assets in documented tracked locations; never make an ignored worktree artifact the only copy of required content or acceptance evidence. Isolated worktrees are execution sandboxes, not competing sources of truth.
+
 Character modeling and corpus production are deferred. Coloring and terrain sculpting are excluded; further planet modification remains deferred. Existing climate/ecosystem mechanics stay intact. Cities support the space experience through aggregate simulation. No mandatory long city tutorial, engine migration or freeform creature creator is introduced by this roadmap.
 
 Forecast only after measuring completed, reviewed slices. Preserve dated estimates in History; do not turn prototype code volume or generation speed into a promise of finished-game dates.
