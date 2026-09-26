@@ -178,6 +178,12 @@
       "title": "Morrow orbit, system map, approach and surface mock request"
     },
     {
+      "path": "docs/art/mock-requests/MORROW_SCALE_TRANSITION_STORYBOARD.md",
+      "category": "art",
+      "status": "proposal",
+      "title": "Morrow scale-transition storyboard mock request"
+    },
+    {
       "path": "docs/art/README.md",
       "category": "art",
       "status": "generated",

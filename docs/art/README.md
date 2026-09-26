@@ -18,4 +18,5 @@ Status is the document's role, not a game-completion claim. The task board alone
 | [Kiteback scout: authored model candidate](<SCOUT_ASSET.md>) | specification |
 | [Tavi merchant: concept-to-model fidelity test](<TAVI_MODEL_HANDOFF.md>) | deferred |
 | [Morrow orbit, system map, approach and surface mock request](<mock-requests/MORROW_ORBIT_APPROACH_SURFACE.md>) | proposal |
+| [Morrow scale-transition storyboard mock request](<mock-requests/MORROW_SCALE_TRANSITION_STORYBOARD.md>) | proposal |
 | [Mock request intake](<mock-requests/README.md>) | specification |
