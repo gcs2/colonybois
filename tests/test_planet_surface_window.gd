@@ -17,6 +17,7 @@ func _initialize() -> void:
 	_test_center_crossing_changes_region_window()
 	_test_planet_seed_changes_identity()
 	_test_feature_kinds_have_independent_streams()
+	_test_habitat_roles_create_coherent_groups()
 	_test_output_is_bounded()
 	print("Planet surface window checks: assertions=", checks, " failures=", failures)
 	quit(0 if failures == 0 else 1)
@@ -33,10 +34,12 @@ func _test_repeatable_window_and_local_positions() -> void:
 		flattened_ids[feature.id] = feature
 	for region: Dictionary in first.regions:
 		_check(region.up.length_squared() > 0.999, "region source direction is normalized")
+		_check(region.habitat_role == SurfaceWindow._habitat_role(region.biome, region.id), "region habitat role follows its biome and stable identity")
 		_check(region.position_m.distance_to(Coordinates.local_offset(center, region.up, PLANET_RADIUS_M)) < 0.001, "region position uses the shared tangent transform")
 		for feature: Dictionary in region.features:
 			_check(feature.region_id == region.id, "feature record retains its parent region id")
 			_check(feature.biome == region.biome, "feature record retains its sampled biome")
+			_check(feature.habitat_role == region.habitat_role, "feature grouping follows the parent habitat role")
 			_check(feature.position_m.distance_to(Coordinates.local_offset(center, feature.up, PLANET_RADIUS_M)) < 0.001, "feature position uses the shared tangent transform")
 			_check(flattened_ids.has(feature.id), "region feature appears in the flattened window list")
 
@@ -52,6 +55,14 @@ func _test_center_crossing_changes_region_window() -> void:
 	_check(first.center_up != second.center_up, "the returned window records its new center")
 	_check(first.current_region_id != second.current_region_id, "the current region identity changes across the cell boundary")
 	_check(not str(first.current_biome).is_empty() and not str(second.current_biome).is_empty(), "the current region returns its sampled biome")
+	var first_features: Dictionary = {}
+	for feature: Dictionary in first.features: first_features[feature.id] = feature
+	var stable_overlap: bool = false
+	for feature: Dictionary in second.features:
+		if first_features.has(feature.id) and _same_stable_feature(first_features[feature.id], feature):
+			stable_overlap = true
+			break
+	_check(stable_overlap, "crossing a streamed window keeps overlapping habitat identities and placements stable")
 
 func _test_planet_seed_changes_identity() -> void:
 	var center: Vector3 = Coordinates.direction(-12.0, 143.0)
@@ -92,6 +103,32 @@ func _test_feature_kinds_have_independent_streams() -> void:
 		_check(false, "test recipes include a mineral for stream-isolation coverage")
 	var repeat: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, counts)
 	_check(_records_for_kind(baseline, "cover") == _records_for_kind(repeat, "cover"), "identical feature recipes reproduce category records")
+	var role_baseline: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, counts, {}, "grove")
+	var role_changed: Array[Dictionary] = SurfaceWindow._make_features_for_counts(region_id, test_band, test_longitude_index, grid, "lowland", center, PLANET_RADIUS_M, changed_cover_counts, {"cover": 7}, "grove")
+	_check(_records_for_kind(role_baseline, "rock") == _records_for_kind(role_changed, "rock"), "habitat clustering retains rock stream independence")
+	_check(_records_for_kind(role_baseline, "flora") == _records_for_kind(role_changed, "flora"), "habitat clustering retains flora stream independence")
+	_check(_records_for_kind(role_baseline, "fauna") == _records_for_kind(role_changed, "fauna"), "habitat clustering retains fauna stream independence")
+
+func _test_habitat_roles_create_coherent_groups() -> void:
+	var world: Dictionary = _world(1948)
+	var grid: Dictionary = SurfaceWindow._grid(PLANET_RADIUS_M, REGION_SIZE_M)
+	var center: Vector3 = Coordinates.direction(21.0, 15.0)
+	var cell: Vector2i = SurfaceWindow._cell_for_up(center, grid)
+	var region_id: String = SurfaceWindow._region_id(world, grid, cell.x, cell.y)
+	var region_up: Vector3 = SurfaceWindow._center_up(cell.x, cell.y, grid)
+	var role: String = SurfaceWindow._habitat_role("forest", region_id)
+	var features: Array[Dictionary] = SurfaceWindow._make_features(region_id, cell.x, cell.y, grid, "forest", center, PLANET_RADIUS_M)
+	var repeated_role: String = SurfaceWindow._habitat_role("forest", region_id)
+	var repeated: Array[Dictionary] = SurfaceWindow._make_features(region_id, cell.x, cell.y, grid, "forest", center, PLANET_RADIUS_M)
+	_check(role == repeated_role and features == repeated, "a biome habitat role produces stable clustered records")
+	var grouped_kinds: Dictionary = {}
+	var compact: bool = true
+	for feature: Dictionary in features:
+		grouped_kinds[feature.kind] = true
+		compact = compact and SurfaceWindow._great_circle_distance(region_up, feature.up, PLANET_RADIUS_M) < 160.0
+		_check(feature.habitat_role == role, "feature records retain their reusable habitat role")
+	_check(grouped_kinds.has("rock") and grouped_kinds.has("flora") and grouped_kinds.has("fauna"), "forest habitat roles yield grouped rocks, plants and wildlife")
+	_check(compact, "habitat feature positions cluster around their stable region patch")
 
 func _test_output_is_bounded() -> void:
 	var world: Dictionary = _world(6421)
@@ -123,6 +160,19 @@ func _records_for_kind(records: Array[Dictionary], kind: String) -> Array[Dictio
 		if str(record.kind) == kind:
 			result.append(record)
 	return result
+
+func _same_stable_feature(first: Dictionary, second: Dictionary) -> bool:
+	return (
+		first.id == second.id
+		and first.region_id == second.region_id
+		and first.kind == second.kind
+		and first.biome == second.biome
+		and first.habitat_role == second.habitat_role
+		and first.up == second.up
+		and first.variant == second.variant
+		and first.size == second.size
+		and first.yaw == second.yaw
+	)
 
 func _check(condition: bool, message: String) -> void:
 	checks += 1

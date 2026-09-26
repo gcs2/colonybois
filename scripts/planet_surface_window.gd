@@ -17,6 +17,29 @@ const _FEATURE_STREAM_VERSION: int = 1
 const MAX_WINDOW_REGIONS: int = 512
 const MAX_WINDOW_FEATURES: int = 8192
 const _TAU: float = PI * 2.0
+const _HABITAT_ROLES_BY_BIOME: Dictionary = {
+	"ocean": ["shoal", "shelf"],
+	"ice": ["icefield", "refuge", "outcrop"],
+	"highland": ["scree", "alpine", "outcrop"],
+	"dryland": ["scrub", "scree", "sparse"],
+	"lowland": ["meadow", "grove", "outcrop"],
+	"forest": ["thicket", "grove", "clearing"]
+}
+const _HABITAT_PROFILES: Dictionary = {
+	"shoal": {"counts": [[0, 1], [1, 3], [0, 1], [1, 1]], "spread": 0.12},
+	"shelf": {"counts": [[0, 1], [2, 4], [0, 1], [1, 1]], "spread": 0.09},
+	"icefield": {"counts": [[1, 3], [1, 3], [0, 2], [1, 1]], "spread": 0.14},
+	"refuge": {"counts": [[2, 4], [1, 2], [2, 3], [1, 2]], "spread": 0.12},
+	"scree": {"counts": [[0, 1], [3, 5], [0, 1], [1, 1]], "spread": 0.08},
+	"alpine": {"counts": [[2, 4], [1, 3], [1, 3], [1, 1]], "spread": 0.13},
+	"scrub": {"counts": [[1, 3], [1, 2], [3, 5], [1, 2]], "spread": 0.12},
+	"sparse": {"counts": [[1, 2], [1, 2], [1, 2], [1, 1]], "spread": 0.17},
+	"meadow": {"counts": [[2, 4], [1, 2], [2, 4], [1, 3]], "spread": 0.16},
+	"grove": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.11},
+	"outcrop": {"counts": [[1, 2], [3, 5], [1, 2], [1, 1]], "spread": 0.09},
+	"thicket": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.10},
+	"clearing": {"counts": [[2, 4], [1, 2], [1, 3], [2, 3]], "spread": 0.15}
+}
 
 ## Returns nearest deterministic region and feature records in one tangent frame.
 ## Cells use the requested scale up to the explicit grid and query bounds.
@@ -78,6 +101,7 @@ static func build(world: Dictionary, center_up: Vector3, planet_radius_m: float 
 			regions.append({
 				"id": region_id,
 				"biome": biome,
+				"habitat_role": _habitat_role(biome, region_id),
 				"up": region_up,
 				"position_m": region_position,
 				"distance_m": region_position.length(),
@@ -98,7 +122,7 @@ static func build(world: Dictionary, center_up: Vector3, planet_radius_m: float 
 			break
 		var region: Dictionary = regions[region_index]
 		var band_and_longitude: Vector2i = _cell_for_up(region.up, grid)
-		var region_features: Array[Dictionary] = _make_features(str(region.id), band_and_longitude.x, band_and_longitude.y, grid, str(region.biome), center, radius)
+		var region_features: Array[Dictionary] = _make_features(str(region.id), band_and_longitude.x, band_and_longitude.y, grid, str(region.biome), center, radius, str(region.habitat_role))
 		for feature: Dictionary in region_features:
 			if features.size() >= MAX_WINDOW_FEATURES:
 				truncated = true
@@ -142,8 +166,9 @@ static func _grid(radius: float, requested_size: float) -> Dictionary:
 		"size_key": "radius:%d|bands:%d" % [roundi(radius), band_count]
 	}
 
-static func _make_features(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float) -> Array[Dictionary]:
-	var ranges_by_biome: Dictionary = _feature_count_ranges(biome)
+static func _make_features(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float, habitat_role: String = "") -> Array[Dictionary]:
+	var role: String = habitat_role if not habitat_role.is_empty() else _habitat_role(biome, region_id)
+	var ranges_by_biome: Dictionary = _feature_count_ranges(biome, role)
 	var ranges: Array = ranges_by_biome.get(biome, ranges_by_biome.lowland)
 	var counts: Array[int] = []
 	for kind_index: int in range(4):
@@ -151,10 +176,10 @@ static func _make_features(region_id: String, band: int, longitude_index: int, g
 		var count_rng: RandomNumberGenerator = _feature_rng(region_id, kind)
 		var range_values: Array = ranges[kind_index]
 		counts.append(count_rng.randi_range(int(range_values[0]), int(range_values[1])))
-	return _make_features_for_counts(region_id, band, longitude_index, grid, biome, center, radius, counts)
+	return _make_features_for_counts(region_id, band, longitude_index, grid, biome, center, radius, counts, {}, role)
 
 ## Builds records with explicit category counts; stream burns are a contract-test seam for draw isolation.
-static func _make_features_for_counts(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float, counts: Array[int], stream_burns: Dictionary = {}) -> Array[Dictionary]:
+static func _make_features_for_counts(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, center: Vector3, radius: float, counts: Array[int], stream_burns: Dictionary = {}, habitat_role: String = "") -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
 	for kind_index: int in range(kinds.size()):
@@ -163,7 +188,7 @@ static func _make_features_for_counts(region_id: String, band: int, longitude_in
 		for _burn: int in range(int(stream_burns.get(kind, 0))):
 			rng.randi()
 		for slot: int in range(counts[kind_index]):
-			var feature_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
+			var feature_up: Vector3 = _random_direction_in_habitat(band, longitude_index, grid, rng, habitat_role, kind) if not habitat_role.is_empty() else _random_direction_in_cell(band, longitude_index, grid, rng)
 			var feature_id: String = "%s|feature|%s|%d" % [region_id, kind, slot + 1]
 			var local_position: Vector2 = Coordinates.local_offset(center, feature_up, radius)
 			result.append({
@@ -171,6 +196,7 @@ static func _make_features_for_counts(region_id: String, band: int, longitude_in
 				"region_id": region_id,
 				"kind": kind,
 				"biome": biome,
+				"habitat_role": habitat_role,
 				"up": feature_up,
 				"position_m": local_position,
 				"variant": rng.randi_range(0, {"cover": 5, "rock": 4, "flora": 6, "fauna": 3}[kind]),
@@ -181,13 +207,14 @@ static func _make_features_for_counts(region_id: String, band: int, longitude_in
 	for _burn: int in range(int(stream_burns.get("mineral", 0))):
 		mineral_rng.randi()
 	if mineral_rng.randf() < 0.035:
-		var mineral_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, mineral_rng)
+		var mineral_up: Vector3 = _random_direction_in_habitat(band, longitude_index, grid, mineral_rng, habitat_role, "mineral") if not habitat_role.is_empty() else _random_direction_in_cell(band, longitude_index, grid, mineral_rng)
 		var mineral_id: String = "%s|feature|mineral|1" % region_id
 		result.append({
 			"id": mineral_id,
 			"region_id": region_id,
 			"kind": "mineral",
 			"biome": biome,
+			"habitat_role": habitat_role,
 			"up": mineral_up,
 			"position_m": Coordinates.local_offset(center, mineral_up, radius),
 			"variant": mineral_rng.randi_range(0, 2),
@@ -196,7 +223,7 @@ static func _make_features_for_counts(region_id: String, band: int, longitude_in
 		})
 	return result
 
-static func _feature_count_ranges(biome: String) -> Dictionary:
+static func _feature_count_ranges(biome: String, habitat_role: String = "") -> Dictionary:
 	var ranges_by_biome: Dictionary = {
 		"ocean": [[0, 1], [0, 1], [0, 0], [0, 1]],
 		"ice": [[1, 3], [0, 2], [0, 1], [0, 1]],
@@ -205,7 +232,27 @@ static func _feature_count_ranges(biome: String) -> Dictionary:
 		"lowland": [[2, 5], [0, 2], [1, 3], [0, 2]],
 		"forest": [[3, 5], [0, 2], [2, 4], [1, 2]]
 	}
+	if _HABITAT_PROFILES.has(habitat_role):
+		ranges_by_biome[biome] = _HABITAT_PROFILES[habitat_role].counts
 	return ranges_by_biome
+
+static func _habitat_role(biome: String, region_id: String) -> String:
+	var roles: Array = _HABITAT_ROLES_BY_BIOME.get(biome, _HABITAT_ROLES_BY_BIOME.lowland)
+	var rng: RandomNumberGenerator = _feature_rng(region_id, "habitat")
+	return str(roles[rng.randi_range(0, roles.size()-1)])
+
+static func _random_direction_in_habitat(band: int, longitude_index: int, grid: Dictionary, rng: RandomNumberGenerator, habitat_role: String, kind: String) -> Vector3:
+	var longitude_count: int = int(grid.longitude_counts[band])
+	var longitude_step: float = _TAU / float(longitude_count)
+	var center_longitude: float = -PI + (float(longitude_index) + 0.5) * longitude_step
+	var center_latitude: float = -PI * 0.5 + (float(band) + 0.5) * grid.lat_step
+	var profile: Dictionary = _HABITAT_PROFILES.get(habitat_role, {"spread": 0.15})
+	var spread: float = float(profile.get("spread", 0.15))
+	if kind == "rock": spread *= 0.62
+	elif kind == "fauna": spread *= 1.2
+	var longitude: float = center_longitude + rng.randf_range(-spread, spread) * longitude_step
+	var latitude: float = center_latitude + rng.randf_range(-spread, spread) * grid.lat_step
+	return _direction(clampf(latitude, -PI * 0.5, PI * 0.5), longitude)
 
 static func _feature_rng(region_id: String, kind: String) -> RandomNumberGenerator:
 	var rng := RandomNumberGenerator.new()
