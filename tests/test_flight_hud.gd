@@ -78,7 +78,7 @@ func run() -> void:
 	check(hud.empty_slot_backings.size() == 12 and hud.empty_slot_backings[0].position.y < hud.empty_slot_backings[6].position.y,"Inventory grid retains all six columns and both carried-item rows")
 	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
 	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
-	check(hud.altitude_backing.size.x <= 80 and hud.altitude_backing.size.y <= 20 and hud.flight_readout.size.x <= 72 and hud.altitude_backing.position.x >= hud.console_pod.position.x+100,"ALT stays a compact secondary readout within the existing right-side housing")
+	check(hud.altitude_backing.size.x <= 80 and hud.altitude_backing.size.y <= 24 and hud.flight_readout.size.x <= 72 and hud.altitude_backing.position.x >= hud.console_pod.position.x+100,"ALT stays a compact secondary readout joined to the existing right-side housing")
 	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
 	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
@@ -161,7 +161,8 @@ func run() -> void:
 	check("Cargo: 2 / 2" in hud.quick_cargo.tooltip_text,"Quick cargo reflects actual onboard capacity")
 	scene._change_flight_mode("orbit")
 	scene._refresh_ui()
-	check(hud.flight_readout.visible and hud.flight_readout.size.x <= 168 and hud.flight_readout.size.y <= hud.altitude_backing.size.y,"Orbital ALT remains compact inside its dedicated instrument strip")
+	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 72 and hud.flight_readout.size.y <= hud.altitude_backing.size.y
+	check(orbital_readout_is_compact,"Orbital ALT remains compact inside its joined instrument inset")
 	check(scene.use_button.disabled and scene.toolbar.all(func(b: Button) -> bool: return b.disabled),"Surface equipment is unavailable in orbit")
 	hud.category_buttons.Environment.pressed.emit()
 	var orbit_tool: String = scene.tool

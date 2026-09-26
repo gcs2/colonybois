@@ -12,13 +12,15 @@ Morrow's existing native species representatives now occupy deterministic positi
 
 ## Climate, food chains and stakes
 
-Each T tier has a small, medium and large plant, two distinct herbivores and one predator. Its plants stop passive climate drift from crossing out of the supported ring. Animals complete the ecological tier and allow the next tier's introductions. Active climate tools can still push a planet outside that ring; stabilization is not invulnerability.
+Terraforming T-score (climate T0–T3) and biosphere tier (ecological T0–T3) are separate state values. T-score measures temperature/atmosphere distance from the climate center; biosphere tier measures established life and food-chain support. The user clarified that the lush approved Morrow surface is the intended visual direction for a Terraform T2 world. This does not imply a Biosphere T2 ecosystem or claim that the current runtime has reached that appearance.
 
-Completed ecosystems, limited by current climate, now govern modified-world population caps and export yields. T3 climate with only a T1 food chain retains T1 development. The two foreign sets of six lifeforms let the player complete all three tiers on a destination through actual travel and collection; eighteen species serve this functional requirement. This is not the promised deep content corpus or a generic food-web simulator.
+Each biosphere tier has a small, medium and large plant, two distinct herbivores and one predator. Its plants stop passive climate drift from crossing out of the supported ring. Animals complete the ecological tier and allow the next tier's introductions. Active climate tools can still push a planet outside that ring; stabilization is not invulnerability.
+
+Completed ecosystems, limited by current climate, now govern modified-world population caps and export yields. Terraform T3 with only a Biosphere T1 food chain retains Biosphere T1 development. The two foreign sets of six lifeforms let the player complete all three tiers on a destination through actual travel and collection; eighteen species serve this functional requirement. This is not the promised deep content corpus or a generic food-web simulator.
 
 Native populations start with a complete first tier. Each established species has up to four locally collectible specimens; one recovers every sixty active seconds. Taking the last locally available specimen does not eradicate a planetary species. This is an aggregate availability pool, not individually simulated animals. Introduced populations begin with one available specimen. Duplicate introductions cannot inflate the ecosystem or farm its milestones.
 
-Unsuitable climate starts a thirty-second habitat-loss warning. Restoring conditions in time saves the unsupported tiers. Otherwise their species and surface representatives disappear, their stabilization is lost, and the chronicle records the actual affected world even while the ship is elsewhere. Each newly completed T2/T3 ecosystem records a distinct milestone; dedicated reference badge families and shop unlocks remain work for progression, not implicitly completed here.
+Unsuitable climate starts a thirty-second habitat-loss warning. Restoring conditions in time saves the unsupported tiers. Otherwise their species and surface representatives disappear, their stabilization is lost, and the chronicle records the actual affected world even while the ship is elsewhere. Each newly completed Biosphere T2/T3 ecosystem records a distinct milestone; dedicated reference badge families and shop unlocks remain work for progression, not implicitly completed here.
 
 ## Reference and deliberate tuning
 

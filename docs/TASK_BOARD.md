@@ -10,6 +10,8 @@ The isolated branch codex/r01-v01-v04-transition-audit integrates four bounded c
 
 One independent critic reviewed this exact integrated capture against the approved surface canon. Both world and HUD composition fail. The horizon still reads like traversable terrain; nearfield ecology is too small and sparse; the sampled chart has weak contrast; cargo pictograms are tiny and the grid is mostly empty in this synthetic state; the dark ALT strip is detached and too prominent. Water is outside this mining location, so its absence in the frame is not evidence that the authored basin is missing. This is scripted runtime evidence, not native play, user acceptance, or performance evidence.
 
+The user clarified that the approved lush Morrow surface represents the desired look of a Terraform T2 world (climate T-score), not a Biosphere T2 food-chain tier. Keep those progression values distinct. The latest capture remains a substantial visual failure, so the next pass must be a cohesive scene/HUD reconstruction, not another isolated scale or spacing tweak. External art-service and multiscale asset options are being researched separately; no purchase is authorized.
+
 ### Current execution order
 
 1. Improve Morrow’s reusable habitat and terrain composition from the versioned spherical recipe. Make role-based rock/flora/fauna groups readable at the actual follow-camera scale, connect a visible landmark and resource opportunity to the local chart, and make the far-scene boundary read as distant scenery. Preserve stable feature IDs, separate seeded streams, 512 m opportunity regions, 64 m habitat detail, the 192 m active radius, open flight lanes, and sparse saved deltas. Avoid hand-placed camera-only dressing and unseeded scatter.

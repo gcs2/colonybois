@@ -4,7 +4,7 @@
 
 23 September 2026. Integrated T01 checkpoint; not completed terraforming parity.
 
-An orbital survey reveals independent temperature and atmosphere axes. Buy reusable tools under dock Upgrades → Equipment, or finite single-use supplies under Climate. Select an Environment hotbar icon, then click the planet in orbit or the terrain on its surface. The paid pulse changes one axis over eight shared simulation seconds, including after departure. The climate instrument shows the current point and T0–T3 climate bands. This is climate potential, not a claim of an established ecosystem.
+An orbital survey reveals independent temperature and atmosphere axes. Buy reusable tools under dock Upgrades → Equipment, or finite single-use supplies under Climate. Select an Environment hotbar icon, then click the planet in orbit or the terrain on its surface. The paid pulse changes one axis over eight shared simulation seconds, including after departure. The climate instrument shows the current point and T0–T3 climate bands. These bands are the terraforming T-score: climate distance from the center. They are separate from the biosphere/ecological T0–T3, which tracks established life and food chains; see [PLANET_BIOSPHERE.md](PLANET_BIOSPHERE.md). Climate potential is not a claim of an established ecosystem.
 
 | Equipment | Effect per pulse | Cost |
 | --- | --- | --- |

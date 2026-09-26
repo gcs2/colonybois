@@ -553,3 +553,11 @@ Focused verification on this integrated source:
 No full suite, native-input playtest, exported-build check, user acceptance, fun review, or performance measurement was performed. Isolated worker tests encountered missing generated import caches; integrated bounded runs used the existing Godot 4.7.2 runtime and unique profiles. Generated .import and .uid sidecars and the capture files remain local and unstaged.
 
 The next pass should make a whole reusable Morrow region read clearly at follow-camera scale: visible relief, large enough role-specific habitat silhouettes, chart terrain with useful contrast, and a distinct nonwalkable distant background. Correct ALT by placing a compact readout inside the right status housing. Compare the authored basin and one adjacent region; do not treat passing assertions as visual acceptance.
+
+## Terraform T2 target correction and strict visual follow-up — 26 September 2026
+
+The user clarified that “T2” means terraforming T-score, not the ecological/biosphere T2 tier. The approved lush Morrow surface is the visual direction for a Terraform T2 world; this is a target, not an assertion that the current runtime has achieved it. Climate T-score and Biosphere tier must remain distinct in the game and its presentation.
+
+Latest actual-renderer capture: ignored 1920×1080 synthetic mining state at artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/surface-mining-after-1080.png. Two independent reviews reject the scene against the canon. The world reads as an enormous smooth brown plane with sparse low-detail props and a questionable walkable horizon. The HUD has small, unclear pictograms, large unused inventory cells, weak chart geography, floating notifications/buttons and a detached target card. The captured camera scale and composition are not close to the approved surface target.
+
+This establishes a visual failure and a direction correction, not a player-fun or performance result. The next pass should rebuild the surface and HUD as one coherent presentation and evaluate near/mid/far asset representations within a deterministic, traversable region. Do not make another isolated scale/spacing adjustment and do not claim acceptance from a mock or test.

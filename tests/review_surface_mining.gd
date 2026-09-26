@@ -2,21 +2,25 @@ extends SceneTree
 const Session = preload("res://scripts/expedition_session.gd")
 const Field = preload("res://scripts/encounter_state.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
-const OUT = "res://artifacts/visual-critic-surface-pass/mining"
+const DEFAULT_OUT := "res://artifacts/visual-critic-surface-pass/mining"
+var output_dir: String = DEFAULT_OUT
 
 func _initialize() -> void:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--output-dir="):
+			output_dir = argument.trim_prefix("--output-dir=")
 	call_deferred("_run")
 
 func _save_frame(view: SubViewport, name: String) -> void:
 	for i: int in range(3): await process_frame
 	await RenderingServer.frame_post_draw
 	var image: Image = view.get_texture().get_image()
-	var err: Error = image.save_png(OUT + "/" + name + ".png")
+	var err: Error = image.save_png(output_dir + "/" + name + ".png")
 	assert(err == OK, "Could not save " + name)
 	print("Saved " + name)
 
 func _run() -> void:
-	DirAccess.make_dir_recursive_absolute(OUT)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output_dir))
 	var resolution := Vector2i(1920,1080)
 	root.size = resolution
 	var view := SubViewport.new()
@@ -39,7 +43,7 @@ func _run() -> void:
 	view.add_child(scene)
 	await process_frame
 	scene.audio.muted = true
-	scene.save_path = OUT + "/isolated-save.fw"
+	scene.save_path = output_dir + "/isolated-save.fw"
 	var desired_ship_position: Vector3 = scene._target_position("vein") + Vector3(-4,0,6)
 	scene._set_surface_up(Geography.surface_direction(scene.world_definition,desired_ship_position.x,desired_ship_position.z))
 	scene._refresh_surface_geography()

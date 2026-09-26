@@ -212,9 +212,9 @@ func _build() -> void:
 	console_pod.size = Vector2(184, 117)
 	add_child(console_pod)
 	altitude_backing = ColorRect.new()
-	altitude_backing.position = Vector2(1508, 664)
-	altitude_backing.size = Vector2(78, 20)
-	# ALT is a compact secondary inset aligned over the right edge of the condition pod.
+	altitude_backing.position = Vector2(1508, 666)
+	altitude_backing.size = Vector2(78, 24)
+	# ALT is a compact secondary inset that meets the top edge of the condition pod.
 	altitude_backing.color = Color("1c2426")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
@@ -309,7 +309,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1512,666,70,15),9,Color("c4c9bd"))
+	flight_readout = label_at("",Rect2(1512,667,70,23),9,Color("c4c9bd"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -546,8 +546,8 @@ func show_group(group: String) -> void:
 	if console_pod != null:
 		console_pod.position = Vector2(1402,inventory_grid_origin.y)
 		console_pod.size = Vector2(184,124 if not orbital_mode else 117)
-	altitude_backing.position = Vector2(1508,inventory_grid_origin.y-23)
-	flight_readout.position = Vector2(1512,inventory_grid_origin.y-21)
+	altitude_backing.position = Vector2(1508,inventory_grid_origin.y-24)
+	flight_readout.position = Vector2(1512,inventory_grid_origin.y-23)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
@@ -745,8 +745,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.icon = null
 		departure_button.add_theme_font_size_override("font_size",11)
 		departure_button.tooltip_text = ""
-		altitude_backing.position = Vector2(1508, 664)
-		flight_readout.position = Vector2(1512, 666)
+		altitude_backing.position = Vector2(1508, 666)
+		flight_readout.position = Vector2(1512, 667)
 		if console_pod != null:
 			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)
@@ -803,8 +803,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		chart_heading.size = Vector2(198, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
-		altitude_backing.position = Vector2(1508, 664)
-		flight_readout.position = Vector2(1512, 666)
+		altitude_backing.position = Vector2(1508, 666)
+		flight_readout.position = Vector2(1512, 667)
 		if console_pod != null:
 			console_pod.position = Vector2(1402, 690)
 			console_pod.size = Vector2(184, 117)

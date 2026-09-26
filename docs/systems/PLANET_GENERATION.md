@@ -6,6 +6,8 @@ Latest travel checkpoint: [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md) adds 
 
 ## Morrow recipe-driven surface composition pass — 26 September 2026
 
+The user clarified that the lush approved Morrow surface is the intended visual direction for a Terraform T2 world. Here T2 is the climate T-score, not Biosphere T2. Climate score and ecological development remain independent inputs to world presentation; this runtime capture still falls far short of the target.
+
 The shared PlanetSurfaceRuntime still owns spherical elevation, surface color, geodesic advance, bounded feature queries and local projection. The unchanged macro opportunity regions and stable saved deltas now coexist with role assignment clustered across 3×4 spherical cells. Fine habitat content remains a deterministic 64 m query inside a 192 m active radius; new category streams do not relocate existing feature IDs.
 
 The renderer now adds recipe-colored ground layers and sampled-relief context, and places Morrow water from the authored waterbody specification. The local chart samples terrain_height, derives land/water colors and labels the largest sampled connected water body when present in its 125 m window. Route endpoints and ship/contact coordinates remain world anchored; the 50 m ruler is derived from that window. The chart does not read waterbody_specs directly. The distant visual shell reuses recipe elevation/ruggedness but remains a visual-only mesh outside local interaction; the latest critic says its smooth slope can be mistaken for traversable terrain.
