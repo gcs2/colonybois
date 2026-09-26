@@ -44,11 +44,15 @@ func run() -> void:
 	var lake: Dictionary = morrow_generator.waterbody_specs()[0]
 	var lake_center: Vector3 = lake.center_up
 	var lake_sample: Dictionary = morrow_generator.sample(lake_center)
+	var morrow_runtime: Object = Geography.surface_runtime(Geography.definition("morrow"))
+	var runtime_lakes: Array[Dictionary] = morrow_runtime.generator.waterbody_specs()
+	var runtime_lake_sample: Dictionary = morrow_runtime.sample(lake_center)
 	var lake_edge_up: Vector3 = SurfaceCoordinates.advance(lake_center,float(lake.east_radius_m)*1.2,0.0,Generator.SURFACE_RADIUS_M)
 	var lake_edge: Dictionary = morrow_generator.sample(lake_edge_up)
 	var repeated_morrow := Generator.new(Geography.definition("morrow"))
 	var repeated_lake: Dictionary = repeated_morrow.sample(lake_center)
 	check(lake_sample.waterbody_id == lake.id and lake_sample.elevation < -0.025,"The recipe-authored Morrow lake is a depressed waterbody in the shared spherical sampler")
+	check(runtime_lakes.size() == 1 and runtime_lakes[0].id == lake.id and runtime_lake_sample.elevation < -0.025,"The Morrow surface runtime retains the recipe lake and samples its submerged floor")
 	check(str(lake_edge.waterbody_id).is_empty() and lake_edge.elevation > lake_sample.elevation,"The sampled lake has a stable shoreline beyond its basin floor")
 	check(morrow_generator.surface_color(lake_sample) == repeated_morrow.surface_color(repeated_lake),"The lake water color repeats from the same versioned planet recipe")
 	var warmed_recipe: Dictionary = frozen.recipe.duplicate(true)
