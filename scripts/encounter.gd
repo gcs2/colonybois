@@ -745,28 +745,26 @@ func _make_regional_features() -> void:
 	else: add_child(regional_feature_root)
 	var rocks: Array = surface_region_features.get("rock",[])
 	if not rocks.is_empty():
-		var mesh := SphereMesh.new()
-		mesh.radial_segments = 7
-		mesh.rings = 3
-		mesh.radius = 1.0
-		mesh.height = 2.0
+		var mesh := _rock_shape_mesh()
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.use_colors = true
 		multimesh.mesh = mesh
 		multimesh.instance_count = rocks.size()
-		var colors: Array[Color] = [Color("51433f"),Color("755e50"),Color("5a6966"),Color("86705e"),Color("52515b")]
+		var colors: Array[Color] = [Color("67483d"),Color("8a6049"),Color("536d68"),Color("a27656"),Color("5c5b68")]
 		for index: int in range(rocks.size()):
 			var feature: Dictionary = rocks[index]
 			var at: Vector2 = feature["position"]
 			var rock_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
 			var size: float = float(feature["size"])*float(rock_profile.get("rock_scale", 1.0))
-			var scale := Vector3(size*1.25,size*2.1,size*(0.78+float(int(feature["variant"])%3)*0.12))
+			var scale := Vector3(size*1.4,size*2.15,size*(0.82+float(int(feature["variant"])%3)*0.14))
 			multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature["rotation"])).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y)-0.45,at.y)))
 			multimesh.set_instance_color(index,colors[int(feature["variant"])%colors.size()])
 		var rock_material := StandardMaterial3D.new()
 		rock_material.vertex_color_use_as_albedo = true
-		rock_material.roughness = 0.92
+		rock_material.roughness = 0.84
+		rock_material.metallic = 0.035
+		rock_material.specular = 0.42
 		var rock_batch := MultiMeshInstance3D.new()
 		rock_batch.multimesh = multimesh
 		rock_batch.material_override = rock_material
@@ -777,7 +775,8 @@ func _make_regional_features() -> void:
 		var flora_material := StandardMaterial3D.new()
 		flora_material.vertex_color_use_as_albedo = true
 		flora_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-		flora_material.roughness = 0.9
+		flora_material.roughness = 0.78
+		flora_material.metallic = 0.015
 		for variant: int in range(flora_colors.size()):
 			var shaped: Array = flora.filter(func(item: Dictionary) -> bool: return int(item.variant)%flora_colors.size() == variant)
 			if shaped.is_empty(): continue
@@ -791,7 +790,7 @@ func _make_regional_features() -> void:
 				var at: Vector2 = feature.position
 				var flora_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
 				var silhouette_scale: float = float(flora_profile.get("flora_scale", 1.0))
-				var scale := Vector3(float(feature.size)*1.5*silhouette_scale,float(feature.size)*1.55*silhouette_scale,float(feature.size)*1.5*silhouette_scale)
+				var scale := Vector3(float(feature.size)*1.65*silhouette_scale,float(feature.size)*1.7*silhouette_scale,float(feature.size)*1.65*silhouette_scale)
 				flora_multimesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(scale),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
 				flora_multimesh.set_instance_color(index,flora_colors[variant])
 			var flora_batch := MultiMeshInstance3D.new()
@@ -816,12 +815,13 @@ func _make_regional_features() -> void:
 			var at: Vector2 = feature.position
 			var fauna_profile: Dictionary = SurfaceWindow._HABITAT_PROFILES.get(str(feature.get("habitat_role", "")), {})
 			var size: float = float(feature.size)*float(fauna_profile.get("fauna_scale", 1.0))
-			animal_mesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(Vector3(size*1.6,size*1.2,size*1.6)),Vector3(at.x,terrain_height(at.x,at.y)+0.12,at.y)))
+			animal_mesh.set_instance_transform(index,Transform3D(Basis(Vector3.UP,float(feature.rotation)).scaled(Vector3(size*1.8,size*1.35,size*1.8)),Vector3(at.x,terrain_height(at.x,at.y)+0.12,at.y)))
 			animal_mesh.set_instance_color(index,[Color("dba36c"),Color("83c5c0"),Color("c4b979")][variant])
 		var animal_material := StandardMaterial3D.new()
 		animal_material.vertex_color_use_as_albedo = true
 		animal_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-		animal_material.roughness = 0.82
+		animal_material.roughness = 0.72
+		animal_material.metallic = 0.01
 		var animal_batch := MultiMeshInstance3D.new()
 		animal_batch.multimesh = animal_mesh
 		animal_batch.material_override = animal_material
@@ -835,37 +835,76 @@ func _flora_shape_mesh(variant: int) -> Mesh:
 	var count: int = 3 if variant in [0,3] else 5 if variant == 1 else 4 if variant == 2 else 7
 	for i: int in range(count):
 		var angle: float = TAU*float(i)/float(count)
-		var offset := Vector3(cos(angle)*0.22,0,sin(angle)*0.22)
+		var offset := Vector3(cos(angle)*0.26,0,sin(angle)*0.26)
 		if variant == 0:
-			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.42,Vector3(0.6,0.82,0.6),angle)])
-			parts.append([bulb,_shape_xform(offset+Vector3.UP*0.95,Vector3(0.52,0.65,0.52),angle)])
-		elif variant == 1 or variant == 5:
-			parts.append([cone,_shape_xform(offset+Vector3.UP*(0.4 if variant == 1 else 0.9),Vector3(0.6,1.2,0.5),angle)])
+			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.45,Vector3(0.72,0.92,0.72),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.12,Vector3(0.62,0.72,0.62),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.62,Vector3(0.28,0.3,0.28),angle)])
+		elif variant == 1:
+			parts.append([cone,_shape_xform(offset+Vector3.UP*0.55,Vector3(0.78,1.45,0.65),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.48,Vector3(0.34,0.42,0.34),angle)])
 		elif variant == 2:
-			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.7,Vector3(0.36,1.35,0.36),angle)])
-			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.45,Vector3(0.3,0.52,0.3),angle)])
+			parts.append([cylinder,_shape_xform(offset+Vector3.UP*0.72,Vector3(0.44,1.45,0.44),angle)])
+			parts.append([bulb,_shape_xform(offset+Vector3.UP*1.62,Vector3(0.38,0.58,0.38),angle)])
 		elif variant == 3:
-			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.44,0.82,sin(angle)*0.44),Vector3(0.9,0.34,0.9),angle)])
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.5,0.88,sin(angle)*0.5),Vector3(1.0,0.42,0.82),angle)])
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.5,1.18,sin(angle)*0.5),Vector3(0.36,0.28,0.36),angle)])
+		elif variant == 4:
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.4,0.28,sin(angle)*0.4),Vector3(1.0,0.28,0.62),angle)])
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.18,0.62,sin(angle)*0.18),Vector3(0.46,0.36,0.46),angle)])
 		else:
-			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.35,0.22,sin(angle)*0.35),Vector3(1.0,0.22,0.52),angle)])
+			parts.append([bulb,_shape_xform(Vector3(cos(angle)*0.42,0.22,sin(angle)*0.42),Vector3(1.1,0.25,0.58),angle)])
+			parts.append([cone,_shape_xform(Vector3(cos(angle)*0.42,0.54,sin(angle)*0.42),Vector3(0.62,0.62,0.5),angle)])
 	return _joined_shape(parts)
+
+func _rock_shape_mesh() -> Mesh:
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sides: int = 9
+	var levels: Array[float] = [0.0,0.22,0.9,1.55,1.82]
+	var radii: Array[float] = [0.58,0.88,0.78,0.52,0.08]
+	for level: int in range(levels.size()-1):
+		for side: int in range(sides):
+			var a0: float = TAU*float(side)/float(sides)+float(level%2)*0.13
+			var a1: float = TAU*float(side+1)/float(sides)+float(level%2)*0.13
+			var wobble0: float = 1.0+0.12*sin(float(side)*2.7+float(level)*1.4)
+			var wobble1: float = 1.0+0.12*sin(float(side+1)*2.7+float(level)*1.4)
+			var lower_a := Vector3(cos(a0)*radii[level]*wobble0,levels[level],sin(a0)*radii[level]*wobble0)
+			var lower_b := Vector3(cos(a1)*radii[level]*wobble1,levels[level],sin(a1)*radii[level]*wobble1)
+			var upper_a := Vector3(cos(a0)*radii[level+1]*wobble0,levels[level+1],sin(a0)*radii[level+1]*wobble0)
+			var upper_b := Vector3(cos(a1)*radii[level+1]*wobble1,levels[level+1],sin(a1)*radii[level+1]*wobble1)
+			surface.add_vertex(lower_a); surface.add_vertex(upper_a); surface.add_vertex(upper_b)
+			surface.add_vertex(lower_a); surface.add_vertex(upper_b); surface.add_vertex(lower_b)
+	for side: int in range(sides):
+		var a0: float = TAU*float(side)/float(sides)+0.13
+		var a1: float = TAU*float(side+1)/float(sides)+0.13
+		var tip := Vector3(0,1.9,0)
+		var rim_a := Vector3(cos(a0)*0.08,1.82,sin(a0)*0.08)
+		var rim_b := Vector3(cos(a1)*0.08,1.82,sin(a1)*0.08)
+		surface.add_vertex(tip); surface.add_vertex(rim_b); surface.add_vertex(rim_a)
+	surface.generate_normals()
+	return surface.commit()
 
 func _fauna_shape_mesh(variant: int) -> Mesh:
 	var body := SphereMesh.new(); body.radius = 0.52; body.height = 1.04
 	var limb := CylinderMesh.new(); limb.top_radius = 0.035; limb.bottom_radius = 0.09; limb.height = 0.6
 	var fin := CylinderMesh.new(); fin.top_radius = 0.0; fin.bottom_radius = 0.32; fin.height = 0.7
+	var eye := SphereMesh.new(); eye.radius = 0.12; eye.height = 0.24
 	var parts: Array = [[body,_shape_xform(Vector3.UP*(0.58 if variant != 2 else 1.0),Vector3(1.2,0.8,1.0) if variant == 0 else Vector3(1.5,0.45,1.0) if variant == 1 else Vector3(0.8,0.9,1.0))]]
 	if variant == 0:
 		for x: float in [-0.34,0.34]:
 			for z: float in [-0.3,0.3]: parts.append([limb,_shape_xform(Vector3(x,0.2,z),Vector3(0.75,0.85,0.75))])
+		for x: float in [-0.18,0.18]: parts.append([eye,_shape_xform(Vector3(x,0.82,-0.39),Vector3(0.8,1.1,0.68))])
 	elif variant == 1:
 		for side: float in [-1.0,1.0]: parts.append([fin,_shape_xform(Vector3(side*0.7,0.5,0),Vector3(1.1,0.55,0.62),side*PI*0.5)])
 		parts.append([limb,_shape_xform(Vector3(0,0.5,-0.65),Vector3(0.28,1.6,0.28))])
+		for x: float in [-0.18,0.18]: parts.append([eye,_shape_xform(Vector3(x,0.63,-0.49),Vector3(0.72,1.0,0.62))])
 	else:
 		for i: int in range(6):
 			var angle: float = TAU*float(i)/6.0
 			parts.append([limb,_shape_xform(Vector3(cos(angle)*0.4,0.34,sin(angle)*0.4),Vector3(0.7,1.25,0.7),angle)])
 		parts.append([fin,_shape_xform(Vector3(0,1.5,0.05),Vector3(0.65,1.2,0.65))])
+		for x: float in [-0.14,0.14]: parts.append([eye,_shape_xform(Vector3(x,1.28,-0.25),Vector3(0.68,1.0,0.62))])
 	return _joined_shape(parts)
 
 func _shape_xform(at: Vector3, size: Vector3, angle: float = 0.0) -> Transform3D:
