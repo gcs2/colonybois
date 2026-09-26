@@ -2,6 +2,8 @@ extends RefCounted
 ## Pure, bounded spherical region and feature records for repeatable planet visits.
 ## Directions follow +Y north, longitude 0 at +Z, and positive longitude east.
 
+const PlanetGenerator = preload("res://scripts/planet_generator.gd")
+
 const _TAU: float = PI * 2.0
 const _MIN_ANGULAR_STEP: float = PI / 4096.0
 const _MAX_ANGULAR_STEP: float = PI / 4.0
@@ -33,6 +35,7 @@ static func nearby_regions(world: Dictionary, center_up: Vector3, search_radius_
 	var first_band: int = maxi(0, int(floor((center_latitude - angular_radius + PI * 0.5) / grid.lat_step)))
 	var last_band: int = mini(grid.band_count - 1, int(floor((center_latitude + angular_radius + PI * 0.5) / grid.lat_step)))
 	var cosine_limit: float = cos(angular_radius)
+	var generator: Object = PlanetGenerator.new(_generator_recipe(world))
 	var examined: int = 0
 	for band: int in range(first_band, last_band + 1):
 		var latitude: float = -PI * 0.5 + (float(band) + 0.5) * grid.lat_step
@@ -61,10 +64,10 @@ static func nearby_regions(world: Dictionary, center_up: Vector3, search_radius_
 			examined += 1
 			var cell_up: Vector3 = _center_up(band, longitude_index, grid)
 			if _great_circle_distance(center, cell_up, grid.radius_m) <= search_radius + 1.0e-5:
-				result.append(_make_region(world, band, longitude_index, grid))
+				result.append(_make_region(world, band, longitude_index, grid, generator))
 	return result
 
-static func _make_region(world: Dictionary, band: int, longitude_index: int, grid: Dictionary) -> Dictionary:
+static func _make_region(world: Dictionary, band: int, longitude_index: int, grid: Dictionary, generator: Object) -> Dictionary:
 	var region_id: String = "%s|%d|%d|%s|%d|%d" % [
 		_planet_id(world), _geography_seed(world), _generator_version(world),
 		grid.size_key, band, longitude_index
@@ -72,33 +75,47 @@ static func _make_region(world: Dictionary, band: int, longitude_index: int, gri
 	var center_up: Vector3 = _center_up(band, longitude_index, grid)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _stable_seed(region_id)
-	var latitude: float = -PI * 0.5 + (float(band) + 0.5) * grid.lat_step
-	var climate_value: int = int(rng.randi() % 100)
-	var biome: String = _biome_for(latitude, climate_value)
-	var features: Array[Dictionary] = _make_features(region_id, band, longitude_index, latitude, grid, rng)
+	var geographic_sample: Dictionary = generator.call("sample", center_up)
+	var biome: String = str(geographic_sample.biome)
+	var features: Array[Dictionary] = _make_features(region_id, band, longitude_index, grid, biome, rng)
 	return {"id": region_id, "center_up": center_up, "biome": biome, "features": features}
 
-static func _make_features(region_id: String, band: int, longitude_index: int, latitude: float, grid: Dictionary, rng: RandomNumberGenerator) -> Array[Dictionary]:
+static func _make_features(region_id: String, band: int, longitude_index: int, grid: Dictionary, biome: String, rng: RandomNumberGenerator) -> Array[Dictionary]:
 	var features: Array[Dictionary] = []
-	var counts: Array[int] = [rng.randi_range(2, 5), rng.randi_range(0, 2), rng.randi_range(0, 3), rng.randi_range(0, 1)]
+	var counts: Array[int] = _feature_counts(biome, rng)
 	var kinds: Array[String] = ["cover", "rock", "flora", "fauna"]
 	var serial: int = 0
 	for kind_index: int in range(kinds.size()):
 		for _item: int in range(counts[kind_index]):
-			var longitude_count: int = int(grid.longitude_counts[band])
-			var longitude_step: float = _TAU / float(longitude_count)
-			var longitude: float = -PI + (float(longitude_index) + rng.randf()) * longitude_step
-			var latitude_jitter: float = (rng.randf() - 0.5) * grid.lat_step
-			var feature_latitude: float = clampf(latitude + latitude_jitter, -PI * 0.5, PI * 0.5)
+			var feature_up: Vector3 = _random_direction_in_cell(band, longitude_index, grid, rng)
 			serial += 1
-			features.append(_feature(region_id, serial, kinds[kind_index], _direction(feature_latitude, longitude), rng))
+			features.append(_feature(region_id, serial, kinds[kind_index], feature_up, rng))
 	if rng.randf() < 0.035:
-		var longitude_count: int = int(grid.longitude_counts[band])
-		var longitude: float = -PI + (float(longitude_index) + rng.randf()) * _TAU / float(longitude_count)
-		var feature_latitude: float = clampf(latitude + (rng.randf() - 0.5) * grid.lat_step, -PI * 0.5, PI * 0.5)
 		serial += 1
-		features.append(_feature(region_id, serial, "mineral", _direction(feature_latitude, longitude), rng))
+		features.append(_feature(region_id, serial, "mineral", _random_direction_in_cell(band, longitude_index, grid, rng), rng))
 	return features
+
+static func _feature_counts(biome: String, rng: RandomNumberGenerator) -> Array[int]:
+	var counts_by_biome: Dictionary = {
+		"ocean": [[0, 1], [0, 1], [0, 0], [0, 1]],
+		"ice": [[1, 3], [0, 2], [0, 1], [0, 1]],
+		"highland": [[1, 3], [1, 3], [0, 2], [0, 1]],
+		"dryland": [[1, 3], [0, 2], [0, 2], [0, 1]],
+		"lowland": [[2, 5], [0, 2], [1, 3], [0, 2]],
+		"forest": [[3, 5], [0, 2], [2, 4], [1, 2]],
+	}
+	var ranges: Array = counts_by_biome.get(biome, counts_by_biome["lowland"])
+	var counts: Array[int] = []
+	for range_values: Array in ranges:
+		counts.append(rng.randi_range(int(range_values[0]), int(range_values[1])))
+	return counts
+
+static func _random_direction_in_cell(band: int, longitude_index: int, grid: Dictionary, rng: RandomNumberGenerator) -> Vector3:
+	var longitude_count: int = int(grid.longitude_counts[band])
+	var longitude_step: float = _TAU / float(longitude_count)
+	var longitude: float = -PI + (float(longitude_index) + rng.randf()) * longitude_step
+	var latitude: float = -PI * 0.5 + (float(band) + rng.randf()) * grid.lat_step
+	return _direction(clampf(latitude, -PI * 0.5, PI * 0.5), longitude)
 
 static func _feature(region_id: String, serial: int, kind: String, up: Vector3, rng: RandomNumberGenerator) -> Dictionary:
 	var variant_count: int = {"cover": 6, "rock": 5, "flora": 7, "fauna": 4, "mineral": 3}[kind]
@@ -112,16 +129,15 @@ static func _feature(region_id: String, serial: int, kind: String, up: Vector3, 
 		"yaw": rng.randf_range(-PI, PI)
 	}
 
-static func _biome_for(latitude: float, climate_value: int) -> String:
-	if absf(latitude) > 1.18:
-		return "ice"
-	if climate_value < 18:
-		return "dryland"
-	if climate_value < 35:
-		return "highland"
-	if climate_value < 76:
-		return "lowland"
-	return "forest"
+static func _generator_recipe(world: Dictionary) -> Dictionary:
+	var recipe: Dictionary = world.duplicate(true)
+	recipe["id"] = _planet_id(world)
+	recipe["geography_seed"] = _geography_seed(world)
+	recipe["generator_version"] = _generator_version(world)
+	recipe["archetype"] = str(world.get("archetype", "temperate"))
+	if not recipe.get("sites", []) is Array:
+		recipe["sites"] = []
+	return recipe
 
 static func _grid(planet_radius_m: float, region_size_m: float) -> Dictionary:
 	var radius: float = planet_radius_m if is_finite(planet_radius_m) and planet_radius_m > 0.0 else 1.0
