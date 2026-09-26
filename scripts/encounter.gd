@@ -458,19 +458,16 @@ func _make_world() -> void:
 		var rock: MeshInstance3D = _mesh(rock_meshes[variant],at,rock_materials[variant])
 		rock.scale = rock_size*rock_shapes[variant] if rendered_planet == "morrow" else rock_size
 		rock.rotation = Vector3(sin(float(i)*1.7)*0.1,a,cos(float(i)*1.3)*0.1) if rendered_planet == "morrow" else Vector3(0,a,0)
-	# Shallow pools and sparse reed clusters frame the playable subjects.
-	var pool := SphereMesh.new()
-	pool.radius = 1
-	pool.height = 2
-	var water_shader := Shader.new()
-	water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){vec2 q=wp.xz-vec2(-23.0,0.0); float ring=sin(length(q)*1.35-TIME*0.48+sin(q.x*0.22+q.y*0.17)*0.45); float drift=sin(dot(q,vec2(0.32,0.18))+TIME*0.24); float sheen=clamp(0.62+ring*0.18+drift*0.07,0.0,1.0); ALBEDO=mix(vec3(0.09,0.24,0.30),vec3(0.23,0.47,0.50),sheen); ROUGHNESS=0.24; METALLIC=0.04;}"
-	var water_material := ShaderMaterial.new()
-	water_material.shader = water_shader
-	var water_mesh: Mesh = _morrow_lake_mesh() if rendered_planet == "morrow" else pool
-	var water: MeshInstance3D = _mesh(water_mesh,Vector3(-23,-0.6,0),water_material)
-	if rendered_planet != "morrow": water.scale = Vector3(6.0,0.1,12.0)
-	water.visible = world_definition.archetype != "arid"
-	if world_definition.archetype == "frozen": water.material_override = _mat(Color("83b6c2"))
+	# Morrow water is rendered from the same versioned basin recipe as relief and map sampling.
+	if rendered_planet == "morrow":
+		_make_morrow_waterbodies()
+	else:
+		var pool := SphereMesh.new()
+		pool.radius = 1
+		pool.height = 2
+		var water := _mesh(pool,Vector3(-23,-0.6,0),_mat(Color("83b6c2") if world_definition.archetype == "frozen" else Color("368d91")))
+		water.scale = Vector3(6.0,0.1,12.0)
+		water.visible = world_definition.archetype != "arid"
 	_make_ground_cover(rng)
 	_make_regional_features()
 	for i: int in range(16):
@@ -487,10 +484,17 @@ func _make_world() -> void:
 	targets.pod = wild_plants[0]
 	# Additional reed clusters hugging the pond shoreline
 	if world_definition.archetype != "arid":
+		var shoreline_center := Vector2(-23.0,0.0)
+		var shoreline_radii := Vector2(5.8,11.5)
+		if rendered_planet == "morrow":
+			var water_runtime: Object = Geography.surface_runtime(world_definition)
+			var waterbody: Dictionary = water_runtime.generator.waterbody_specs()[0]
+			shoreline_center = water_runtime.local_offset(Geography.site_direction(rendered_planet),waterbody.center_up)
+			shoreline_radii = Vector2(float(waterbody.east_radius_m),float(waterbody.north_radius_m))*1.19
 		for i: int in range(8):
 			var angle: float = (i / 8.0) * TAU
-			var px: float = -23.0 + cos(angle) * 5.8
-			var pz: float = sin(angle) * 11.5
+			var px: float = shoreline_center.x + cos(angle) * shoreline_radii.x
+			var pz: float = shoreline_center.y + sin(angle) * shoreline_radii.y
 			var shore_pod := _asset("pod", Vector3(px, terrain_height(px, pz), pz), rng.randf_range(0.35, 0.65))
 			shore_pod.rotation.y = rng.randf() * TAU
 	for i: int in range(3):
@@ -575,7 +579,7 @@ func _make_world() -> void:
 	for i: int in range(8):
 		var mote := _mesh(mote_mesh, relay.position + Vector3(0, 1.5 + i * 0.4, 0), mote_mat)
 		relay_motes.append(mote)
-	ship = _asset("scout",Vector3(0,5,17))
+	ship = _asset("scout",Vector3(0,5,17),0.74)
 	scout_motion.setup(ship)
 	var torus := TorusMesh.new()
 	torus.inner_radius = 1.94
@@ -598,24 +602,32 @@ func _make_world() -> void:
 	beam = _mesh(cylinder,Vector3.ZERO,beam_material)
 	beam.visible = false
 
-func _morrow_lake_mesh() -> ArrayMesh:
-	# A low, irregular shoreline reads as a lake at the practical follow distance.
-	# It is a visual water surface only and does not change terrain or movement.
-	var water_surface := SurfaceTool.new()
-	water_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var segments: int = 48
-	for index: int in range(segments):
-		var angle_a: float = TAU*float(index)/float(segments)
-		var angle_b: float = TAU*float(index+1)/float(segments)
-		var radius_a: float = 1.0+sin(angle_a*3.0+0.6)*0.07+cos(angle_a*5.0-0.4)*0.035
-		var radius_b: float = 1.0+sin(angle_b*3.0+0.6)*0.07+cos(angle_b*5.0-0.4)*0.035
-		var edge_a := Vector3(cos(angle_a)*6.2*radius_a,0.0,sin(angle_a)*12.5*radius_a)
-		var edge_b := Vector3(cos(angle_b)*6.2*radius_b,0.0,sin(angle_b)*12.5*radius_b)
-		water_surface.add_vertex(Vector3.ZERO)
-		water_surface.add_vertex(edge_b)
-		water_surface.add_vertex(edge_a)
-	water_surface.generate_normals()
-	return water_surface.commit()
+func _make_morrow_waterbodies() -> void:
+	var runtime: Object = Geography.surface_runtime(world_definition)
+	var anchor: Vector3 = Geography.site_direction(rendered_planet)
+	for waterbody: Dictionary in runtime.generator.waterbody_specs():
+		var east_radius: float = float(waterbody.get("east_radius_m", 1.0))
+		var north_radius: float = float(waterbody.get("north_radius_m", 1.0))
+		var center_up: Vector3 = waterbody.center_up
+		var center_offset: Vector2 = runtime.local_offset(anchor,center_up)
+		var water_level: float = float(waterbody.get("surface_elevation", -0.025))*SurfaceRuntime.PROVISIONAL_HEIGHT_SCALE_M+0.12
+		var water_surface := SurfaceTool.new()
+		water_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var segments: int = 72
+		for index: int in range(segments):
+			var angle_a: float = TAU*float(index)/float(segments)
+			var angle_b: float = TAU*float(index+1)/float(segments)
+			var edge_a := Vector3(cos(angle_a)*east_radius*1.16,0.0,sin(angle_a)*north_radius*1.16)
+			var edge_b := Vector3(cos(angle_b)*east_radius*1.16,0.0,sin(angle_b)*north_radius*1.16)
+			water_surface.add_vertex(Vector3.ZERO)
+			water_surface.add_vertex(edge_b)
+			water_surface.add_vertex(edge_a)
+		water_surface.generate_normals()
+		var water_shader := Shader.new()
+		water_shader.code = "shader_type spatial; varying vec3 lp; void vertex(){lp=VERTEX;} void fragment(){float ring=sin(length(lp.xz)*0.11-TIME*0.48+sin(lp.x*0.22+lp.y*0.17)*0.45); float drift=sin(dot(lp.xz,vec2(0.32,0.18))+TIME*0.24); float sheen=clamp(0.62+ring*0.18+drift*0.07,0.0,1.0); ALBEDO=mix(vec3(0.09,0.24,0.30),vec3(0.23,0.47,0.50),sheen); ROUGHNESS=0.24; METALLIC=0.04;}"
+		var water_material := ShaderMaterial.new()
+		water_material.shader = water_shader
+		_mesh(water_surface.commit(),Vector3(center_offset.x,water_level,center_offset.y),water_material)
 
 func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	var morrow_cover: bool = rendered_planet == "morrow"
@@ -929,21 +941,21 @@ func _make_ui() -> void:
 	status = _label("",14,Color("ffe0a8"))
 	status_backing = ColorRect.new()
 	status_backing.position = Vector2(28,78)
-	status_backing.size = Vector2(260,40)
+	status_backing.size = Vector2(210,48)
 	status_backing.color = Color("1c2426",0.96)
 	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_backing.hide()
 	root.add_child(status_backing)
-	status.position = Vector2(68,81)
-	status.size = Vector2(212,32)
+	status.position = Vector2(68,82)
+	status.size = Vector2(160,38)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(36,82)
-	status_icon.size = Vector2(24,24)
+	status_icon.position = Vector2(36,89)
+	status_icon.size = Vector2(22,22)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon.modulate = Color("e9b72f")
@@ -1407,8 +1419,17 @@ func _update_visuals() -> void:
 		var at: Vector3 = _target_position(id)+Vector3(0,3,0)
 		var label: Label = labels[id]
 		if id == "vein": label.text = "RESONANT SEAM · %d / %d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if model.state.ore_remaining > 0 else "DEPLETED CRYSTAL SEAM"
-		label.position = camera.unproject_position(at)-Vector2(label.size.x/2,20)
-		label.visible = id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 690 and label.position.x > 350
+		var screen_at: Vector2 = camera.unproject_position(at)
+		label.position = screen_at+Vector2(54,-22) if id == "vein" else screen_at-Vector2(label.size.x/2,20)
+		if id == "vein":
+			var ship_screen: Vector2 = camera.unproject_position(ship.position)
+			var ship_rect := Rect2(ship_screen-Vector2(78,38),Vector2(156,76))
+			if Rect2(label.position,label.size).intersects(ship_rect):
+				var left_position: Vector2 = screen_at-Vector2(label.size.x+18,22)
+				var above_position: Vector2 = screen_at-Vector2(label.size.x*0.5,label.size.y+22)
+				label.position = left_position if not Rect2(left_position,label.size).intersects(ship_rect) else above_position
+			label.position.x = clampf(label.position.x,365.0,1480.0-label.size.x)
+		label.visible = id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
 		label.modulate.a = 1.0
 
 func _target_position(id: String = "") -> Vector3:
@@ -2385,13 +2406,13 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(36,82)
-		status_icon.size = Vector2(24,24)
+		status_icon.position = Vector2(36,89)
+		status_icon.size = Vector2(22,22)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(68,81)
-		status.size = Vector2(212,32)
+		status.position = Vector2(68,82)
+		status.size = Vector2(160,38)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		status_backing.size = Vector2(260,40)
+		status_backing.size = Vector2(210,48)
 	status.text = text
 	toast_time = 6
 
