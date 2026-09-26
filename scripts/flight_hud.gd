@@ -214,7 +214,8 @@ func _build() -> void:
 	altitude_backing = ColorRect.new()
 	altitude_backing.position = Vector2(1402, 664)
 	altitude_backing.size = Vector2(184, 26)
-	altitude_backing.color = Color("dedad0")
+	# ALT is a dark inset readout within the shared ivory instrument housing.
+	altitude_backing.color = Color("1c2426")
 	altitude_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(altitude_backing)
 
@@ -308,7 +309,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1410,669,168,18),11,Color("1c2426"))
+	flight_readout = label_at("",Rect2(1410,669,168,18),11,Color("f6f2e8"))
 	flight_readout.visible = false
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
@@ -515,13 +516,15 @@ func show_group(group: String) -> void:
 	var page_start: int = palette_page * PALETTE_PAGE_CAPACITY
 	var visible_items: int = mini(PALETTE_PAGE_CAPACITY, maxi(0, entries.size()-page_start))
 	var pages: int = maxi(1,int(ceil(entries.size()/float(PALETTE_PAGE_CAPACITY))))
-	var controls_width: float = float(GROUPS.size()*50+6+40+(108 if pages > 1 else 0))
+	# Keep the compact category and paging rail on the same fitted width as the
+	# six-column matrix so its right edge meets the condition instrument cleanly.
+	var controls_width: float = float(5*40+4*6+4+(124 if pages > 1 else 32))
 	var grid_width: float = float(PALETTE_GRID_WIDTH)
 	var content_width: float = maxf(controls_width,grid_width)
 	var panel_height: float = 192.0
 	var panel_top: float = 870.0-panel_height
-	# Keep the fixed-capacity grid snug against the condition console at the
-	# right edge in both flight modes, regardless of the current item count.
+	# Keep the matrix and condition console together at the right edge in both
+	# flight modes. The housing grows left to fit the category and paging rail.
 	inventory_grid_origin = Vector2(1402.0-8.0-content_width,panel_top+68.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
 	grid_backing.size = Vector2(grid_width+8, 118)
@@ -551,8 +554,8 @@ func show_group(group: String) -> void:
 	var category_index: int = 0
 	for key: String in category_buttons:
 		Art.symbol(category_buttons[key],Palette.CATEGORY_ICONS[key],Palette.entry(GROUPS[key][0]).tint,key == group)
-		category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 50, panel_top+8)
-		category_buttons[key].size = Vector2(48, 48)
+		category_buttons[key].position = Vector2(inventory_grid_origin.x + category_index * 46, panel_top+8)
+		category_buttons[key].size = Vector2(40, 48)
 		category_buttons[key].visible = true
 		category_index += 1
 	if console_pod != null:
@@ -566,15 +569,15 @@ func show_group(group: String) -> void:
 	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	var controls_x: float = inventory_grid_origin.x+GROUPS.size()*50+6
+	var controls_x: float = inventory_grid_origin.x+228
 	page_previous.position = Vector2(controls_x,panel_top+12)
-	page_previous.size = Vector2(32, 42)
-	page_label.position = Vector2(controls_x+34,panel_top+20)
-	page_label.size = Vector2(36, 24)
-	page_next.position = Vector2(controls_x+72,panel_top+12)
-	page_next.size = Vector2(32, 42)
-	collapse_button.position = Vector2(controls_x+(108 if pages>1 else 0),panel_top+12)
-	collapse_button.size = Vector2(40, 42)
+	page_previous.size = Vector2(26, 40)
+	page_label.position = Vector2(controls_x+27,panel_top+20)
+	page_label.size = Vector2(32, 24)
+	page_next.position = Vector2(controls_x+62,panel_top+12)
+	page_next.size = Vector2(26, 40)
+	collapse_button.position = Vector2(controls_x+(92 if pages>1 else 0),panel_top+12)
+	collapse_button.size = Vector2(32, 40)
 	page_previous.visible = palette_expanded and pages > 1
 	page_next.visible = page_previous.visible
 	page_label.visible = page_previous.visible
@@ -767,9 +770,11 @@ func set_orbital_mode(enabled: bool) -> void:
 		# secondary navigation actions only when needed.
 		nav_pod.position = Vector2(16, 674)
 		nav_pod.size = Vector2(250, 196)
-		chart_backing.position = Vector2(16, 674)
-		chart_backing.size = Vector2(224, 196)
-		navigation.position = Vector2(21, 686)
+		# Lift the map aperture inside its corner housing so the scale title has
+		# its own line below the chart rather than crowding the lower map edge.
+		chart_backing.position = Vector2(16, 650)
+		chart_backing.size = Vector2(224, 220)
+		navigation.position = Vector2(21, 664)
 		navigation.size = Vector2(212, 170)
 		navigation_backing.visible = true
 		navigation_backing.position = Vector2(240, 727)
@@ -785,7 +790,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
-		chart_heading.position = Vector2(28, 851)
+		chart_heading.position = Vector2(28, 844)
 		chart_heading.size = Vector2(198, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true

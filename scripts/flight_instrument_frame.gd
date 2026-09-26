@@ -12,8 +12,11 @@ func _ready() -> void:
 func _draw() -> void:
 	draw_frame(self, Rect2(Vector2.ZERO, size))
 
-static func draw_frame(canvas: CanvasItem, rect: Rect2, chamfer: float = 8.0, rivets: bool = true) -> void:
-	var c: float = minf(chamfer, minf(rect.size.x, rect.size.y) * 0.25)
+static func draw_frame(canvas: CanvasItem, rect: Rect2, chamfer: float = 0.0, rivets: bool = true) -> void:
+	# Keep corner cuts in proportion to each instrument: small readouts stay
+	# compact while the larger map and cargo housings share a broader bevel.
+	var short_side: float = minf(rect.size.x, rect.size.y)
+	var c: float = minf(12.0, short_side * 0.12) if chamfer <= 0.0 else minf(chamfer, short_side * 0.25)
 	var points := PackedVector2Array([
 		rect.position + Vector2(c, 0),
 		rect.position + Vector2(rect.size.x - c, 0),
