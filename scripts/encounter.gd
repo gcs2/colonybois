@@ -309,15 +309,20 @@ func _terrain_base(x: float, z: float) -> float:
 	return Geography.surface_base(world_definition,x,z)
 
 func _distant_landform(x: float, z: float) -> float:
-	# Broad, warped bands create a low-contrast far horizon without extending the
-	# locally playable terrain or repeating the close-range procedural ripples.
+	# Warped, offset ranges layer a stronger silhouette behind the playable basin.
+	# This only shapes the distant rendered shell; gameplay terrain queries stay put.
 	var warp_x: float = sin((x+z)*0.006)*42.0
 	var warp_z: float = cos((x-z)*0.004)*54.0
 	var ridge: float = sin((x+warp_x)*0.018+cos((z+warp_z)*0.009)*1.4)
 	var shoulder: float = sin((z+warp_z)*0.013+sin((x+warp_x)*0.007)*1.1)
-	var broken_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*0.35
+	var broken_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*1.8
+	var far_ridge: float = sin((z+warp_z)*0.008+sin((x+warp_x)*0.006)*1.6)
+	var peak: float = pow(maxf(0.0,cos((x+warp_x)*0.011+sin((z+warp_z)*0.007))),6.0)
 	var amplitude: float = 0.8 if world_definition.archetype == "frozen" else 1.0
-	return (3.0+ridge*6.0+shoulder*2.0+broken_edge)*amplitude
+	if rendered_planet != "morrow":
+		var legacy_edge: float = cos((x-z)*0.025+sin((x+z)*0.008))*0.35
+		return (3.0+ridge*6.0+shoulder*2.0+legacy_edge)*amplitude
+	return (10.0+ridge*13.0+shoulder*6.0+broken_edge+far_ridge*3.0+peak*7.0)*amplitude
 
 func _mat(color: Color, emissive: bool = false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -408,6 +413,12 @@ func _make_world() -> void:
 				var visual_radius: float = maxf(0.0,radial_distance-far_start)
 				h -= visual_radius*visual_radius/3200.0
 				var color: Color = Geography.surface_color(world_definition,px,pz)
+				if rendered_planet == "morrow":
+					# Keep Morrow's rust palette while restoring shadow and distance
+					# separation lost to the warm full-scene lighting.
+					color = color.darkened(0.11)
+					var horizon_tint: Color = Color("747a73")
+					color = color.lerp(horizon_tint,far_blend*0.48)
 				surface.set_color(color)
 				surface.add_vertex(Vector3(px,h,pz))
 	surface.generate_normals()
@@ -417,12 +428,18 @@ func _make_world() -> void:
 	_mesh(surface.commit(),Vector3.ZERO,ground_material)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(world_definition.geography_seed)
-	var rock_mesh := SphereMesh.new()
-	rock_mesh.radial_segments = 7
-	rock_mesh.rings = 3
-	rock_mesh.radius = 1
-	rock_mesh.height = 2
-	var rock_mat := _mat(Color("52423c"))
+	var rock_meshes: Array[SphereMesh] = []
+	var rock_materials: Array[StandardMaterial3D] = []
+	var rock_palette: Array[Color] = [Color("52423c"),Color("73604f"),Color("4d6461"),Color("826959"),Color("514e59")]
+	for variant: int in range(rock_palette.size()):
+		var rock_mesh := SphereMesh.new()
+		rock_mesh.radial_segments = 7 if variant == 0 else 5 + (variant % 3) * 2
+		rock_mesh.rings = 3 if variant == 0 else 2 + (variant % 3)
+		rock_mesh.radius = 1
+		rock_mesh.height = 2
+		rock_meshes.append(rock_mesh)
+		rock_materials.append(_mat(rock_palette[variant]))
+	var rock_shapes: Array[Vector3] = [Vector3(0.9,0.72,1.3),Vector3(0.72,1.45,0.88),Vector3(1.32,0.82,0.9),Vector3(0.95,1.18,1.24),Vector3(1.25,1.22,0.76)]
 	for i: int in range(65):
 		var a: float = rng.randf()*TAU
 		var r: float = rng.randf_range(24,47)
@@ -430,13 +447,17 @@ func _make_world() -> void:
 		at.y = terrain_height(at.x,at.z)-0.4
 		var rock_size := Vector3(rng.randf_range(0.8,2.4),rng.randf_range(0.9,3.2),rng.randf_range(0.8,2.1))
 		var overlaps_defense: bool = false
+		if rendered_planet == "morrow":
+			for landmark: Vector2 in [Vector2(18,16),Vector2(9,-13),Vector2(8,-4),Vector2(-7,4)]:
+				if Vector2(at.x,at.z).distance_to(landmark) < 6.0: overlaps_defense = true
 		for id: String in SurfaceCombat.profiles(rendered_planet):
 			var site: Vector3 = SurfaceCombat.home(rendered_planet,id)
 			if Vector2(at.x,at.z).distance_to(Vector2(site.x,site.z)) < 6: overlaps_defense = true
 		if overlaps_defense: continue
-		var rock: MeshInstance3D = _mesh(rock_mesh,at,rock_mat)
-		rock.scale = rock_size
-		rock.rotation.y = a
+		var variant: int = i % rock_meshes.size() if rendered_planet == "morrow" else 0
+		var rock: MeshInstance3D = _mesh(rock_meshes[variant],at,rock_materials[variant])
+		rock.scale = rock_size*rock_shapes[variant] if rendered_planet == "morrow" else rock_size
+		rock.rotation = Vector3(sin(float(i)*1.7)*0.1,a,cos(float(i)*1.3)*0.1) if rendered_planet == "morrow" else Vector3(0,a,0)
 	# Shallow pools and sparse reed clusters frame the playable subjects.
 	var pool := SphereMesh.new()
 	pool.radius = 1
@@ -445,8 +466,9 @@ func _make_world() -> void:
 	water_shader.code = "shader_type spatial; varying vec3 wp; void vertex(){wp=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;} void fragment(){vec2 q=wp.xz-vec2(-23.0,0.0); float ring=sin(length(q)*1.35-TIME*0.48+sin(q.x*0.22+q.y*0.17)*0.45); float drift=sin(dot(q,vec2(0.32,0.18))+TIME*0.24); float sheen=clamp(0.62+ring*0.18+drift*0.07,0.0,1.0); ALBEDO=mix(vec3(0.09,0.24,0.30),vec3(0.23,0.47,0.50),sheen); ROUGHNESS=0.24; METALLIC=0.04;}"
 	var water_material := ShaderMaterial.new()
 	water_material.shader = water_shader
-	var water: MeshInstance3D = _mesh(pool,Vector3(-23,-0.6,0),water_material)
-	water.scale = Vector3(6.0,0.1,12.0)
+	var water_mesh: Mesh = _morrow_lake_mesh() if rendered_planet == "morrow" else pool
+	var water: MeshInstance3D = _mesh(water_mesh,Vector3(-23,-0.6,0),water_material)
+	if rendered_planet != "morrow": water.scale = Vector3(6.0,0.1,12.0)
 	water.visible = world_definition.archetype != "arid"
 	if world_definition.archetype == "frozen": water.material_override = _mat(Color("83b6c2"))
 	_make_ground_cover(rng)
@@ -473,7 +495,8 @@ func _make_world() -> void:
 			shore_pod.rotation.y = rng.randf() * TAU
 	for i: int in range(3):
 		var at := Vector3(-9+i*3,6+i*0.4,-3-i*1.2)
-		grazers.append(_asset("grazer",at,0.8 if i == 0 else 0.5))
+		var grazer_scale: float = (0.92 if i == 0 else 0.64) if rendered_planet == "morrow" else (0.8 if i == 0 else 0.5)
+		grazers.append(_asset("grazer",at,grazer_scale))
 		var motion := GrazerMotion.new()
 		motion.configure(grazers.back(),i)
 		grazer_motion.append(motion)
@@ -568,7 +591,27 @@ func _make_world() -> void:
 	beam = _mesh(cylinder,Vector3.ZERO,beam_material)
 	beam.visible = false
 
+func _morrow_lake_mesh() -> ArrayMesh:
+	# A low, irregular shoreline reads as a lake at the practical follow distance.
+	# It is a visual water surface only and does not change terrain or movement.
+	var water_surface := SurfaceTool.new()
+	water_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var segments: int = 48
+	for index: int in range(segments):
+		var angle_a: float = TAU*float(index)/float(segments)
+		var angle_b: float = TAU*float(index+1)/float(segments)
+		var radius_a: float = 1.0+sin(angle_a*3.0+0.6)*0.07+cos(angle_a*5.0-0.4)*0.035
+		var radius_b: float = 1.0+sin(angle_b*3.0+0.6)*0.07+cos(angle_b*5.0-0.4)*0.035
+		var edge_a := Vector3(cos(angle_a)*6.2*radius_a,0.0,sin(angle_a)*12.5*radius_a)
+		var edge_b := Vector3(cos(angle_b)*6.2*radius_b,0.0,sin(angle_b)*12.5*radius_b)
+		water_surface.add_vertex(Vector3.ZERO)
+		water_surface.add_vertex(edge_b)
+		water_surface.add_vertex(edge_a)
+	water_surface.generate_normals()
+	return water_surface.commit()
+
 func _make_ground_cover(rng: RandomNumberGenerator) -> void:
+	var morrow_cover: bool = rendered_planet == "morrow"
 	var leaf_surface := SurfaceTool.new()
 	leaf_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i: int in range(4):
@@ -577,13 +620,14 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	leaf_surface.generate_normals()
 	var shader := Shader.new()
 	shader.code = "shader_type spatial; render_mode cull_disabled; void vertex(){VERTEX.x+=sin(TIME*1.2+MODEL_MATRIX[3].x)*VERTEX.y*0.12;} void fragment(){ALBEDO=vec3(0.31,0.36,0.40)+COLOR.rgb*0.16; ROUGHNESS=0.95;}"
+	if morrow_cover:
+		shader.code = "shader_type spatial; render_mode cull_disabled; void vertex(){VERTEX.x+=sin(TIME*1.2+MODEL_MATRIX[3].x)*VERTEX.y*0.12;} void fragment(){ALBEDO=COLOR.rgb; ROUGHNESS=0.95;}"
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
 	batch.use_colors = true
 	batch.mesh = leaf_surface.commit()
-	var morrow_cover: bool = rendered_planet == "morrow"
 	var base_instance_count: int = 900 if morrow_cover else (160 if world_definition.archetype == "frozen" else 80 if world_definition.archetype == "arid" else 520)
 	var regional_cover: Array = surface_region_features.get("cover",[]) if morrow_cover else []
 	batch.instance_count = base_instance_count+regional_cover.size()
@@ -592,6 +636,7 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 	if morrow_cover:
 		additional_centers = [Vector2(-35,9),Vector2(34,12),Vector2(37,-15),Vector2(-31,-25),Vector2(20,-32)]
 	var additional_rng := RandomNumberGenerator.new()
+	var foreground_palette: Array[Color] = [Color("668b67"),Color("83a66f"),Color("6e9c96"),Color("b49a65"),Color("947b9b"),Color("ad8065")]
 	for i: int in range(base_instance_count):
 		var detail_rng: RandomNumberGenerator = rng
 		var center: Vector2
@@ -604,7 +649,8 @@ func _make_ground_cover(rng: RandomNumberGenerator) -> void:
 		var at: Vector2 = center+Vector2(detail_rng.randfn(0,3.5),detail_rng.randfn(0,3))
 		var size: float = detail_rng.randf_range(0.3,0.95)
 		batch.set_instance_transform(i,Transform3D(Basis(Vector3.UP,detail_rng.randf()*TAU).scaled(Vector3.ONE*size),Vector3(at.x,terrain_height(at.x,at.y),at.y)))
-		batch.set_instance_color(i,Color(detail_rng.randf(),0.25,detail_rng.randf()))
+		var generated_color := Color(detail_rng.randf(),0.25,detail_rng.randf())
+		batch.set_instance_color(i,foreground_palette[i%foreground_palette.size()] if morrow_cover else generated_color)
 	var cover_palette: Array[Color] = [Color("829780"),Color("93aa90"),Color("a1ad8d"),Color("71918b"),Color("b4a181"),Color("8b7886")]
 	for feature_index: int in range(regional_cover.size()):
 		var feature: Dictionary = regional_cover[feature_index]
