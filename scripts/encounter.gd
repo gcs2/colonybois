@@ -1033,17 +1033,20 @@ func _make_ui() -> void:
 	hud.navigation.landing_requested.connect(func() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",14,Color("ffe0a8"))
+	var notification_texture := AtlasTexture.new()
+	notification_texture.atlas = NOTIFICATION_PLAQUE
+	notification_texture.region = Rect2(256,358,1161,213)
 	status_plate = TextureRect.new()
-	status_plate.texture = NOTIFICATION_PLAQUE
-	status_plate.position = Vector2(-10,-66)
-	status_plate.size = Vector2(500,250)
+	status_plate.texture = notification_texture
+	status_plate.position = Vector2(12,60)
+	status_plate.size = Vector2(320,59)
 	status_plate.stretch_mode = TextureRect.STRETCH_SCALE
 	status_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_plate.z_index = 19
 	status_plate.hide()
 	root.add_child(status_plate)
-	status.position = Vector2(130,72)
-	status.size = Vector2(264,48)
+	status.position = Vector2(82,64)
+	status.size = Vector2(240,50)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1054,7 +1057,7 @@ func _make_ui() -> void:
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(74,86)
+	status_icon.position = Vector2(32,80)
 	status_icon.size = Vector2(18,18)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -1101,12 +1104,15 @@ func _make_ui() -> void:
 		root.add_child(locator)
 	for target_label: Label in [wreck_label,guardian_label]:
 		target_label.add_theme_font_size_override("font_size",12)
-		target_label.size = Vector2(250,44)
+		target_label.size = Vector2(190,40)
 		target_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		target_label.z_index = 2
+	var orbital_target_texture := AtlasTexture.new()
+	orbital_target_texture.atlas = ORBIT_TARGET_PLAQUE
+	orbital_target_texture.region = Rect2(348,213,1304,306)
 	orbital_target_plate = TextureRect.new()
-	orbital_target_plate.texture = ORBIT_TARGET_PLAQUE
-	orbital_target_plate.size = Vector2(440,163)
+	orbital_target_plate.texture = orbital_target_texture
+	orbital_target_plate.size = Vector2(230,54)
 	orbital_target_plate.stretch_mode = TextureRect.STRETCH_SCALE
 	orbital_target_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	orbital_target_plate.z_index = 1
@@ -1518,7 +1524,29 @@ func _update_visuals() -> void:
 	orbital_target_plate.visible = target_cue_visible
 	if target_cue_visible:
 		var target_screen: Vector2 = camera.unproject_position(OrbitalScene.WRECK_POSITION if show_wreck_cue else model.guardian_position())
-		orbital_target_plate.position = target_screen-Vector2(70,82)
+		var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+		var plate_size: Vector2 = orbital_target_plate.size
+		var plate_position := target_screen-Vector2(0,plate_size.y*0.5)
+		plate_position.x = clampf(plate_position.x,8,viewport_size.x-plate_size.x-8)
+		plate_position.y = clampf(plate_position.y,76,viewport_size.y-plate_size.y-8)
+		var target_plate_rect := Rect2(plate_position,plate_size)
+		var ship_screen: Vector2 = camera.unproject_position(ship.position)
+		var ship_clearance := Rect2(ship_screen-Vector2(42,42),Vector2(84,84))
+		if target_plate_rect.intersects(ship_clearance):
+			plate_position.y = clampf(ship_screen.y-plate_size.y-18,76,viewport_size.y-plate_size.y-8)
+			target_plate_rect.position = plate_position
+		if is_instance_valid(hud.palette_backing) and hud.palette_backing.visible:
+			var console_rect: Rect2 = hud.palette_backing.get_global_rect().grow(8)
+			if target_plate_rect.intersects(console_rect):
+				plate_position.y = clampf(console_rect.position.y-plate_size.y-12,76,viewport_size.y-plate_size.y-8)
+				target_plate_rect.position = plate_position
+			if target_plate_rect.intersects(ship_clearance):
+				plate_position.y = clampf(ship_screen.y-plate_size.y-18,76,viewport_size.y-plate_size.y-8)
+				target_plate_rect.position = plate_position
+		orbital_target_plate.position = plate_position
+		var target_label_position: Vector2 = plate_position+Vector2(25,7)
+		if show_wreck_cue: wreck_label.position = target_label_position
+		else: guardian_label.position = target_label_position
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
 	guide_arrow.visible = not paused and not _inspection_open() and surface_weapon.is_empty() and climate_tool.is_empty()
@@ -2689,11 +2717,11 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(74,86)
+		status_icon.position = Vector2(32,80)
 		status_icon.size = Vector2(18,18)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(130,72)
-		status.size = Vector2(264,48)
+		status.position = Vector2(82,64)
+		status.size = Vector2(240,50)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		status_plate.show()
