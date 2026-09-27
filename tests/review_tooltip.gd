@@ -39,6 +39,7 @@ func _run() -> void:
 	view.size_2d_override = Vector2i(1600, 900)
 	view.size_2d_override_stretch = true
 	view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	view.gui_embed_subwindows = true
 	root.add_child(view)
 	var hud: Control = load("res://scripts/flight_hud.gd").new()
 	view.add_child(hud)
