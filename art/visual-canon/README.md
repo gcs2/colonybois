@@ -38,3 +38,4 @@ The surface image is the user's pinned source. The other three are v2 designer p
 - [System travel behavior](../../docs/systems/SYSTEM_NAVIGATION.md)
 - [Production queue](../../docs/TASK_BOARD.md)
 - [Fresh focused UI shell candidates covering surface, orbit, approach, system and galaxy](ui-element-candidates/focused-shells-v3/README.md)
+- [Focused pictorial cutout candidates for Inventory, Marks, system Fly and galaxy equipment](ui-element-candidates/pictorial-cutouts-v4/README.md)

@@ -18,3 +18,5 @@ These are candidates, not final art approval. The five [v2 category pictograms](
 | galaxy-status-rail-v1.png | Galaxy map | Empty meters plus four equipment cells. |
 
 The [focused shell v3 set](focused-shells-v3/README.md) covers surface, orbit, approach, system and galaxy, but none of those shell images is wired into the game. The earlier v1 category-icon trial remains local and is superseded by the tracked v2 set. See [PROMPTS.md](PROMPTS.md) for initial prompt provenance and [v2 prompts](category-icons-v2/PROMPTS.md) for the current marks. Generated import sidecars and capture output remain local and must not be committed.
+
+The [v4 pictorial cutout candidates](pictorial-cutouts-v4/README.md) add isolated Inventory, Marks, system-action and galaxy-equipment artwork. They remain outside runtime pending game-size and alpha-edge review.
