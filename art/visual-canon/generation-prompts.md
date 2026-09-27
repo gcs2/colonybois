@@ -57,3 +57,23 @@ These are the actual prompts used to generate the three approved Morrow flight v
     Avoid: ship body below 5% or above 6.5% of image width, close-up ship, fuzzy terrain, depth of field, defocused foreground, tilt-shift, motion blur, cinematic view, changed lake/relay location, missing HUD elements, sparse terrain, blue Windows panels, rounded icon wells, copper borders, collage, triptych.
 
 These exact v2 images were approved by the user as static visual canon on 25 September 2026. Their UI text remains illustrative and is not runtime or campaign-state evidence.
+
+## Morrow connected-region composition proposal — 26 September 2026
+
+**Status:** concept-only; independent critic passes the macro composition. Not approved for release, not a reusable raster region, and not proof of runtime generation.
+
+**Selected output:** exec-0a4ea2b1-9a3f-42f8-9c2d-92fa5822ca14.png, copied to [morrow-connected-region-study-20260926.png](morrow-connected-region-study-20260926.png).
+
+**References:** approved Morrow surface ground-truth image; existing Morrow scout, lantern plant, basalt ore and pod grazer concept images; current 1080p runtime capture for scale/focus. Two earlier imagegen revisions are retained in the default generated-images folder but are not selected.
+
+**Final prompt:**
+
+Use case: non-shippable Morrow gameplay composition mock for visual review.
+
+Input images: Image 1 is the richer Morrow landscape concept to preserve. Image 2 controls the practical in-game player-follow view, scout size, and reachable-region scale. Image 3 controls the approved Morrow landscape palette and crafted low-poly painterly style.
+
+Change only the gameplay focus and near-foreground scale in Image 1. Keep the same continuous warm basin, teal water and natural shoreline, rolling rust-and-teal plains, dark basalt ridges, existing scout, existing two-spire relay, lantern flora, pod grazers and mineral seams. Keep the camera and scout prominence close to Image 2, with the route and interaction area prominent.
+
+Gameplay readability rule: use no depth-of-field blur anywhere on the reachable terrain or visible life. Keep the ship, foreground ground, plants, creatures, relay and mineral opportunities sharp. Allow only slight atmospheric color fade on the farthest mountain layers; no lens blur, bokeh, miniaturization, foreground blur band or tilt-shift. Reduce/remove the oversized corner plants and rocks so they cannot frame or obstruct the survey lane; nearby specimens stay small and legible at normal gameplay scale.
+
+Do not change the camera into isometric, top-down, 2.5D or RTS framing. Add no new props, creatures, structures, user-interface elements, text, labels, collage or map boundaries. Maintain the accepted hand-painted miniature-world identity through form, color, terrain scale and layered relief, not optical blur. This is a concept mock, not a game asset or representation of implemented procedural output.

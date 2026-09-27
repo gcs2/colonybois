@@ -68,3 +68,11 @@ The next asset loop is: environment specification → globe/geography review →
 ## Evidence
 
 Generator checks cover repeated seeds, changed seeds, bounded physical fields, climate differences, longitude seam, landable-site constraint, region/globe agreement, identical rebuilt texture data, cache eviction and climate changes preserving geography. Atlas integration verifies shared map resources. Strategic UI checks verify persistent seeds, climate blending and markers attached to the globe. Captures and automated checks do not establish native control feel, final art quality or enjoyable expeditions.
+
+## Connected-region visual proposal — 26 September 2026
+
+The style proposal [morrow-connected-region-study-20260926.png](../../art/visual-canon/morrow-connected-region-study-20260926.png) was created from the approved Morrow surface reference and already-owned creature/prop concepts. It is non-approved concept art, not a background texture, region tile, accepted Tripo asset or claim about current runtime. Independent review passes its macro composition only.
+
+Carry these composition rules into the reusable habitat grammar: readable relief and layered horizon; continuous basin, shore and plain transitions; geological outcrops and mineral seams grouped with their landforms; plant and fauna clusters driven by moisture and terrain; one or two stable landmarks to orient travel; open lanes around the scout and scan targets. Keep nearby gameplay subjects sharp. The critique rejects depth-of-field blur in gameplay; retain the existing 0.36-radian player-follow view and use only gentle distance haze if it helps the horizon.
+
+The first implementation remains a bounded connected slice, not whole-sphere completion: Morrow Basin plus an adjacent 512 m region sampled from the shared spherical recipe. A new campaign can receive a different full seed, stored with the save and generator version. In that campaign, globe and surface geography, habitat, stable feature IDs and saved deltas must agree and persist on revisit. Reuse suitable existing Tripo/runtime models through shared habitat kits after scale and repeated-use review; make no bespoke one-off world art. See [the comparison and critique record](../reviews/VIEW_MOCK_COVERAGE.md#morrow-connected-region-composition-mock--26-september-2026).

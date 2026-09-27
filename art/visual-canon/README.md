@@ -41,3 +41,9 @@ The surface image is the user's pinned source. The other three are v2 designer p
 [flight-hud-layout-target-20260926.svg](flight-hud-layout-target-20260926.svg) records the measured surface HUD arrangement used for the current implementation pass. It is a 1600×900 layout-only proposal: the field and glyphs are placeholders, so this image does not join the approved world-art set. The proportions, tab attachment, margins, chart footprint and housing rhythm were compared against the approved Morrow surface reference and actual 1080p/1440p runtime captures. Independent review passes the HUD geometry. The current glowing cards and their pictograms, dots, spacing and selected-state edge remain important visual cues.
 
 See [the HUD and camera review](../../docs/reviews/FLIGHT_HUD_REVIEW.md#hud-layout-and-camera-view-study--26-september-2026) for capture paths, camera pitch comparisons, critique scope and remaining whole-world/player-acceptance gates.
+
+## Morrow connected-region concept proposal — 26 September 2026
+
+[morrow-connected-region-study-20260926.png](morrow-connected-region-study-20260926.png) is a generated concept proposal based on the approved Morrow surface reference and existing Tripo concept candidates. Independent review passes it only as high-level guidance for basin-to-shore transitions, habitat clustering, readable route space and geological landmarks. It is not approved game art, an in-game texture or proof of procedural content.
+
+The reviewer recommends no depth-of-field blur in gameplay, with reachable terrain and life kept sharp and only restrained distance haze. Keep the existing 0.36-radian follow camera; the concept is not exact runtime framing. See [the comparison and critique record](../../docs/reviews/VIEW_MOCK_COVERAGE.md#morrow-connected-region-composition-mock--26-september-2026).
