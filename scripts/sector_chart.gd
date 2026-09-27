@@ -49,6 +49,9 @@ class GalaxyStatusRail extends Control:
 			button.position = Vector2(x0+31*sx,77*sy)
 			button.size = Vector2(150*sx,210*sy)
 			button.tooltip_text = "No installed module" if module_ids[i].is_empty() else module_names[i]+" · installed ship module"
+			if module_ids[i].is_empty():
+				var bay_center := Vector2(x0+106*sx,264*sy)
+				draw_string(ThemeDB.fallback_font,bay_center,"EMPTY",HORIZONTAL_ALIGNMENT_CENTER,150*sx,12,Color(0.78,0.78,0.72,0.72))
 	func _draw_meter(caption: String, value: float, maximum: float, box: Rect2, tint: Color, sx: float, sy: float) -> void:
 		var font: Font = ThemeDB.fallback_font
 		var top: float = box.position.y+1*sy
@@ -129,7 +132,8 @@ class StarGraph extends Control:
 	var star_sprite: Texture2D
 	func view_center() -> Vector2: return size*0.5
 	func reset_view() -> void:
-		magnification = 1; pan = Vector2.ZERO
+		# Frame the spiral and its inhabited arm together at the ordinary entry zoom.
+		magnification = 0.2; pan = Vector2.ZERO
 		focus_pc = Galaxy.position(campaign.sector.system_by_id(campaign.sector.state.flagship.system))
 		queue_redraw()
 	func overview() -> void:
@@ -169,19 +173,28 @@ class StarGraph extends Control:
 			dust = dust_cache[campaign.sector.state.seed]; return
 		# One cached faint density texture. The selectable stars remain world data.
 		var img := Image.create(512,512,false,Image.FORMAT_RGBA8)
-		var noise := FastNoiseLite.new(); noise.seed = campaign.sector.state.seed; noise.frequency = 0.11
+		var noise := FastNoiseLite.new(); noise.seed = campaign.sector.state.seed; noise.frequency = 0.075
 		for x: int in range(512):
 			for y: int in range(512):
 				var pos: Vector2 = Vector2(x,y)/512*220-Vector2.ONE*110
 				var r: float = pos.length()
 				var theta: float = atan2(pos.y,pos.x)
 				var arm_angle: float = (log(1+r)-log(59.0))*1.32
-				var delta: float = absf(wrapf(theta-arm_angle,-PI/4,PI/4))*r
-				var arm: float = exp(-pow(delta/(1.1+r*0.055),2))*smoothstep(102,78,r)
-				var core: float = exp(-r*r/180)
-				var detail: float = 0.75+noise.get_noise_2d(x,y)*0.65
-				var tone: Color = Color("737496").lerp(Color("ffe0a0"),core)
-				tone.a = clampf(arm*0.25*detail+core*0.8+exp(-r/30)*0.025,0,0.9)
+				var delta: float = PI
+				for arm_index: int in range(4):
+					var arm_delta: float = absf(wrapf(theta-arm_angle-arm_index*TAU/4.0,-PI,PI))*r
+					delta = minf(delta,arm_delta)
+				var edge: float = smoothstep(108,88,r)
+				var arm: float = exp(-pow(delta/(1.35+r*0.045),2))*edge
+				var core: float = exp(-r*r/300)
+				var bulge: float = exp(-r/24.0)
+				var cloud: float = 0.72+noise.get_noise_2d(x,y)*0.48
+				var dust_lane: float = smoothstep(-0.18,0.36,noise.get_noise_2d(x*1.8+91,y*1.8-43))
+				var density: float = clampf((arm*0.42+exp(-r/66.0)*0.16+core*0.68)*cloud*(0.58+dust_lane*0.42),0,0.92)
+				var warm: float = clampf(core*0.8+bulge*0.22,0,1)
+				var tone: Color = Color("596a9a").lerp(Color("d1b37d"),warm)
+				tone = tone.lerp(Color("a5b2cf"),clampf(arm*0.55,0,0.55))
+				tone.a = density
 				img.set_pixel(x,y,tone)
 
 		img.generate_mipmaps(); dust = ImageTexture.create_from_image(img)
@@ -269,11 +282,19 @@ class StarGraph extends Control:
 
 		draw_arc(origin,12,0,TAU,36,Color("f9e5a2"),1.5,true)
 		draw_colored_polygon(PackedVector2Array([origin+Vector2(0,-9),origin+Vector2(-5,7),origin+Vector2(0,4),origin+Vector2(5,7)]),Color("f9e5a2"))
-		if in_front(Galaxy.position(current)):
+		var ship_pc: Vector2 = Galaxy.position(current)
+		if campaign.traveling():
+			var flagship: Dictionary = campaign.sector.state.flagship
+			var destination: Dictionary = campaign.sector.system_by_id(flagship.destination)
+			ship_pc = Galaxy.position(current).lerp(Galaxy.position(destination),travel_fraction)
+		if in_front(ship_pc):
 			var origin_name: String = str(current.name) if current.visited or current.get("charted",false) else "Current system"
 			# Model-derived cutout keeps the flagship recognizable at galaxy scale.
-			draw_texture_rect_region(SCOUT_CHART,Rect2(origin+Vector2(-32,-52),Vector2(60,38)),Rect2(96,151,326,202))
-			draw_string(font,origin+Vector2(36,-28),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f9e5a2"))
+			var ship_screen: Vector2 = project(ship_pc)
+			var ship_scale: float = clampf(0.72+log(maxf(0.055,magnification)+0.5)*0.18,0.62,1.0)
+			draw_texture_rect_region(SCOUT_CHART,Rect2(ship_screen+Vector2(-16,-29)*ship_scale,Vector2(32,20)*ship_scale),Rect2(96,151,326,202))
+			if magnification > 0.34:
+				draw_string(font,ship_screen+Vector2(20,-13),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("f9e5a2"))
 		var target: Dictionary = campaign.sector.system_by_id(selected_id)
 		if not target.is_empty() and in_front(Galaxy.position(target)) and campaign.sector.is_revealed(selected_id):
 			var at: Vector2 = point(target)
@@ -361,11 +382,11 @@ func _ready() -> void:
 	graph.selected.connect(select_system)
 	graph.activated.connect(activate_system)
 	Stage.world(stage,graph)
-	var side: VBoxContainer = Stage.sidebar(stage,360)
+	var side: VBoxContainer = Stage.sidebar(stage,390)
 	var card_panel: PanelContainer = side.get_parent()
-	card_panel.offset_left = -390; card_panel.offset_right = -30; card_panel.offset_top = 218; card_panel.offset_bottom = 566
+	card_panel.offset_left = -420; card_panel.offset_right = -30; card_panel.offset_top = 202; card_panel.offset_bottom = 610
 	var card_padding := StyleBoxEmpty.new()
-	card_padding.set_content_margin_all(26)
+	card_padding.set_content_margin_all(24)
 	card_panel.add_theme_stylebox_override("panel",card_padding)
 	var card_crop := AtlasTexture.new()
 	card_crop.atlas = load(GALAXY_CARD)
@@ -376,26 +397,26 @@ func _ready() -> void:
 	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
 	panel_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	panel_art.offset_left = -390; panel_art.offset_right = -30; panel_art.offset_top = 218; panel_art.offset_bottom = 566
+	panel_art.offset_left = -420; panel_art.offset_right = -30; panel_art.offset_top = 202; panel_art.offset_bottom = 610
 	stage.add_child(panel_art)
 	stage.move_child(panel_art,stage.get_children().find(card_panel))
 	card_panel.move_to_front()
-	side.add_theme_constant_override("separation",3)
+	side.add_theme_constant_override("separation",2)
 	card_title = label("SYSTEM",19)
-	card_title.custom_minimum_size.y = 38
+	card_title.custom_minimum_size.y = 34
 	card_title.add_theme_color_override("font_color",Color("f1e5c7"))
 	side.add_child(card_title)
 	worlds_scroll = ScrollContainer.new()
-	worlds_scroll.custom_minimum_size.y = 80
+	worlds_scroll.custom_minimum_size.y = 104
 	worlds_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	worlds_scroll.tooltip_text = "Scroll to see every planet in this system"
 	side.add_child(worlds_scroll)
 	worlds = VBoxContainer.new()
 	worlds.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	worlds.add_theme_constant_override("separation",3)
+	worlds.add_theme_constant_override("separation",1)
 	worlds_scroll.add_child(worlds)
 	world_more_hint = label("",12)
-	world_more_hint.custom_minimum_size.y = 40
+	world_more_hint.custom_minimum_size.y = 21
 	world_more_hint.add_theme_color_override("font_color",Color("b7bdb9"))
 	side.add_child(world_more_hint)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
@@ -403,7 +424,7 @@ func _ready() -> void:
 	inspect_system.text = ""; inspect_system.custom_minimum_size = Vector2(48,48)
 	header.add_child(inspect_system); header.move_child(inspect_system,1)
 	details = label("")
-	details.custom_minimum_size = Vector2(0,38)
+	details.custom_minimum_size = Vector2(0,42)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_theme_color_override("font_color",Color("e4e5df"))
 	side.add_child(details)
@@ -411,7 +432,7 @@ func _ready() -> void:
 	travel.custom_minimum_size.y = 38
 	side.add_child(travel)
 	status = label("",15)
-	status.custom_minimum_size.y = 32
+	status.custom_minimum_size.y = 27
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(status)
 	progress = ProgressBar.new()
@@ -487,9 +508,30 @@ func select_system(id: String) -> void:
 		if not system.visited and not system.get("charted",false) and pid != system.planets[0]: continue
 		var title: String = Geography.definition(world).name if system.visited or system.get("charted",false) else "Approach first orbital body"
 		var item: Button = button(title,func() -> void: selected_planet = world; graph.selected_planet_id = world; refresh())
-		item.icon = UI.icon("planet_map")
 		item.set_meta("planet",world)
-		item.custom_minimum_size.y = 35
+		item.custom_minimum_size.y = 45
+		# Put the planet glyph in the card's engraved circle and keep its name
+		# in the clear right-hand text lane. The button remains one keyboard stop.
+		item.add_theme_color_override("font_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_hover_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_pressed_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_focus_color",Color(1,1,1,0))
+		var icon_view := TextureRect.new()
+		icon_view.texture = UI.icon("planet_map")
+		icon_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_view.position = Vector2(78,6)
+		icon_view.size = Vector2(32,32)
+		icon_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(icon_view)
+		var name_view := label(title,15)
+		name_view.position = Vector2(148,0)
+		name_view.size = Vector2(188,45)
+		name_view.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		name_view.autowrap_mode = TextServer.AUTOWRAP_OFF
+		name_view.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		name_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(name_view)
 		item.disabled = campaign.traveling()
 		worlds.add_child(item)
 	world_more_hint.text = "%d more worlds · scroll list" % (worlds.get_child_count()-2) if worlds.get_child_count() > 2 else ""
@@ -513,7 +555,12 @@ func refresh() -> void:
 	status.tooltip_text = "Reserve fuel or buy recharge away from home."
 	for item: Node in worlds.get_children():
 		item.disabled = campaign.traveling()
-		UI.instrument(item,"planet_map",UI.NAV,item.get_meta("planet","") == selected_planet)
+		UI.instrument(item,"",UI.NAV,item.get_meta("planet","") == selected_planet)
+		item.add_theme_color_override("font_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_hover_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_pressed_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_focus_color",Color(1,1,1,0))
+		item.add_theme_color_override("font_disabled_color",Color(1,1,1,0))
 		UI.focus_cue(item)
 	progress.visible = campaign.traveling()
 	close.disabled = campaign.traveling()
