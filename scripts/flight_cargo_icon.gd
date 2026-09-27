@@ -32,6 +32,28 @@ const TOOL_ATLAS_IDS: Dictionary = {
 	"shield":"shield",
 	"rally_call":"rally_call",
 }
+## Tight visible-alpha bounds measured inside equipment-objects-v1.png cells.
+## The atlas contains soft transparent edge pixels outside these bounds; using
+## the opaque artwork bounds lets the existing slot aperture show more of each
+## item without changing slot size, texture tint, or source art.
+const EQUIPMENT_VISIBLE_BOUNDS: Dictionary = {
+	"colony_kit": Rect2(44, 85, 265, 228),
+	"shield": Rect2(36, 79, 269, 234),
+	"rally_call": Rect2(58, 50, 195, 263),
+	"heat_ray": Rect2(4, 105, 283, 208),
+	"cool_ray": Rect2(39, 84, 274, 198),
+	"cloud_accumulator": Rect2(0, 0, 284, 314),
+	"cloud_vacuum": Rect2(73, 0, 156, 314),
+	"seeker": Rect2(14, 0, 267, 307),
+	"ground_bomb": Rect2(38, 49, 275, 224),
+	"hold": Rect2(0, 27, 305, 286),
+	"emitter": Rect2(23, 0, 271, 313),
+	"drive": Rect2(22, 34, 271, 247),
+	"hull": Rect2(36, 6, 277, 232),
+	"energy": Rect2(0, 0, 255, 250),
+	"water": Rect2(63, 0, 250, 247),
+	"alloy": Rect2(0, 25, 289, 211),
+}
 
 static func tool_texture_for(tool_id: String) -> Texture2D:
 	if tool_id == "pack":
@@ -46,13 +68,14 @@ static func tool_texture_for(tool_id: String) -> Texture2D:
 	# a visually similar but misleading object.
 	if not TOOL_ATLAS_IDS.has(tool_id):
 		return null
-	return preload("res://scripts/communicator_style.gd").equipment_icon(str(TOOL_ATLAS_IDS[tool_id]))
+	var atlas_id := str(TOOL_ATLAS_IDS[tool_id])
+	return _trim_equipment_texture(atlas_id)
 
 static func texture_for(entry_id: String) -> Texture2D:
 	if entry_id.begins_with("cargo:"):
 		var item_id: String = entry_id.trim_prefix("cargo:")
 		if item_id in ["alloy", "water", "glass", "colony_kit"]:
-			return preload("res://scripts/communicator_style.gd").equipment_icon(item_id)
+			return _trim_equipment_texture(item_id)
 		return null
 
 	if entry_id.begins_with("specimen:"):
@@ -60,3 +83,19 @@ static func texture_for(entry_id: String) -> Texture2D:
 		return SPECIMEN_TEXTURES.get(species_id) as Texture2D
 
 	return null
+
+static func _trim_equipment_texture(item_id: String) -> Texture2D:
+	var texture: Texture2D = preload("res://scripts/communicator_style.gd").equipment_icon(item_id)
+	if not texture is AtlasTexture or not EQUIPMENT_VISIBLE_BOUNDS.has(item_id):
+		return texture
+	var atlas_texture := texture as AtlasTexture
+	var bounds: Rect2 = EQUIPMENT_VISIBLE_BOUNDS[item_id]
+	var cropped := AtlasTexture.new()
+	cropped.atlas = atlas_texture.atlas
+	var crop_size := Vector2(
+		minf(bounds.size.x, atlas_texture.region.size.x - bounds.position.x),
+		minf(bounds.size.y, atlas_texture.region.size.y - bounds.position.y)
+	)
+	cropped.region = Rect2(atlas_texture.region.position + bounds.position, crop_size)
+	cropped.filter_clip = true
+	return cropped
