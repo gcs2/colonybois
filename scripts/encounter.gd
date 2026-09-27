@@ -1085,8 +1085,12 @@ func _make_ui() -> void:
 		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
 		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
 		fleet_button.icon = load("res://assets/ui/flight/fleet.svg")
-		fleet_button.custom_minimum_size.x = 104
-		fleet_button.add_theme_constant_override("icon_max_width",32)
+		fleet_button.custom_minimum_size.x = 150
+		fleet_button.add_theme_font_size_override("font_size",11)
+		fleet_button.add_theme_constant_override("icon_max_width",28)
+		var fleet_plate := Instruments.box(Instruments.NAV)
+		fleet_plate.bg_color.a = 0.84
+		fleet_button.add_theme_stylebox_override("normal",fleet_plate)
 		for id: String in campaign.fleet.catalog:
 			var bar := ProgressBar.new(); bar.custom_minimum_size = Vector2(78,10)
 			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER; bar.show_percentage = false
@@ -3955,7 +3959,7 @@ func _refresh_fleet_ui() -> void:
 	if fleet_strip == null: return
 	var ids: Array = campaign.fleet.active_ids()
 	fleet_strip.visible = not _inspection_open() and (campaign.fleet.capacity(campaign) > 0 or not ids.is_empty())
-	fleet_button.text = "%d / %d" % [ids.size(),campaign.fleet.capacity(campaign)]
+	fleet_button.text = "ESCORTS %d/%d" % [ids.size(),campaign.fleet.capacity(campaign)]
 	fleet_button.tooltip_text = "Allied fleet · %s\nInspect hull, return escorts or arrange dock repairs." % ("assist attacks" if campaign.fleet.state.assist else "following, holding fire")
 	for id: String in fleet_bars:
 		var bar: ProgressBar = fleet_bars[id]
