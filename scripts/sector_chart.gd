@@ -133,7 +133,7 @@ class StarGraph extends Control:
 	func view_center() -> Vector2: return size*0.5
 	func reset_view() -> void:
 		# Frame the spiral and its inhabited arm together at the ordinary entry zoom.
-		magnification = 0.2; pan = Vector2.ZERO
+		magnification = 0.2; yaw = 2.4; pan = Vector2(-70,-80)
 		focus_pc = Galaxy.position(campaign.sector.system_by_id(campaign.sector.state.flagship.system))
 		queue_redraw()
 	func overview() -> void:
@@ -382,11 +382,11 @@ func _ready() -> void:
 	graph.selected.connect(select_system)
 	graph.activated.connect(activate_system)
 	Stage.world(stage,graph)
-	var side: VBoxContainer = Stage.sidebar(stage,390)
+	var side: VBoxContainer = Stage.sidebar(stage,300)
 	var card_panel: PanelContainer = side.get_parent()
-	card_panel.offset_left = -420; card_panel.offset_right = -30; card_panel.offset_top = 202; card_panel.offset_bottom = 610
+	card_panel.offset_left = -330; card_panel.offset_right = -30; card_panel.offset_top = 210; card_panel.offset_bottom = 525
 	var card_padding := StyleBoxEmpty.new()
-	card_padding.set_content_margin_all(24)
+	card_padding.set_content_margin_all(18)
 	card_panel.add_theme_stylebox_override("panel",card_padding)
 	var card_crop := AtlasTexture.new()
 	card_crop.atlas = load(GALAXY_CARD)
@@ -397,18 +397,28 @@ func _ready() -> void:
 	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
 	panel_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	panel_art.offset_left = -420; panel_art.offset_right = -30; panel_art.offset_top = 202; panel_art.offset_bottom = 610
+	panel_art.offset_left = -330; panel_art.offset_right = -30; panel_art.offset_top = 210; panel_art.offset_bottom = 525
 	stage.add_child(panel_art)
 	stage.move_child(panel_art,stage.get_children().find(card_panel))
+	# The approved housing has two engraved planet circles. A live system can have
+	# any number of planets, so its inner well is a clean dynamic scroll surface.
+	var content_well := ColorRect.new()
+	content_well.color = Color("171e20")
+	content_well.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content_well.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content_well.offset_left = 20; content_well.offset_right = -20
+	content_well.offset_top = 25; content_well.offset_bottom = -21
+	panel_art.add_child(content_well)
 	card_panel.move_to_front()
 	side.add_theme_constant_override("separation",2)
 	card_title = label("SYSTEM",19)
-	card_title.custom_minimum_size.y = 34
+	card_title.custom_minimum_size.y = 30
 	card_title.add_theme_color_override("font_color",Color("f1e5c7"))
 	side.add_child(card_title)
 	worlds_scroll = ScrollContainer.new()
-	worlds_scroll.custom_minimum_size.y = 104
+	worlds_scroll.custom_minimum_size.y = 90
 	worlds_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	worlds_scroll.follow_focus = true
 	worlds_scroll.tooltip_text = "Scroll to see every planet in this system"
 	side.add_child(worlds_scroll)
 	worlds = VBoxContainer.new()
@@ -416,7 +426,7 @@ func _ready() -> void:
 	worlds.add_theme_constant_override("separation",1)
 	worlds_scroll.add_child(worlds)
 	world_more_hint = label("",12)
-	world_more_hint.custom_minimum_size.y = 21
+	world_more_hint.custom_minimum_size.y = 18
 	world_more_hint.add_theme_color_override("font_color",Color("b7bdb9"))
 	side.add_child(world_more_hint)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
@@ -424,15 +434,15 @@ func _ready() -> void:
 	inspect_system.text = ""; inspect_system.custom_minimum_size = Vector2(48,48)
 	header.add_child(inspect_system); header.move_child(inspect_system,1)
 	details = label("")
-	details.custom_minimum_size = Vector2(0,42)
+	details.custom_minimum_size = Vector2(0,38)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_theme_color_override("font_color",Color("e4e5df"))
 	side.add_child(details)
 	travel = button("",func() -> void: travel_requested.emit(selected_planet))
-	travel.custom_minimum_size.y = 38
+	travel.custom_minimum_size.y = 34
 	side.add_child(travel)
-	status = label("",15)
-	status.custom_minimum_size.y = 27
+	status = label("",12)
+	status.custom_minimum_size.y = 24
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(status)
 	progress = ProgressBar.new()
@@ -509,7 +519,7 @@ func select_system(id: String) -> void:
 		var title: String = Geography.definition(world).name if system.visited or system.get("charted",false) else "Approach first orbital body"
 		var item: Button = button(title,func() -> void: selected_planet = world; graph.selected_planet_id = world; refresh())
 		item.set_meta("planet",world)
-		item.custom_minimum_size.y = 45
+		item.custom_minimum_size.y = 43
 		# Put the planet glyph in the card's engraved circle and keep its name
 		# in the clear right-hand text lane. The button remains one keyboard stop.
 		item.add_theme_color_override("font_color",Color(1,1,1,0))
@@ -520,13 +530,13 @@ func select_system(id: String) -> void:
 		icon_view.texture = UI.icon("planet_map")
 		icon_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon_view.position = Vector2(78,6)
+		icon_view.position = Vector2(10,5)
 		icon_view.size = Vector2(32,32)
 		icon_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		item.add_child(icon_view)
 		var name_view := label(title,15)
-		name_view.position = Vector2(148,0)
-		name_view.size = Vector2(188,45)
+		name_view.position = Vector2(50,0)
+		name_view.size = Vector2(188,43)
 		name_view.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_view.autowrap_mode = TextServer.AUTOWRAP_OFF
 		name_view.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
