@@ -117,7 +117,7 @@ func _ready() -> void:
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
 	star.mesh = sphere; star.material_override = stellar; world.add_child(star)
-	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.45; world.add_child(ship_marker)
+	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.75; world.add_child(ship_marker)
 	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
 		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
@@ -393,10 +393,10 @@ func update_ship() -> void:
 		ship_marker_visible = show_scout
 		for visual: VisualInstance3D in ship_visuals: visual.visible = show_scout
 	if not ship_marker_visible: return
-	var from: Vector3 = bodies[record.planet].position if bodies.has(record.planet) else Vector3(-40,0,-40)
-	var to: Vector3 = bodies[record.target_planet].position if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,0,40)
+	var from: Vector3 = bodies[record.planet].position+Vector3(0,bodies[record.planet].radius+6.0,0) if bodies.has(record.planet) else Vector3(-40,6,-40)
+	var to: Vector3 = bodies[record.target_planet].position+Vector3(0,bodies[record.target_planet].radius+6.0,0) if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,6,40)
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
-	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,5+(sin(fraction*PI)*4 if campaign.traveling() else 0),0)
+	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,sin(fraction*PI)*4.0 if campaign.traveling() else 0,0)
 	var forward: Vector3 = to-from if campaign.traveling() else bodies[selected_planet].position-from if selected_planet != record.planet and bodies.has(selected_planet) else Vector3(-from.z,0,from.x)
 	if forward.length_squared() > 0.0001: ship_marker.look_at(ship_marker.position+forward,Vector3.UP)
 
