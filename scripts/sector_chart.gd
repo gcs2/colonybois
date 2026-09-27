@@ -7,6 +7,8 @@ const Stage = preload("res://scripts/navigation_stage.gd")
 const UI = preload("res://scripts/flight_interface.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const Session = preload("res://scripts/expedition_session.gd")
+const GALAXY_CARD := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/galaxy-selected-system-card.png"
+const GALAXY_RAIL := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/galaxy-status-equipment-rail.png"
 var campaign: RefCounted
 var selected_system: String = "s0"
 var selected_planet: String = "morrow"
@@ -19,6 +21,83 @@ var travel: Button
 var close: Button
 var inspect_system: Button
 var progress: ProgressBar
+var status_rail: GalaxyStatusRail
+var card_title: Label
+
+class GalaxyStatusRail extends Control:
+	const Interface = preload("res://scripts/flight_interface.gd")
+	var campaign: RefCounted
+	var plate: Texture2D
+	var module_buttons: Array[TextureButton] = []
+	var module_ids: Array[String] = []
+	var module_names: Array[String] = []
+	func _draw() -> void:
+		if plate == null or campaign == null: return
+		draw_texture_rect(plate,Rect2(Vector2.ZERO,size),false)
+		var sx: float = size.x/1774.0; var sy: float = size.y/887.0
+		var state: Dictionary = campaign.field.state
+		var hull_max: float = maxf(1.0,campaign.field.max_capacity("hull"))
+		var energy_max: float = maxf(1.0,campaign.field.max_capacity("energy"))
+		_draw_meter("HULL",float(state.hull),hull_max,Rect2(118*sx,428*sy,389*sx,55*sy),Color("e86649"),sx,sy)
+		_draw_meter("ENERGY",float(state.energy),energy_max,Rect2(118*sx,528*sy,389*sx,55*sy),Color("f3ba3f"),sx,sy)
+		for i: int in range(module_buttons.size()):
+			var button: TextureButton = module_buttons[i]
+			var x0: float = [672.0,923.0,1176.0,1427.0][i]*sx
+			button.position = Vector2(x0+31*sx,368*sy)
+			button.size = Vector2(150*sx,210*sy)
+			button.tooltip_text = "No installed module" if module_ids[i].is_empty() else module_names[i]+" · installed ship module"
+	func _draw_meter(caption: String, value: float, maximum: float, box: Rect2, tint: Color, sx: float, sy: float) -> void:
+		var font: Font = ThemeDB.fallback_font
+		var top: float = box.position.y+1*sy
+		draw_string(font,Vector2(box.position.x,top-7*sy),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("1a2022"))
+		var bar_x: float = box.position.x
+		var bar_y: float = box.position.y+18*sy
+		var total_w: float = box.size.x
+		var gap: float = 4*sx
+		var cell_w: float = (total_w-gap*8)/9
+		for i: int in range(9):
+			var cell := Rect2(bar_x+i*(cell_w+gap),bar_y,cell_w,22*sy)
+			draw_rect(cell,Color("272b2b"),true)
+			if value/maximum*9.0 > i: draw_rect(cell.grow(-2*sx),tint,true)
+		draw_string(font,Vector2(bar_x+total_w+7*sx,bar_y+17*sy),"%d / %d" % [roundi(value),roundi(maximum)],HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("1a2022"))
+	func bind(session: RefCounted) -> void:
+		campaign = session
+		var installed: Array = campaign.commerce.state.upgrades
+		var next_ids: Array[String] = []
+		var next_names: Array[String] = []
+		for i: int in range(4):
+			if i < installed.size():
+				var id: String = str(installed[i])
+				next_ids.append(id)
+				next_names.append(str(campaign.commerce.catalog.upgrades.get(id,{}).get("name",id.capitalize())))
+			else:
+				next_ids.append(""); next_names.append("Unfitted module bay")
+		if module_ids == next_ids:
+			queue_redraw(); return
+		module_ids = next_ids; module_names = next_names
+		for i: int in range(4):
+			var button: TextureButton = module_buttons[i]
+			var id: String = module_ids[i]
+			if id.is_empty():
+				button.texture_normal = null; button.texture_hover = null; button.texture_focused = null
+			else:
+				var family: String = str(campaign.commerce.catalog.upgrades.get(id,{}).get("family",""))
+				var icon_id: String = {"hull":"defense","energy":"energy","drive":"ascend","hold":"cargo"}.get(family,"systems")
+				button.texture_normal = Interface.icon(icon_id)
+				button.texture_hover = Interface.icon(icon_id)
+				button.texture_focused = Interface.icon(icon_id)
+			button.disabled = id.is_empty()
+		queue_redraw()
+	func _ready() -> void:
+		for i: int in range(4):
+			var button := TextureButton.new()
+			button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+			button.focus_mode = Control.FOCUS_ALL
+			button.ignore_texture_size = true
+			button.mouse_filter = Control.MOUSE_FILTER_STOP
+			button.add_theme_color_override("icon_hover_color",Color("ffe7a5"))
+			add_child(button); module_buttons.append(button)
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 class StarGraph extends Control:
 	signal selected(id: String)
@@ -278,30 +357,39 @@ func _ready() -> void:
 	graph.activated.connect(activate_system)
 	Stage.world(stage,graph)
 	var side: VBoxContainer = Stage.sidebar(stage,360)
-	var destination_plate := StyleBoxFlat.new()
-	destination_plate.bg_color = Color("11171a")
-	destination_plate.border_color = Color("c9c2ad")
-	destination_plate.set_border_width_all(1)
-	destination_plate.set_corner_radius_all(0)
-	destination_plate.set_content_margin_all(16)
-	side.get_parent().add_theme_stylebox_override("panel",destination_plate)
-	var destination_heading: Label = label("SYSTEM DESTINATIONS",13)
-	destination_heading.add_theme_color_override("font_color",Color("d7c99e"))
-	side.add_child(destination_heading)
+	var card_panel: PanelContainer = side.get_parent()
+	card_panel.offset_left = -540; card_panel.offset_right = -140; card_panel.offset_top = 190; card_panel.offset_bottom = 510
+	card_panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
+	var panel_art := TextureRect.new()
+	panel_art.texture = load(GALAXY_CARD)
+	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
+	panel_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	panel_art.offset_left = -650; panel_art.offset_right = -30; panel_art.offset_top = 56; panel_art.offset_bottom = 676
+	stage.add_child(panel_art)
+	stage.move_child(panel_art,stage.get_children().find(card_panel))
+	card_panel.move_to_front()
+	side.add_theme_constant_override("separation",3)
+	card_title = label("SYSTEM",19)
+	card_title.add_theme_color_override("font_color",Color("f1e5c7"))
+	side.add_child(card_title)
 	worlds = VBoxContainer.new()
+	worlds.add_theme_constant_override("separation",2)
 	side.add_child(worlds)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
 	UI.instrument(inspect_system,"system_view",UI.NAV)
 	inspect_system.text = ""; inspect_system.custom_minimum_size = Vector2(48,48)
 	header.add_child(inspect_system); header.move_child(inspect_system,1)
 	details = label("")
-	details.custom_minimum_size = Vector2(320,100)
+	details.custom_minimum_size = Vector2(0,38)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_theme_color_override("font_color",Color("e4e5df"))
 	side.add_child(details)
 	travel = button("",func() -> void: travel_requested.emit(selected_planet))
+	travel.custom_minimum_size.y = 38
 	side.add_child(travel)
 	status = label("",15)
+	status.custom_minimum_size.y = 32
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(status)
 	progress = ProgressBar.new()
@@ -309,6 +397,12 @@ func _ready() -> void:
 	progress.show_percentage = false
 	UI.meter(progress,UI.GOLD)
 	side.add_child(progress)
+	status_rail = GalaxyStatusRail.new()
+	status_rail.plate = load(GALAXY_RAIL)
+	status_rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_rail.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	status_rail.offset_left = -1000; status_rail.offset_right = -24; status_rail.offset_top = -410; status_rail.offset_bottom = 78
+	stage.add_child(status_rail)
 	var footer: HBoxContainer = Stage.footer(stage)
 	footer.add_child(icon_button("zoom_out","Zoom out",func() -> void: graph.zoom_at(1,graph.view_center())))
 	footer.add_child(icon_button("zoom_in","Zoom in",func() -> void: graph.zoom_at(-1,graph.view_center())))
@@ -360,6 +454,7 @@ func select_system(id: String) -> void:
 	for child: Node in worlds.get_children(): worlds.remove_child(child); child.queue_free()
 	var system: Dictionary = campaign.sector.system_by_id(id)
 	heading.text = "GALAXY  /  "+ (system.name.to_upper() if system.visited or system.get("charted",false) else "UNCHARTED SIGNAL")
+	card_title.text = system.name if system.visited or system.get("charted",false) else "Uncharted signal"
 	selected_planet = Session.local_id(system.planets[0])
 	graph.selected_planet_id = selected_planet
 	for pid: String in system.planets:
@@ -369,6 +464,7 @@ func select_system(id: String) -> void:
 		var item: Button = button(title,func() -> void: selected_planet = world; graph.selected_planet_id = world; refresh())
 		item.icon = UI.icon("planet_map")
 		item.set_meta("planet",world)
+		item.custom_minimum_size.y = 35
 		item.disabled = campaign.traveling()
 		worlds.add_child(item)
 	refresh()
@@ -391,6 +487,7 @@ func refresh() -> void:
 	for item: Node in worlds.get_children():
 		item.disabled = campaign.traveling()
 		UI.instrument(item,"planet_map",UI.NAV,item.get_meta("planet","") == selected_planet)
+		UI.focus_cue(item)
 	progress.visible = campaign.traveling()
 	close.disabled = campaign.traveling()
 	close.tooltip_text = "Journey in progress. Escape opens the pause menu." if close.disabled else "Return to flight"
@@ -398,5 +495,6 @@ func refresh() -> void:
 		var ship: Dictionary = campaign.sector.state.flagship
 		progress.value = 100*(1.0-float(ship.remaining)/maxf(1,ship.duration))
 		status.text = "IN TRANSIT · %d seconds remaining\nEscape: pause / save" % ship.remaining
+	status_rail.bind(campaign)
 	get_node("NavigationStage/GalaxyHint").text = ("In transit · %d s" % campaign.sector.state.flagship.remaining) if campaign.traveling() else (offer.reason if not offer.reason.is_empty() else "Click selected star again · %d energy" % offer.energy)
 	graph.queue_redraw()
