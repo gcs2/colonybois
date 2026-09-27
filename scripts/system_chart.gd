@@ -14,6 +14,7 @@ const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Climate = preload("res://scripts/planet_climate.gd")
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const SCOUT_SCENE = preload("res://assets/encounter/scout.glb")
 const DESTINATION_CARD_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/system-destination-card.png")
 const ORBIT_BASE_RADIUS: float = 22.0
 const ORBIT_SPACING: float = 17.0
@@ -55,7 +56,9 @@ var planets_root: Node3D
 var viewport: SubViewport
 var preview: SubViewportContainer
 var camera: Camera3D
-var ship_marker: MeshInstance3D
+var ship_marker: Node3D
+var ship_visuals: Array[VisualInstance3D] = []
+var ship_marker_visible: bool = false
 var selection: MeshInstance3D
 var route_overlay: RouteOverlay
 var heading: Label
@@ -114,8 +117,9 @@ func _ready() -> void:
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
 	star.mesh = sphere; star.material_override = stellar; world.add_child(star)
-	ship_marker = MeshInstance3D.new(); var ship := PrismMesh.new(); ship.size = Vector3(1.1,1.9,1.1)
-	ship_marker.mesh = ship; ship_marker.material_override = ink(UI.GOLD); world.add_child(ship_marker)
+	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.45; world.add_child(ship_marker)
+	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
+		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
@@ -384,12 +388,17 @@ func refresh() -> void:
 	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
-	ship_marker.visible = bodies.has(record.planet) or (campaign.traveling() and bodies.has(record.target_planet))
-	if not ship_marker.visible: return
+	var show_scout: bool = bodies.has(record.planet) or (campaign.traveling() and bodies.has(record.target_planet))
+	if ship_marker_visible != show_scout:
+		ship_marker_visible = show_scout
+		for visual: VisualInstance3D in ship_visuals: visual.visible = show_scout
+	if not ship_marker_visible: return
 	var from: Vector3 = bodies[record.planet].position if bodies.has(record.planet) else Vector3(-40,0,-40)
 	var to: Vector3 = bodies[record.target_planet].position if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,0,40)
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
 	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,5+(sin(fraction*PI)*4 if campaign.traveling() else 0),0)
+	var forward: Vector3 = to-from if campaign.traveling() else bodies[selected_planet].position-from if selected_planet != record.planet and bodies.has(selected_planet) else Vector3(-from.z,0,from.x)
+	if forward.length_squared() > 0.0001: ship_marker.look_at(ship_marker.position+forward,Vector3.UP)
 
 func update_target_overlay() -> void:
 	if not is_instance_valid(destination_card) or not is_instance_valid(camera) or not bodies.has(selected_planet): return
@@ -414,7 +423,7 @@ func update_target_overlay() -> void:
 	for i: int in range(target_marks.size()):
 		target_marks[i].visible = active
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
-	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker.visible and not camera.is_position_behind(ship_marker.global_position)
+	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker_visible and not camera.is_position_behind(ship_marker.global_position)
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
 	var card_rect: Rect2 = Rect2(destination_card.position,destination_card.size)
 	var card_left: bool = destination_card.position.x > center.x
