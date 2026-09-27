@@ -82,3 +82,13 @@ Independent review passes console footprint, dark surface chart readability, and
 Other V01 deltas remain: tool images 4–6 are dim outline glyphs rather than object-like pictorial art; the synthetic capture has mostly empty cells and cannot establish realistic inventory density; condition bars are segmented and display percentages rather than continuous fills with current/max values; the cargo toast and separate reassurance line do not match the compact discovery pill; the Marks plate sits left of the canon's far-right anchor. ALT remains a compact altitude readout, distinct from Terraform T-score. The seam tether is only one target state; relay/fauna/scan and unavailable/out-of-range feedback need matched states before claiming contextual HUD coverage.
 
 The terrain remains a broad flat tan/brown field with sparse vegetation and oversized/cropped props, far below the approved lush Morrow target. These captures and assertions do not establish user acceptance, native-input playability, performance, export quality, or fun. Godot emitted the existing `SpatialMaterial` `specular` remap warning.
+
+## Current-source camera study provenance - 27 September 2026
+
+A real actual-renderer 2x2 A/B exists in the 27 September visualization artifacts. It uses the same seeded Morrow scene and HUD at 1920x1080, with a real campaign mining state, and compares sharp rendering against a scene-only 2 px / 55% focus treatment.
+
+The source provenance changes how to read the result: the project copy was from archived hud-view-study source at 27c3ac266..., rather than the committed final HUD source 07db4aa545782bebd5a506948c1f7f8f45fd75e. The harness deliberately set pitches 0.43 and 0.56; this was not the final HUD's current pitch against a higher pitch. The current committed source default is 0.36.
+
+Independent review found that 0.56 clips the central landmark and nearby forms. The subtle focus effect adds a miniature cue, but softens small terrain details; the HUD stays sharp. This is preliminary composition evidence only. Keep the 0.36 perspective view and sharp reachable scene as the default. Do not implement the effect or pivot to 2.5D/RTS on this evidence.
+
+The final HUD view gate remains open: capture the exact committed HUD source at 0.36 and at a modest 0.43 test pitch, each sharp and with scene-only focus, at both 1920x1080 and 2560x1440 using the same legitimate campaign and seeded planet. A fresh archived-copy attempt produced no frames, so diagnose that startup path before retrying. Review matched native-scale HUD composition and reachable-world clarity before recommending any camera or focus change. No renderer migration is approved.
