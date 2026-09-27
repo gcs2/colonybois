@@ -39,4 +39,4 @@ The surface image is the user's pinned source. The other three are v2 designer p
 - [Production queue](../../docs/TASK_BOARD.md)
 - [Fresh focused UI shell candidates covering surface, orbit, approach, system and galaxy](ui-element-candidates/focused-shells-v3/README.md)
 - [Focused pictorial cutout candidates for Inventory, Marks, system Fly and galaxy equipment](ui-element-candidates/pictorial-cutouts-v4/README.md)
-- [New focused transparent UI-element candidates across all five view mocks](ui-element-candidates/focused-elements-v5/README.md)
+- [User-approved transparent UI elements for live surface, orbit, approach, system and galaxy HUDs](ui-element-candidates/focused-elements-v5/README.md)
