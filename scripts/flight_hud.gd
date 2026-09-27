@@ -14,22 +14,27 @@ const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
 const CategoryHint = preload("res://scripts/flight_category_hint.gd")
 const MARK_ICON = preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v4/marks-emblem.png")
+const UI_ELEMENT_DIR := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/"
+const CONSOLE_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/flight-inventory-console.png")
+const CHART_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/surface-chart-housing.png")
+const TAB_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/shared-category-tab-v2.png")
+const MARKS_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/marks-balance-plate.png")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_ROWS := 2
-const PALETTE_SLOT_WIDTH := 60.0
-const PALETTE_SLOT_HEIGHT := 62.0
-const PALETTE_COLUMN_GAP := 6.0
+const PALETTE_SLOT_WIDTH := 59.0
+const PALETTE_SLOT_HEIGHT := 64.0
+const PALETTE_COLUMN_GAP := 2.0
 const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
-const PALETTE_ROW_GAP := 2.0
+const PALETTE_ROW_GAP := 4.0
 const PALETTE_ROW_STRIDE := PALETTE_SLOT_HEIGHT + PALETTE_ROW_GAP
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * PALETTE_COLUMN_STRIDE - PALETTE_COLUMN_GAP
 const PALETTE_GRID_HEIGHT := PALETTE_ROWS * PALETTE_SLOT_HEIGHT + (PALETTE_ROWS - 1) * PALETTE_ROW_GAP + 8.0
-const CONSOLE_NATIVE_WIDTH := 144.0
-const CONSOLE_VISIBLE_WIDTH := 144.0
+const CONSOLE_NATIVE_WIDTH := 171.0
+const CONSOLE_VISIBLE_WIDTH := 171.0
 const CONSOLE_RIGHT_EDGE := 1586.0
-const CONSOLE_SHELL_LEFT_INSET := 13.0
+const CONSOLE_SHELL_LEFT_INSET := 11.0
 const PALETTE_PANEL_HEIGHT := 183.0
 const ASSEMBLY_RAISE := 18.0
 const TAB_GROUP_ORDER := ["Main tools", "Inventory", "Weapons", "Environment"]
@@ -55,6 +60,7 @@ const TAB_CARD_GAP := 1.0
 
 
 class TabCardArtwork extends Control:
+	var base_texture: Texture2D
 	var accent: Color = Color("8cc9d0")
 	var selected: bool = false
 	var hovered: bool = false
@@ -83,48 +89,21 @@ class TabCardArtwork extends Control:
 		return closed
 
 	func _draw() -> void:
-		if size.x < 24.0 or size.y < 20.0: return
+		if size.x < 24.0 or size.y < 20.0 or base_texture == null: return
 		var sink: float = 1.0 if depressed and not disabled else 0.0
-		var outer := _shape(0.0, sink)
-		var outer_line := _closed(outer)
-
-		# Pointer hover is the only state that draws a colored glow.
+		var face := Rect2(Vector2(0.0,sink),Vector2(size.x,size.y-sink))
+		draw_texture_rect(base_texture,face,false,Color(0.62,0.66,0.64,0.72) if disabled else Color.WHITE)
+		# The approved image supplies the idle silhouette. Only pointer hover blooms.
 		if hovered and not disabled:
-			var glow := Color(accent.r, accent.g, accent.b, 0.20)
-			draw_polyline(_closed(_shape(-1.0, sink)), glow, 4.0, true)
-
-		# One shared, quiet silhouette keeps all five controls in the same family.
-		draw_colored_polygon(_shape(0.0, sink + 2.0), Color(0.0, 0.0, 0.0, 0.30))
-		draw_colored_polygon(outer, Color("b6b2a5"))
-		var face := _shape(1.5, sink)
-		var face_color := Color("192322")
-		if selected: face_color = Color("232d2b")
-		elif hovered: face_color = Color("202b29")
-		if depressed: face_color = face_color.darkened(0.14)
-		if disabled: face_color = Color("272e2c")
-		draw_colored_polygon(face, face_color)
-		draw_polyline(outer_line, Color("59625d") if not disabled else Color("515854"), 1.0, true)
-
-		var top_edge := Color("eee9d9")
-		top_edge.a = 0.38 if not disabled else 0.20
-		draw_line(Vector2(11.0, 1.0 + sink), Vector2(size.x - 11.0, 1.0 + sink), top_edge, 1.0, true)
-
-		if hovered and not disabled:
-			draw_polyline(outer_line, Color(accent.r, accent.g, accent.b, 0.76), 1.35, true)
-		if selected and not disabled:
-			# A thin inlaid rim marks selection; only pointer hover blooms outward.
-			var selected_edge := accent
-			selected_edge.a = 0.88
-			draw_polyline(_closed(_shape(2.0, sink)), selected_edge, 1.25, true)
-		# The shallow inset heads give every card the same tactile fastening.
-		var fastener := Color("81877d") if not disabled else Color("626962")
-		for x: float in [9.0, size.x - 9.0]:
-			draw_circle(Vector2(x, size.y - 7.0 + sink), 1.5, Color("111a19"))
-			draw_circle(Vector2(x, size.y - 7.0 + sink), 0.65, fastener)
+			var glow := Color(accent.r,accent.g,accent.b,0.34)
+			draw_polyline(_closed(_shape(-1.0,sink)),glow,4.0,true)
+			draw_line(Vector2(8.0,size.y-3.0),Vector2(size.x-8.0,size.y-3.0),accent,1.5,true)
+		elif selected and not disabled:
+			var inlay := accent
+			inlay.a = 0.88
+			draw_line(Vector2(9.0,size.y-3.0),Vector2(size.x-9.0,size.y-3.0),inlay,1.25,true)
 		if focused and not disabled:
-			var focus_edge := Color("fff1cc")
-			focus_edge.a = 0.95
-			draw_polyline(_closed(_shape(2.0, sink)), focus_edge, 1.25, true)
+			draw_polyline(_closed(_shape(2.0,sink)),Color("fff1cc"),1.25,true)
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -218,8 +197,8 @@ func label_at(text: String, rect: Rect2, font_size: int = 16, tint: Color = Art.
 
 func _style_inventory_slot(button: Button, selected: bool = false) -> void:
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color("11191b")
-	normal.border_color = Color("425055")
+	normal.bg_color = Color(0,0,0,0)
+	normal.border_color = Color(0,0,0,0)
 	normal.set_border_width_all(1)
 	normal.set_corner_radius_all(0)
 	normal.content_margin_left = 2
@@ -227,18 +206,16 @@ func _style_inventory_slot(button: Button, selected: bool = false) -> void:
 	normal.content_margin_top = 2
 	normal.content_margin_bottom = 2
 	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("263235")
-	hover.border_color = Color("819197")
+	hover.bg_color = Color("d5dfdf",0.08)
+	hover.border_color = Color("d5dfdf",0.70)
 	var pressed := normal.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color("1b2628")
+	pressed.bg_color = Color("d5dfdf",0.12)
 	var disabled := normal.duplicate() as StyleBoxFlat
-	disabled.bg_color = Color("141b1d")
-	disabled.border_color = Color("303b3f")
 	if selected:
-		normal.bg_color = Color("202b2d")
+		normal.bg_color = Color("d5dfdf",0.07)
 		normal.border_color = Color("d5dfdf")
 		normal.border_width_bottom = 2
-		hover.bg_color = Color("293639")
+		hover.bg_color = Color("d5dfdf",0.13)
 		hover.border_color = Color("e5ecea")
 		hover.border_width_bottom = 2
 	button.add_theme_stylebox_override("normal", normal)
@@ -312,6 +289,7 @@ func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
 
 func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 	var artwork := TabCardArtwork.new()
+	artwork.base_texture = _tab_icon(TAB_HOUSING, Rect2(631,347,464,214))
 	artwork.accent = tint
 	artwork.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var parent: Control = button.get_parent() as Control
@@ -350,18 +328,23 @@ func _build() -> void:
 	nav_pod.size = Vector2(250, 190)
 	add_child(nav_pod)
 
-	chart_backing = InstrumentFrame.new()
+	chart_backing = TextureRect.new()
+	chart_backing.texture = _tab_icon(CHART_HOUSING, Rect2(87,117,1207,924))
+	chart_backing.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	chart_backing.stretch_mode = TextureRect.STRETCH_SCALE
 	chart_backing.position = Vector2(26, 680)
 	chart_backing.size = Vector2(250, 190)
 	chart_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chart_backing.hide()
 	add_child(chart_backing)
 
-	palette_backing = InstrumentFrame.new()
+	palette_backing = TextureRect.new()
+	palette_backing.texture = _tab_icon(CONSOLE_HOUSING, Rect2(100,106,1972,508))
+	palette_backing.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	palette_backing.stretch_mode = TextureRect.STRETCH_SCALE
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
 	palette_backing.size = Vector2(150, 68)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	palette_backing.call("set_layered_console", true)
 	add_child(palette_backing)
 
 	# One recessed charcoal tray keeps the two-row item matrix visually related
@@ -388,6 +371,7 @@ func _build() -> void:
 		add_child(empty_slot)
 
 	console_pod = ConsolePod.new()
+	console_pod.image_housing = true
 	console_pod.position = Vector2(1402, 690)
 	console_pod.size = Vector2(184, 117)
 	add_child(console_pod)
@@ -407,7 +391,10 @@ func _build() -> void:
 	add_child(navigation_backing)
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
-	treasury_backing = InstrumentFrame.new()
+	treasury_backing = TextureRect.new()
+	(treasury_backing as TextureRect).texture = _tab_icon(MARKS_HOUSING, Rect2(144,202,1695,371))
+	(treasury_backing as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	(treasury_backing as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
 	# The recognition control occupies the extreme upper-right corner; keep this
 	# Marks plate beside it with a visible gap instead of drawing under that button.
 	treasury_backing.position = Vector2(1428, 18)
@@ -739,15 +726,15 @@ func show_group(group: String) -> void:
 	# The six-column tray meets the narrowed status pod inside one continuous
 	# shell. The transformed status edge stays aligned to the original right edge.
 	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_VISIBLE_WIDTH
-	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+23.0)
+	inventory_grid_origin = Vector2(console_left-grid_width-15.0,panel_top+17.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
 	grid_backing.size = Vector2(grid_width+8, PALETTE_GRID_HEIGHT)
-	grid_backing.visible = palette_expanded
+	grid_backing.visible = false
 	for slot: int in range(PALETTE_PAGE_CAPACITY):
 		var empty_cell: Panel = empty_slot_backings[slot]
 		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
 		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
-		empty_cell.visible = palette_expanded and slot >= visible_items
+		empty_cell.visible = false
 	if console_pod != null:
 		console_pod.position = Vector2(console_left,panel_top)
 		console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH,panel_height)
@@ -803,7 +790,7 @@ func show_group(group: String) -> void:
 		console_pod.active_group = group
 		console_pod.queue_redraw()
 	palette_backing.visible = true
-	# The compact angled housing encloses tabs, live inventory and status in both modes.
+	# The approved transparent housing encloses the live slots and status in both modes.
 	palette_backing.position = Vector2(inventory_grid_origin.x-CONSOLE_SHELL_LEFT_INSET,panel_top)
 	palette_backing.size = Vector2(CONSOLE_RIGHT_EDGE-palette_backing.position.x,panel_height)
 	palette_backing.queue_redraw()
@@ -1024,28 +1011,28 @@ func set_orbital_mode(enabled: bool) -> void:
 		nav_pod.size = Vector2(220, 190)
 		# Use the same-width chart frame as the corner pod, with its title on the
 		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 660)
-		chart_backing.size = Vector2(220, 190)
-		navigation.position = Vector2(32, 666)
-		navigation.size = Vector2(188, 146)
+		chart_backing.position = Vector2(16, 650)
+		chart_backing.size = Vector2(250, 215)
+		navigation.position = Vector2(35, 683)
+		navigation.size = Vector2(207, 150)
 		# Give the sampled chart the full instrument aperture. The two secondary
 		# actions share its quiet footer instead of consuming a narrow side rail.
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
-		navigation_menu_button.position = Vector2(164, 820)
-		navigation_menu_button.size = Vector2(22, 24)
+		navigation_menu_button.position = Vector2(240, 681)
+		navigation_menu_button.size = Vector2(24, 49)
 		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
-		departure_button.position = Vector2(190, 820)
-		departure_button.size = Vector2(22, 24)
+		departure_button.position = Vector2(240, 735)
+		departure_button.size = Vector2(24, 49)
 		Art.symbol(departure_button,"ascend",Art.NAV)
 		departure_button.add_theme_constant_override("icon_max_width",22)
 		departure_button.tooltip_text = "Leave atmosphere · ascend to orbit"
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
-		chart_heading.position = Vector2(28, 824)
-		chart_heading.size = Vector2(126, 18)
+		chart_heading.position = Vector2(35, 838)
+		chart_heading.size = Vector2(155, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1508, 666)

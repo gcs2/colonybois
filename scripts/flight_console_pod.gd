@@ -17,6 +17,7 @@ const ACTIVE_GOLD := Color("f3c567")
 const SIGNAL_GREEN := Color("5ce09e")
 
 var orbital: bool = false
+var image_housing: bool = false
 var hull_val: int = 100
 var max_hull_val: int = 100
 var energy_val: int = 100
@@ -46,9 +47,10 @@ func set_orbital(is_orbit: bool) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var offset := Vector2(2, 4)
-	InstrumentFrame.draw_shadow(self, Rect2(offset, size), 8.0)
-	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
+	if not image_housing:
+		var offset := Vector2(2, 4)
+		InstrumentFrame.draw_shadow(self, Rect2(offset, size), 8.0)
+		InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
 
 	if size.x <= 400.0:
 		# ALT is supplied by FlightHUD in the quiet header above this pod. Use

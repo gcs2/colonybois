@@ -155,6 +155,8 @@ func _smooth_range(value: float, low: float, high: float) -> float:
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_visible_in_tree(): return
+	if event is InputEventMouseMotion and not orbital:
+		tooltip_text = _surface_hint(event.position)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		accept_event()
 		if locked or not chart_rect().has_point(event.position): return
@@ -177,6 +179,26 @@ func _gui_input(event: InputEvent) -> void:
 		if not nearest.is_empty(): target_requested.emit(nearest)
 		else: destination_requested.emit(unproject(event.position))
 
+func _surface_hint(at: Vector2) -> String:
+	if not chart_rect().has_point(at):
+		return "Local surface chart · 125 m across. North is up."
+	if at.distance_to(project(service_at)) < 11.0:
+		return "Port · click to approach docking services."
+	var nearest: String = ""
+	var gap: float = 12.0
+	for id: String in points:
+		var distance: float = project(points[id]).distance_to(at)
+		if distance < gap:
+			gap = distance
+			nearest = id
+	if not nearest.is_empty():
+		return "%s · click to approach with the selected tool." % _point_name(nearest).capitalize()
+	if water_area >= 3 and height_sampler.is_valid():
+		var world: Vector2 = unproject(at)
+		if float(height_sampler.call(world.x,world.y)) < -0.6:
+			return "Water · surface landmark."
+	return "Local surface chart · 125 m across. Click open ground to fly. North is up."
+
 func _draw() -> void:
 	var rect: Rect2 = chart_rect()
 	draw_rect(rect,Color("0d202b"))
@@ -195,8 +217,6 @@ func _draw() -> void:
 			var skiff_color := Color("818793") if guardian_disabled else (Color("ef897f") if guardian_alert >= 3 else Color("eab77e"))
 			draw_arc(skiff,7,0,TAU,24,skiff_color,2,true)
 			draw_circle(skiff,3,skiff_color)
-	if not orbital and terrain != null and water_area >= 3:
-		_draw_local_water()
 	var center: Vector2 = rect.get_center()
 	for fraction: float in [0.33,0.66]:
 		var x: float = lerpf(rect.position.x,rect.end.x,fraction)
@@ -217,12 +237,9 @@ func _draw() -> void:
 				draw_circle(p,3.2,color)
 				if not known: draw_circle(p,1.5,Color("27313b"))
 			if id == selected: draw_arc(p,9,0,TAU,24,Color("f8cf77"),1.5,true)
-			if id == "relay":
-				_draw_map_label(_point_name(id),p+Vector2(7,-4),Color("f5ead1"))
 	var port: Vector2 = project(service_at)
 	if rect.grow(-7).has_point(port):
 		draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
-		_draw_map_label("PORT",port+Vector2(7,12),Color("c2edd6"))
 	var pos: Vector2 = project(ship_at)
 	pos = pos.clamp(rect.position+Vector2(5,5),rect.end-Vector2(5,5))
 	if navigating:
@@ -240,27 +257,8 @@ func _draw() -> void:
 	draw_line(Vector2(rect.end.x-12,scale_y-3),Vector2(rect.end.x-12,scale_y+1),Color("e6e5d5"),1)
 	draw_string(ThemeDB.fallback_font,Vector2(rect.end.x-48,scale_y-3),"50 m",HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("e6e5d5"))
 
-func _draw_local_water() -> void:
-	var label_at: Vector2 = project(water_center)+Vector2(7,-4)
-	if chart_rect().has_point(label_at): _draw_map_label("WATER",label_at,Color("d2e4d8"))
-
 func _scale_width_pixels(rect: Rect2) -> float:
 	return 50.0/(surface_extent*2.0)*rect.size.x
 
 func _point_name(id: String) -> String:
 	return {"relay":"RELAY","vein":"GLASS","bed":"BED","pod":"PODS","grazer":"GRAZER"}.get(id,id.to_upper())
-
-func _draw_map_label(text: String, at: Vector2, color: Color) -> void:
-	var baseline := at
-	# Keep captions inside the chart edge when a contact is near the rim.
-	if baseline.x > size.x-58: baseline.x -= 64
-	if baseline.y < 16: baseline.y = 16
-	if baseline.y > size.y-5: baseline.y = size.y-5
-	var font: Font = ThemeDB.fallback_font
-	var label_size: Vector2 = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,9)
-	var label_rect := Rect2(baseline+Vector2(-3,-10),label_size+Vector2(6,13))
-	label_rect.position.x = clampf(label_rect.position.x,chart_rect().position.x+2,chart_rect().end.x-label_rect.size.x-2)
-	label_rect.position.y = clampf(label_rect.position.y,chart_rect().position.y+2,chart_rect().end.y-label_rect.size.y-2)
-	draw_rect(label_rect,Color("10191d",0.88))
-	draw_string(font,baseline+Vector2(1,1),text,HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("101719",0.95))
-	draw_string(font,baseline,text,HORIZONTAL_ALIGNMENT_LEFT,-1,9,color)
