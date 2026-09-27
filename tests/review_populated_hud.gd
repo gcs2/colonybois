@@ -69,8 +69,10 @@ func earn_and_populate(game: RefCounted) -> Dictionary:
 
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT))
+	print("Populated HUD: creating fresh campaign")
 	var game := Session.new()
 	var evidence: Dictionary = earn_and_populate(game)
+	print("Populated HUD: campaign acquisition complete · %d Marks · cargo %d/%d · energy packs %d · repair packs %d" % [evidence.remaining_marks,evidence.cargo_quantity,evidence.cargo_capacity,evidence.energy_packs,evidence.repair_packs])
 	var records: Array[Dictionary] = []
 	for resolution: Vector2i in [Vector2i(1920,1080),Vector2i(2560,1440)]:
 		var view := SubViewport.new()
@@ -80,10 +82,12 @@ func run() -> void:
 		view.own_world_3d = true
 		view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 		root.add_child(view)
+		print("Populated HUD: creating encounter for %dx%d" % [resolution.x,resolution.y])
 		var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
 		scene.campaign = game
 		view.add_child(scene)
 		await process_frame
+		print("Populated HUD: %dx%d encounter scene ready" % [resolution.x,resolution.y])
 		scene.set_process(false)
 		scene.set_physics_process(false)
 		scene.audio.muted = true
@@ -95,8 +99,8 @@ func run() -> void:
 		scene._dismiss_first_landing_welcome()
 		scene._refresh_ui()
 		for frame: int in range(3): await process_frame
-		await RenderingServer.frame_post_draw
 		var flight_image: String = "%s/populated-flight-%d.png" % [OUTPUT,resolution.x]
+		print("Populated HUD: capturing flight view %s" % flight_image)
 		view.get_texture().get_image().save_png(flight_image)
 		# Route the real Inventory / I shortcut through the encounter's production
 		# input handler instead of forcing the popup state directly.
@@ -105,11 +109,10 @@ func run() -> void:
 		inventory_key.keycode = KEY_I
 		inventory_key.physical_keycode = KEY_I
 		scene._unhandled_input(inventory_key)
-		await process_frame
-		require(scene.popup.visible and scene.popup_kind == "cargo" and scene.cargo_location == "ship", "HUD Inventory action opens the onboard cargo drawer")
 		for frame: int in range(3): await process_frame
-		await RenderingServer.frame_post_draw
+		require(scene.popup.visible and scene.popup_kind == "cargo" and scene.cargo_location == "ship", "HUD Inventory action opens the onboard cargo drawer")
 		var inventory_image: String = "%s/populated-inventory-%d.png" % [OUTPUT,resolution.x]
+		print("Populated HUD: capturing onboard Inventory %s" % inventory_image)
 		view.get_texture().get_image().save_png(inventory_image)
 		var record: Dictionary = evidence.duplicate(true)
 		record.merge({
