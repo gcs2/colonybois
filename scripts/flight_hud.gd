@@ -601,10 +601,10 @@ func _make_item(id: String, item: Dictionary) -> void:
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
 	var count := Label.new()
-	count.position = Vector2(33,PALETTE_SLOT_HEIGHT-16.0)
-	count.size = Vector2(24,15)
+	count.position = Vector2(23,PALETTE_SLOT_HEIGHT-20.0)
+	count.size = Vector2(34,19)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size",12)
+	count.add_theme_font_size_override("font_size",14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
@@ -634,10 +634,10 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
-	count.position = Vector2(2, PALETTE_SLOT_HEIGHT-16.0)
-	count.size = Vector2(56, 15)
+	count.position = Vector2(2, PALETTE_SLOT_HEIGHT-20.0)
+	count.size = Vector2(56, 19)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size", 12)
+	count.add_theme_font_size_override("font_size", 14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
