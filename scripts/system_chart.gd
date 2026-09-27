@@ -122,15 +122,19 @@ func _ready() -> void:
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
 	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE
-	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,25); card_style.set_content_margin(SIDE_BOTTOM,26)
+	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,34); card_style.set_content_margin(SIDE_BOTTOM,26)
 	destination_card.add_theme_stylebox_override("panel",card_style)
-	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",3); destination_card.add_child(card)
-	destination_name = text_label("",18); destination_name.custom_minimum_size = Vector2(278,22); card.add_child(destination_name)
-	details = text_label("",13); details.custom_minimum_size = Vector2(278,34); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	var card := Control.new(); card.mouse_filter = Control.MOUSE_FILTER_PASS; destination_card.add_child(card)
+	destination_name = text_label("",18); destination_name.position = Vector2.ZERO; destination_name.size = Vector2(278,22); card.add_child(destination_name)
+	details = text_label("",13); details.position = Vector2(0,22); details.size = Vector2(278,28); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,card)
-	travel.custom_minimum_size = Vector2(278,34)
-	status = text_label("",14); status.custom_minimum_size = Vector2(278,36); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
-	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
+	travel.position = Vector2(0,50); travel.size = Vector2(278,28); travel.custom_minimum_size = Vector2(278,28)
+	travel.add_theme_constant_override("icon_max_width",18)
+	for state: String in ["normal","hover","pressed","disabled"]:
+		var compact_style: StyleBoxFlat = (travel.get_theme_stylebox(state) as StyleBoxFlat).duplicate() as StyleBoxFlat
+		compact_style.content_margin_top = 2; compact_style.content_margin_bottom = 2; travel.add_theme_stylebox_override(state,compact_style)
+	status = text_label("",12); status.position = Vector2(0,86); status.size = Vector2(278,50); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	progress = ProgressBar.new(); progress.position = Vector2(0,138); progress.size = Vector2(278,8); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
 		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
 	var controls: HBoxContainer = Stage.footer(stage)
@@ -351,20 +355,21 @@ func refresh() -> void:
 		var faction: Dictionary = campaign.sector.faction_by_id(owner)
 		if faction.get("contacted",false): inhabited = faction.name
 	destination_name.text = definition.name
-	details.text = definition.archetype.capitalize()+" · "+inhabited+"\n"+("Charted · surface access" if surveyed and not definition.sites.is_empty() else "Survey complete · orbital only" if surveyed else "Survey pending · surface access" if not definition.sites.is_empty() else "Survey pending · orbital only")
+	var survey_state: String = "Charted · surface access" if surveyed and not definition.sites.is_empty() else "Survey complete · orbital only" if surveyed else "Survey pending · surface access" if not definition.sites.is_empty() else "Survey pending · orbital only"
+	details.text = definition.archetype.capitalize()+" · "+inhabited
 	var here: bool = selected_planet == campaign.field.state.planet_id
 	travel.text = "Return to ship" if here else "Fly  ·  %d energy  ·  %d seconds" % [offer.energy,offer.seconds]
 	travel.disabled = locked or campaign.traveling() or (not here and not offer.reason.is_empty())
 	travel.tooltip_text = "Resume before navigating" if locked else "Return to the current planetary view" if here else offer.reason if not offer.reason.is_empty() else "Spend %d energy to reach %s." % [offer.energy,definition.name]
-	status.text = "INSPECTION PAUSED" if here else offer.reason if not offer.reason.is_empty() else "Energy after departure: %d / %d" % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
+	status.text = "INSPECTION PAUSED" if here else offer.reason if not offer.reason.is_empty() else "Energy after: %d / %d" % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
+	status.text += "\n"+survey_state
+	if surveyed: status.text += "\nClimate T%d · ecosystem T%d" % [campaign.climate.score(campaign.climate.world(selected_planet)),campaign.biosphere.complete_tier(selected_planet)]
 	progress.visible = campaign.traveling(); close.disabled = campaign.traveling()
 	sector.disabled = locked
 	if campaign.traveling():
 		var ship: Dictionary = campaign.sector.state.flagship
 		progress.value = 100*(1.0-float(ship.remaining)/maxf(1,ship.duration))
-		status.text = ("TRAVEL PAUSED" if locked else "IN TRANSIT")+" · %d seconds\nEscape: pause / save" % ship.remaining
-	elif surveyed:
-		status.text += "\nClimate T%d · ecosystem T%d" % [campaign.climate.score(campaign.climate.world(selected_planet)),campaign.biosphere.complete_tier(selected_planet)]
+		status.text = ("TRAVEL PAUSED" if locked else "IN TRANSIT")+" · %d seconds\nEscape: pause / save\n" % ship.remaining+survey_state
 	selection.position = bodies[selected_planet].position
 	var selection_mesh: TorusMesh = selection.mesh as TorusMesh
 	var selection_radius: float = bodies[selected_planet].radius+1.1
