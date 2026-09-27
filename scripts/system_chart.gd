@@ -41,7 +41,7 @@ class RouteOverlay extends Control:
 			if i % 3 == 2: continue
 			var first: int = i*2; var last: int = mini(first+1,points.size()-1)
 			draw_line(points[first],points[last],Color("64dbd5"),4,true)
-		draw_circle(origin,8,Color("172a2c")); draw_arc(origin,10,0,TAU,32,Color("64dbd5"),2,true)
+		draw_circle(origin,8,Color("172a2c")); draw_arc(origin,33,0,TAU,32,Color("64dbd5"),2,true)
 		draw_circle(destination,5,Color("f1cd55"))
 var campaign: RefCounted
 var system_id: String = ""
@@ -117,7 +117,7 @@ func _ready() -> void:
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
 	star.mesh = sphere; star.material_override = stellar; star.scale = Vector3.ONE*1.7; world.add_child(star)
-	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.75; world.add_child(ship_marker)
+	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.37; world.add_child(ship_marker)
 	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
 		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
@@ -127,7 +127,7 @@ func _ready() -> void:
 	var scout_crop := AtlasTexture.new(); scout_crop.atlas = SCOUT_CHART; scout_crop.region = Rect2(96,151,326,202)
 	ship_overlay = TextureRect.new(); ship_overlay.texture = scout_crop
 	ship_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; ship_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	ship_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; ship_overlay.z_index = 3; ship_overlay.size = Vector2(70,44); ship_overlay.visible = false; stage.add_child(ship_overlay)
+	ship_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; ship_overlay.z_index = 3; ship_overlay.size = Vector2(53,33); ship_overlay.visible = false; stage.add_child(ship_overlay)
 	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
 	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE
 	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,34); card_style.set_content_margin(SIDE_BOTTOM,26)
@@ -434,7 +434,7 @@ func update_target_overlay() -> void:
 	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker_visible and not camera.is_position_behind(ship_marker.global_position)
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
 	ship_overlay.visible = ship_visible and visible
-	if ship_overlay.visible: ship_overlay.position = origin+Vector2(-35,-48)
+	if ship_overlay.visible: ship_overlay.position = origin-ship_overlay.size*0.5
 	var enabled: bool = visible and active and selected_planet != campaign.field.state.planet_id and origin.distance_to(center) > 18
 	route_overlay.set_route(origin,center,enabled)
 func select_planet(id: String) -> void:
