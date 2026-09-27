@@ -41,9 +41,8 @@ func present(button: Control, text: String, panel_top: float) -> void:
 	var parent_control: Control = get_parent() as Control
 	var hud_width: float = parent_control.size.x if parent_control != null and parent_control.size.x > 0.0 else HUD_WIDTH
 	size = Vector2(minf(MAX_WIDTH, maxf(MIN_WIDTH, measured_width + HORIZONTAL_PADDING * 2.0)), HEIGHT)
-	var anchor_center: Vector2 = button.get_global_rect().get_center()
-	if parent_control != null:
-		anchor_center = parent_control.to_local(anchor_center)
+	# FlightHUD owns both the button and hint as direct children.
+	var anchor_center: Vector2 = button.position + button.size * 0.5
 	position = Vector2(clampf(anchor_center.x - size.x * 0.5, 0.0, hud_width - size.x), panel_top - 60.0)
 	text_label.position = Vector2(HORIZONTAL_PADDING, 0.0)
 	text_label.size = Vector2(size.x - HORIZONTAL_PADDING * 2.0, size.y)

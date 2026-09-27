@@ -51,20 +51,21 @@ func _draw() -> void:
 	InstrumentFrame.draw_frame(self, Rect2(Vector2.ZERO, size), 8.0, true)
 
 	if size.x <= 400.0:
-		# ALT is supplied by FlightHUD in the quiet header above this pod. Stack
-		# each live meter across the available width, as in the approved mock.
-		var meter_left: float = 10.0
+		# ALT is supplied by FlightHUD in the quiet header above this pod. Use
+		# the full height beside the two-row grid rather than leaving a blank foot.
+		var meter_left: float = 15.0
 		var meter_width: float = maxf(24.0, size.x - meter_left * 2.0)
-		var bar_height: float = 8.0
-		_draw_compact_meter("HULL", hull_val, max_hull_val, HULL_TINT, meter_left, 40.0, 44.0, 60.0, meter_width, bar_height)
-		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 71.0, 75.0, 91.0, meter_width, bar_height)
+		var bar_height: float = 10.0
+		_draw_compact_meter("HULL", hull_val, max_hull_val, HULL_TINT, meter_left, 49.0, 55.0, 80.0, meter_width, bar_height)
+		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 99.0, 105.0, 130.0, meter_width, bar_height)
 
-		# Signal state stays below the meters; Marks live once at top-right.
-		draw_line(Vector2(10, 98), Vector2(size.x - 10, 98), Color("b4b0a4"), 1.0)
-		var sig_rect := Rect2(20, 99, 30, 18)
+		# Center the live signal below the meters; Marks stay at top-right.
+		draw_line(Vector2(10, 143), Vector2(size.x - 10, 143), Color("b4b0a4"), 1.0)
+		var signal_center_x: float = size.x * 0.5
+		var sig_rect := Rect2(signal_center_x - 16.0, 153.0, 28.0, 18.0)
 		if SIGNAL_ICON != null:
 			draw_texture_rect(SIGNAL_ICON, sig_rect, false, SIGNAL_GREEN)
-		var sig_led := Vector2(58, 108)
+		var sig_led := Vector2(signal_center_x + 18.0, 162.0)
 		draw_circle(sig_led, 4.0, Color(SIGNAL_GREEN.r, SIGNAL_GREEN.g, SIGNAL_GREEN.b, 0.3))
 		draw_circle(sig_led, 2.0, SIGNAL_GREEN)
 	elif not orbital:

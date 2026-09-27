@@ -12,7 +12,8 @@ const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Palette = preload("res://scripts/flight_palette.gd")
 const NavPod = preload("res://scripts/flight_nav_pod.gd")
 const ConsolePod = preload("res://scripts/flight_console_pod.gd")
-const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const CategoryHint = preload("res://scripts/flight_category_hint.gd")
+const MARK_ICON = preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v4/marks-emblem.png")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
@@ -111,8 +112,10 @@ class TabCardArtwork extends Control:
 		if hovered and not disabled:
 			draw_polyline(outer_line, Color(accent.r, accent.g, accent.b, 0.76), 1.35, true)
 		if selected and not disabled:
-			# A crisp underline marks selection without adding a second glow.
-			draw_line(Vector2(18.0, size.y - 2.0 + sink), Vector2(size.x - 18.0, size.y - 2.0 + sink), accent, 1.25, true)
+			# A thin inlaid rim marks selection; only pointer hover blooms outward.
+			var selected_edge := accent
+			selected_edge.a = 0.88
+			draw_polyline(_closed(_shape(2.0, sink)), selected_edge, 1.25, true)
 		# The shallow inset heads give every card the same tactile fastening.
 		var fastener := Color("81877d") if not disabled else Color("626962")
 		for x: float in [9.0, size.x - 9.0]:
@@ -142,6 +145,7 @@ var category_buttons: Dictionary = {}
 var category_tab_cards: Dictionary = {}
 var communications_button: Button
 var communications_card: TabCardArtwork
+var category_hint: Control
 var active_group: String = "Main tools"
 var palette_expanded: bool = true
 var palette_locked: bool = false
@@ -273,6 +277,20 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 	button.tooltip_text = title
 	return button
 
+func _show_category_hint(button: Button, group: String) -> void:
+	var action: String = {
+		"Main tools": "Browse tools [Tab]",
+		"Inventory": "Carried items [Tab]",
+		"Weapons": "Browse tools [Tab]",
+		"Environment": "Climate tools [Tab]",
+		"Communications": "Contact and trade [Y]"
+	}.get(group, "Browse [Tab]")
+	category_hint.present(button, group + " · " + action, button.position.y + 20.0)
+
+func _hide_category_hint() -> void:
+	if category_hint != null:
+		category_hint.dismiss()
+
 func _apply_item_pictogram(button: Button, id: String, item: Dictionary, selected: bool = false) -> void:
 	var painted: Texture2D = CargoIcon.tool_texture_for(id)
 	if painted == null:
@@ -397,12 +415,12 @@ func _build() -> void:
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1439, 27)
-	treasury_icon.size = Vector2(20, 20)
-	treasury_icon.texture = MARK_ICON
+	treasury_icon.position = Vector2(1437, 25)
+	treasury_icon.size = Vector2(24, 24)
+	treasury_icon.texture = _tab_icon(MARK_ICON, Rect2(324, 284, 612, 682))
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	treasury_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	treasury_icon.modulate = Color("a98427")
+	treasury_icon.modulate = Color.WHITE
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
 	stats = label_at("", Rect2(1465, 23, 98, 28), 13, Color("1c2426"))
@@ -463,11 +481,19 @@ func _build() -> void:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		category_buttons[group] = button
 		category_tab_cards[group] = _attach_tab_card(button,tint)
+		button.tooltip_text = ""
+		button.mouse_entered.connect(_show_category_hint.bind(button, group))
+		button.mouse_exited.connect(_hide_category_hint)
 		group_index += 1
 	communications_button = symbol_at("communicator",Rect2(772+group_index*(TAB_CARD_WIDTH+TAB_CARD_GAP),686,TAB_CARD_WIDTH,TAB_CARD_HEIGHT),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
 	communications_button.icon = _tab_icon(COMMUNICATIONS_ICON_TEXTURE, COMMUNICATIONS_ICON_REGION)
 	communications_button.set_meta("category_icon_cutout",true)
 	communications_card = _attach_tab_card(communications_button,Art.COMMS)
+	communications_button.tooltip_text = ""
+	communications_button.mouse_entered.connect(_show_category_hint.bind(communications_button, "Communications"))
+	communications_button.mouse_exited.connect(_hide_category_hint)
+	category_hint = CategoryHint.new()
+	add_child(category_hint)
 	collapse_button = symbol_at("palette_close",Rect2(1252,692,42,42),"palette_toggle","Collapse tools",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette; keep selected tool and ship status"
 	page_previous = symbol_at("page_previous",Rect2(1114,692,38,42),"page_previous","Previous item page",Art.NAV)
@@ -818,8 +844,13 @@ func activate_slot(slot: int) -> void:
 	var entries: Array[String] = _group_entries(active_group)
 	slot += palette_page*PALETTE_PAGE_CAPACITY
 	if slot < 0 or slot >= entries.size(): return
-	var button: Button = item_buttons[entries[slot]]
-	if not button.disabled: button.pressed.emit()
+	var id: String = entries[slot]
+	var button: Button = null
+	if item_buttons.has(id):
+		button = item_buttons[id] as Button
+	else:
+		button = campaign_item_buttons.get(id) as Button
+	if button != null and not button.disabled: button.pressed.emit()
 
 func select_tool(id: String) -> void:
 	var selected: Dictionary = Palette.entry(id)

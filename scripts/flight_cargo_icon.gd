@@ -34,6 +34,13 @@ const TOOL_ATLAS_IDS: Dictionary = {
 }
 
 static func tool_texture_for(tool_id: String) -> Texture2D:
+	if tool_id == "pack":
+		# Use the visible canister rather than scaling its large transparent canvas.
+		# Ownership and stack count still come from EncounterState.
+		var picture := AtlasTexture.new()
+		picture.atlas = preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v4/energy-pack-v2.png")
+		picture.region = Rect2(423, 130, 540, 895)
+		return picture
 	# Use only exact semantic matches from the documented painted equipment atlas.
 	# Unmatched actions keep their own original SVG symbols rather than borrowing
 	# a visually similar but misleading object.
