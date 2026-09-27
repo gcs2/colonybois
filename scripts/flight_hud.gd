@@ -1037,7 +1037,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
-		chart_heading.position = Vector2(35, 838)
+		chart_heading.position = Vector2(35, 826)
 		chart_heading.size = Vector2(155, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
