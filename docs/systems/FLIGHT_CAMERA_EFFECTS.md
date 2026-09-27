@@ -1,5 +1,9 @@
 # Wider flight camera and bounded effects
 
+## Surface follow-pitch study (27 September 2026)
+
+`artifacts/camera-view-ab-20260927/` captures the same seeded synthetic Morrow state and HUD at 1080p with follow pitch `.43` and `.56`. The independent visual review found that `.56` adds only a modest top-down read, crops more tall landmarks, and does not establish the broad horizon in the approved surface target; keep `.43` as the current default. HUD scale, target ring and context card remain stable in these stills. The camera-only harness does not exercise continuous movement, targeting after steering, or native input. No depth-of-field/tilt-shift effect or production camera change was made. The current approved surface prompt asks for sharp terrain, so any future exploration of that effect needs its own clearly labeled mock before rendering changes.
+
 ## Landing veil cap and recapture (25 September 2026)
 
 The earlier approach hid the planet before the orbital-to-surface reference-frame swap, then held a full black fade after it. Landing now caps both the pre-swap outbound veil and the initial surface arrival fade at 0.62 opacity. This narrows the presentation blackout without changing the landing route, destination, speed or 5.9-second scripted completion.

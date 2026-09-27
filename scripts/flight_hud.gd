@@ -32,6 +32,7 @@ const CONSOLE_SHELL_LEFT_INSET := 13.0
 const PALETTE_PANEL_HEIGHT := 183.0
 const ASSEMBLY_RAISE := 18.0
 const TAB_GROUP_ORDER := ["Main tools", "Inventory", "Weapons", "Environment"]
+const TAB_GROUP_HELP := {"Main tools":"Scan, collect and mine", "Inventory":"Carried supplies, cargo and specimens", "Weapons":"Browse weapon tools", "Environment":"Climate and ecosystem tools"}
 const TAB_GROUP_ICONS := {"Main tools":"signal", "Inventory":"inventory", "Weapons":"category_weapons", "Environment":"category_life"}
 const TAB_GROUP_ICON_TEXTURES := {
 	"Main tools":preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/survey.png"),
@@ -86,11 +87,11 @@ class TabCardArtwork extends Control:
 		var sink: float = 1.0 if depressed and not disabled else 0.0
 		var outer := _shape(0.0, sink)
 		var outer_line := _closed(outer)
+		if selected and not disabled:
+			var selected_glow := Color("e8b839")
+			selected_glow.a = 0.14
+			draw_polyline(_closed(_shape(-1.0, sink)), selected_glow, 4.0, true)
 
-		# Pointer hover is the only state that draws a colored glow.
-		if hovered and not disabled:
-			var glow := Color(accent.r, accent.g, accent.b, 0.20)
-			draw_polyline(_closed(_shape(-1.0, sink)), glow, 4.0, true)
 
 		# One shared, quiet silhouette keeps all five controls in the same family.
 		draw_colored_polygon(_shape(0.0, sink + 2.0), Color(0.0, 0.0, 0.0, 0.30))
@@ -109,10 +110,9 @@ class TabCardArtwork extends Control:
 		draw_line(Vector2(11.0, 1.0 + sink), Vector2(size.x - 11.0, 1.0 + sink), top_edge, 1.0, true)
 
 		if hovered and not disabled:
-			draw_polyline(outer_line, Color(accent.r, accent.g, accent.b, 0.76), 1.35, true)
+			draw_polyline(outer_line, Color("8ed4c4"), 1.4, true)
 		if selected and not disabled:
-			# A crisp underline marks selection without adding a second glow.
-			draw_line(Vector2(18.0, size.y - 2.0 + sink), Vector2(size.x - 18.0, size.y - 2.0 + sink), accent, 1.25, true)
+			draw_polyline(outer_line, Color("e8b839"), 1.45, true)
 		# The shallow inset heads give every card the same tactile fastening.
 		var fastener := Color("81877d") if not disabled else Color("626962")
 		for x: float in [9.0, size.x - 9.0]:
@@ -142,6 +142,12 @@ var category_buttons: Dictionary = {}
 var category_tab_cards: Dictionary = {}
 var communications_button: Button
 var communications_card: TabCardArtwork
+var category_tooltip_overlay: Control
+var category_tooltip_connector: Line2D
+var category_tooltip_panel: Panel
+var category_tooltip_heading: Label
+var category_tooltip_details: Label
+var category_tooltip_shortcut: Label
 var active_group: String = "Main tools"
 var palette_expanded: bool = true
 var palette_locked: bool = false
@@ -294,6 +300,7 @@ func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
 
 func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 	var artwork := TabCardArtwork.new()
+	button.set_meta("tab_card_artwork", artwork)
 	artwork.accent = tint
 	artwork.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var parent: Control = button.get_parent() as Control
@@ -326,6 +333,131 @@ func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, s
 	artwork.selected = selected
 	artwork.disabled = palette_locked
 	artwork.queue_redraw()
+
+func _attach_category_help(button: Button, heading: String, details: String, shortcut: String) -> void:
+	button.tooltip_text = ""
+	button.set_meta("category_tooltip_title", heading)
+	button.set_meta("category_tooltip_details", details)
+	button.set_meta("category_tooltip_shortcut", shortcut)
+	button.mouse_entered.connect(_show_category_tooltip.bind(button))
+	button.focus_entered.connect(_show_category_tooltip.bind(button))
+	button.mouse_exited.connect(_reconcile_category_tooltip.bind(button))
+	button.focus_exited.connect(_reconcile_category_tooltip.bind(button))
+
+func _create_category_tooltip() -> void:
+	category_tooltip_overlay = Control.new()
+	category_tooltip_overlay.name = "CategoryTooltipOverlay"
+	category_tooltip_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	category_tooltip_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	category_tooltip_overlay.z_index = 80
+	add_child(category_tooltip_overlay)
+
+	category_tooltip_connector = Line2D.new()
+	category_tooltip_connector.width = 1.2
+	category_tooltip_connector.default_color = Color("83918a")
+	category_tooltip_connector.antialiased = true
+	category_tooltip_overlay.add_child(category_tooltip_connector)
+
+	category_tooltip_panel = Panel.new()
+	category_tooltip_panel.name = "CategoryTabTooltip"
+	category_tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	category_tooltip_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	category_tooltip_panel.size = Vector2(300, 64)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("111819")
+	style.border_color = Color("68736e")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(0)
+	category_tooltip_panel.add_theme_stylebox_override("panel", style)
+	category_tooltip_overlay.add_child(category_tooltip_panel)
+
+	category_tooltip_heading = Label.new()
+	category_tooltip_heading.position = Vector2(10, 4)
+	category_tooltip_heading.size = Vector2(280, 18)
+	category_tooltip_heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	category_tooltip_heading.add_theme_font_size_override("font_size", 13)
+	category_tooltip_heading.add_theme_color_override("font_color", Color("efe8d4"))
+	category_tooltip_panel.add_child(category_tooltip_heading)
+	category_tooltip_details = Label.new()
+	category_tooltip_details.position = Vector2(10, 22)
+	category_tooltip_details.size = Vector2(280, 20)
+	category_tooltip_details.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	category_tooltip_details.add_theme_font_size_override("font_size", 12)
+	category_tooltip_details.add_theme_color_override("font_color", Color("c5d1c8"))
+	category_tooltip_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	category_tooltip_panel.add_child(category_tooltip_details)
+	category_tooltip_shortcut = Label.new()
+	category_tooltip_shortcut.position = Vector2(10, 45)
+	category_tooltip_shortcut.size = Vector2(280, 14)
+	category_tooltip_shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	category_tooltip_shortcut.add_theme_font_size_override("font_size", 11)
+	category_tooltip_shortcut.add_theme_color_override("font_color", Color("e2bd55"))
+	category_tooltip_panel.add_child(category_tooltip_shortcut)
+	category_tooltip_overlay.hide()
+
+func _tab_tooltip_buttons() -> Array[Button]:
+	var result: Array[Button] = []
+	for group: String in TAB_GROUP_ORDER:
+		var button: Button = category_buttons.get(group) as Button
+		if button != null:
+			result.append(button)
+	if communications_button != null:
+		result.append(communications_button)
+	return result
+
+func _tab_tooltip_active(button: Button) -> bool:
+	var artwork: TabCardArtwork = button.get_meta("tab_card_artwork") as TabCardArtwork
+	return artwork != null and (artwork.hovered or artwork.focused)
+
+func _reconcile_category_tooltip(_changed_button: Button) -> void:
+	var candidates: Array[Button] = _tab_tooltip_buttons()
+	for button: Button in candidates:
+		var artwork: TabCardArtwork = button.get_meta("tab_card_artwork") as TabCardArtwork
+		if artwork != null and artwork.hovered:
+			_show_category_tooltip(button)
+			return
+	for button: Button in candidates:
+		var artwork: TabCardArtwork = button.get_meta("tab_card_artwork") as TabCardArtwork
+		if artwork != null and artwork.focused:
+			_show_category_tooltip(button)
+			return
+	_hide_category_tooltip()
+
+func _show_category_tooltip(button: Button) -> void:
+	if category_tooltip_overlay == null or palette_locked or not button.visible or not _tab_tooltip_active(button):
+		return
+	category_tooltip_heading.text = str(button.get_meta("category_tooltip_title", ""))
+	var details_text: String = str(button.get_meta("category_tooltip_details", ""))
+	category_tooltip_details.text = details_text
+	category_tooltip_shortcut.text = str(button.get_meta("category_tooltip_shortcut", ""))
+
+	var tip_height: float = 76.0 if details_text.contains("\n") else 64.0
+	var tip_size := Vector2(300, tip_height)
+	category_tooltip_details.size.y = tip_height - 44.0
+	category_tooltip_shortcut.position.y = tip_height - 19.0
+	var anchor_x: float = button.position.x + button.size.x * 0.5
+	var left: float = anchor_x - tip_size.x * 0.5
+	if button == communications_button or left + tip_size.x > size.x - 8.0:
+		left = button.position.x - tip_size.x - 10.0
+	left = clampf(left, 8.0, maxf(8.0, size.x - tip_size.x - 8.0))
+	var top: float = button.position.y - tip_size.y - 10.0
+	top = clampf(top, 8.0, maxf(8.0, size.y - tip_size.y - 8.0))
+	category_tooltip_panel.position = Vector2(left, top)
+	category_tooltip_panel.size = tip_size
+
+	var connector_start := Vector2(anchor_x, top + tip_size.y)
+	if anchor_x > left + tip_size.x:
+		connector_start = Vector2(left + tip_size.x - 8.0, top + tip_size.y - 3.0)
+	elif anchor_x < left:
+		connector_start = Vector2(left + 8.0, top + tip_size.y - 3.0)
+	category_tooltip_connector.points = PackedVector2Array([connector_start, Vector2(anchor_x, button.position.y - 1.0)])
+	category_tooltip_overlay.show()
+
+func _hide_category_tooltip() -> void:
+	if category_tooltip_overlay == null:
+		return
+	category_tooltip_connector.clear_points()
+	category_tooltip_overlay.hide()
 func _build() -> void:
 	nav_pod = NavPod.new()
 	nav_pod.position = Vector2(26, 680)
@@ -463,11 +595,13 @@ func _build() -> void:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		category_buttons[group] = button
 		category_tab_cards[group] = _attach_tab_card(button,tint)
+		_attach_category_help(button,group,TAB_GROUP_HELP[group],"Tab / Shift-Tab")
 		group_index += 1
 	communications_button = symbol_at("communicator",Rect2(772+group_index*(TAB_CARD_WIDTH+TAB_CARD_GAP),686,TAB_CARD_WIDTH,TAB_CARD_HEIGHT),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
 	communications_button.icon = _tab_icon(COMMUNICATIONS_ICON_TEXTURE, COMMUNICATIONS_ICON_REGION)
 	communications_button.set_meta("category_icon_cutout",true)
 	communications_card = _attach_tab_card(communications_button,Art.COMMS)
+	_attach_category_help(communications_button,"Communications","Civilizations · local trade\nShip services","Y")
 	collapse_button = symbol_at("palette_close",Rect2(1252,692,42,42),"palette_toggle","Collapse tools",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette; keep selected tool and ship status"
 	page_previous = symbol_at("page_previous",Rect2(1114,692,38,42),"page_previous","Previous item page",Art.NAV)
@@ -568,6 +702,7 @@ func _build() -> void:
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	paused_badge = label_at("",Rect2(650,25,300,24),15,Art.GOLD)
 	paused_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_create_category_tooltip()
 	select_tool("scan")
 
 func _make_item(id: String, item: Dictionary) -> void:
