@@ -88,6 +88,8 @@ const ORBIT_ZOOM_MIN := 18.0
 const ORBIT_ZOOM_MAX := 320.0
 const SURFACE_VISUAL_RADIUS := 1100.0
 const LANDING_VEIL_OPACITY := 0.62
+const FIRST_LANDING_WELCOME := "Explore freely. Your surveys are secure."
+const FIRST_LANDING_WELCOME_DURATION := 5.0
 const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam"}
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 var TOOLS: Array[String] = Equipment.ids()
@@ -175,6 +177,7 @@ var navigation_marker: MeshInstance3D
 var heard_guides: Dictionary = {}
 var guide_caption: Label
 var caption_time: float = 0.0
+var first_landing_welcome_remaining: float = 0.0
 var previewing_audio: bool = false
 var cargo_location: String = "ship"
 var inspected_system: String = "scan"
@@ -1029,25 +1032,26 @@ func _make_ui() -> void:
 	status = _label("",14,Color("ffe0a8"))
 	status_backing = ColorRect.new()
 	status_backing.position = Vector2(28,74)
-	status_backing.size = Vector2(216,48)
+	status_backing.size = Vector2(184,38)
 	status_backing.color = Color("1c2426",0.98)
 	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_backing.z_index = 20
 	status_backing.hide()
 	root.add_child(status_backing)
-	status.position = Vector2(68,74)
-	status.size = Vector2(168,48)
+	status.position = Vector2(62,74)
+	status.size = Vector2(142,38)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status.add_theme_color_override("font_color",Color("fff0cb"))
+	status.add_theme_font_size_override("font_size",13)
 	status.z_index = 21
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(36,86)
-	status_icon.size = Vector2(24,24)
+	status_icon.position = Vector2(36,84)
+	status_icon.size = Vector2(18,18)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon.modulate = Color("e9b72f")
@@ -1150,7 +1154,7 @@ func _make_ui() -> void:
 	if conflict_view != null: conflict_view.setup_ui(root)
 	if signal_view != null: signal_view.setup_ui(root)
 	recognition_button = _button("",_show_popup.bind("badges"),root)
-	recognition_button.position = Vector2(1536,24); recognition_button.size = Vector2(40,32)
+	recognition_button.position = Vector2(1376,24); recognition_button.size = Vector2(40,32)
 	recognition_button.add_theme_font_size_override("font_size",11)
 	Instruments.instrument(recognition_button,"log",Instruments.GOLD)
 	recognition_notice = preload("res://scripts/recognition_notice.gd").new(); root.add_child(recognition_notice)
@@ -1293,6 +1297,10 @@ func _process(delta: float) -> void:
 		if not suspended and not recognition_notice.visible and not campaign.recognition.state.queue.is_empty():
 			recognition_notice.present(campaign.recognition.state.queue.pop_front(),campaign); audio.play("achievement")
 	audio.update_flight(delta,velocity.length(),model.state.flight_mode == "orbit",paused or _inspection_open())
+	var welcome_suspended: bool = paused or _inspection_open()
+	if first_landing_welcome_remaining > 0.0 and not welcome_suspended:
+		first_landing_welcome_remaining = maxf(0.0,first_landing_welcome_remaining-delta)
+		if first_landing_welcome_remaining <= 0.0: _refresh_ui()
 	if not paused and not _inspection_open(): caption_time -= delta
 	guide_caption.visible = caption_time > 0
 	frame_samples.append(delta*1000)
@@ -1861,7 +1869,7 @@ func _operate(delta: float) -> void:
 	if progress >= 1:
 		var operation_distance: float = ship.position.distance_to(end)
 		error = _commit_tool_action(tool,selected,operation_distance)
-		var completed: String = "+1 Resonant glass · cargo %d / %d" % [campaign.commerce.quantity("glass"),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
+		var completed: String = "Glass +1 · cargo %d/%d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
 		_toast(error if not error.is_empty() else completed,"glass" if error.is_empty() and tool == "mine" else "")
 		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
@@ -1881,6 +1889,27 @@ func _commit_tool_action(action: String, target: String, gap: float) -> String:
 	if action == "mine":
 		return campaign.extract_surface_crystal(gap) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
 	return model.act(action,target,gap)
+
+func _input(event: InputEvent) -> void:
+	if first_landing_welcome_remaining <= 0.0 or paused or _inspection_open(): return
+	var should_dismiss: bool = false
+	if event is InputEventKey: should_dismiss = event.pressed and not event.echo
+	elif event is InputEventMouseButton: should_dismiss = event.pressed
+	elif event is InputEventJoypadButton: should_dismiss = event.pressed
+	elif event is InputEventJoypadMotion: should_dismiss = absf(event.axis_value) >= 0.35
+	elif event is InputEventScreenTouch: should_dismiss = event.pressed
+	if should_dismiss: _dismiss_first_landing_welcome()
+
+func _start_first_landing_welcome() -> void:
+	if model.state.landings != 1 or model.state.flight_mode != "surface": return
+	first_landing_welcome_remaining = FIRST_LANDING_WELCOME_DURATION
+	heard_guides["return"] = true
+	_refresh_ui()
+
+func _dismiss_first_landing_welcome() -> void:
+	if first_landing_welcome_remaining <= 0.0: return
+	first_landing_welcome_remaining = 0.0
+	_refresh_ui()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not flight_rebind_action.is_empty():
@@ -2197,6 +2226,7 @@ func _change_flight_mode(mode: String) -> void:
 	arrival_fade = LANDING_VEIL_OPACITY if mode == "surface" else 1.0
 	audio.play("arrival")
 	_toast(model.definition().name+" orbit reached" if mode == "orbit" else "Atmospheric entry complete")
+	if mode == "surface" and model.state.landings == 1: _start_first_landing_welcome()
 	_save(false)
 
 func _apply_flight_mode(preserve_zoom: bool = false) -> void:
@@ -2308,10 +2338,10 @@ func _refresh_ui() -> void:
 		elif not s.guardian_disabled and not s.shroud_unlocked: objective.text = "A custodian guards the wreck. Disable it or risk a fast salvage."
 		elif not s.shroud_unlocked: objective.text = "Click the wreck inside the pulse field to recover its pulse ward."
 		else: objective.text = "Shield recovered. Explore, repair or return to Morrow."
-	elif s.landings > 0: objective.text = "Explore freely. Your surveys are secure."
+	elif s.landings > 0: objective.text = ""
 	elif "relay" not in s.scanned: objective.text = "Click the relay to investigate its signal."
 	elif not s.history.any(func(entry: Dictionary) -> bool: return entry.id == "first_orbit"): objective.text = "Follow the signal. Leave the atmosphere."
-	else: objective.text = "Explore freely. Your surveys are secure."
+	else: objective.text = ""
 	if orbital:
 		if landing:
 			subject.text = "Morrow Basin / atmospheric approach"
@@ -2344,25 +2374,49 @@ func _refresh_ui() -> void:
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
 		var reason: String = _tool_reason(tool,selected,0)
-		subject.text = "RESONANT SEAM · %d/%d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if selected == "vein" else TITLES[selected]
-		if approach_subject:
-			hud.action_state.text = "APPROACHING"
-			explanation.text = "Moving into tool range." if selected != "vein" else "%d / %d crystals remain · approaching to %s." % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool).to_lower()]
-		elif held and not latched:
-			hud.action_state.text = "OPERATING"
-			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)] if selected != "vein" else "%d / %d remain · %s · %d%%" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),int(progress*100)]
-		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
-			hud.action_state.text = operation_feedback
-			if operation_feedback == "SECURED" and tool == "mine":
-				explanation.text = "+1 Resonant glass · %d / %d remain" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS]
-			else: explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
-		elif not reason.is_empty():
-			hud.action_state.text = "UNAVAILABLE"
-			explanation.text = _short_reason(reason) if selected != "vein" else "%d / %d remain · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,_short_reason(reason)]
+		if selected == "vein":
+			var remaining: int = int(model.state.ore_remaining)
+			subject.text = "RESONANT SEAM"
+			if remaining <= 0:
+				hud.action_state.text = "DEPLETED"
+				explanation.text = "No crystals remain."
+			elif approach_subject:
+				hud.action_state.text = "APPROACH"
+				explanation.text = "%d crystals · closing in" % remaining
+			elif held and not latched:
+				hud.action_state.text = "MINING"
+				explanation.text = "%d crystals · %d%%" % [remaining,int(progress*100)]
+			elif not reason.is_empty():
+				hud.action_state.text = "BLOCKED"
+				explanation.text = "%d crystals · unavailable" % remaining
+			elif gap > Equipment.reach(tool):
+				hud.action_state.text = "OUT OF RANGE"
+				explanation.text = "%.0f m · approach" % gap
+			else:
+				if tool == "mine":
+					hud.action_state.text = "%d OF %d LEFT" % [remaining,Model.MINERAL_DEPOSIT_UNITS]
+					explanation.text = "Next: +1 Resonant glass"
+				else:
+					hud.action_state.text = "%d LEFT" % remaining
+					explanation.text = "%s energy" % Equipment.amount(Equipment.energy(tool,model.installed_upgrades))
 		else:
-			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-			var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
-			explanation.text = action_copy if selected != "vein" else "%d / %d remain · %s · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),action_copy]
+			subject.text = TITLES[selected]
+			if approach_subject:
+				hud.action_state.text = "APPROACHING"
+				explanation.text = "Moving into tool range."
+			elif held and not latched:
+				hud.action_state.text = "OPERATING"
+				explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)]
+			elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
+				hud.action_state.text = operation_feedback
+				explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
+			elif not reason.is_empty():
+				hud.action_state.text = "UNAVAILABLE"
+				explanation.text = _short_reason(reason)
+			else:
+				hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
+				var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach.")
+				explanation.text = action_copy
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
@@ -2395,6 +2449,9 @@ func _refresh_ui() -> void:
 		use_button.disabled = paused or _inspection_open()
 		use_button.tooltip_text = "Cancel deployment and keep the colony kit aboard."
 		progress_bar.value = 0
+	if first_landing_welcome_remaining > 0.0 and s.landings == 1 and not orbital and not kit_mode and not deploy_order:
+		objective.text = FIRST_LANDING_WELCOME
+	objective.visible = not objective.text.is_empty()
 	_refresh_surface_combat_ui()
 	_refresh_fleet_ui()
 	_refresh_climate_ui()
@@ -2438,29 +2495,52 @@ func _layout_seam_context_card() -> void:
 		hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
 		hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
 		hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
+		hud.explanation.add_theme_color_override("font_color", Instruments.MUTED)
 		hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
 		hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
 		return
-	var card_size := Vector2(252,80)
+	var card_size := Vector2(200,62)
 	var seam_at: Vector3 = _target_position("vein")
 	if camera.is_position_behind(seam_at): return
 	var anchor: Vector2 = camera.unproject_position(seam_at)
 	var view_size: Vector2 = get_viewport().get_visible_rect().size
-	var card_at: Vector2 = Vector2(clampf(anchor.x-card_size.x*0.5,300.0,view_size.x-card_size.x-20.0),clampf(anchor.y+50.0,140.0,640.0-card_size.y))
 	var ship_screen: Vector2 = camera.unproject_position(ship.position)
 	var ship_rect := Rect2(ship_screen-Vector2(78,38),Vector2(156,76))
-	if Rect2(card_at,card_size).intersects(ship_rect):
-		var above := Vector2(card_at.x,clampf(anchor.y-card_size.y-30.0,140.0,640.0-card_size.y))
-		if not Rect2(above,card_size).intersects(ship_rect): card_at = above
+	var max_card_y: float = minf(640.0-card_size.y,view_size.y-card_size.y-20.0)
+	var placements: Array[Vector2] = [
+		Vector2(anchor.x+52.0,anchor.y-card_size.y*0.5),
+		Vector2(anchor.x-card_size.x-52.0,anchor.y-card_size.y*0.5),
+		Vector2(anchor.x-card_size.x*0.5,anchor.y-card_size.y-38.0),
+		Vector2(anchor.x-card_size.x*0.5,anchor.y+38.0),
+	]
+	var card_at: Vector2 = Vector2(20.0,140.0)
+	var target_clearance := Rect2(anchor-Vector2(40,34),Vector2(80,68))
+	for placement: Vector2 in placements:
+		var candidate := Vector2(
+			clampf(placement.x,20.0,view_size.x-card_size.x-20.0),
+			clampf(placement.y,140.0,max_card_y)
+		)
+		if not Rect2(candidate,card_size).intersects(ship_rect) and not Rect2(candidate,card_size).intersects(target_clearance):
+			card_at = candidate
+			break
 	hud.context_card.position = card_at
 	hud.context_card.size = card_size
-	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(162,19); hud.subject.add_theme_font_size_override("font_size",12)
-	hud.action_state.position = card_at+Vector2(174,8); hud.action_state.size = Vector2(68,17); hud.action_state.add_theme_font_size_override("font_size",9)
-	hud.explanation.position = card_at+Vector2(10,29); hud.explanation.size = Vector2(232,27); hud.explanation.add_theme_font_size_override("font_size",11)
-	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(68,22); hud.use_button.add_theme_font_size_override("font_size",11)
-	hud.progress_bar.position = card_at+Vector2(0,76); hud.progress_bar.size = Vector2(252,4)
+	hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(126,17); hud.subject.add_theme_font_size_override("font_size",10)
+	hud.action_state.position = card_at+Vector2(138,7); hud.action_state.size = Vector2(54,15); hud.action_state.add_theme_font_size_override("font_size",8)
+	hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(146,20); hud.explanation.add_theme_font_size_override("font_size",10)
+	hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
+	hud.use_button.position = card_at+Vector2(158,31); hud.use_button.size = Vector2(34,22); hud.use_button.add_theme_font_size_override("font_size",10)
+	hud.progress_bar.position = card_at+Vector2(0,58); hud.progress_bar.size = Vector2(200,4)
 	var card_rect := Rect2(card_at,card_size)
-	var edge := Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_at.y if card_at.y > anchor.y else card_rect.end.y)
+	var edge: Vector2
+	if anchor.x < card_rect.position.x:
+		edge = Vector2(card_rect.position.x,clampf(anchor.y,card_rect.position.y+8.0,card_rect.end.y-8.0))
+	elif anchor.x > card_rect.end.x:
+		edge = Vector2(card_rect.end.x,clampf(anchor.y,card_rect.position.y+8.0,card_rect.end.y-8.0))
+	elif anchor.y < card_rect.position.y:
+		edge = Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_rect.position.y)
+	else:
+		edge = Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_rect.end.y)
 	seam_tether.clear_points()
 	seam_tether.add_point(anchor)
 	seam_tether.add_point(edge)
@@ -2557,15 +2637,15 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(36,86)
-		status_icon.size = Vector2(24,24)
+		status_icon.position = Vector2(36,84)
+		status_icon.size = Vector2(18,18)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(68,74)
-		status.size = Vector2(168,48)
+		status.position = Vector2(62,74)
+		status.size = Vector2(170 if item_icon == "glass" else 142,38)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		status_backing.position = Vector2(28,74)
-		status_backing.size = Vector2(216,48)
+		status_backing.size = Vector2(212 if item_icon == "glass" else 184,38)
 		status_backing.show()
 		status.show()
 	status.text = text

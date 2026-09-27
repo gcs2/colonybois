@@ -21,6 +21,25 @@ const SPECIMEN_TEXTURES: Dictionary = {
 	"sun_kite": preload("res://assets/specimens/sun_kite.png"),
 	"hush_beak": preload("res://assets/specimens/hush_beak.png"),
 }
+const TOOL_ATLAS_IDS: Dictionary = {
+	"heat_ray":"heat_ray",
+	"cool_ray":"cool_ray",
+	"cloud_accumulator":"cloud_accumulator",
+	"cloud_vacuum":"cloud_vacuum",
+	"lance":"emitter",
+	"seeker":"seeker",
+	"ground_bomb":"ground_bomb",
+	"shield":"shield",
+	"rally_call":"rally_call",
+}
+
+static func tool_texture_for(tool_id: String) -> Texture2D:
+	# Use only exact semantic matches from the documented painted equipment atlas.
+	# Unmatched actions keep their own original SVG symbols rather than borrowing
+	# a visually similar but misleading object.
+	if not TOOL_ATLAS_IDS.has(tool_id):
+		return null
+	return preload("res://scripts/communicator_style.gd").equipment_icon(str(TOOL_ATLAS_IDS[tool_id]))
 
 static func texture_for(entry_id: String) -> Texture2D:
 	if entry_id.begins_with("cargo:"):

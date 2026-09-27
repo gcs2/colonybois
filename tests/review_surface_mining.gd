@@ -54,6 +54,11 @@ func _run() -> void:
 	game.field.change_flight_mode("surface")
 	game.field.act("scan","vein",4)
 	game.configure_flagship()
+	var capture_definition: Dictionary = game.field.definition()
+	var capture_up: Vector3 = Geography.surface_runtime(capture_definition).advance(Geography.surface_direction(capture_definition,0,12),620,0)
+	game.field.state.surface_direction = [capture_up.x,capture_up.y,capture_up.z]
+	var capture_position: Vector2 = Geography.surface_local_position(capture_definition,capture_up)
+	game.field.state.surface_position = [capture_position.x,3.0,capture_position.y]
 	var scene: Node3D = load("res://scenes/encounter.tscn").instantiate()
 	scene.campaign = game
 	scene.process_mode = Node.PROCESS_MODE_DISABLED
@@ -76,14 +81,39 @@ func _run() -> void:
 	scene._refresh_ui()
 	var mining_range: float = scene.ship.position.distance_to(scene._target_position("vein"))
 	assert(game.mining_reason(mining_range).is_empty(), "Capture setup must be in valid mining range")
+	scene._start_first_landing_welcome()
+	assert(scene.objective.text == "Explore freely. Your surveys are secure.", "First landing presents its brief welcome")
+	await _save_frame(view,"first-landing-welcome-"+capture_label)
+	scene._dismiss_first_landing_welcome()
+	assert(scene.objective.text.is_empty(), "First landing welcome clears on interaction")
 	await _save_frame(view,"surface-mining-before-"+capture_label)
+
+	var hovered_tab: Control = scene.hud.category_tab_cards["Weapons"]
+	hovered_tab.set("hovered",true)
+	hovered_tab.queue_redraw()
+	await _save_frame(view,"hud-tab-hover-"+capture_label)
+	hovered_tab.set("hovered",false)
+	hovered_tab.queue_redraw()
 
 	scene.held = true
 	scene._operate(3.0)
 	assert(game.field.state.ore_remaining == Field.MINERAL_DEPOSIT_UNITS-1, "A completed cutter cycle depletes one visible crystal")
 	assert(game.commerce.quantity("glass") == 1, "The cut crystal enters real cargo")
+	assert(scene.status.text == "Glass +1 · cargo 1/%d" % game.commerce.capacity(), "Reward toast reports the actual cargo occupancy")
 	scene._update_visuals()
 	scene._refresh_ui()
+	assert(scene.hud.action_state.text == "3 OF 4 LEFT", "Seam reports remaining inventory after mining")
+	assert(scene.hud.explanation.text == "Next: +1 Resonant glass", "Seam reports the next useful yield")
 	await _save_frame(view,"surface-mining-after-"+capture_label)
-	print("Mining capture assertions passed; Silent-mode performance is not measured.")
+	for _cycle: int in range(Field.MINERAL_DEPOSIT_UNITS-1):
+		scene.held = true
+		scene.latched = false
+		scene._operate(3.0)
+		scene._update_visuals()
+		scene._refresh_ui()
+	assert(game.field.state.ore_remaining == 0, "Four completed cycles exhaust the deposit")
+	assert(scene.hud.action_state.text == "DEPLETED", "Exhaustion is called out in the seam card")
+	assert(scene.hud.explanation.text == "No crystals remain.", "Exhausted seam explains why mining stops")
+	await _save_frame(view,"surface-mining-depleted-"+capture_label)
+	print("Mining, yield, depleted state, welcome and tab-hover captures passed; performance is not measured.")
 	quit()

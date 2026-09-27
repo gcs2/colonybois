@@ -16,14 +16,42 @@ const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
+const PALETTE_ROWS := 2
 const PALETTE_SLOT_WIDTH := 60.0
+const PALETTE_SLOT_HEIGHT := 62.0
 const PALETTE_COLUMN_GAP := 6.0
 const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
+const PALETTE_ROW_GAP := 2.0
+const PALETTE_ROW_STRIDE := PALETTE_SLOT_HEIGHT + PALETTE_ROW_GAP
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * PALETTE_COLUMN_STRIDE - PALETTE_COLUMN_GAP
-const CONSOLE_NATIVE_WIDTH := 184.0
+const PALETTE_GRID_HEIGHT := PALETTE_ROWS * PALETTE_SLOT_HEIGHT + (PALETTE_ROWS - 1) * PALETTE_ROW_GAP + 8.0
+const CONSOLE_NATIVE_WIDTH := 144.0
 const CONSOLE_VISIBLE_WIDTH := 144.0
-const CONSOLE_RIGHT_EDGE := 1592.0
-const ASSEMBLY_RAISE := 27.0
+const CONSOLE_RIGHT_EDGE := 1586.0
+const CONSOLE_SHELL_LEFT_INSET := 13.0
+const PALETTE_PANEL_HEIGHT := 183.0
+const ASSEMBLY_RAISE := 18.0
+const TAB_GROUP_ORDER := ["Main tools", "Inventory", "Weapons", "Environment"]
+const TAB_GROUP_ICONS := {"Main tools":"signal", "Inventory":"inventory", "Weapons":"category_weapons", "Environment":"category_life"}
+const TAB_GROUP_ICON_TEXTURES := {
+	"Main tools":preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/survey.png"),
+	"Inventory":preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/inventory.png"),
+	"Weapons":preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/weapons.png"),
+	"Environment":preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/environment.png")
+}
+const TAB_GROUP_ICON_REGIONS := {
+	"Main tools":Rect2(272, 355, 711, 559),
+	"Inventory":Rect2(288, 302, 678, 690),
+	"Weapons":Rect2(253, 292, 748, 671),
+	"Environment":Rect2(242, 344, 770, 678)
+}
+const COMMUNICATIONS_ICON_TEXTURE := preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/communications.png")
+const COMMUNICATIONS_ICON_REGION := Rect2(250, 282, 755, 733)
+const TAB_GROUP_COLORS := {"Main tools":Color("f3c567"), "Inventory":Color("8bd3c6"), "Weapons":Color("df6553"), "Environment":Color("98c981")}
+const TAB_CARD_WIDTH := 67.0
+const TAB_CARD_HEIGHT := 37.0
+const TAB_CARD_GAP := 1.0
+
 
 class TabCardArtwork extends Control:
 	var accent: Color = Color("8cc9d0")
@@ -33,51 +61,67 @@ class TabCardArtwork extends Control:
 	var focused: bool = false
 	var disabled: bool = false
 
-	func _draw() -> void:
+	func _shape(inset: float = 0.0, sink: float = 0.0) -> PackedVector2Array:
 		var w: float = size.x
 		var h: float = size.y
-		if w < 24.0 or h < 20.0: return
-		var sink: float = 1.0 if depressed and not disabled else 0.0
-		var face := PackedVector2Array([
-			Vector2(0,6+sink), Vector2(6,sink), Vector2(w-6,sink), Vector2(w,6+sink),
-			Vector2(w,h-6+sink), Vector2(w-6,h+sink), Vector2(6,h+sink), Vector2(0,h-6+sink)
+		var cut: float = minf(8.0, (h - inset * 2.0) * 0.24)
+		return PackedVector2Array([
+			Vector2(inset, inset + cut + sink),
+			Vector2(inset + cut, inset + sink),
+			Vector2(w - inset - cut, inset + sink),
+			Vector2(w - inset, inset + cut + sink),
+			Vector2(w - inset, h - inset - 6.0 + sink),
+			Vector2(w - inset - 6.0, h - inset + sink),
+			Vector2(inset + 6.0, h - inset + sink),
+			Vector2(inset, h - inset - 6.0 + sink)
 		])
-		var shadow := PackedVector2Array()
-		for point: Vector2 in face: shadow.append(point+Vector2(0,2))
-		draw_colored_polygon(shadow,Color(0,0,0,0.5))
-		var fill := Color("1a2222")
-		if selected: fill = Color("202a29")
-		if hovered: fill = fill.lightened(0.12)
-		if depressed: fill = fill.darkened(0.13)
-		if disabled: fill = Color("232b29")
-		draw_colored_polygon(face,fill)
-		var outline := Color("64706d")
-		if hovered: outline = Color("a4aea5")
-		if selected: outline = accent.darkened(0.2)
-		if disabled: outline = Color("48514f")
-		var closed_face := face.duplicate()
-		closed_face.append(face[0])
-		draw_polyline(closed_face,outline,1.0,true)
-		if selected and not disabled:
-			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),Color(accent.r,accent.g,accent.b,0.16),4.0,true)
-			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),accent,2.0,true)
-		elif selected:
-			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),Color("596361"),1.0,true)
-		else:
-			var top_edge := Color("9aa49d")
-			top_edge.a = 0.5 if not disabled else 0.22
-			draw_line(Vector2(8,2+sink),Vector2(w-8,2+sink),top_edge,1.0,true)
-		if focused and not disabled:
-			var focus_edge := Color("f3c567")
-			focus_edge.a = 0.9
-			draw_polyline(closed_face,focus_edge,1.5,true)
-		var fastener: Color = Color("101615") if not disabled else Color("1b2221")
-		var glint := Color("a0aaa2")
-		glint.a = 0.72 if not disabled else 0.35
-		for point: Vector2 in [Vector2(6,7+sink),Vector2(w-6,7+sink),Vector2(6,h-7+sink),Vector2(w-6,h-7+sink)]:
-			draw_circle(point,1.5,fastener)
-			draw_circle(point-Vector2(0.45,0.5),0.55,glint)
 
+	func _closed(points: PackedVector2Array) -> PackedVector2Array:
+		var closed := points.duplicate()
+		closed.append(points[0])
+		return closed
+
+	func _draw() -> void:
+		if size.x < 24.0 or size.y < 20.0: return
+		var sink: float = 1.0 if depressed and not disabled else 0.0
+		var outer := _shape(0.0, sink)
+		var outer_line := _closed(outer)
+
+		# Pointer hover is the only state that draws a colored glow.
+		if hovered and not disabled:
+			var glow := Color(accent.r, accent.g, accent.b, 0.20)
+			draw_polyline(_closed(_shape(-1.0, sink)), glow, 4.0, true)
+
+		# One shared, quiet silhouette keeps all five controls in the same family.
+		draw_colored_polygon(_shape(0.0, sink + 2.0), Color(0.0, 0.0, 0.0, 0.30))
+		draw_colored_polygon(outer, Color("b6b2a5"))
+		var face := _shape(1.5, sink)
+		var face_color := Color("192322")
+		if selected: face_color = Color("232d2b")
+		elif hovered: face_color = Color("202b29")
+		if depressed: face_color = face_color.darkened(0.14)
+		if disabled: face_color = Color("272e2c")
+		draw_colored_polygon(face, face_color)
+		draw_polyline(outer_line, Color("59625d") if not disabled else Color("515854"), 1.0, true)
+
+		var top_edge := Color("eee9d9")
+		top_edge.a = 0.38 if not disabled else 0.20
+		draw_line(Vector2(11.0, 1.0 + sink), Vector2(size.x - 11.0, 1.0 + sink), top_edge, 1.0, true)
+
+		if hovered and not disabled:
+			draw_polyline(outer_line, Color(accent.r, accent.g, accent.b, 0.76), 1.35, true)
+		if selected and not disabled:
+			# A crisp underline marks selection without adding a second glow.
+			draw_line(Vector2(18.0, size.y - 2.0 + sink), Vector2(size.x - 18.0, size.y - 2.0 + sink), accent, 1.25, true)
+		# The shallow inset heads give every card the same tactile fastening.
+		var fastener := Color("81877d") if not disabled else Color("626962")
+		for x: float in [9.0, size.x - 9.0]:
+			draw_circle(Vector2(x, size.y - 7.0 + sink), 1.5, Color("111a19"))
+			draw_circle(Vector2(x, size.y - 7.0 + sink), 0.65, fastener)
+		if focused and not disabled:
+			var focus_edge := Color("fff1cc")
+			focus_edge.a = 0.95
+			draw_polyline(_closed(_shape(2.0, sink)), focus_edge, 1.25, true)
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -229,6 +273,25 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 	button.tooltip_text = title
 	return button
 
+func _apply_item_pictogram(button: Button, id: String, item: Dictionary, selected: bool = false) -> void:
+	var painted: Texture2D = CargoIcon.tool_texture_for(id)
+	if painted == null:
+		Art.symbol(button,str(item.get("icon",id)),item.get("tint",Art.NAV),selected)
+		return
+	button.icon = painted
+	button.add_theme_color_override("icon_normal_color",Color.WHITE)
+	button.add_theme_color_override("icon_hover_color",Color.WHITE)
+	button.add_theme_color_override("icon_pressed_color",Color.WHITE)
+	button.add_theme_constant_override("icon_max_width",52)
+
+func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
+	# The generated marks have generous transparent canvases. AtlasTexture
+	# retains a measured 64 px clear border without clipping any colored mark.
+	var texture := AtlasTexture.new()
+	texture.atlas = source
+	texture.region = safe_region
+	return texture
+
 func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 	var artwork := TabCardArtwork.new()
 	artwork.accent = tint
@@ -240,7 +303,9 @@ func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 	parent.move_child(artwork,button.get_index())
 	for state: String in ["normal","hover","pressed","disabled","focus"]:
 		button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
-	button.add_theme_constant_override("icon_max_width",28)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.add_theme_constant_override("icon_max_width",36)
 	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.queue_redraw())
 	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.queue_redraw())
 	button.button_down.connect(func() -> void: artwork.depressed = true; artwork.queue_redraw())
@@ -252,16 +317,15 @@ func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, selected: bool) -> void:
 	button.button_pressed = selected if button.toggle_mode else false
 	button.disabled = palette_locked
-	button.add_theme_color_override("icon_normal_color",tint.lightened(0.12))
-	button.add_theme_color_override("icon_hover_color",tint.lightened(0.32))
-	button.add_theme_color_override("icon_pressed_color",tint.lightened(0.08))
+	var icon_tint: Color = Color.WHITE if bool(button.get_meta("category_icon_cutout",false)) else tint
+	button.add_theme_color_override("icon_normal_color",icon_tint)
+	button.add_theme_color_override("icon_hover_color",icon_tint)
+	button.add_theme_color_override("icon_pressed_color",icon_tint)
 	button.add_theme_color_override("icon_disabled_color",Color("687370"))
-	# The active edge is warm gold while the icon keeps its category color.
-	artwork.accent = Art.GOLD if selected else tint
+	artwork.accent = tint
 	artwork.selected = selected
 	artwork.disabled = palette_locked
 	artwork.queue_redraw()
-
 func _build() -> void:
 	nav_pod = NavPod.new()
 	nav_pod.position = Vector2(26, 680)
@@ -279,6 +343,7 @@ func _build() -> void:
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
 	palette_backing.size = Vector2(150, 68)
 	palette_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	palette_backing.call("set_layered_console", true)
 	add_child(palette_backing)
 
 	# One recessed charcoal tray keeps the two-row item matrix visually related
@@ -327,12 +392,12 @@ func _build() -> void:
 	treasury_backing = InstrumentFrame.new()
 	# The recognition control occupies the extreme upper-right corner; keep this
 	# Marks plate beside it with a visible gap instead of drawing under that button.
-	treasury_backing.position = Vector2(1380, 18)
+	treasury_backing.position = Vector2(1428, 18)
 	treasury_backing.size = Vector2(144, 40)
 	treasury_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_backing)
 	treasury_icon = TextureRect.new()
-	treasury_icon.position = Vector2(1391, 27)
+	treasury_icon.position = Vector2(1439, 27)
 	treasury_icon.size = Vector2(20, 20)
 	treasury_icon.texture = MARK_ICON
 	treasury_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -340,14 +405,18 @@ func _build() -> void:
 	treasury_icon.modulate = Color("a98427")
 	treasury_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(treasury_icon)
-	stats = label_at("", Rect2(1417, 23, 98, 28), 13, Color("1c2426"))
+	stats = label_at("", Rect2(1465, 23, 98, 28), 13, Color("1c2426"))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	stats.clip_text = true
 
 	# Top-left clean location header matching Field Instruments
-	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Color("1c2426"))
-	mode_label = label_at("SURFACE", Rect2(36, 53, 140, 18), 11, Color("58646b"))
+	location_label = label_at("MORROW", Rect2(36, 28, 400, 28), 20, Art.PAPER)
+	location_label.add_theme_color_override("font_outline_color", Color("263235"))
+	location_label.add_theme_constant_override("outline_size", 2)
+	mode_label = label_at("SURFACE", Rect2(36, 53, 140, 18), 11, Art.PAPER)
+	mode_label.add_theme_color_override("font_outline_color", Color("263235"))
+	mode_label.add_theme_constant_override("outline_size", 2)
 	chart_heading = label_at("LOCAL SURFACE CHART", Rect2(36, 663, 218, 18), 10, Color("1c2426"))
 	chart_heading.visible = false
 
@@ -384,14 +453,20 @@ func _build() -> void:
 	tool_title.hide()
 	tool_spec.hide()
 	var group_index: int = 0
-	for group: String in GROUPS:
-		var tint: Color = Palette.entry(GROUPS[group][0]).tint
-		var button: Button = symbol_at(Palette.CATEGORY_ICONS[group],Rect2(772+group_index*74,686,64,54),"category:"+group,group+" · browse without changing your equipped tool [Tab / Shift-Tab]",tint)
+	for group: String in TAB_GROUP_ORDER:
+		var tint: Color = TAB_GROUP_COLORS[group]
+		var button: Button = symbol_at(TAB_GROUP_ICONS[group],Rect2(772+group_index*(TAB_CARD_WIDTH+TAB_CARD_GAP),686,TAB_CARD_WIDTH,TAB_CARD_HEIGHT),"category:"+group,group+" · browse without changing your equipped tool [Tab / Shift-Tab]",tint)
+		button.icon = _tab_icon(TAB_GROUP_ICON_TEXTURES[group], TAB_GROUP_ICON_REGIONS[group])
+		button.set_meta("category_icon_cutout",true)
 		button.toggle_mode = true
+		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		category_buttons[group] = button
 		category_tab_cards[group] = _attach_tab_card(button,tint)
 		group_index += 1
-	communications_button = symbol_at("communicator",Rect2(772+group_index*74,686,64,54),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
+	communications_button = symbol_at("communicator",Rect2(772+group_index*(TAB_CARD_WIDTH+TAB_CARD_GAP),686,TAB_CARD_WIDTH,TAB_CARD_HEIGHT),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
+	communications_button.icon = _tab_icon(COMMUNICATIONS_ICON_TEXTURE, COMMUNICATIONS_ICON_REGION)
+	communications_button.set_meta("category_icon_cutout",true)
 	communications_card = _attach_tab_card(communications_button,Art.COMMS)
 	collapse_button = symbol_at("palette_close",Rect2(1252,692,42,42),"palette_toggle","Collapse tools",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette; keep selected tool and ship status"
@@ -487,7 +562,9 @@ func _build() -> void:
 	progress_bar.visible = false
 	add_child(progress_bar)
 	progress_bar.size.y = 4
-	objective = label_at("",Rect2(36,132,540,34),12,Color("1c2426"))
+	objective = label_at("",Rect2(36,132,540,34),12,Art.PAPER)
+	objective.add_theme_color_override("font_outline_color", Color("263235"))
+	objective.add_theme_constant_override("outline_size", 2)
 	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	paused_badge = label_at("",Rect2(650,25,300,24),15,Art.GOLD)
 	paused_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -495,23 +572,24 @@ func _build() -> void:
 
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
-	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 	button.add_theme_constant_override("icon_max_width",52)
+	_apply_item_pictogram(button,id,item)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
-	shortcut.position = Vector2(3,38)
+	shortcut.position = Vector2(3,PALETTE_SLOT_HEIGHT-16.0)
 	shortcut.size = Vector2(54,14)
 	shortcut.add_theme_font_size_override("font_size",10)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
 	var count := Label.new()
-	count.position = Vector2(2,1)
-	count.size = Vector2(56,15)
+	count.position = Vector2(33,PALETTE_SLOT_HEIGHT-16.0)
+	count.size = Vector2(24,15)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size",11)
-	count.add_theme_color_override("font_color", Art.PAPER)
+	count.add_theme_font_size_override("font_size",12)
+	count.add_theme_color_override("font_color", Color("fff2ce"))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	item_buttons[id] = button
@@ -522,7 +600,7 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	var id: String = str(entry.id)
 	var title: String = str(entry.title)
 	var icon: String = str(entry.get("icon", "cargo"))
-	var button: Button = symbol_at(icon, Rect2(0, 0, PALETTE_SLOT_WIDTH, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
+	var button: Button = symbol_at(icon, Rect2(0, 0, PALETTE_SLOT_WIDTH, PALETTE_SLOT_HEIGHT), "cargo", title+" · open cargo inventory", Art.CARGO)
 	var item_texture: Texture2D = CargoIcon.texture_for(id)
 	if item_texture != null:
 		# Keep authored owned-item art large and separate from its live stack count.
@@ -532,19 +610,19 @@ func _make_campaign_item(entry: Dictionary) -> void:
 		pictogram.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		pictogram.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		pictogram.position = Vector2(4, 1)
-		pictogram.size = Vector2(52, 38)
+		pictogram.size = Vector2(52, PALETTE_SLOT_HEIGHT-18.0)
 		pictogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(pictogram)
-	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 	button.add_theme_constant_override("icon_max_width",48)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
-	count.position = Vector2(2, 39)
+	count.position = Vector2(2, PALETTE_SLOT_HEIGHT-16.0)
 	count.size = Vector2(56, 15)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size", 11)
-	count.add_theme_color_override("font_color", Art.PAPER)
+	count.add_theme_font_size_override("font_size", 12)
+	count.add_theme_color_override("font_color", Color("fff2ce"))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	campaign_item_buttons[id] = button
@@ -630,24 +708,24 @@ func show_group(group: String) -> void:
 	var visible_items: int = mini(PALETTE_PAGE_CAPACITY, maxi(0, entries.size()-page_start))
 	var pages: int = maxi(1,int(ceil(entries.size()/float(PALETTE_PAGE_CAPACITY))))
 	var grid_width: float = float(PALETTE_GRID_WIDTH)
-	var panel_height: float = 192.0
+	var panel_height: float = PALETTE_PANEL_HEIGHT
 	var panel_top: float = 870.0-panel_height-ASSEMBLY_RAISE
 	# The six-column tray meets the narrowed status pod inside one continuous
 	# shell. The transformed status edge stays aligned to the original right edge.
 	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_VISIBLE_WIDTH
-	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+56.0)
+	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+23.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
-	grid_backing.size = Vector2(grid_width+8, 118)
+	grid_backing.size = Vector2(grid_width+8, PALETTE_GRID_HEIGHT)
 	grid_backing.visible = palette_expanded
 	for slot: int in range(PALETTE_PAGE_CAPACITY):
 		var empty_cell: Panel = empty_slot_backings[slot]
-		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,54)
+		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
-		console_pod.position = Vector2(console_left,panel_top+18.0)
-		console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH,148)
-		console_pod.scale = Vector2(CONSOLE_VISIBLE_WIDTH/CONSOLE_NATIVE_WIDTH,1.0)
+		console_pod.position = Vector2(console_left,panel_top)
+		console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH,panel_height)
+		console_pod.scale = Vector2.ONE
 	altitude_backing.position = Vector2(console_left+106,panel_top-6)
 	flight_readout.position = Vector2(console_left+8,panel_top+21)
 	flight_readout.size = Vector2(CONSOLE_VISIBLE_WIDTH-16,16)
@@ -655,28 +733,30 @@ func show_group(group: String) -> void:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if item_buttons[id].visible:
-			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,54)
+			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 			slot_labels[id].text = ("Ctrl+" if slot >= PALETTE_COLUMNS else "")+str(slot%PALETTE_COLUMNS+1)
 	for id: String in campaign_inventory_ids:
 		var slot: int = entries.find(id)-page_start
 		var button: Button = campaign_item_buttons[id]
 		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
-			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-			button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+			button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 	# Five category cards retain their approved scale in every pagination state.
 	# Page controls use the unused second line of the compact console header.
-	var tab_width: float = 56.0
-	var tab_gap: float = 7.0
-	var tab_total_width: float = 5.0*56.0+4.0*7.0
+	var tab_width: float = TAB_CARD_WIDTH
+	var tab_height: float = TAB_CARD_HEIGHT
+	var tab_gap: float = TAB_CARD_GAP
+	var tab_count: int = TAB_GROUP_ORDER.size()+1
+	var tab_total_width: float = float(tab_count)*tab_width+float(tab_count-1)*tab_gap
 	var tab_start_x: float = inventory_grid_origin.x+(grid_width-tab_total_width)*0.5
 	var tab_index: int = 0
-	for key: String in GROUPS:
+	for key: String in TAB_GROUP_ORDER:
 		var button: Button = category_buttons[key]
-		var tint: Color = Palette.entry(GROUPS[key][0]).tint
-		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
-		button.size = Vector2(tab_width,42)
+		var tint: Color = TAB_GROUP_COLORS[key]
+		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20.0)
+		button.size = Vector2(tab_width,tab_height)
 		button.add_theme_constant_override("icon_max_width",28)
 		button.visible = true
 		var artwork: TabCardArtwork = category_tab_cards[key] as TabCardArtwork
@@ -685,8 +765,8 @@ func show_group(group: String) -> void:
 		artwork.visible = button.visible
 		_set_tab_appearance(button,artwork,tint,key == group)
 		tab_index += 1
-	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
-	communications_button.size = Vector2(tab_width,42)
+	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20.0)
+	communications_button.size = Vector2(tab_width,tab_height)
 	communications_button.add_theme_constant_override("icon_max_width",28)
 	communications_button.visible = true
 	communications_card.position = communications_button.position
@@ -698,12 +778,12 @@ func show_group(group: String) -> void:
 		console_pod.queue_redraw()
 	palette_backing.visible = true
 	# The compact angled housing encloses tabs, live inventory and status in both modes.
-	palette_backing.position = Vector2(inventory_grid_origin.x-8,panel_top)
+	palette_backing.position = Vector2(inventory_grid_origin.x-CONSOLE_SHELL_LEFT_INSET,panel_top)
 	palette_backing.size = Vector2(CONSOLE_RIGHT_EDGE-palette_backing.position.x,panel_height)
 	palette_backing.queue_redraw()
 	Art.symbol(collapse_button,"palette_close" if palette_expanded else "palette_open",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette" if palette_expanded else "Expand item palette"
-	var console_header_row: float = console_pod.position.y+20.0
+	var console_header_row: float = console_pod.position.y+32.0
 	collapse_button.position = Vector2(console_pod.position.x+8.0,console_header_row)
 	collapse_button.size = Vector2(22,20)
 	collapse_button.add_theme_constant_override("icon_max_width",16)
@@ -725,10 +805,9 @@ func show_group(group: String) -> void:
 
 func cycle_group(direction: int) -> void:
 	if palette_locked: return
-	var groups: Array = GROUPS.keys()
 	palette_expanded = true
 	palette_page = 0
-	show_group(groups[posmod(groups.find(active_group)+direction,groups.size())])
+	show_group(TAB_GROUP_ORDER[posmod(TAB_GROUP_ORDER.find(active_group)+direction,TAB_GROUP_ORDER.size())])
 
 func activate_slot(slot: int) -> void:
 	if palette_locked or not palette_expanded: return
@@ -753,8 +832,8 @@ func select_tool(id: String) -> void:
 			break
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
-		Art.symbol(item_buttons[key],item.icon,item.tint,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",48)
+		_apply_item_pictogram(item_buttons[key],key,item,key == id)
+		item_buttons[key].add_theme_constant_override("icon_max_width",52)
 		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
@@ -764,7 +843,7 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 	_refresh_campaign_items(inventory_entries, locked)
 	for key: String in category_buttons:
 		var button: Button = category_buttons[key]
-		var tint: Color = Palette.entry(GROUPS[key][0]).tint
+		var tint: Color = TAB_GROUP_COLORS[key]
 		_set_tab_appearance(button,category_tab_cards[key] as TabCardArtwork,tint,key == active_group)
 	_set_tab_appearance(communications_button,communications_card,Art.COMMS,false)
 	for id: String in support_badges:
@@ -836,9 +915,9 @@ func set_cargo_readout(used: int, capacity: int) -> void:
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
 	mode_label.text = "ORBIT" if enabled else "SURFACE"
-	mode_label.add_theme_color_override("font_color",Art.PAPER if enabled else Color("58646b"))
-	location_label.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
-	objective.add_theme_color_override("font_color",Art.PAPER if enabled else Color("1c2426"))
+	mode_label.add_theme_color_override("font_color",Art.PAPER)
+	location_label.add_theme_color_override("font_color",Art.PAPER)
+	objective.add_theme_color_override("font_color",Art.PAPER)
 	navigation.visible = not enabled
 	# The orbital dial is replaced by a small ALT line beside the condition panel;
 	# the local terrain chart itself remains surface-only.
@@ -901,32 +980,32 @@ func set_orbital_mode(enabled: bool) -> void:
 		if lower_button != null: lower_button.visible = false
 		if brake_button != null: brake_button.visible = false
 		collapse_button.visible = true
-		for i: int in range(GROUPS.size()):
-			var grp: String = GROUPS.keys()[i]
-			category_buttons[grp].position = Vector2(772 + i * 74, 686)
-			category_buttons[grp].size = Vector2(64, 54)
+		for i: int in range(TAB_GROUP_ORDER.size()):
+			var grp: String = TAB_GROUP_ORDER[i]
+			category_buttons[grp].position = Vector2(772 + i * (TAB_CARD_WIDTH + TAB_CARD_GAP), 686)
+			category_buttons[grp].size = Vector2(TAB_CARD_WIDTH, TAB_CARD_HEIGHT)
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
 		# The surface map uses the left instrument while secondary controls remain
 		# available from its footer and expandable tab.
-		nav_pod.position = Vector2(16, 674)
-		nav_pod.size = Vector2(250, 196)
+		nav_pod.position = Vector2(16, 660)
+		nav_pod.size = Vector2(220, 190)
 		# Use the same-width chart frame as the corner pod, with its title on the
 		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 650)
-		chart_backing.size = Vector2(250, 220)
-		navigation.position = Vector2(20, 660)
-		navigation.size = Vector2(238, 170)
+		chart_backing.position = Vector2(16, 660)
+		chart_backing.size = Vector2(220, 190)
+		navigation.position = Vector2(32, 666)
+		navigation.size = Vector2(188, 146)
 		# Give the sampled chart the full instrument aperture. The two secondary
 		# actions share its quiet footer instead of consuming a narrow side rail.
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
-		navigation_menu_button.position = Vector2(198, 840)
+		navigation_menu_button.position = Vector2(164, 820)
 		navigation_menu_button.size = Vector2(22, 24)
 		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
-		departure_button.position = Vector2(224, 840)
+		departure_button.position = Vector2(190, 820)
 		departure_button.size = Vector2(22, 24)
 		Art.symbol(departure_button,"ascend",Art.NAV)
 		departure_button.add_theme_constant_override("icon_max_width",22)
@@ -934,8 +1013,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
-		chart_heading.position = Vector2(28, 844)
-		chart_heading.size = Vector2(166, 18)
+		chart_heading.position = Vector2(28, 824)
+		chart_heading.size = Vector2(126, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1508, 666)
@@ -963,10 +1042,10 @@ func set_orbital_mode(enabled: bool) -> void:
 		if lower_button != null: lower_button.visible = false
 		if brake_button != null: brake_button.visible = false
 		collapse_button.visible = true
-		for i: int in range(GROUPS.size()):
-			var grp: String = GROUPS.keys()[i]
-			category_buttons[grp].position = Vector2(772 + i * 74, 686)
-			category_buttons[grp].size = Vector2(64, 54)
+		for i: int in range(TAB_GROUP_ORDER.size()):
+			var grp: String = TAB_GROUP_ORDER[i]
+			category_buttons[grp].position = Vector2(772 + i * (TAB_CARD_WIDTH + TAB_CARD_GAP), 686)
+			category_buttons[grp].size = Vector2(TAB_CARD_WIDTH, TAB_CARD_HEIGHT)
 			category_buttons[grp].visible = true
 		show_group(active_group)
 
@@ -978,5 +1057,5 @@ func set_active_group(group: String) -> void:
 		console_pod.queue_redraw()
 	for key: String in category_buttons:
 		var button: Button = category_buttons[key]
-		var tint: Color = Palette.entry(GROUPS[key][0]).tint
+		var tint: Color = TAB_GROUP_COLORS[key]
 		_set_tab_appearance(button,category_tab_cards[key] as TabCardArtwork,tint,key == group)

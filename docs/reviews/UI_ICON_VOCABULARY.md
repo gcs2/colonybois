@@ -1,14 +1,18 @@
-# Functional icon controls; artwork rejected
+# Functional icon controls; category imagery under review
 
 > Review/evidence record; captures and prompts do not imply acceptance or a current production instruction. [Documentation map](../README.md).
 
 The user endorsed the comparison board and requested recognizable icon buttons, a distinct aesthetic, broad content presentation, and 1080p+ support. The local terrain chart belongs only on a planet's surface. It is absent in orbital flight; system and galaxy views require their own navigation, not a reused local chart.
 
-**Latest user review:** rounded icons, shiny copper-like borders, simplistic SVGs, the font treatment and the planet appearance are rejected. The ornamental button well and persistent selected-tool text above the palette have been removed. The 16 glyphs remain provisional because the user explicitly deferred their replacement. Do not treat this kit as the approved aesthetic.
+**Latest user direction:** keep the Field Instruments tab family and use five newly generated, focused base pictograms inside one shared tab shape. Do not crop the mock, bake glow into the icons, or give each button a different shell. Only pointer hover draws colored glow; selection remains a restrained underline. Earlier flat SVG category marks are superseded by these runtime review candidates. Neither the candidate PNGs nor the whole HUD have received final visual acceptance.
 
 The first source-vector set contains 16 temporary symbols. The [specification](../../art/specs/flight_icon_vocabulary_v1.json) records family shapes and colors. Navigation uses orbital arcs and mint glass; ecology uses branching/lilac forms; weapons use pointed coral shapes; inventory is an amber pod container; communications uses an expressive antennaed face. The proposed pearl-shell/well material direction was rejected; the removed well is kept only in ignored artifacts. Different silhouettes carry meaning independently of color.
 
 These are original editable SVGs, not generated raster images or copied Spore assets. The [icon review page](../ui-review/icons.html), linked from the comparison board, provides size and state previews. Selection now uses a neutral underline, with no rounded or metallic border. Hover and unavailable feedback remain. Ambiguous actions retain labels; hover text names every symbol. Final aesthetic, listening and native accessibility approval remain open.
+
+## Generated category-icon review — 27 September 2026
+
+The five isolated RGBA pictograms live in [`art/visual-canon/ui-element-candidates/category-icons-v2/`](../../art/visual-canon/ui-element-candidates/category-icons-v2/README.md). The R01 HUD loads them with safe AtlasTexture regions, leaving transparent margins around the generated marks. One shared code-drawn clipped tab shell handles all categories; its colored halo appears only on pointer hover, while selected state stays non-glowing. The `artifacts/hud-tab-icons-v2/` actual-renderer pair at 1920×1080 and 2560×1440 shows the five marks, shallow fasteners, and hover treatment without clipping. The art remains provisional. An independent integrated review passes the tab/glyph component under the user's hover-only rule, while the grid, status, chart and notice remain partial and the whole world scene fails the approved visual target. Ordinary pointer timing, named tooltip display and keyboard focus are still unverified.
 
 ## Capacity and verification
 
