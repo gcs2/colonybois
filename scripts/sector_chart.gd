@@ -14,6 +14,8 @@ var selected_system: String = "s0"
 var selected_planet: String = "morrow"
 var graph: StarGraph
 var worlds: VBoxContainer
+var worlds_scroll: ScrollContainer
+var world_more_hint: Label
 var heading: Label
 var details: Label
 var status: Label
@@ -34,22 +36,23 @@ class GalaxyStatusRail extends Control:
 	func _draw() -> void:
 		if plate == null or campaign == null: return
 		draw_texture_rect(plate,Rect2(Vector2.ZERO,size),false)
-		var sx: float = size.x/1774.0; var sy: float = size.y/887.0
+		# Coordinates are measured within the painted crop, not the generated canvas.
+		var sx: float = size.x/1697.0; var sy: float = size.y/367.0
 		var state: Dictionary = campaign.field.state
 		var hull_max: float = maxf(1.0,campaign.field.max_capacity("hull"))
 		var energy_max: float = maxf(1.0,campaign.field.max_capacity("energy"))
-		_draw_meter("HULL",float(state.hull),hull_max,Rect2(118*sx,428*sy,389*sx,55*sy),Color("e86649"),sx,sy)
-		_draw_meter("ENERGY",float(state.energy),energy_max,Rect2(118*sx,528*sy,389*sx,55*sy),Color("f3ba3f"),sx,sy)
+		_draw_meter("HULL",float(state.hull),hull_max,Rect2(80*sx,137*sy,389*sx,55*sy),Color("e86649"),sx,sy)
+		_draw_meter("ENERGY",float(state.energy),energy_max,Rect2(80*sx,237*sy,389*sx,55*sy),Color("f3ba3f"),sx,sy)
 		for i: int in range(module_buttons.size()):
 			var button: TextureButton = module_buttons[i]
-			var x0: float = [672.0,923.0,1176.0,1427.0][i]*sx
-			button.position = Vector2(x0+31*sx,368*sy)
+			var x0: float = [634.0,885.0,1138.0,1389.0][i]*sx
+			button.position = Vector2(x0+31*sx,77*sy)
 			button.size = Vector2(150*sx,210*sy)
 			button.tooltip_text = "No installed module" if module_ids[i].is_empty() else module_names[i]+" · installed ship module"
 	func _draw_meter(caption: String, value: float, maximum: float, box: Rect2, tint: Color, sx: float, sy: float) -> void:
 		var font: Font = ThemeDB.fallback_font
 		var top: float = box.position.y+1*sy
-		draw_string(font,Vector2(box.position.x,top-7*sy),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("1a2022"))
+		draw_string(font,Vector2(box.position.x,top-7*sy),"%s %d/%d" % [caption,roundi(value),roundi(maximum)],HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("1a2022"))
 		var bar_x: float = box.position.x
 		var bar_y: float = box.position.y+18*sy
 		var total_w: float = box.size.x
@@ -59,7 +62,6 @@ class GalaxyStatusRail extends Control:
 			var cell := Rect2(bar_x+i*(cell_w+gap),bar_y,cell_w,22*sy)
 			draw_rect(cell,Color("272b2b"),true)
 			if value/maximum*9.0 > i: draw_rect(cell.grow(-2*sx),tint,true)
-		draw_string(font,Vector2(bar_x+total_w+7*sx,bar_y+17*sy),"%d / %d" % [roundi(value),roundi(maximum)],HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("1a2022"))
 	func bind(session: RefCounted) -> void:
 		campaign = session
 		var installed: Array = campaign.commerce.state.upgrades
@@ -100,6 +102,7 @@ class GalaxyStatusRail extends Control:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 class StarGraph extends Control:
+	const SCOUT_CHART = preload("res://assets/ui/chart_scout.png")
 	signal selected(id: String)
 	signal activated(id: String)
 	const Galaxy = preload("res://scripts/galaxy_catalog.gd")
@@ -268,7 +271,9 @@ class StarGraph extends Control:
 		draw_colored_polygon(PackedVector2Array([origin+Vector2(0,-9),origin+Vector2(-5,7),origin+Vector2(0,4),origin+Vector2(5,7)]),Color("f9e5a2"))
 		if in_front(Galaxy.position(current)):
 			var origin_name: String = str(current.name) if current.visited or current.get("charted",false) else "Current system"
-			draw_string(font,origin+Vector2(15,-14),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f9e5a2"))
+			# Model-derived cutout keeps the flagship recognizable at galaxy scale.
+			draw_texture_rect_region(SCOUT_CHART,Rect2(origin+Vector2(-32,-52),Vector2(60,38)),Rect2(96,151,326,202))
+			draw_string(font,origin+Vector2(36,-28),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f9e5a2"))
 		var target: Dictionary = campaign.sector.system_by_id(selected_id)
 		if not target.is_empty() and in_front(Galaxy.position(target)) and campaign.sector.is_revealed(selected_id):
 			var at: Vector2 = point(target)
@@ -358,24 +363,41 @@ func _ready() -> void:
 	Stage.world(stage,graph)
 	var side: VBoxContainer = Stage.sidebar(stage,360)
 	var card_panel: PanelContainer = side.get_parent()
-	card_panel.offset_left = -540; card_panel.offset_right = -140; card_panel.offset_top = 190; card_panel.offset_bottom = 510
-	card_panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
+	card_panel.offset_left = -390; card_panel.offset_right = -30; card_panel.offset_top = 218; card_panel.offset_bottom = 566
+	var card_padding := StyleBoxEmpty.new()
+	card_padding.set_content_margin_all(26)
+	card_panel.add_theme_stylebox_override("panel",card_padding)
+	var card_crop := AtlasTexture.new()
+	card_crop.atlas = load(GALAXY_CARD)
+	card_crop.region = Rect2(230,274,773,750)
 	var panel_art := TextureRect.new()
-	panel_art.texture = load(GALAXY_CARD)
+	panel_art.texture = card_crop
+	panel_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
 	panel_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	panel_art.offset_left = -650; panel_art.offset_right = -30; panel_art.offset_top = 56; panel_art.offset_bottom = 676
+	panel_art.offset_left = -390; panel_art.offset_right = -30; panel_art.offset_top = 218; panel_art.offset_bottom = 566
 	stage.add_child(panel_art)
 	stage.move_child(panel_art,stage.get_children().find(card_panel))
 	card_panel.move_to_front()
 	side.add_theme_constant_override("separation",3)
 	card_title = label("SYSTEM",19)
+	card_title.custom_minimum_size.y = 38
 	card_title.add_theme_color_override("font_color",Color("f1e5c7"))
 	side.add_child(card_title)
+	worlds_scroll = ScrollContainer.new()
+	worlds_scroll.custom_minimum_size.y = 80
+	worlds_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	worlds_scroll.tooltip_text = "Scroll to see every planet in this system"
+	side.add_child(worlds_scroll)
 	worlds = VBoxContainer.new()
-	worlds.add_theme_constant_override("separation",2)
-	side.add_child(worlds)
+	worlds.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	worlds.add_theme_constant_override("separation",3)
+	worlds_scroll.add_child(worlds)
+	world_more_hint = label("",12)
+	world_more_hint.custom_minimum_size.y = 40
+	world_more_hint.add_theme_color_override("font_color",Color("b7bdb9"))
+	side.add_child(world_more_hint)
 	inspect_system = button("View system",func() -> void: system_requested.emit(selected_system))
 	UI.instrument(inspect_system,"system_view",UI.NAV)
 	inspect_system.text = ""; inspect_system.custom_minimum_size = Vector2(48,48)
@@ -398,10 +420,13 @@ func _ready() -> void:
 	UI.meter(progress,UI.GOLD)
 	side.add_child(progress)
 	status_rail = GalaxyStatusRail.new()
-	status_rail.plate = load(GALAXY_RAIL)
+	var rail_crop := AtlasTexture.new()
+	rail_crop.atlas = load(GALAXY_RAIL)
+	rail_crop.region = Rect2(38,291,1697,367)
+	status_rail.plate = rail_crop
 	status_rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_rail.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	status_rail.offset_left = -1000; status_rail.offset_right = -24; status_rail.offset_top = -410; status_rail.offset_bottom = 78
+	status_rail.offset_left = -590; status_rail.offset_right = -24; status_rail.offset_top = -145; status_rail.offset_bottom = -24
 	stage.add_child(status_rail)
 	var footer: HBoxContainer = Stage.footer(stage)
 	footer.add_child(icon_button("zoom_out","Zoom out",func() -> void: graph.zoom_at(1,graph.view_center())))
@@ -454,7 +479,7 @@ func select_system(id: String) -> void:
 	for child: Node in worlds.get_children(): worlds.remove_child(child); child.queue_free()
 	var system: Dictionary = campaign.sector.system_by_id(id)
 	heading.text = "GALAXY  /  "+ (system.name.to_upper() if system.visited or system.get("charted",false) else "UNCHARTED SIGNAL")
-	card_title.text = system.name if system.visited or system.get("charted",false) else "Uncharted signal"
+	card_title.text = ("%s · %d worlds" % [system.name,system.planets.size()]) if system.visited or system.get("charted",false) else "Uncharted signal"
 	selected_planet = Session.local_id(system.planets[0])
 	graph.selected_planet_id = selected_planet
 	for pid: String in system.planets:
@@ -467,6 +492,7 @@ func select_system(id: String) -> void:
 		item.custom_minimum_size.y = 35
 		item.disabled = campaign.traveling()
 		worlds.add_child(item)
+	world_more_hint.text = "%d more worlds · scroll list" % (worlds.get_child_count()-2) if worlds.get_child_count() > 2 else ""
 	refresh()
 
 func refresh() -> void:
@@ -483,7 +509,8 @@ func refresh() -> void:
 	travel.disabled = not offer.reason.is_empty()
 	UI.instrument(travel,"ascend",UI.GOLD)
 	travel.tooltip_text = offer.reason if travel.disabled else "Spend drive energy and begin the journey. Time continues during travel."
-	status.text = offer.reason if travel.disabled else "Energy after departure: %d / %d. Reserve fuel or buy recharge away from home." % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
+	status.text = offer.reason if travel.disabled else "After departure: %d/%d energy" % [campaign.field.state.energy-offer.energy,campaign.field.max_capacity("energy")]
+	status.tooltip_text = "Reserve fuel or buy recharge away from home."
 	for item: Node in worlds.get_children():
 		item.disabled = campaign.traveling()
 		UI.instrument(item,"planet_map",UI.NAV,item.get_meta("planet","") == selected_planet)

@@ -15,6 +15,7 @@ const Climate = preload("res://scripts/planet_climate.gd")
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const SCOUT_SCENE = preload("res://assets/encounter/scout.glb")
+const SCOUT_CHART = preload("res://assets/ui/chart_scout.png")
 const DESTINATION_CARD_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/system-destination-card.png")
 const ORBIT_BASE_RADIUS: float = 22.0
 const ORBIT_SPACING: float = 17.0
@@ -57,6 +58,7 @@ var viewport: SubViewport
 var preview: SubViewportContainer
 var camera: Camera3D
 var ship_marker: Node3D
+var ship_overlay: TextureRect
 var ship_visuals: Array[VisualInstance3D] = []
 var ship_marker_visible: bool = false
 var selection: MeshInstance3D
@@ -124,6 +126,10 @@ func _ready() -> void:
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var scout_crop := AtlasTexture.new(); scout_crop.atlas = SCOUT_CHART; scout_crop.region = Rect2(96,151,326,202)
+	ship_overlay = TextureRect.new(); ship_overlay.texture = scout_crop
+	ship_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; ship_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ship_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; ship_overlay.z_index = 3; ship_overlay.size = Vector2(70,44); ship_overlay.visible = false; stage.add_child(ship_overlay)
 	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
 	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE
 	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,34); card_style.set_content_margin(SIDE_BOTTOM,26)
@@ -425,6 +431,8 @@ func update_target_overlay() -> void:
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
 	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker_visible and not camera.is_position_behind(ship_marker.global_position)
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
+	ship_overlay.visible = ship_visible and visible
+	if ship_overlay.visible: ship_overlay.position = origin+Vector2(-35,-48)
 	var card_rect: Rect2 = Rect2(destination_card.position,destination_card.size)
 	var card_left: bool = destination_card.position.x > center.x
 	var card_bottom: float = maxf(card_rect.end.y,card_rect.position.y+16)
