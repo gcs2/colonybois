@@ -230,13 +230,14 @@ func _draw() -> void:
 			var known: bool = id in surveyed
 			var color: Color = Color("8ad4a5") if known else Color("d9c6a7")
 			if id == "relay":
-				draw_arc(p,7,0,TAU,24,Color("7fd0bb",0.75),1.2,true)
-				draw_line(p+Vector2(0,-5),p+Vector2(0,5),Color("c3efcf"),1.2)
-				draw_line(p+Vector2(-4,0),p+Vector2(4,0),Color("c3efcf"),1.2)
+				var relay_scale: float = 1.28 if id == selected else 1.0
+				draw_arc(p,7.0*relay_scale,0,TAU,24,Color("7fd0bb",0.75),1.2*relay_scale,true)
+				draw_line(p+Vector2(0,-5*relay_scale),p+Vector2(0,5*relay_scale),Color("c3efcf"),1.2*relay_scale)
+				draw_line(p+Vector2(-4*relay_scale,0),p+Vector2(4*relay_scale,0),Color("c3efcf"),1.2*relay_scale)
 			else:
 				draw_circle(p,3.2,color)
 				if not known: draw_circle(p,1.5,Color("27313b"))
-			if id == selected: draw_arc(p,9,0,TAU,24,Color("f8cf77"),1.5,true)
+			if id == selected: draw_arc(p,9*1.28,0,TAU,24,Color("f8cf77"),1.5*1.28,true)
 	var port: Vector2 = project(service_at)
 	if rect.grow(-7).has_point(port):
 		draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)
@@ -247,7 +248,7 @@ func _draw() -> void:
 		draw_line(pos,route_end,Color("f0c972"),1.5,true)
 		draw_arc(route_end,4,0,TAU,20,Color("ffdc8d"),1.5,true)
 	var arrow := PackedVector2Array()
-	for p: Vector2 in [Vector2(0,-7),Vector2(5,5),Vector2(0,2),Vector2(-5,5)]: arrow.append(pos+p.rotated(heading))
+	for p: Vector2 in [Vector2(0,-7),Vector2(5,5),Vector2(0,2),Vector2(-5,5)]: arrow.append(pos+(p*1.28).rotated(heading))
 	draw_colored_polygon(arrow,Color("fff1cd"))
 	draw_string(ThemeDB.fallback_font,Vector2(rect.get_center().x-4,rect.position.y+14),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("e6e5d5"))
 	var scale_width: float = _scale_width_pixels(rect) if not orbital else rect.size.x*0.4
