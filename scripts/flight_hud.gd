@@ -78,6 +78,26 @@ class TabCardArtwork extends Control:
 			draw_circle(point,1.5,fastener)
 			draw_circle(point-Vector2(0.45,0.5),0.55,glint)
 
+class InventorySelectionCue extends Control:
+	func _draw() -> void:
+		if size.x < 16.0 or size.y < 16.0: return
+		var tint := Color("d2b474")
+		var inset: float = 3.0
+		var leg: float = 8.0
+		var x2: float = size.x-inset
+		var y2: float = size.y-inset
+		for segment: PackedVector2Array in [
+			PackedVector2Array([Vector2(inset,inset),Vector2(inset+leg,inset)]),
+			PackedVector2Array([Vector2(inset,inset),Vector2(inset,inset+leg)]),
+			PackedVector2Array([Vector2(x2-leg,inset),Vector2(x2,inset)]),
+			PackedVector2Array([Vector2(x2,inset),Vector2(x2,inset+leg)]),
+			PackedVector2Array([Vector2(inset,y2-leg),Vector2(inset,y2)]),
+			PackedVector2Array([Vector2(inset,y2),Vector2(inset+leg,y2)]),
+			PackedVector2Array([Vector2(x2-leg,y2),Vector2(x2,y2)]),
+			PackedVector2Array([Vector2(x2,y2-leg),Vector2(x2,y2)])
+		]:
+			draw_line(segment[0],segment[1],tint,1.5,true)
+
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -188,16 +208,24 @@ func _style_inventory_slot(button: Button, selected: bool = false) -> void:
 	disabled.border_color = Color("303b3f")
 	if selected:
 		normal.bg_color = Color("202b2d")
-		normal.border_color = Color("d5dfdf")
-		normal.border_width_bottom = 2
+		normal.border_color = Color("697a77")
 		hover.bg_color = Color("293639")
-		hover.border_color = Color("e5ecea")
-		hover.border_width_bottom = 2
+		hover.border_color = Color("819b96")
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", pressed)
 	button.add_theme_stylebox_override("disabled", disabled)
 	button.add_theme_color_override("icon_disabled_color", Color("667579"))
+	var cue := button.get_node_or_null("InventorySelectionCue") as Control
+	if cue == null:
+		cue = InventorySelectionCue.new()
+		cue.name = "InventorySelectionCue"
+		cue.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cue.z_index = 10
+		button.add_child(cue)
+	cue.visible = selected
+	cue.queue_redraw()
 
 func _format_marks(value: int) -> String:
 	var digits: String = str(value)
@@ -412,7 +440,7 @@ func _build() -> void:
 		var chip: Button = button_at("",Rect2(1440+support_badges.size()*63,662,60,30),"item:"+id,Color(Palette.Model.Support.catalog[id].color),id)
 		chip.add_theme_constant_override("icon_max_width",22); chip.add_theme_font_size_override("font_size",12)
 		support_badges[id] = chip; chip.hide()
-	flight_readout = label_at("",Rect2(1410,749,168,16),9,Color("1c2426"))
+	flight_readout = label_at("",Rect2(1410,749,168,16),11,Color("1c2426"))
 	flight_readout.visible = false
 	flight_readout.clip_text = true
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
@@ -914,19 +942,19 @@ func set_orbital_mode(enabled: bool) -> void:
 		nav_pod.size = Vector2(250, 196)
 		# Use the same-width chart frame as the corner pod, with its title on the
 		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 650)
+		chart_backing.position = Vector2(16, 634)
 		chart_backing.size = Vector2(250, 220)
-		navigation.position = Vector2(20, 660)
+		navigation.position = Vector2(20, 644)
 		navigation.size = Vector2(238, 170)
 		# Give the sampled chart the full instrument aperture. The two secondary
 		# actions share its quiet footer instead of consuming a narrow side rail.
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
-		navigation_menu_button.position = Vector2(198, 840)
+		navigation_menu_button.position = Vector2(198, 824)
 		navigation_menu_button.size = Vector2(22, 24)
 		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
-		departure_button.position = Vector2(224, 840)
+		departure_button.position = Vector2(224, 824)
 		departure_button.size = Vector2(22, 24)
 		Art.symbol(departure_button,"ascend",Art.NAV)
 		departure_button.add_theme_constant_override("icon_max_width",22)
@@ -934,7 +962,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		departure_button.add_theme_font_size_override("font_size",1)
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
-		chart_heading.position = Vector2(28, 844)
+		chart_heading.position = Vector2(28, 828)
 		chart_heading.size = Vector2(166, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true

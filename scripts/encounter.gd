@@ -1861,7 +1861,7 @@ func _operate(delta: float) -> void:
 	if progress >= 1:
 		var operation_distance: float = ship.position.distance_to(end)
 		error = _commit_tool_action(tool,selected,operation_distance)
-		var completed: String = "+1 Resonant glass · cargo %d / %d" % [campaign.commerce.quantity("glass"),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
+		var completed: String = "+1 Resonant glass · cargo %d/%d" % [campaign.commerce.quantity("glass"),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
 		_toast(error if not error.is_empty() else completed,"glass" if error.is_empty() and tool == "mine" else "")
 		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
@@ -2344,25 +2344,27 @@ func _refresh_ui() -> void:
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
 		var reason: String = _tool_reason(tool,selected,0)
-		subject.text = "RESONANT SEAM · %d/%d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if selected == "vein" else TITLES[selected]
+		subject.text = "RESONANT SEAM" if selected == "vein" else TITLES[selected]
 		if approach_subject:
 			hud.action_state.text = "APPROACHING"
-			explanation.text = "Moving into tool range." if selected != "vein" else "%d / %d crystals remain · approaching to %s." % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool).to_lower()]
+			explanation.text = "Moving into tool range." if selected != "vein" else "Approaching with %s." % Equipment.title(tool).to_lower()
 		elif held and not latched:
 			hud.action_state.text = "OPERATING"
-			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)] if selected != "vein" else "%d / %d remain · %s · %d%%" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),int(progress*100)]
+			explanation.text = "%s · %d%%" % [Equipment.title(tool),int(progress*100)]
 		elif not operation_feedback.is_empty() and elapsed < operation_feedback_until:
 			hud.action_state.text = operation_feedback
 			if operation_feedback == "SECURED" and tool == "mine":
-				explanation.text = "+1 Resonant glass · %d / %d remain" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS]
+				explanation.text = "+1 Resonant glass secured" if selected == "vein" else "+1 Resonant glass · %d / %d remain" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS]
 			else: explanation.text = "Survey recorded in the chronicle." if operation_feedback == "COMPLETE" and tool == "scan" else ("Operation complete." if operation_feedback == "COMPLETE" else "Orders cleared." if operation_feedback == "CANCELLED" else "Operation failed.")
 		elif not reason.is_empty():
 			hud.action_state.text = "UNAVAILABLE"
-			explanation.text = _short_reason(reason) if selected != "vein" else "%d / %d remain · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,_short_reason(reason)]
+			explanation.text = _short_reason(reason)
 		else:
 			hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-			var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )
-			explanation.text = action_copy if selected != "vein" else "%d / %d remain · %s · %s" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS,Equipment.title(tool),action_copy]
+			var action_copy: String = ("Yield · +1 Resonant glass" if selected == "vein" and tool == "mine" else ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))] if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach." )))
+			explanation.text = action_copy
+		if selected == "vein" and not _inspection_open():
+			hud.action_state.text = "%d OF %d LEFT" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS]
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
@@ -2437,11 +2439,12 @@ func _layout_seam_context_card() -> void:
 		hud.context_card.size = Vector2(290,117)
 		hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
 		hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
+		hud.action_state.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
 		hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
 		hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
 		return
-	var card_size := Vector2(252,80)
+	var card_size := Vector2(252,66)
 	var seam_at: Vector3 = _target_position("vein")
 	if camera.is_position_behind(seam_at): return
 	var anchor: Vector2 = camera.unproject_position(seam_at)
@@ -2454,11 +2457,12 @@ func _layout_seam_context_card() -> void:
 		if not Rect2(above,card_size).intersects(ship_rect): card_at = above
 	hud.context_card.position = card_at
 	hud.context_card.size = card_size
-	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(162,19); hud.subject.add_theme_font_size_override("font_size",12)
-	hud.action_state.position = card_at+Vector2(174,8); hud.action_state.size = Vector2(68,17); hud.action_state.add_theme_font_size_override("font_size",9)
-	hud.explanation.position = card_at+Vector2(10,29); hud.explanation.size = Vector2(232,27); hud.explanation.add_theme_font_size_override("font_size",11)
-	hud.use_button.position = card_at+Vector2(164,53); hud.use_button.size = Vector2(68,22); hud.use_button.add_theme_font_size_override("font_size",11)
-	hud.progress_bar.position = card_at+Vector2(0,76); hud.progress_bar.size = Vector2(252,4)
+	hud.subject.position = card_at+Vector2(10,7); hud.subject.size = Vector2(142,19); hud.subject.add_theme_font_size_override("font_size",11)
+	hud.action_state.position = card_at+Vector2(154,7); hud.action_state.size = Vector2(88,19); hud.action_state.add_theme_font_size_override("font_size",10)
+	hud.action_state.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hud.explanation.position = card_at+Vector2(10,35); hud.explanation.size = Vector2(146,22); hud.explanation.add_theme_font_size_override("font_size",10)
+	hud.use_button.position = card_at+Vector2(164,36); hud.use_button.size = Vector2(68,22); hud.use_button.add_theme_font_size_override("font_size",11)
+	hud.progress_bar.position = card_at+Vector2(0,64); hud.progress_bar.size = Vector2(252,2)
 	var card_rect := Rect2(card_at,card_size)
 	var edge := Vector2(clampf(anchor.x,card_rect.position.x+8.0,card_rect.end.x-8.0),card_at.y if card_at.y > anchor.y else card_rect.end.y)
 	seam_tether.clear_points()
@@ -2557,15 +2561,18 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(36,86)
+		var one_line_reward: bool = item_icon == "glass" and text.begins_with("+1 Resonant glass")
+		status_icon.position = Vector2(36,82) if one_line_reward else Vector2(36,86)
 		status_icon.size = Vector2(24,24)
 		status_icon.custom_minimum_size = Vector2.ZERO
 		status.position = Vector2(68,74)
-		status.size = Vector2(168,48)
+		status.size = Vector2(212,40) if one_line_reward else Vector2(168,48)
+		status.add_theme_font_size_override("font_size",13 if one_line_reward else 14)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		status.autowrap_mode = TextServer.AUTOWRAP_OFF if one_line_reward else TextServer.AUTOWRAP_WORD_SMART
 		status_backing.position = Vector2(28,74)
-		status_backing.size = Vector2(216,48)
+		status_backing.size = Vector2(264,40) if one_line_reward else Vector2(216,48)
 		status_backing.show()
 		status.show()
 	status.text = text

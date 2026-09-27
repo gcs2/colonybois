@@ -57,7 +57,7 @@ func _draw() -> void:
 		var meter_width: float = maxf(24.0, size.x - meter_left * 2.0)
 		var bar_height: float = 8.0
 		_draw_compact_meter("HULL", hull_val, max_hull_val, HULL_TINT, meter_left, 40.0, 44.0, 60.0, meter_width, bar_height)
-		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 71.0, 75.0, 91.0, meter_width, bar_height)
+		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 74.0, 78.0, 94.0, meter_width, bar_height)
 
 		# Signal state stays below the meters; Marks live once at top-right.
 		draw_line(Vector2(10, 98), Vector2(size.x - 10, 98), Color("b4b0a4"), 1.0)
@@ -182,11 +182,11 @@ func _format_number(n: int) -> String:
 
 func _draw_compact_meter(label: String, value: int, maximum: int, tint: Color, left: float, label_baseline: float, bar_top: float, value_baseline: float, width: float, bar_height: float) -> void:
 	var ratio: float = clampf(float(value) / float(maxi(1, maximum)), 0.0, 1.0)
-	draw_string(FONT, Vector2(left, label_baseline), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+	draw_string(FONT, Vector2(left, label_baseline), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
 	var recess := Rect2(left, bar_top, width, bar_height)
 	draw_rect(recess, Color("0e1518"))
 	draw_rect(Rect2(recess.position + Vector2(1, 1), recess.size - Vector2(2, 2)), Color("182022"))
 	var fill_width: float = maxf(0.0, (recess.size.x - 2.0) * ratio)
 	if fill_width > 0.0:
 		draw_rect(Rect2(recess.position + Vector2(1, 1), Vector2(fill_width, recess.size.y - 2.0)), tint)
-	draw_string(FONT, Vector2(left, value_baseline), "%d/%d" % [value, maximum], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CHARCOAL)
+	draw_string(FONT, Vector2(left, value_baseline), "%d/%d" % [value, maximum], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CHARCOAL)
