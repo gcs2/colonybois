@@ -14,6 +14,7 @@ const CargoIcon = preload("res://scripts/flight_cargo_icon.gd")
 const Climate = preload("res://scripts/planet_climate.gd")
 const Biosphere = preload("res://scripts/planet_biosphere.gd")
 const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const DESTINATION_CARD_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/system-destination-card.png")
 const ORBIT_BASE_RADIUS: float = 22.0
 const ORBIT_SPACING: float = 17.0
 const MOON_ORBIT_RADIUS: float = 7.0
@@ -118,14 +119,14 @@ func _ready() -> void:
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(252,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
-	var card_style := StyleBoxFlat.new(); card_style.bg_color = Color(0.025,0.045,0.065,0.96); card_style.border_color = Color("c1a94d"); card_style.set_border_width_all(1); card_style.set_content_margin_all(12)
+	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(320,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
+	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE; card_style.set_content_margin_all(20)
 	destination_card.add_theme_stylebox_override("panel",card_style)
 	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",8); destination_card.add_child(card)
-	details = text_label(""); details.custom_minimum_size = Vector2(220,78); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	details = text_label(""); details.custom_minimum_size = Vector2(276,78); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,card)
-	travel.custom_minimum_size = Vector2(220,44)
-	status = text_label("",15); status.custom_minimum_size = Vector2(220,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	travel.custom_minimum_size = Vector2(276,44)
+	status = text_label("",15); status.custom_minimum_size = Vector2(276,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
 	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
 		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
