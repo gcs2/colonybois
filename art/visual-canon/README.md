@@ -35,3 +35,9 @@ The surface image is the user's pinned source. The other three are v2 designer p
 - [Source-to-runtime view coverage](../../docs/reviews/VIEW_MOCK_COVERAGE.md)
 - [System travel behavior](../../docs/systems/SYSTEM_NAVIGATION.md)
 - [Production queue](../../docs/TASK_BOARD.md)
+
+## Surface HUD layout study — 26 September 2026
+
+[flight-hud-layout-target-20260926.svg](flight-hud-layout-target-20260926.svg) records the measured surface HUD arrangement used for the current implementation pass. It is a 1600×900 layout-only proposal: the field and glyphs are placeholders, so this image does not join the approved world-art set. The proportions, tab attachment, margins, chart footprint and housing rhythm were compared against the approved Morrow surface reference and actual 1080p/1440p runtime captures. Independent review passes the HUD geometry. The current glowing cards and their pictograms, dots, spacing and selected-state edge remain important visual cues.
+
+See [the HUD and camera review](../../docs/reviews/FLIGHT_HUD_REVIEW.md#hud-layout-and-camera-view-study--26-september-2026) for capture paths, camera pitch comparisons, critique scope and remaining whole-world/player-acceptance gates.

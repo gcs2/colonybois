@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <title>Field Instruments HUD layout target study — 26 September 2026</title>
+  <desc>Responsive vector HUD mock in the project logical 1600 by 900 space. Geometry traces the approved Morrow surface reference. World image is intentionally abstracted; this study is for HUD layout and material only.</desc>
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#826b53"/><stop offset=".5" stop-color="#6e5b45"/><stop offset="1" stop-color="#4d463e"/></linearGradient>
+    <linearGradient id="map" x2="0" y2="1"><stop stop-color="#263b36"/><stop offset="1" stop-color="#14242a"/></linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#field)"/>
+  <path d="M0 430 Q230 376 438 434 T862 421 T1264 430 T1600 386 V900 H0Z" fill="#342f2a" opacity=".24"/>
+  <path d="M0 520 Q220 454 427 523 T860 505 T1210 520 T1600 475" fill="none" stroke="#c6a681" stroke-width="2" opacity=".14"/>
+  <text x="36" y="50" font-family="Arial,sans-serif" font-size="24" fill="#f0e7d8">Morrow</text>
+  <text x="36" y="70" font-family="Arial,sans-serif" font-size="12" letter-spacing="1" fill="#bcb6a9">SURFACE</text>
+  <path d="M1380 18H1512L1524 30V46L1512 58H1392L1380 46Z" fill="#dedad0" stroke="#6e6c60" stroke-width="1.5"/>
+  <path d="M1384 20H1510M1382 22V44" stroke="#f6f2e8" stroke-width="1.5"/>
+  <text x="1416" y="43" font-family="Arial,sans-serif" font-size="15" fill="#1c2426">248 Marks</text>
+  <g transform="translate(1396 29)" fill="none" stroke="#a98427" stroke-width="2"><path d="M0 9V0h10l7 7-7 7H0z"/><circle cx="7" cy="7" r="2"/></g>
+
+  <!-- Local chart: 225 × 198 logical px, bottom-left anchored. -->
+  <path d="M28 672H229L241 684V858L229 870H28L16 858V684Z" fill="#000" opacity=".2" transform="translate(0 3)"/>
+  <path d="M28 672H229L241 684V858L229 870H28L16 858V684Z" fill="#dedad0" stroke="#6e6c60" stroke-width="1.5"/>
+  <path d="M29 674H228M18 685V856" stroke="#f6f2e8" stroke-width="1.2"/><path d="M30 676H226L237 686V856L227 866H29L20 856V686Z" fill="none" stroke="#b7b1a4" stroke-width="1.1" opacity=".72"/>
+  <circle cx="27" cy="683" r="1.7" fill="#8d8c80"/><circle cx="230" cy="683" r="1.7" fill="#8d8c80"/>
+  <circle cx="27" cy="859" r="1.7" fill="#8d8c80"/><circle cx="230" cy="859" r="1.7" fill="#8d8c80"/>
+  <rect x="20" y="682" width="213" height="153" fill="url(#map)" stroke="#545b53"/>
+  <path d="M21 789 Q53 779 66 749T108 728Q130 736 131 762T166 789Q196 806 232 780V835H21Z" fill="#275f58" opacity=".8"/>
+  <path d="M24 713 Q50 726 78 713T124 720T169 714T229 719M21 762 Q56 773 84 759T138 762T194 755T232 762M24 807 Q61 792 91 808T147 803T202 812T229 800" fill="none" stroke="#8f9a89" stroke-width="1" opacity=".22"/>
+  <g fill="#d8c69f"><path d="M55 706l5 10-5-3-5 3z"/><circle cx="144" cy="757" r="4" fill="#8ad4a5"/><circle cx="144" cy="757" r="9" fill="none" stroke="#f3c567" stroke-width="1.2"/></g>
+  <text x="121" y="697" font-family="Arial,sans-serif" font-size="12" fill="#e6e5d5">N</text>
+  <path d="M164 819H216M164 816V822M216 816V822" stroke="#e6e5d5" stroke-width="1.2"/>
+  <text x="190" y="814" font-family="Arial,sans-serif" font-size="11" fill="#e6e5d5">50 m</text>
+  <text x="28" y="859" font-family="Arial,sans-serif" font-size="10" letter-spacing=".5" fill="#1c2426">LOCAL SURFACE CHART</text>
+  <g transform="translate(184 841)" stroke="#64706d" stroke-width="1" fill="#dedad0"><path d="M3 0h19l4 4v15l-4 4H3l-3-4V4z"/><path d="M12 4v14M7 9l5-5 5 5" fill="none"/></g>
+  <g transform="translate(210 841)" stroke="#64706d" stroke-width="1" fill="#dedad0"><path d="M3 0h19l4 4v15l-4 4H3l-3-4V4z"/><path d="M12 4v14M7 9l5-5 5 5" fill="none"/></g>
+
+  <!-- Continuous pale-metal housing, 546 × 183 logical px; tabs overlap the top edge. -->
+  <path d="M1058 669H1580L1592 681V840L1580 852H1058L1046 840V681Z" fill="#000" opacity=".28" transform="translate(0 3)"/>
+  <path d="M1058 669H1580L1592 681V840L1580 852H1058L1046 840V681Z" fill="#dedad0" stroke="#6e6c60" stroke-width="1.5"/>
+  <path d="M1059 671H1579M1048 682V838" stroke="#f6f2e8" stroke-width="1.2"/><path d="M1060 673H1577L1587 683V837L1577 847H1060L1051 837V683Z" fill="none" stroke="#b7b1a4" stroke-width="1.1" opacity=".72"/>
+  <circle cx="1058" cy="681" r="1.8" fill="#8d8c80"/><circle cx="1580" cy="681" r="1.8" fill="#8d8c80"/>
+  <circle cx="1058" cy="840" r="1.8" fill="#8d8c80"/><circle cx="1580" cy="840" r="1.8" fill="#8d8c80"/>
+
+  <!-- Wider, shallower tab strip; shared rhythm, soft internal rim, and preserved glow/color. -->
+  <g transform="translate(1075 649)">
+    <g transform="translate(0 0)">
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#000" opacity=".40" transform="translate(0 2)"/>
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#202a29" stroke="#e1ad35" stroke-width="1.4"/>
+      <path d="M8 2H60" stroke="#f3c567" stroke-width="2.2" opacity=".88"/>
+      <circle cx="6" cy="7" r="1.5" fill="#101615"/><circle cx="62" cy="7" r="1.5" fill="#101615"/>
+      <circle cx="6" cy="28" r="1.5" fill="#101615"/><circle cx="62" cy="28" r="1.5" fill="#101615"/>
+      <g transform="translate(22 8)" stroke="#8cc9d0" stroke-width="2" fill="none"><circle cx="11" cy="10" r="7"/><circle cx="11" cy="10" r="3"/><path d="M11 0v3M11 17v3M1 10h3M18 10h3"/></g>
+    </g>
+    <g transform="translate(70 0)">
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#000" opacity=".40" transform="translate(0 2)"/>
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#1a2222" stroke="#64706d" stroke-width="1"/>
+      <path d="M8 2H60" stroke="#9aa49d" stroke-width="1" opacity=".5"/>
+      <circle cx="6" cy="7" r="1.5" fill="#101615"/><circle cx="62" cy="7" r="1.5" fill="#101615"/>
+      <circle cx="6" cy="28" r="1.5" fill="#101615"/><circle cx="62" cy="28" r="1.5" fill="#101615"/>
+      <g transform="translate(22 7)" stroke="#69d6b6" stroke-width="2" fill="none"><path d="M11 20V8M11 13C2 13 1 5 2 3c6 0 9 3 9 9M11 10c0-7 4-9 10-9 0 6-3 9-10 9"/></g>
+    </g>
+    <g transform="translate(140 0)">
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#000" opacity=".40" transform="translate(0 2)"/>
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#1a2222" stroke="#64706d" stroke-width="1"/>
+      <path d="M8 2H60" stroke="#9aa49d" stroke-width="1" opacity=".5"/>
+      <circle cx="6" cy="7" r="1.5" fill="#101615"/><circle cx="62" cy="7" r="1.5" fill="#101615"/>
+      <circle cx="6" cy="28" r="1.5" fill="#101615"/><circle cx="62" cy="28" r="1.5" fill="#101615"/>
+      <g transform="translate(23 7)" fill="#f47b56" stroke="#f47b56"><path d="M11 0L0 15H8L5 21 20 8H12L15 0Z"/></g>
+    </g>
+    <g transform="translate(210 0)">
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#000" opacity=".40" transform="translate(0 2)"/>
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#1a2222" stroke="#64706d" stroke-width="1"/>
+      <path d="M8 2H60" stroke="#9aa49d" stroke-width="1" opacity=".5"/>
+      <circle cx="6" cy="7" r="1.5" fill="#101615"/><circle cx="62" cy="7" r="1.5" fill="#101615"/>
+      <circle cx="6" cy="28" r="1.5" fill="#101615"/><circle cx="62" cy="28" r="1.5" fill="#101615"/>
+      <g transform="translate(22 7)" stroke="#e5a64c" stroke-width="2" fill="none"><path d="M3 3h17v16H3zM0 6h3M20 6h3M7 0h9v3M8 10h7"/></g>
+    </g>
+    <g transform="translate(280 0)">
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#000" opacity=".40" transform="translate(0 2)"/>
+      <path d="M0 6L6 0H62L68 6V29L62 35H6L0 29Z" fill="#1a2222" stroke="#64706d" stroke-width="1"/>
+      <path d="M8 2H60" stroke="#9aa49d" stroke-width="1" opacity=".5"/>
+      <circle cx="6" cy="7" r="1.5" fill="#101615"/><circle cx="62" cy="7" r="1.5" fill="#101615"/>
+      <circle cx="6" cy="28" r="1.5" fill="#101615"/><circle cx="62" cy="28" r="1.5" fill="#101615"/>
+      <g transform="translate(21 8)" stroke="#ca73dd" stroke-width="2" fill="none"><path d="M12 0c-7 0-9 7-4 11l-5 4m17-4 5 4M7 14l-2 4m15-4 2 4"/><circle cx="12" cy="9" r="4"/></g>
+    </g>
+  </g>
+
+  <!-- Charcoal inset and 6 × 2 pictured inventory; capacities remain empty unless owned. -->
+  <rect x="1050" y="690" width="398" height="134" fill="#171a17" stroke="#494840" stroke-width="1"/>
+  <path d="M1053 692H1445" stroke="#706d61" stroke-width="1" opacity=".6"/>
+  <g font-family="Arial,sans-serif" font-size="10" fill="#b6b9a9">
+    <g transform="translate(1054 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><circle cx="30" cy="27" r="15" fill="#829c91" stroke="#c4d9c8"/><circle cx="30" cy="27" r="9" fill="#263c3b"/><path d="M30 13v14l9-6" fill="none" stroke="#f3c567" stroke-width="2"/><text x="4" y="54">1</text></g>
+    <g transform="translate(1120 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M30 12V35M30 22C16 23 14 14 15 11c9 0 15 4 15 13M30 20c0-10 6-13 15-12 0 8-5 12-15 12" fill="#6dbda3" stroke="#8cc9b3"/><text x="48" y="54">2</text></g>
+    <g transform="translate(1186 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><circle cx="30" cy="23" r="10" fill="#e78e58"/><path d="M24 34l-5 10m11-10v10m7-10 5 10" stroke="#ddd4b8" stroke-width="2"/><text x="48" y="54">2</text></g>
+    <g transform="translate(1252 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M17 19h26v20H17z" fill="#778e9a" stroke="#c8d3cc"/><circle cx="30" cy="29" r="5" fill="#384d54"/><path d="M23 15h14v4H23z" fill="#c8d3cc"/><text x="48" y="54">1</text></g>
+    <g transform="translate(1318 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M25 11h10l-6 14h10L24 45l4-15h-9z" fill="#c59c62" stroke="#e3c283"/><text x="48" y="54">3</text></g>
+    <g transform="translate(1384 694)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M12 28c0-12 7-18 18-18s18 6 18 18M16 29v10m28-10v10" fill="none" stroke="#84a8b2" stroke-width="4"/><text x="48" y="54">1</text></g>
+    <g transform="translate(1054 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M23 12h15v4h5v25H18V16h5z" fill="#c4a257" stroke="#e0ce98"/><path d="M25 22h11v12H25z" fill="#42665c"/><text x="48" y="54">2</text></g>
+    <g transform="translate(1120 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><rect x="19" y="12" width="22" height="31" rx="3" fill="#9d5145" stroke="#db9a7c"/><path d="M22 17h16M22 37h16" stroke="#e3c7a7"/><text x="48" y="54">1</text></g>
+    <g transform="translate(1186 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><ellipse cx="30" cy="29" rx="18" ry="9" fill="#527780" stroke="#a2c9c3"/><ellipse cx="30" cy="28" rx="10" ry="5" fill="#152c32"/><text x="48" y="54">1</text></g>
+    <g transform="translate(1252 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><path d="M25 26v-5a5 5 0 0 1 10 0v5" fill="none" stroke="#78827a" stroke-width="3"/><rect x="21" y="26" width="18" height="16" fill="#343a36" stroke="#7b8179"/><circle cx="30" cy="34" r="2" fill="#b4b8ad"/></g>
+    <g transform="translate(1318 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/><rect x="24" y="19" width="12" height="20" fill="#343a36"/><path d="M24 19h12M24 39h12" stroke="#737b71"/></g>
+    <g transform="translate(1384 762)"><rect width="60" height="58" fill="#1b211f" stroke="#3d423c"/></g>
+  </g>
+
+  <!-- Compact right condition rail; ALT, HULL and ENERGY remain clear. -->
+  <path d="M1448 682V838" stroke="#b4b0a4" stroke-width="1.2"/>
+  <text x="1462" y="701" font-family="Arial,sans-serif" font-size="12" fill="#1c2426">ALT 12 m</text>
+  <text x="1462" y="723" font-family="Arial,sans-serif" font-size="11" fill="#1c2426">HULL</text>
+  <rect x="1462" y="730" width="106" height="11" fill="#101618"/><rect x="1463" y="731" width="104" height="9" fill="#dd8565"/>
+  <text x="1462" y="755" font-family="Arial,sans-serif" font-size="11" fill="#1c2426">100 / 100</text>
+  <text x="1462" y="774" font-family="Arial,sans-serif" font-size="11" fill="#1c2426">ENERGY</text>
+  <rect x="1462" y="781" width="106" height="11" fill="#101618"/><rect x="1463" y="782" width="38" height="9" fill="#dca842"/>
+  <text x="1462" y="806" font-family="Arial,sans-serif" font-size="11" fill="#1c2426">36 / 100</text>
+  <path d="M1462 817H1578" stroke="#b4b0a4" stroke-width="1"/>
+  <g transform="translate(1504 821)" fill="none" stroke="#3aa881" stroke-width="2"><path d="M8 22V4M0 15Q8 7 16 15M-4 20Q8 6 20 20"/><circle cx="8" cy="4" r="3" fill="#3aa881"/></g>
+  <text x="28" y="45" font-family="Arial,sans-serif" font-size="10" fill="#aaa395">LAYOUT STUDY · reference proportions only; scene art intentionally omitted</text>
+</svg>

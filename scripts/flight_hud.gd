@@ -17,13 +17,16 @@ const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_SLOT_WIDTH := 60.0
+const PALETTE_SLOT_HEIGHT := 58.0
+const PALETTE_ROW_GAP := 10.0
+const PALETTE_ROW_STRIDE := PALETTE_SLOT_HEIGHT + PALETTE_ROW_GAP
 const PALETTE_COLUMN_GAP := 6.0
 const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * PALETTE_COLUMN_STRIDE - PALETTE_COLUMN_GAP
 const CONSOLE_NATIVE_WIDTH := 184.0
 const CONSOLE_VISIBLE_WIDTH := 144.0
 const CONSOLE_RIGHT_EDGE := 1592.0
-const ASSEMBLY_RAISE := 27.0
+const ASSEMBLY_RAISE := 18.0
 
 class TabCardArtwork extends Control:
 	var accent: Color = Color("8cc9d0")
@@ -286,8 +289,8 @@ func _build() -> void:
 	grid_backing = Panel.new()
 	grid_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var grid_style := StyleBoxFlat.new()
-	grid_style.bg_color = Color("101618")
-	grid_style.border_color = Color("454943")
+	grid_style.bg_color = Color("171a17")
+	grid_style.border_color = Color("4b4a42")
 	grid_style.set_border_width_all(1)
 	grid_style.set_corner_radius_all(0)
 	grid_backing.add_theme_stylebox_override("panel", grid_style)
@@ -296,8 +299,8 @@ func _build() -> void:
 		var empty_slot := Panel.new()
 		empty_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var empty_style := StyleBoxFlat.new()
-		empty_style.bg_color = Color("141b1d")
-		empty_style.border_color = Color("253238")
+		empty_style.bg_color = Color("1a1c19")
+		empty_style.border_color = Color("393c37")
 		empty_style.set_border_width_all(1)
 		empty_style.set_corner_radius_all(0)
 		empty_slot.add_theme_stylebox_override("panel", empty_style)
@@ -495,7 +498,7 @@ func _build() -> void:
 
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
-	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 	button.add_theme_constant_override("icon_max_width",52)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
@@ -522,7 +525,7 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	var id: String = str(entry.id)
 	var title: String = str(entry.title)
 	var icon: String = str(entry.get("icon", "cargo"))
-	var button: Button = symbol_at(icon, Rect2(0, 0, PALETTE_SLOT_WIDTH, 54), "cargo", title+" · open cargo inventory", Art.CARGO)
+	var button: Button = symbol_at(icon, Rect2(0, 0, PALETTE_SLOT_WIDTH, PALETTE_SLOT_HEIGHT), "cargo", title+" · open cargo inventory", Art.CARGO)
 	var item_texture: Texture2D = CargoIcon.texture_for(id)
 	if item_texture != null:
 		# Keep authored owned-item art large and separate from its live stack count.
@@ -535,7 +538,7 @@ func _make_campaign_item(entry: Dictionary) -> void:
 		pictogram.size = Vector2(52, 38)
 		pictogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(pictogram)
-	button.size = Vector2(PALETTE_SLOT_WIDTH,54)
+	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 	button.add_theme_constant_override("icon_max_width",48)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
@@ -630,19 +633,19 @@ func show_group(group: String) -> void:
 	var visible_items: int = mini(PALETTE_PAGE_CAPACITY, maxi(0, entries.size()-page_start))
 	var pages: int = maxi(1,int(ceil(entries.size()/float(PALETTE_PAGE_CAPACITY))))
 	var grid_width: float = float(PALETTE_GRID_WIDTH)
-	var panel_height: float = 192.0
+	var panel_height: float = 183.0
 	var panel_top: float = 870.0-panel_height-ASSEMBLY_RAISE
-	# The six-column tray meets the narrowed status pod inside one continuous
+	# The six-column tray meets the status pod inside one continuous
 	# shell. The transformed status edge stays aligned to the original right edge.
 	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_VISIBLE_WIDTH
-	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+56.0)
+	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+25.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
-	grid_backing.size = Vector2(grid_width+8, 118)
+	grid_backing.size = Vector2(grid_width+8, PALETTE_ROW_STRIDE+PALETTE_SLOT_HEIGHT+8.0)
 	grid_backing.visible = palette_expanded
 	for slot: int in range(PALETTE_PAGE_CAPACITY):
 		var empty_cell: Panel = empty_slot_backings[slot]
-		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,54)
+		empty_cell.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+		empty_cell.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 		empty_cell.visible = palette_expanded and slot >= visible_items
 	if console_pod != null:
 		console_pod.position = Vector2(console_left,panel_top+18.0)
@@ -655,28 +658,28 @@ func show_group(group: String) -> void:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if item_buttons[id].visible:
-			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,54)
+			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
 			slot_labels[id].text = ("Ctrl+" if slot >= PALETTE_COLUMNS else "")+str(slot%PALETTE_COLUMNS+1)
 	for id: String in campaign_inventory_ids:
 		var slot: int = entries.find(id)-page_start
 		var button: Button = campaign_item_buttons[id]
 		button.visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
 		if button.visible:
-			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * 56)
-			button.size = Vector2(PALETTE_SLOT_WIDTH,54)
-	# Five category cards retain their approved scale in every pagination state.
+			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
+			button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
+	# Five shallow category cards retain the approved surface rhythm across pages.
 	# Page controls use the unused second line of the compact console header.
-	var tab_width: float = 56.0
-	var tab_gap: float = 7.0
-	var tab_total_width: float = 5.0*56.0+4.0*7.0
+	var tab_width: float = 68.0
+	var tab_gap: float = 2.0
+	var tab_total_width: float = 5.0*tab_width+4.0*tab_gap
 	var tab_start_x: float = inventory_grid_origin.x+(grid_width-tab_total_width)*0.5
 	var tab_index: int = 0
 	for key: String in GROUPS:
 		var button: Button = category_buttons[key]
 		var tint: Color = Palette.entry(GROUPS[key][0]).tint
-		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
-		button.size = Vector2(tab_width,42)
+		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20)
+		button.size = Vector2(tab_width,35)
 		button.add_theme_constant_override("icon_max_width",28)
 		button.visible = true
 		var artwork: TabCardArtwork = category_tab_cards[key] as TabCardArtwork
@@ -685,8 +688,8 @@ func show_group(group: String) -> void:
 		artwork.visible = button.visible
 		_set_tab_appearance(button,artwork,tint,key == group)
 		tab_index += 1
-	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top+8)
-	communications_button.size = Vector2(tab_width,42)
+	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20)
+	communications_button.size = Vector2(tab_width,35)
 	communications_button.add_theme_constant_override("icon_max_width",28)
 	communications_button.visible = true
 	communications_card.position = communications_button.position
@@ -904,29 +907,29 @@ func set_orbital_mode(enabled: bool) -> void:
 		for i: int in range(GROUPS.size()):
 			var grp: String = GROUPS.keys()[i]
 			category_buttons[grp].position = Vector2(772 + i * 74, 686)
-			category_buttons[grp].size = Vector2(64, 54)
+			category_buttons[grp].size = Vector2(68, 35)
 			category_buttons[grp].visible = true
 		show_group(active_group)
 	else:
 		# The surface map uses the left instrument while secondary controls remain
 		# available from its footer and expandable tab.
-		nav_pod.position = Vector2(16, 674)
-		nav_pod.size = Vector2(250, 196)
+		nav_pod.position = Vector2(16, 696)
+		nav_pod.size = Vector2(225, 174)
 		# Use the same-width chart frame as the corner pod, with its title on the
 		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 650)
-		chart_backing.size = Vector2(250, 220)
-		navigation.position = Vector2(20, 660)
-		navigation.size = Vector2(238, 170)
+		chart_backing.position = Vector2(16, 672)
+		chart_backing.size = Vector2(225, 198)
+		navigation.position = Vector2(20, 682)
+		navigation.size = Vector2(213, 153)
 		# Give the sampled chart the full instrument aperture. The two secondary
 		# actions share its quiet footer instead of consuming a narrow side rail.
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
-		navigation_menu_button.position = Vector2(198, 840)
+		navigation_menu_button.position = Vector2(184, 840)
 		navigation_menu_button.size = Vector2(22, 24)
 		navigation_menu_button.tooltip_text = "Navigation controls · open map, contact and zoom actions"
-		departure_button.position = Vector2(224, 840)
+		departure_button.position = Vector2(210, 840)
 		departure_button.size = Vector2(22, 24)
 		Art.symbol(departure_button,"ascend",Art.NAV)
 		departure_button.add_theme_constant_override("icon_max_width",22)
@@ -935,7 +938,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
 		chart_heading.position = Vector2(28, 844)
-		chart_heading.size = Vector2(166, 18)
+		chart_heading.size = Vector2(148, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1508, 666)
@@ -966,7 +969,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		for i: int in range(GROUPS.size()):
 			var grp: String = GROUPS.keys()[i]
 			category_buttons[grp].position = Vector2(772 + i * 74, 686)
-			category_buttons[grp].size = Vector2(64, 54)
+			category_buttons[grp].size = Vector2(68, 35)
 			category_buttons[grp].visible = true
 		show_group(active_group)
 
