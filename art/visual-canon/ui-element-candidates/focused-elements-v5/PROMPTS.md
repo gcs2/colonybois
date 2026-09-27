@@ -4,7 +4,7 @@ Tool: built-in ImageGen, 27 September 2026. Output directory: `C:/Users/zephy/.c
 
 | Saved candidate | Generated source | Approved references | Focused prompt specification |
 |---|---|---|---|
-| `shared-category-tab.png` | `exec-265e2b26-74d6-4054-8511-f04fdbd48ebe.png` | surface, system | One neutral broad low charcoal tab, clipped upper corners, steep shoulders, narrow matte ivory edge, roughly 72×37 screen px; no glyph, caption, tint, rim or glow. Same base for five categories. |
+| `shared-category-tab-v2.png` | `exec-5d287c0c-4c70-4c7c-ad68-7e9f906252dd.png` | surface, system | One neutral compact charcoal tab, clipped upper corners, steep shoulders, narrow matte ivory edge, roughly 70×37 screen px, an opaque silhouette close to 2:1; no glyph, caption, tint, rim or glow. Same base for five categories. |
 | `flight-inventory-console.png` | `exec-8858ccff-520e-40d5-9421-229206f9a88f.png` | surface, system | One compact wide ivory chassis about 570×190 screen px: exactly six columns by two rows of empty charcoal wells joined directly to a narrow blank status bay; flat top for separate tabs; no icons, bars, numbers, tab row or glow. |
 | `surface-chart-housing.png` | `exec-6e058229-ca06-4586-896e-8459e0d41573.png` | surface, approach | One near-square 220×190 screen px angular ivory surface chart with blank dark green-charcoal map aperture, narrow footer and two right attachment points; no geography, ship, scale or text. |
 | `system-destination-card.png` | `exec-edd08370-3337-49ea-9f40-f37e98108b1a.png` | system | One compact three-tier charcoal selected-destination housing about 280×155 screen px, thin ivory outline, restrained inlaid yellow guide, empty tiers for destination/relay, Fly cost/time, current/after energy; no live contents or glow. |
@@ -15,3 +15,5 @@ Tool: built-in ImageGen, 27 September 2026. Output directory: `C:/Users/zephy/.c
 | `notification-plaque.png` | `exec-99547e3a-f721-4a35-aaf8-ce8d29a70fce.png` | surface, orbit, system | One low 180×38 screen px dark charcoal notification banner with ivory edge and divided left icon lane; blank for live event glyph/message. |
 
 Common negative prompt: no blue Windows-style panel, rounded icon wells, shiny copper border, extra objects, scene background, cast shadow, baked pointer-hover bloom, selected glow, words, digits, cursors or fake campaign state. The source screenshots remain the authority for actual proportions and overall quality; generated candidates must be judged at their intended display size before integration. The generated file names above identify the exact raw outputs; copies in this folder preserve their pixels.
+
+The first tab output, `exec-265e2b26-74d6-4054-8511-f04fdbd48ebe.png`, was too wide and remains only in the generated-images source directory. The v2 prompt explicitly requested a compact 70×37 icon tab, flat bottom and steep shoulders, with no broad label plate or pale alpha halo.

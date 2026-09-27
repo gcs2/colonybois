@@ -1,10 +1,10 @@
 # Focused UI elements — v5 candidates
 
-Nine newly generated transparent PNGs, using the approved view mocks as style references. These are individual reusable housings, not crops. They are candidates for visual review, not approved or wired runtime art. Counts, text, meters, geography, item pictures, focus and pointer-hover glow must be drawn from live state.
+Nine selected newly generated transparent PNGs, using the approved view mocks as style references. These are individual reusable housings, not crops. They are candidates for visual review, not approved or wired runtime art. Counts, text, meters, geography, item pictures, focus and pointer-hover glow must be drawn from live state.
 
 | Asset | View coverage | Intended live layers |
 |---|---|---|
-| [shared-category-tab.png](shared-category-tab.png) | Surface, orbit, approach, system | One base reused for all five category glyphs; hover glow is runtime only. |
+| [shared-category-tab-v2.png](shared-category-tab-v2.png) | Surface, orbit, approach, system | One base reused for all five category glyphs; hover glow is runtime only. |
 | [flight-inventory-console.png](flight-inventory-console.png) | Surface, orbit, approach, system | Six-by-two item grid and compact status bay; item art/counts, hull/energy/ALT/signal overlay. |
 | [surface-chart-housing.png](surface-chart-housing.png) | Surface and late approach only | Actual seeded surface geography, ship, landmarks, scale and controls overlay. |
 | [system-destination-card.png](system-destination-card.png) | Solar-system map | Destination, relay state, Fly/cost/time and post-trip values overlay. |
@@ -20,4 +20,6 @@ Generation used built-in ImageGen on 27 September 2026. All nine files are RGBA 
 
 ## Independent visual review — 27 September 2026
 
-A separate Luna High critic compared all nine at intended HUD size with the five approved mocks. **All nine need rework before integration.** The shared issue is a pale/yellow low-alpha fringe that can read as permanent glow. The console has an oversized blank right wing; the tab is too broad; the system card has a permanent yellow stripe; the orbit plaque pointer faces the wrong way. The galaxy card rows and rail panes need layout adjustment at game size. Keep these files as provenance and comparison candidates; do not replace live controls with them or present them as approved art.
+A separate Luna High critic compared the initial nine at intended HUD size with the five approved mocks. **The initial nine needed rework before integration.** The shared issue is a pale/yellow low-alpha fringe that can read as permanent glow. The console has an oversized blank right wing; the initial tab was too broad and was superseded by a compact v2; the system card has a permanent yellow stripe; the orbit plaque pointer faces the wrong way. The galaxy card rows and rail panes need layout adjustment at game size. Keep these files as provenance and comparison candidates; do not replace live controls with them or present them as approved art.
+
+The tab v2 improves silhouette ratio from about 3.8:1 to about 2.2:1. It retains substantial transparent canvas and a minor pale alpha fringe; review in the actual HUD remains open.
