@@ -98,6 +98,9 @@ func run() -> void:
 		scene._update_camera(1.0)
 		scene._dismiss_first_landing_welcome()
 		scene._refresh_ui()
+		# Keep the production notification plaque visible for a mock comparison.
+		# This seeds display state only; it does not claim to exercise a discovery trigger.
+		scene._toast("Relay discovered")
 		for frame: int in range(3): await process_frame
 		var flight_image: String = "%s/populated-flight-%d.png" % [OUTPUT,resolution.x]
 		print("Populated HUD: capturing flight view %s" % flight_image)
@@ -129,7 +132,7 @@ func run() -> void:
 		view.free()
 	var manifest := FileAccess.open(OUTPUT+"/evidence.json",FileAccess.WRITE)
 	manifest.store_string(JSON.stringify({
-		"kind": "isolated campaign-earned actual encounter HUD render; not player save, native input, or visual acceptance",
+		"kind": "isolated campaign-earned actual encounter HUD render; notification plaque populated with a display-only fixture; not player save, native input, or visual acceptance",
 		"records": records
 	},"\t"))
 	print("Populated HUD review: two resolutions; campaign path assertions passed.")

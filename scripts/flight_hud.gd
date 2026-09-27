@@ -1013,13 +1013,13 @@ func set_orbital_mode(enabled: bool) -> void:
 	else:
 		# The surface map uses the left instrument while secondary controls remain
 		# available from its footer and expandable tab.
-		nav_pod.position = Vector2(16, 660)
+		nav_pod.position = Vector2(16, 647)
 		nav_pod.size = Vector2(220, 190)
 		# Use the same-width chart frame as the corner pod, with its title on the
 		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 650)
+		chart_backing.position = Vector2(16, 637)
 		chart_backing.size = Vector2(250, 215)
-		navigation.position = Vector2(35, 683)
+		navigation.position = Vector2(35, 670)
 		navigation.size = Vector2(207, 150)
 		# Give the sampled chart the full instrument aperture. The two secondary
 		# actions share its quiet footer instead of consuming a narrow side rail.

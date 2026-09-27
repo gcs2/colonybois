@@ -1039,27 +1039,27 @@ func _make_ui() -> void:
 	status_plate = TextureRect.new()
 	status_plate.texture = notification_texture
 	status_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	status_plate.position = Vector2(12,60)
-	status_plate.size = Vector2(320,59)
+	status_plate.position = Vector2(12,74)
+	status_plate.size = Vector2(190,35)
 	status_plate.stretch_mode = TextureRect.STRETCH_SCALE
 	status_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_plate.z_index = 19
 	status_plate.hide()
 	root.add_child(status_plate)
-	status.position = Vector2(82,64)
-	status.size = Vector2(240,50)
+	status.position = Vector2(56,74)
+	status.size = Vector2(136,34)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status.add_theme_color_override("font_color",Color("fff0cb"))
-	status.add_theme_font_size_override("font_size",13)
+	status.add_theme_font_size_override("font_size",12)
 	status.tooltip_text = "Expedition notice · new discoveries and ship events appear here"
 	status.z_index = 21
 	root.add_child(status)
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(32,80)
+	status_icon.position = Vector2(28,82)
 	status_icon.size = Vector2(18,18)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -2730,11 +2730,11 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(32,80)
+		status_icon.position = Vector2(28,82)
 		status_icon.size = Vector2(18,18)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(82,64)
-		status.size = Vector2(240,50)
+		status.position = Vector2(56,74)
+		status.size = Vector2(136,34)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		status_plate.show()
