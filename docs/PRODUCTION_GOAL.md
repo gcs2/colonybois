@@ -18,6 +18,16 @@ The world experience must grow beyond the current bounded basin: the same seeded
 
 The agreed Space Stage baseline is more than a feature inventory: the campaign must support at least two distinct, viable approaches whose choices change routes, resources, relationships, rewards, or obligations in persistent history. Preserve the forgotten-outpost/Vanguard/ancestors campaign and morally complex alien politics as the later story and content arc. A human Sol start is a separate desired scenario, not a replacement for the alien campaign; its implementation and pacing remain gated.
 
+## Near-term player-facing focus
+
+Keep the Space Stage successor as the product objective, with this delivery sequence: close the source-to-mock transition audit on an isolated branch while preserving the dirty main checkout and active handoffs; bring the HUD into line with the approved mock using direct, same-state comparisons of actual runtime captures at 1920x1080 and 2560x1440; then evaluate the view using that same final HUD and seeded planet; only after those presentation gates are accepted, move to whole-planet enrichment.
+
+Treat the glowing tab cards as an approved positive anchor. Preserve their proportions, shading, margin, padding, dots and raised-tab feel while correcting demonstrated HUD gaps. Review real campaign contents, readable counts, treasury/action grouping, target feedback, named tooltips, hover/selection states and native input. Keep HUD controls and layouts responsive and scalable; do not generate separate raster HUD images for zoom or resolution variants.
+
+The view study is a reversible comparison, not a commitment to tilt-shift or a 2.5D/RTS pivot. Use the committed 0.36 perspective camera with sharp scene detail as the baseline; compare a modest 0.43 pitch and a subtle scene-only focus treatment separately, with the HUD and reachable details sharp. Change the default only if matched runtime captures and play review show a clear benefit without harming orientation, landmark visibility or interaction. No renderer migration is implied.
+
+After HUD and view acceptance, enrich Morrow as one coherent generated planet: shared seeded geography, ecology and landmarks must agree across scales and revisits, and suitable existing Tripo assets should be reused through consistent planet-specific placement rules. Build reusable world rules rather than one-off designed scenes.
+
 ## Acceptance criteria
 
 - Across M1-M3, every implemented view and meaningful state must retain a source/canon/runtime trace, same-state evidence, and separate independent-critic and user verdicts as required by the [roadmap](ROADMAP.md). During development, use targeted review for material changes; a pending verdict blocks that acceptance gate, not independent reversible work. Never infer acceptance from a mock or silence.
