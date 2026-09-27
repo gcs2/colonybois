@@ -59,6 +59,7 @@ var ship_marker: MeshInstance3D
 var selection: MeshInstance3D
 var route_overlay: RouteOverlay
 var heading: Label
+var destination_name: Label
 var details: Label
 var status: Label
 var instruction: Label
@@ -119,14 +120,16 @@ func _ready() -> void:
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(320,0); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
-	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE; card_style.set_content_margin_all(20)
+	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
+	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE
+	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,25); card_style.set_content_margin(SIDE_BOTTOM,26)
 	destination_card.add_theme_stylebox_override("panel",card_style)
-	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",8); destination_card.add_child(card)
-	details = text_label(""); details.custom_minimum_size = Vector2(276,78); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	var card := VBoxContainer.new(); card.add_theme_constant_override("separation",3); destination_card.add_child(card)
+	destination_name = text_label("",18); destination_name.custom_minimum_size = Vector2(278,22); card.add_child(destination_name)
+	details = text_label("",13); details.custom_minimum_size = Vector2(278,34); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,card)
-	travel.custom_minimum_size = Vector2(276,44)
-	status = text_label("",15); status.custom_minimum_size = Vector2(276,34); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	travel.custom_minimum_size = Vector2(278,34)
+	status = text_label("",14); status.custom_minimum_size = Vector2(278,36); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
 	progress = ProgressBar.new(); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
 		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
@@ -347,8 +350,8 @@ func refresh() -> void:
 	else:
 		var faction: Dictionary = campaign.sector.faction_by_id(owner)
 		if faction.get("contacted",false): inhabited = faction.name
-	details.text = definition.name+"\n"+definition.archetype.capitalize()+" · "+inhabited+"\n"+("Landing region charted" if surveyed and not definition.sites.is_empty() else "Orbital survey complete" if surveyed else "Orbital survey pending")+" · "+("Surface access" if not definition.sites.is_empty() else "Orbital destination")
-	if surveyed: details.text += "\nClimate T%d · ecosystem T%d" % [campaign.climate.score(campaign.climate.world(selected_planet)),campaign.biosphere.complete_tier(selected_planet)]
+	destination_name.text = definition.name
+	details.text = definition.archetype.capitalize()+" · "+inhabited+"\n"+("Charted · surface access" if surveyed and not definition.sites.is_empty() else "Survey complete · orbital only" if surveyed else "Survey pending · surface access" if not definition.sites.is_empty() else "Survey pending · orbital only")
 	var here: bool = selected_planet == campaign.field.state.planet_id
 	travel.text = "Return to ship" if here else "Fly  ·  %d energy  ·  %d seconds" % [offer.energy,offer.seconds]
 	travel.disabled = locked or campaign.traveling() or (not here and not offer.reason.is_empty())
@@ -360,6 +363,8 @@ func refresh() -> void:
 		var ship: Dictionary = campaign.sector.state.flagship
 		progress.value = 100*(1.0-float(ship.remaining)/maxf(1,ship.duration))
 		status.text = ("TRAVEL PAUSED" if locked else "IN TRANSIT")+" · %d seconds\nEscape: pause / save" % ship.remaining
+	elif surveyed:
+		status.text += "\nClimate T%d · ecosystem T%d" % [campaign.climate.score(campaign.climate.world(selected_planet)),campaign.biosphere.complete_tier(selected_planet)]
 	selection.position = bodies[selected_planet].position
 	var selection_mesh: TorusMesh = selection.mesh as TorusMesh
 	var selection_radius: float = bodies[selected_planet].radius+1.1
