@@ -11,6 +11,20 @@ The user selected the pinned Morrow surface image and explicitly approved the v2
 The three mock critics recorded narrow static-concept findings before user approval: orbital composition ACCEPT; system composition sound with a requested output-size change; approach REFINE on ship scale and output size. The user then approved the exact original images, so those optional revisions do not block canon status and must not trigger another generation pass. The earlier galaxy image is a supporting user-liked scale reference, not a complete galaxy-state family or current inventory contract.
 
 This approval covers design direction for these still images only. It does not prove source fidelity, camera tracking, motion, scale-transition timing, input, runtime behavior, interaction, audio, performance, fun, or complete view-family coverage. The current runtime still needs to move materially closer to the accepted visual direction. Other rejected Codex-generated boards remain excluded.
+
+## Live 100-point review — 27 September 2026
+
+An independent read-only visual critic compared the approved surface, orbit, system and galaxy canon with actual 1920×1080 and 2560×1440 renderer captures from the isolated `codex/r01-v01-v04-transition-audit` branch at `d44830a0b7441af5bf8aaeefdca06136944fe306`. The populated surface view earned 7 Marks, one freight item and one each Energy Pack and Repair Pack through real campaign actions; the system and galaxy captures used an isolated Kestrel scenario. These local captures are ignored under `artifacts/populated-hud-review/`, `artifacts/system_selected_*.png`, `artifacts/system_sector_route_*.png` and `artifacts/orbit_warning_s1p0.png`. They are not a portable build or native-input review. Apply the [100-point rubric](../delivery/SYNTHETIC_SQUAD.md#independent-critic-score); interaction and resolution/motion points are provisional from stills.
+
+| Live view | HUD score /100 | Separate scene score /100 | Main evidence-backed blockers |
+| --- | ---: | ---: | --- |
+| Surface, populated 1080p | 59 | 40 | Image-backed chart and inventory are present, but inventory hides status data, item art is inconsistent, detached notices compete with play space, and Morrow remains bright, flat and sparsely detailed. The 1440p HUD scored 58. |
+| System, selected 1080p | 57 | 38 | Actual scout is visible but large relative to planets; the leader line crosses the map, selected card is crowded, generic blue navigation/Marks housings diverge from the approved view, and star/belt depth is weak. The 1440p HUD scored 55. |
+| Galaxy, local route 1080p | 45 | 12 | The rendered composition is a sparse local route rather than a galaxy-wide scene. Card text intersects decorative circles/lines; only two of three worlds appear at once through the scroll container, with an overflow hint. The model-derived ship is visible but still prominent. The 1440p HUD also scored 45. A true wide-galaxy runtime capture and four/five-plus world-list check are still missing. |
+| Orbit warning, 1080p | 55 | Not scored | Threat and copy clip at the left edge; strike warning, lower-left controls and inventory housing do not form a coherent hierarchy. |
+
+Every view fails the 90/100 threshold and at least one rubric dimension. These are structured visual judgments, not measured image similarity. User approval of the transparent source images stands; live placement, surrounding scene and player acceptance remain open. File-scoped system and galaxy improvement passes started from this checkpoint. The earlier coverage-audit denominators below are separate source/state accounting and are not increased by these captures.
+
 ## Coverage audit - 24 September 2026
 
 The user challenged the implementation-first drift. Small functional corrections and critic checks for clipping did not satisfy the required source/current/mock comparison. No claim of 100% source fidelity or mock coverage is supported.
