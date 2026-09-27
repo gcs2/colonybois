@@ -31,6 +31,7 @@ The surface image is the user's pinned source. The other three are v2 designer p
 
 - [Exact prompts that produced the approved Morrow views](generation-prompts.md)
 - [Generated UI element candidates and prompts](ui-element-candidates/README.md)
+- [Fresh v2 category-icon candidates and exact prompts](ui-element-candidates/category-icons-v2/README.md)
 - [Current game direction](../../docs/direction/SPACE_FIRST_DIRECTION.md)
 - [Space Stage target and exclusions](../../docs/direction/SPACE_STAGE_TARGET.md)
 - [Source-to-runtime view coverage](../../docs/reviews/VIEW_MOCK_COVERAGE.md)
