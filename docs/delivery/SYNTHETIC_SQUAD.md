@@ -46,4 +46,21 @@ Workers report the real commands and durations they ran. Do not claim that paral
 
 Visual review uses a matched target/reference and actual runtime capture with provenance, view/state, resolution, camera, build/commit, and relevant measured values. Compare composition, materials, world context, legibility, interaction and motion evidence; no-clipping alone is not acceptance. Critic findings are bounded to supplied evidence, and explicit user decisions take precedence. The approved Morrow views are fixed canon: do not regenerate them. For a missing view, follow the task-backed designer brief and provide concise prompts for the user-selected competent external designer/generator; Codex image generation is not the default. Stage candidates in the shared integration-worktree home, then promote only user-approved originals into tracked art/visual-canon.
 
+## Independent critic score
+
+The independent critic scores each materially changed **live view** against its user-approved reference on a 100-point rubric. The implementer does not score their own work. Supply the reference and matched 1920×1080 and 2560×1440 runtime captures, the commit, game state, camera, and interaction/motion evidence. Score the implemented view, not a standalone PNG or a test fixture. Explicit user approval of an asset is authoritative; critique its live placement and effect rather than reopening that asset decision.
+
+| Dimension | Points | What the critic checks |
+| --- | ---: | --- |
+| Composition and scale | 25 | World/HUD balance, ship size, framing, panel footprint and wasted space against the reference. |
+| Field Instruments art | 20 | Approved imagery, material continuity, tab/grid proportions, pictorial quality and restrained hover-only glow. |
+| Live information | 20 | Real item counts, Marks, status, labels, hierarchy, contrast and legibility without invented state. |
+| Navigation and context | 15 | Useful scale-specific map, recognizable player ship, route/target relationship, notifications and world-tethered feedback. |
+| Interaction | 10 | Ordinary pointer, selection, named tooltip, focus, shortcut and refusal feedback. |
+| Resolution and motion | 10 | 1080p/1440p layout, clipping, transitions and moving-state coherence. |
+
+Give a numeric score in each row and a total **out of 100**. Cite concrete image regions and behavior for every deduction; record confidence and missing evidence. A view reaches the visual review threshold only at **90/100 or higher**, with every dimension at least 80% of its available points, no blocking defect, and a separate positive user verdict. A wrong or missing ship, fake inventory, unreadable chart, clipped/oversized plate, idle glow, or broken input is a blocking defect regardless of the average. If required motion or input evidence is missing, give a provisional score and leave the gate open.
+
+Score the **HUD/view** and the **world scene** separately so a better console cannot conceal weak planetary art, and weak world art does not postpone a focused HUD gate. Report functional checks and native playability separately from the visual score. Each review names the three highest-impact corrections, the expected visible change, and whether the next pass should target layout, art, behavior, or evidence. Re-score after an integrated runtime change; do not award points for a patch that has not rendered.
+
 For an authored 3D pilot, the intended path is an isolated original 2D concept, reviewed silhouette, image-to-model conversion only after the user approves any concrete price and license, then a small Godot wrapper scene and checks for shape, materials, pivot, collision, camera distance, performance and export loading. Tripo is not connected by this contract. Preserve source/provenance for approved assets; rejected or unreviewed render variants remain local and do not count as shipped art. Character modeling and new character design remain deferred unless current project direction changes.
