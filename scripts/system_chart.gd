@@ -17,6 +17,8 @@ const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
 const SCOUT_SCENE = preload("res://assets/encounter/scout.glb")
 const SCOUT_CHART = preload("res://assets/ui/chart_scout.png")
 const DESTINATION_CARD_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/system-destination-card.png")
+const MARKS_PLATE_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/marks-balance-plate.png")
+const INVENTORY_CONSOLE_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/flight-inventory-console.png")
 const ORBIT_BASE_RADIUS: float = 22.0
 const ORBIT_SPACING: float = 17.0
 const MOON_ORBIT_RADIUS: float = 7.0
@@ -24,11 +26,9 @@ const ASTEROID_BELT_WIDTH: float = 8.0
 class RouteOverlay extends Control:
 	var origin: Vector2 = Vector2.ZERO
 	var destination: Vector2 = Vector2.ZERO
-	var card_link_start: Vector2 = Vector2.ZERO
-	var card_link_end: Vector2 = Vector2.ZERO
 	var active: bool = false
-	func set_route(from: Vector2, to: Vector2, link_from: Vector2, link_to: Vector2, enabled: bool) -> void:
-		origin = from; destination = to; card_link_start = link_from; card_link_end = link_to; active = enabled; queue_redraw()
+	func set_route(from: Vector2, to: Vector2, enabled: bool) -> void:
+		origin = from; destination = to; active = enabled; queue_redraw()
 	func _draw() -> void:
 		if not active: return
 		var control: Vector2 = (origin+destination)*0.5+Vector2(0,-clampf(origin.distance_to(destination)*0.16,28,110))
@@ -43,8 +43,6 @@ class RouteOverlay extends Control:
 			draw_line(points[first],points[last],Color("64dbd5"),4,true)
 		draw_circle(origin,8,Color("172a2c")); draw_arc(origin,10,0,TAU,32,Color("64dbd5"),2,true)
 		draw_circle(destination,5,Color("f1cd55"))
-		draw_line(card_link_start,card_link_end,Color(0.015,0.055,0.065,0.96),7,true)
-		draw_line(card_link_start,card_link_end,Color("f1cd55"),2,true)
 var campaign: RefCounted
 var system_id: String = ""
 var selected_planet: String = ""
@@ -94,9 +92,9 @@ var locked: bool = false
 func text_label(text: String, font_size: int = 16) -> Label:
 	var item := Label.new(); item.text = text; item.add_theme_font_size_override("font_size",font_size)
 	item.mouse_filter = Control.MOUSE_FILTER_IGNORE; return item
-func button(text: String, icon: String, hint: String, action: Callable, parent: Node) -> Button:
+func button(text: String, icon: String, hint: String, action: Callable, parent: Node, tint: Color = UI.PAPER) -> Button:
 	var item := Button.new(); item.text = text; item.custom_minimum_size = Vector2(52 if text.is_empty() else 120,44)
-	UI.instrument(item,icon,UI.NAV); item.tooltip_text = hint
+	UI.instrument(item,icon,tint); item.tooltip_text = hint
 	item.pressed.connect(func() -> void: ui_cue.emit("ui_confirm"); action.call()); parent.add_child(item); return item
 func _ready() -> void:
 	var stage: Control = Stage.create(self)
@@ -118,7 +116,7 @@ func _ready() -> void:
 	add_starfield()
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
-	star.mesh = sphere; star.material_override = stellar; world.add_child(star)
+	star.mesh = sphere; star.material_override = stellar; star.scale = Vector3.ONE*1.7; world.add_child(star)
 	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.75; world.add_child(ship_marker)
 	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
 		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
@@ -137,8 +135,9 @@ func _ready() -> void:
 	var card := Control.new(); card.mouse_filter = Control.MOUSE_FILTER_PASS; destination_card.add_child(card)
 	destination_name = text_label("",18); destination_name.position = Vector2.ZERO; destination_name.size = Vector2(278,22); card.add_child(destination_name)
 	details = text_label("",13); details.position = Vector2(0,22); details.size = Vector2(278,28); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
-	travel = button("","ascend","Fly to this destination",activate_selected,card)
+	travel = button("","ascend","Fly to this destination",activate_selected,card,UI.GOLD)
 	travel.position = Vector2(0,50); travel.size = Vector2(278,28); travel.custom_minimum_size = Vector2(278,28)
+	travel.add_theme_font_size_override("font_size",13)
 	travel.add_theme_constant_override("icon_max_width",18)
 	for state: String in ["normal","hover","pressed","disabled"]:
 		var compact_style: StyleBoxFlat = (travel.get_theme_stylebox(state) as StyleBoxFlat).duplicate() as StyleBoxFlat
@@ -163,14 +162,16 @@ func _build_system_instruments(stage: Control) -> void:
 	# and compact cargo/status readouts present on this separate full-screen chart.
 	treasury = PanelContainer.new(); treasury.name = "SystemTreasury"; treasury.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	treasury.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT); treasury.offset_left = -238; treasury.offset_right = -24; treasury.offset_top = 84; treasury.offset_bottom = 132
-	var money_style := StyleBoxFlat.new(); money_style.bg_color = Color("dedad0"); money_style.border_color = Color("8d8c80"); money_style.set_border_width_all(1); money_style.set_content_margin_all(8)
+	var money_style := StyleBoxTexture.new(); money_style.texture = MARKS_PLATE_TEXTURE
+	money_style.set_content_margin(SIDE_LEFT,28); money_style.set_content_margin(SIDE_RIGHT,22); money_style.set_content_margin(SIDE_TOP,9); money_style.set_content_margin(SIDE_BOTTOM,9)
 	treasury.add_theme_stylebox_override("panel",money_style); stage.add_child(treasury)
 	var money_row := HBoxContainer.new(); money_row.add_theme_constant_override("separation",8); treasury.add_child(money_row)
 	var mark_icon := TextureRect.new(); mark_icon.texture = MARK_ICON; mark_icon.custom_minimum_size = Vector2(26,26); mark_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; mark_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; mark_icon.modulate = Color("a98427"); money_row.add_child(mark_icon)
 	treasury_amount = text_label("0 Marks",19); treasury_amount.add_theme_color_override("font_color",Color("1c2426")); treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; money_row.add_child(treasury_amount)
 	inventory_pod = PanelContainer.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -456; inventory_pod.offset_right = -24; inventory_pod.offset_top = -230; inventory_pod.offset_bottom = -72
-	var pod_style := StyleBoxFlat.new(); pod_style.bg_color = Color("dedad0"); pod_style.border_color = Color("6e6c60"); pod_style.set_border_width_all(1); pod_style.set_content_margin_all(9)
+	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -624; inventory_pod.offset_right = -24; inventory_pod.offset_top = -230; inventory_pod.offset_bottom = -72
+	var pod_style := StyleBoxTexture.new(); pod_style.texture = INVENTORY_CONSOLE_TEXTURE
+	pod_style.set_content_margin(SIDE_LEFT,20); pod_style.set_content_margin(SIDE_RIGHT,102); pod_style.set_content_margin(SIDE_TOP,21); pod_style.set_content_margin(SIDE_BOTTOM,20)
 	inventory_pod.add_theme_stylebox_override("panel",pod_style); stage.add_child(inventory_pod)
 	var pod_row := HBoxContainer.new(); pod_row.add_theme_constant_override("separation",9); inventory_pod.add_child(pod_row)
 	var cargo_column := VBoxContainer.new(); cargo_column.add_theme_constant_override("separation",6); cargo_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL; pod_row.add_child(cargo_column)
@@ -233,7 +234,7 @@ func _refresh_instruments() -> void:
 	var cargo_rows: int = ceili(float(shown)/6.0)
 	var cargo_grid_height: float = maxf(13.0,float(cargo_rows*42+maxi(cargo_rows-1,0)*3))
 	var cargo_extra_height: float = 19.0 if entries.is_empty() or entries.size() > shown else 0.0
-	var pod_height: float = maxf(71.0,14.0+6.0+cargo_grid_height+cargo_extra_height+18.0)
+	var pod_height: float = maxf(184.0,14.0+6.0+cargo_grid_height+cargo_extra_height+18.0+41.0)
 	inventory_pod.offset_top = -72.0-pod_height
 
 func _format_marks(value: int) -> String:
@@ -248,15 +249,15 @@ func add_starfield() -> void:
 	var stars := MultiMeshInstance3D.new(); var field := MultiMesh.new()
 	field.transform_format = MultiMesh.TRANSFORM_3D; field.use_colors = true
 	var speck := SphereMesh.new(); speck.radius = 0.25; speck.height = 0.5; speck.radial_segments = 8; speck.rings = 4
-	field.mesh = speck; field.instance_count = 680
+	field.mesh = speck; field.instance_count = 1500
 	var rng := RandomNumberGenerator.new(); rng.seed = 271828
 	for i: int in range(field.instance_count):
 		var direction := Vector3(rng.randf_range(-1,1),rng.randf_range(-1,1),rng.randf_range(-1,1)).normalized()
-		var scale: float = rng.randf_range(0.55,1.7) if i % 23 != 0 else rng.randf_range(2.0,2.8)
-		var position: Vector3 = direction*rng.randf_range(145,235)
+		var scale: float = rng.randf_range(0.65,1.9) if i % 19 != 0 else rng.randf_range(2.1,3.1)
+		var position: Vector3 = direction*rng.randf_range(155,245)
 		field.set_instance_transform(i,Transform3D(Basis.from_scale(Vector3.ONE*scale),position))
-		var tint: Color = Color("b9cce0") if i % 17 != 0 else Color("e3c783")
-		field.set_instance_color(i,tint*rng.randf_range(0.55,0.9))
+		var tint: Color = Color("b9cce0") if i % 5 < 3 else Color("e3c783") if i % 5 == 3 else Color("a9a4db")
+		field.set_instance_color(i,tint*rng.randf_range(0.55,1.0))
 	var material := StandardMaterial3D.new(); material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; material.vertex_color_use_as_albedo = true
 	stars.multimesh = field; stars.material_override = material; world.add_child(stars)
 func present(game: RefCounted, id: String = "") -> bool:
@@ -283,7 +284,7 @@ func build_system(system: Dictionary) -> void:
 		var orbit := MeshInstance3D.new(); var path := ImmediateMesh.new()
 		path.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
 		for j: int in range(129): path.surface_add_vertex(Vector3(cos(TAU*j/128)*orbit_radius,0,sin(TAU*j/128)*orbit_radius))
-		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("40505d")); planets_root.add_child(orbit)
+		path.surface_end(); orbit.mesh = path; orbit.material_override = ink(Color("667780")); planets_root.add_child(orbit)
 		if is_moon:
 			var parent_id: String = Session.local_id(str(definition.get("parent_id", "")))
 			moon_orbits.append({"node":orbit,"parent":parent_id})
@@ -325,13 +326,14 @@ func add_asteroid_belt(planet_count: int, system_number: int) -> float:
 	var belt_outer: float = belt_inner+ASTEROID_BELT_WIDTH
 	var field := MultiMesh.new(); field.transform_format = MultiMesh.TRANSFORM_3D; field.use_colors = true
 	var rock := SphereMesh.new(); rock.radius = 0.72; rock.height = 1.44; rock.radial_segments = 7; rock.rings = 4
-	field.mesh = rock; field.instance_count = 240
+	field.mesh = rock; field.instance_count = 640
 	var rng := RandomNumberGenerator.new(); rng.seed = 271828+system_number*9973
 	for i: int in range(field.instance_count):
 		var angle: float = rng.randf_range(0,TAU)
 		var radius: float = rng.randf_range(belt_inner,belt_outer)
-		var scale: Vector3 = Vector3.ONE*rng.randf_range(0.22,0.78)
-		var position := Vector3(cos(angle)*radius,rng.randf_range(-2.8,2.8),sin(angle)*radius)
+		var base_scale: float = rng.randf_range(0.28,0.9)
+		var scale := Vector3(base_scale*rng.randf_range(0.8,1.6),base_scale*rng.randf_range(0.5,1.0),base_scale*rng.randf_range(0.7,1.35))
+		var position := Vector3(cos(angle)*radius,rng.randf_range(-3.4,3.4),sin(angle)*radius)
 		var rotation := Vector3(rng.randf_range(0,TAU),rng.randf_range(0,TAU),rng.randf_range(0,TAU))
 		field.set_instance_transform(i,Transform3D(Basis.from_euler(rotation).scaled(scale),position))
 		field.set_instance_color(i,Color("77736f").lerp(Color("ba9e7b"),rng.randf_range(0.0,0.8)))
@@ -433,13 +435,8 @@ func update_target_overlay() -> void:
 	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
 	ship_overlay.visible = ship_visible and visible
 	if ship_overlay.visible: ship_overlay.position = origin+Vector2(-35,-48)
-	var card_rect: Rect2 = Rect2(destination_card.position,destination_card.size)
-	var card_left: bool = destination_card.position.x > center.x
-	var card_bottom: float = maxf(card_rect.end.y,card_rect.position.y+16)
-	var card_y: float = clampf(center.y,card_rect.position.y+8,card_bottom-8)
-	var card_edge: Vector2 = Vector2(card_rect.position.x,card_y) if card_left else Vector2(card_rect.end.x,card_y)
 	var enabled: bool = visible and active and selected_planet != campaign.field.state.planet_id and origin.distance_to(center) > 18
-	route_overlay.set_route(origin,center,center,card_edge,enabled)
+	route_overlay.set_route(origin,center,enabled)
 func select_planet(id: String) -> void:
 	if not bodies.has(id) or campaign.traveling(): return
 	selected_planet = id; refresh()
