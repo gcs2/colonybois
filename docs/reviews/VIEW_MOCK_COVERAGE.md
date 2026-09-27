@@ -25,6 +25,20 @@ An independent read-only visual critic compared the approved surface, orbit, sys
 
 Every view fails the 90/100 threshold and at least one rubric dimension. These are structured visual judgments, not measured image similarity. User approval of the transparent source images stands; live placement, surrounding scene and player acceptance remain open. File-scoped system and galaxy improvement passes started from this checkpoint. The earlier coverage-audit denominators below are separate source/state accounting and are not increased by these captures.
 
+## Integrated image-backed review — 27 September 2026
+
+The system, galaxy and surface HUD passes were integrated and pushed at `25bc51f34b4184de18e043ba99462fd7801b7c1f`. The focused system/chart harness captured 1920×1080 and 2560×1440 selected-system and galaxy-route stills without script errors after a typed-Control correction. The populated-campaign HUD harness captured both sizes with 7 earned Marks, one freight item and one each Energy Pack and Repair Pack; its campaign-path assertions passed. A pre-existing `SpatialMaterial` specular remap warning occurred, without a script error. The first populated capture revealed telemetry text crossing the dark inventory portion of the image shell; a recapture after moving it into the ivory status portion shows separated item and condition regions at both sizes. Captures are local ignored artifacts, not a native-input playtest or portable export.
+
+An independent read-only critic compared those captures to the approved canon using the [100-point rubric](../delivery/SYNTHETIC_SQUAD.md#independent-critic-score):
+
+| Integrated live view | HUD score /100 | Separate scene score /100 | Highest remaining visual gap |
+| --- | ---: | ---: | --- |
+| Populated Morrow surface, 1080p / 1440p | 66 / 66 | 46 / 50 | The real image-backed console is more coherent, but item quantities remain small and the pale terrain lacks the canon's lake, layered relief and rich habitat detail. |
+| Selected Kestrel system, 1080p / 1440p | 62 / 65 | 48 / 51 | The selected route and scout crowd the star; empty cargo and small labels weaken the composition. This is not a matched Morrow system capture. |
+| Solace galaxy route, 1080p / 1440p | 62 / 65 | 44 / 47 | The spiral background is broader and the three-world card is readable, but the selected ship/star and route origin/destination are too small to explain travel at scene scale. |
+
+No new orbital warning score was made; its earlier 55/100 remains the last independent reading. Every integrated view still fails the 90-point gate and at least one dimension minimum. Still-image scores for interaction and motion are provisional. Four/five-plus planets, native keyboard navigation, transition continuity, performance, playability and user acceptance remain unverified. The approved source mock and UI images retain their approval; these are judgments of the current runtime implementation.
+
 ## Coverage audit - 24 September 2026
 
 The user challenged the implementation-first drift. Small functional corrections and critic checks for clipping did not satisfy the required source/current/mock comparison. No claim of 100% source fidelity or mock coverage is supported.
