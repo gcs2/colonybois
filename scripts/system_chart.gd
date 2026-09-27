@@ -72,9 +72,9 @@ var sector: Button
 var progress: ProgressBar
 var stage_root: Control
 var destination_card: PanelContainer
-var treasury: PanelContainer
+var treasury: Control
 var treasury_amount: Label
-var inventory_pod: PanelContainer
+var inventory_pod: Control
 var hull_meter: ProgressBar
 var energy_meter: ProgressBar
 var hull_readout: Label
