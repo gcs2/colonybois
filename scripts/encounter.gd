@@ -1038,6 +1038,7 @@ func _make_ui() -> void:
 	notification_texture.region = Rect2(256,358,1161,213)
 	status_plate = TextureRect.new()
 	status_plate.texture = notification_texture
+	status_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_plate.position = Vector2(12,60)
 	status_plate.size = Vector2(320,59)
 	status_plate.stretch_mode = TextureRect.STRETCH_SCALE
@@ -1112,6 +1113,7 @@ func _make_ui() -> void:
 	orbital_target_texture.region = Rect2(348,213,1304,306)
 	orbital_target_plate = TextureRect.new()
 	orbital_target_plate.texture = orbital_target_texture
+	orbital_target_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	orbital_target_plate.size = Vector2(230,54)
 	orbital_target_plate.stretch_mode = TextureRect.STRETCH_SCALE
 	orbital_target_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
