@@ -160,20 +160,20 @@ func _ready() -> void:
 func _build_system_instruments(stage: Control) -> void:
 	# The flight HUD is intentionally suppressed while navigating. Keep its real treasury
 	# and compact cargo/status readouts present on this separate full-screen chart.
-	treasury = PanelContainer.new(); treasury.name = "SystemTreasury"; treasury.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	treasury.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT); treasury.offset_left = -238; treasury.offset_right = -24; treasury.offset_top = 84; treasury.offset_bottom = 132
-	var money_style := StyleBoxTexture.new(); money_style.texture = MARKS_PLATE_TEXTURE
-	money_style.set_content_margin(SIDE_LEFT,28); money_style.set_content_margin(SIDE_RIGHT,22); money_style.set_content_margin(SIDE_TOP,9); money_style.set_content_margin(SIDE_BOTTOM,9)
-	treasury.add_theme_stylebox_override("panel",money_style); stage.add_child(treasury)
-	var money_row := HBoxContainer.new(); money_row.add_theme_constant_override("separation",8); treasury.add_child(money_row)
+	treasury = Control.new(); treasury.name = "SystemTreasury"; treasury.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	treasury.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT); treasury.offset_left = -278; treasury.offset_right = -24; treasury.offset_top = 96; treasury.offset_bottom = 152; stage.add_child(treasury)
+	var money_plate := TextureRect.new(); var marks_crop := AtlasTexture.new(); marks_crop.atlas = MARKS_PLATE_TEXTURE; marks_crop.region = Rect2(144,200,1693,373)
+	money_plate.texture = marks_crop; money_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; money_plate.stretch_mode = TextureRect.STRETCH_SCALE; money_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	money_plate.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); treasury.add_child(money_plate)
+	var money_row := HBoxContainer.new(); money_row.position = Vector2(31,14); money_row.size = Vector2(200,30); money_row.add_theme_constant_override("separation",8); treasury.add_child(money_row)
 	var mark_icon := TextureRect.new(); mark_icon.texture = MARK_ICON; mark_icon.custom_minimum_size = Vector2(26,26); mark_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; mark_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED; mark_icon.modulate = Color("a98427"); money_row.add_child(mark_icon)
 	treasury_amount = text_label("0 Marks",19); treasury_amount.add_theme_color_override("font_color",Color("1c2426")); treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; money_row.add_child(treasury_amount)
-	inventory_pod = PanelContainer.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -624; inventory_pod.offset_right = -24; inventory_pod.offset_top = -230; inventory_pod.offset_bottom = -72
-	var pod_style := StyleBoxTexture.new(); pod_style.texture = INVENTORY_CONSOLE_TEXTURE
-	pod_style.set_content_margin(SIDE_LEFT,20); pod_style.set_content_margin(SIDE_RIGHT,102); pod_style.set_content_margin(SIDE_TOP,21); pod_style.set_content_margin(SIDE_BOTTOM,20)
-	inventory_pod.add_theme_stylebox_override("panel",pod_style); stage.add_child(inventory_pod)
-	var pod_row := HBoxContainer.new(); pod_row.add_theme_constant_override("separation",9); inventory_pod.add_child(pod_row)
+	inventory_pod = Control.new(); inventory_pod.name = "SystemInventoryStatusPod"; inventory_pod.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inventory_pod.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT); inventory_pod.offset_left = -584; inventory_pod.offset_right = -24; inventory_pod.offset_top = -222; inventory_pod.offset_bottom = -72; stage.add_child(inventory_pod)
+	var console_back := TextureRect.new(); var console_crop := AtlasTexture.new(); console_crop.atlas = INVENTORY_CONSOLE_TEXTURE; console_crop.region = Rect2(100,104,1973,513)
+	console_back.texture = console_crop; console_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; console_back.stretch_mode = TextureRect.STRETCH_SCALE; console_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	console_back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); inventory_pod.add_child(console_back)
+	var pod_row := HBoxContainer.new(); pod_row.position = Vector2(26,12); pod_row.size = Vector2(508,126); pod_row.add_theme_constant_override("separation",9); inventory_pod.add_child(pod_row)
 	var cargo_column := VBoxContainer.new(); cargo_column.add_theme_constant_override("separation",6); cargo_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL; pod_row.add_child(cargo_column)
 	var pod_title := text_label("CARRIED",12); pod_title.add_theme_color_override("font_color",Color("58646b")); cargo_column.add_child(pod_title)
 	inventory_grid = GridContainer.new(); inventory_grid.columns = 6; inventory_grid.add_theme_constant_override("h_separation",5); inventory_grid.add_theme_constant_override("v_separation",3); cargo_column.add_child(inventory_grid)
@@ -234,7 +234,7 @@ func _refresh_instruments() -> void:
 	var cargo_rows: int = ceili(float(shown)/6.0)
 	var cargo_grid_height: float = maxf(13.0,float(cargo_rows*42+maxi(cargo_rows-1,0)*3))
 	var cargo_extra_height: float = 19.0 if entries.is_empty() or entries.size() > shown else 0.0
-	var pod_height: float = maxf(184.0,14.0+6.0+cargo_grid_height+cargo_extra_height+18.0+41.0)
+	var pod_height: float = maxf(150.0,14.0+6.0+cargo_grid_height+cargo_extra_height+18.0)
 	inventory_pod.offset_top = -72.0-pod_height
 
 func _format_marks(value: int) -> String:
