@@ -2487,22 +2487,19 @@ func _refresh_ui() -> void:
 
 func _layout_seam_context_card() -> void:
 	if not is_instance_valid(hud) or not is_instance_valid(hud.context_card): return
-	var compact: bool = model.state.flight_mode != "orbit" and selected == "vein" and not _inspection_open()
+	var seam_card: bool = model.state.flight_mode != "orbit" and selected == "vein" and not _inspection_open()
+	var target_card: bool = model.state.flight_mode != "orbit" and targets.has(selected) and not _inspection_open()
 	seam_tether.hide()
-	if not compact:
-		hud.context_card.position = Vector2(450,744)
-		hud.context_card.size = Vector2(290,117)
-		hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
-		hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
-		hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
-		hud.explanation.add_theme_color_override("font_color", Instruments.MUTED)
-		hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
-		hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
+	if not seam_card and not target_card:
+		_layout_default_context_card()
 		return
-	var card_size := Vector2(200,62)
-	var seam_at: Vector3 = _target_position("vein")
-	if camera.is_position_behind(seam_at): return
-	var anchor: Vector2 = camera.unproject_position(seam_at)
+	var card_size := Vector2(200,62) if seam_card else Vector2(228,76)
+	var context_target: String = "vein" if seam_card else selected
+	var target_at: Vector3 = _target_position(context_target)
+	if camera.is_position_behind(target_at):
+		_layout_default_context_card()
+		return
+	var anchor: Vector2 = camera.unproject_position(target_at)
 	var view_size: Vector2 = get_viewport().get_visible_rect().size
 	var ship_screen: Vector2 = camera.unproject_position(ship.position)
 	var ship_rect := Rect2(ship_screen-Vector2(78,38),Vector2(156,76))
@@ -2514,7 +2511,9 @@ func _layout_seam_context_card() -> void:
 		Vector2(anchor.x-card_size.x*0.5,anchor.y+38.0),
 	]
 	var card_at: Vector2 = Vector2(20.0,140.0)
-	var target_clearance := Rect2(anchor-Vector2(40,34),Vector2(80,68))
+	var clearance_size := Vector2(80,68) if seam_card else Vector2(96,82)
+	var target_clearance := Rect2(anchor-clearance_size*0.5,clearance_size)
+	var placed: bool = false
 	for placement: Vector2 in placements:
 		var candidate := Vector2(
 			clampf(placement.x,20.0,view_size.x-card_size.x-20.0),
@@ -2522,15 +2521,27 @@ func _layout_seam_context_card() -> void:
 		)
 		if not Rect2(candidate,card_size).intersects(ship_rect) and not Rect2(candidate,card_size).intersects(target_clearance):
 			card_at = candidate
+			placed = true
 			break
+	if not placed:
+		_layout_default_context_card()
+		return
 	hud.context_card.position = card_at
 	hud.context_card.size = card_size
-	hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(126,17); hud.subject.add_theme_font_size_override("font_size",10)
-	hud.action_state.position = card_at+Vector2(138,7); hud.action_state.size = Vector2(54,15); hud.action_state.add_theme_font_size_override("font_size",8)
-	hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(146,20); hud.explanation.add_theme_font_size_override("font_size",10)
-	hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
-	hud.use_button.position = card_at+Vector2(158,31); hud.use_button.size = Vector2(34,22); hud.use_button.add_theme_font_size_override("font_size",10)
-	hud.progress_bar.position = card_at+Vector2(0,58); hud.progress_bar.size = Vector2(200,4)
+	if seam_card:
+		hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(126,17); hud.subject.add_theme_font_size_override("font_size",10)
+		hud.action_state.position = card_at+Vector2(138,7); hud.action_state.size = Vector2(54,15); hud.action_state.add_theme_font_size_override("font_size",8)
+		hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(146,20); hud.explanation.add_theme_font_size_override("font_size",10)
+		hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
+		hud.use_button.position = card_at+Vector2(158,31); hud.use_button.size = Vector2(34,22); hud.use_button.add_theme_font_size_override("font_size",10)
+		hud.progress_bar.position = card_at+Vector2(0,58); hud.progress_bar.size = Vector2(200,4)
+	else:
+		hud.subject.position = card_at+Vector2(9,7); hud.subject.size = Vector2(148,20); hud.subject.add_theme_font_size_override("font_size",12)
+		hud.action_state.position = card_at+Vector2(160,8); hud.action_state.size = Vector2(60,16); hud.action_state.add_theme_font_size_override("font_size",9)
+		hud.explanation.position = card_at+Vector2(9,31); hud.explanation.size = Vector2(150,32); hud.explanation.add_theme_font_size_override("font_size",11)
+		hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
+		hud.use_button.position = card_at+Vector2(164,39); hud.use_button.size = Vector2(55,25); hud.use_button.add_theme_font_size_override("font_size",11)
+		hud.progress_bar.position = card_at+Vector2(0,72); hud.progress_bar.size = Vector2(228,4)
 	var card_rect := Rect2(card_at,card_size)
 	var edge: Vector2
 	if anchor.x < card_rect.position.x:
@@ -2545,6 +2556,16 @@ func _layout_seam_context_card() -> void:
 	seam_tether.add_point(anchor)
 	seam_tether.add_point(edge)
 	seam_tether.show()
+
+func _layout_default_context_card() -> void:
+	hud.context_card.position = Vector2(450,744)
+	hud.context_card.size = Vector2(290,117)
+	hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
+	hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
+	hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
+	hud.explanation.add_theme_color_override("font_color", Instruments.MUTED)
+	hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
+	hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
 
 func _flight_inventory_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
