@@ -1053,6 +1053,7 @@ func _make_ui() -> void:
 	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status.add_theme_color_override("font_color",Color("fff0cb"))
 	status.add_theme_font_size_override("font_size",13)
+	status.tooltip_text = "Expedition notice · new discoveries and ship events appear here"
 	status.z_index = 21
 	root.add_child(status)
 	status_icon = TextureRect.new()
@@ -1081,13 +1082,16 @@ func _make_ui() -> void:
 		climate_chart = preload("res://scripts/climate_chart.gd").new()
 		climate_chart.position = Vector2(24,125); root.add_child(climate_chart); climate_chart.hide()
 		climate_chart.ecosystem_requested.connect(_show_popup.bind("biosphere"))
-		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(575,24)
+		# Keep allied readiness grouped with the right-side ship instruments instead
+		# of placing a persistent banner across the upper-middle view.
+		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(1135,66)
 		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
 		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
 		fleet_button.icon = load("res://assets/ui/flight/fleet.svg")
 		fleet_button.custom_minimum_size.x = 150
 		fleet_button.add_theme_font_size_override("font_size",11)
 		fleet_button.add_theme_constant_override("icon_max_width",28)
+		fleet_button.tooltip_text = "Allied escorts · inspect readiness, orders and repairs"
 		var fleet_plate := Instruments.box(Instruments.NAV)
 		fleet_plate.bg_color.a = 0.84
 		fleet_button.add_theme_stylebox_override("normal",fleet_plate)
@@ -1120,7 +1124,8 @@ func _make_ui() -> void:
 	orbital_target_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	orbital_target_plate.size = Vector2(230,54)
 	orbital_target_plate.stretch_mode = TextureRect.STRETCH_SCALE
-	orbital_target_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orbital_target_plate.mouse_filter = Control.MOUSE_FILTER_PASS
+	orbital_target_plate.tooltip_text = "Orbital target · approach for salvage or close-range scan"
 	orbital_target_plate.z_index = 1
 	orbital_target_plate.hide()
 	root.add_child(orbital_target_plate)
@@ -1532,7 +1537,9 @@ func _update_visuals() -> void:
 		var target_screen: Vector2 = camera.unproject_position(OrbitalScene.WRECK_POSITION if show_wreck_cue else model.guardian_position())
 		var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 		var plate_size: Vector2 = orbital_target_plate.size
-		var plate_position := target_screen-Vector2(0,plate_size.y*0.5)
+		# Keep the label alongside its world target instead of masking the target
+		# marker itself; the plaque remains clamped and avoids ship/inventory HUD.
+		var plate_position := target_screen+Vector2(22,-plate_size.y*0.5)
 		plate_position.x = clampf(plate_position.x,8,viewport_size.x-plate_size.x-8)
 		plate_position.y = clampf(plate_position.y,76,viewport_size.y-plate_size.y-8)
 		var target_plate_rect := Rect2(plate_position,plate_size)

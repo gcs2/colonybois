@@ -25,14 +25,14 @@ const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_ROWS := 2
 const PALETTE_SLOT_WIDTH := 59.0
 const PALETTE_SLOT_HEIGHT := 64.0
+const PALETTE_ICON_SIZE := 48.0
 const PALETTE_COLUMN_GAP := 2.0
 const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
 const PALETTE_ROW_GAP := 4.0
 const PALETTE_ROW_STRIDE := PALETTE_SLOT_HEIGHT + PALETTE_ROW_GAP
 const PALETTE_GRID_WIDTH := PALETTE_COLUMNS * PALETTE_COLUMN_STRIDE - PALETTE_COLUMN_GAP
 const PALETTE_GRID_HEIGHT := PALETTE_ROWS * PALETTE_SLOT_HEIGHT + (PALETTE_ROWS - 1) * PALETTE_ROW_GAP + 8.0
-const CONSOLE_NATIVE_WIDTH := 171.0
-const CONSOLE_VISIBLE_WIDTH := 171.0
+const CONSOLE_NATIVE_WIDTH := 232.0
 const CONSOLE_RIGHT_EDGE := 1586.0
 const CONSOLE_SHELL_LEFT_INSET := 11.0
 const PALETTE_PANEL_HEIGHT := 183.0
@@ -373,7 +373,9 @@ func _build() -> void:
 	console_pod = ConsolePod.new()
 	console_pod.image_housing = true
 	console_pod.position = Vector2(1402, 690)
-	console_pod.size = Vector2(184, 117)
+	console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH, 183)
+	console_pod.tooltip_text = "Ship status · hull, energy and communications"
+	console_pod.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(console_pod)
 	altitude_backing = ColorRect.new()
 	altitude_backing.position = Vector2(1508, 666)
@@ -503,6 +505,7 @@ func _build() -> void:
 	flight_readout = label_at("",Rect2(1410,749,168,16),9,Color("1c2426"))
 	flight_readout.visible = false
 	flight_readout.clip_text = true
+	flight_readout.tooltip_text = "Altitude above the local surface or planet · changes with ascent and descent"
 	hull_label = label_at("",Rect2(1324,717,230,17),11,Art.CARGO)
 	hull_label.visible = false
 	energy_label = label_at("",Rect2(1324,750,230,17),11,Art.GOLD)
@@ -586,14 +589,14 @@ func _build() -> void:
 func _make_item(id: String, item: Dictionary) -> void:
 	var button: Button = symbol_at(item.icon,Palette.slot_rect(0),"item:"+id,item.title,item.tint)
 	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
-	button.add_theme_constant_override("icon_max_width",52)
+	button.add_theme_constant_override("icon_max_width",PALETTE_ICON_SIZE)
 	_apply_item_pictogram(button,id,item)
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
 	shortcut.position = Vector2(3,PALETTE_SLOT_HEIGHT-16.0)
 	shortcut.size = Vector2(54,14)
-	shortcut.add_theme_font_size_override("font_size",10)
+	shortcut.add_theme_font_size_override("font_size",11)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
@@ -622,12 +625,12 @@ func _make_campaign_item(entry: Dictionary) -> void:
 		pictogram.texture = item_texture
 		pictogram.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		pictogram.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		pictogram.position = Vector2(4, 1)
-		pictogram.size = Vector2(52, PALETTE_SLOT_HEIGHT-18.0)
+		pictogram.position = Vector2((PALETTE_SLOT_WIDTH-PALETTE_ICON_SIZE)*0.5, 1)
+		pictogram.size = Vector2(PALETTE_ICON_SIZE, PALETTE_SLOT_HEIGHT-18.0)
 		pictogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		button.add_child(pictogram)
 	button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
-	button.add_theme_constant_override("icon_max_width",48)
+	button.add_theme_constant_override("icon_max_width",PALETTE_ICON_SIZE)
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
@@ -723,9 +726,9 @@ func show_group(group: String) -> void:
 	var grid_width: float = float(PALETTE_GRID_WIDTH)
 	var panel_height: float = PALETTE_PANEL_HEIGHT
 	var panel_top: float = 870.0-panel_height-ASSEMBLY_RAISE
-	# The six-column tray meets the narrowed status pod inside one continuous
-	# shell. The transformed status edge stays aligned to the original right edge.
-	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_VISIBLE_WIDTH
+	# The six-column tray meets the widened status bay inside one continuous
+	# shell. The status edge stays aligned to the original right edge.
+	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_NATIVE_WIDTH
 	inventory_grid_origin = Vector2(console_left-grid_width-15.0,panel_top+17.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
 	grid_backing.size = Vector2(grid_width+8, PALETTE_GRID_HEIGHT)
@@ -741,7 +744,8 @@ func show_group(group: String) -> void:
 		console_pod.scale = Vector2.ONE
 	altitude_backing.position = Vector2(console_left+106,panel_top-6)
 	flight_readout.position = Vector2(console_left+8,panel_top+21)
-	flight_readout.size = Vector2(CONSOLE_VISIBLE_WIDTH-16,16)
+	flight_readout.size = Vector2(CONSOLE_NATIVE_WIDTH-16,20)
+	flight_readout.add_theme_font_size_override("font_size",12)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
@@ -851,7 +855,7 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		_apply_item_pictogram(item_buttons[key],key,item,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",52)
+		item_buttons[key].add_theme_constant_override("icon_max_width",PALETTE_ICON_SIZE)
 		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary
@@ -932,6 +936,8 @@ func set_cargo_readout(used: int, capacity: int) -> void:
 
 func set_orbital_mode(enabled: bool) -> void:
 	orbital_mode = enabled
+	var panel_top: float = 870.0-PALETTE_PANEL_HEIGHT-ASSEMBLY_RAISE
+	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_NATIVE_WIDTH
 	mode_label.text = "ORBIT" if enabled else "SURFACE"
 	mode_label.add_theme_color_override("font_color",Art.PAPER)
 	location_label.add_theme_color_override("font_color",Art.PAPER)
@@ -978,8 +984,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		altitude_backing.position = Vector2(1508, 666)
 		flight_readout.position = Vector2(1512, 667)
 		if console_pod != null:
-			console_pod.position = Vector2(1402, 690)
-			console_pod.size = Vector2(184, 117)
+			console_pod.position = Vector2(console_left, panel_top)
+			console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH, PALETTE_PANEL_HEIGHT)
 		hull_bar.position = Vector2(1410, 758)
 		hull_bar.size = Vector2(168, 10)
 		energy_bar.position = Vector2(1410, 788)
@@ -1038,8 +1044,8 @@ func set_orbital_mode(enabled: bool) -> void:
 		altitude_backing.position = Vector2(1508, 666)
 		flight_readout.position = Vector2(1512, 667)
 		if console_pod != null:
-			console_pod.position = Vector2(1402, 690)
-			console_pod.size = Vector2(184, 117)
+			console_pod.position = Vector2(console_left, panel_top)
+			console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH, PALETTE_PANEL_HEIGHT)
 		hull_bar.position = Vector2(1410, 758)
 		hull_bar.size = Vector2(168, 10)
 		energy_bar.position = Vector2(1410, 788)
