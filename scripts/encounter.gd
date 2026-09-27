@@ -49,6 +49,8 @@ const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
 const TOAST_SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
+const NOTIFICATION_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/notification-plaque.png")
+const ORBIT_TARGET_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/orbit-target-plaque.png")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
 const SurfaceCoordinates = preload("res://scripts/planet_surface_coordinates.gd")
@@ -141,7 +143,7 @@ var objective: Label
 var subject: Label
 var explanation: Label
 var status: Label
-var status_backing: ColorRect
+var status_plate: TextureRect
 var status_icon: TextureRect
 var toast_item_icon: String = ""
 var progress_bar: ProgressBar
@@ -193,6 +195,7 @@ var salvage_progress: float = 0.0
 var wreck_label: Label
 var shroud_ring: MeshInstance3D
 var guardian_label: Label
+var orbital_target_plate: TextureRect
 var orbital_target: String = "wreck"
 var attack_order: bool = false
 var weapon_flash: float = 0.0
@@ -1030,16 +1033,17 @@ func _make_ui() -> void:
 	hud.navigation.landing_requested.connect(func() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",14,Color("ffe0a8"))
-	status_backing = ColorRect.new()
-	status_backing.position = Vector2(28,74)
-	status_backing.size = Vector2(184,38)
-	status_backing.color = Color("1c2426",0.98)
-	status_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	status_backing.z_index = 20
-	status_backing.hide()
-	root.add_child(status_backing)
-	status.position = Vector2(62,74)
-	status.size = Vector2(142,38)
+	status_plate = TextureRect.new()
+	status_plate.texture = NOTIFICATION_PLAQUE
+	status_plate.position = Vector2(-10,-66)
+	status_plate.size = Vector2(500,250)
+	status_plate.stretch_mode = TextureRect.STRETCH_SCALE
+	status_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_plate.z_index = 19
+	status_plate.hide()
+	root.add_child(status_plate)
+	status.position = Vector2(130,72)
+	status.size = Vector2(264,48)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1050,7 +1054,7 @@ func _make_ui() -> void:
 	status_icon = TextureRect.new()
 	status_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon.custom_minimum_size = Vector2.ZERO
-	status_icon.position = Vector2(36,84)
+	status_icon.position = Vector2(74,86)
 	status_icon.size = Vector2(18,18)
 	status_icon.texture = TOAST_SIGNAL_ICON
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -1095,6 +1099,19 @@ func _make_ui() -> void:
 		locator.add_theme_color_override("font_outline_color",Color("151322"))
 		locator.add_theme_constant_override("outline_size",4)
 		root.add_child(locator)
+	for target_label: Label in [wreck_label,guardian_label]:
+		target_label.add_theme_font_size_override("font_size",12)
+		target_label.size = Vector2(250,44)
+		target_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		target_label.z_index = 2
+	orbital_target_plate = TextureRect.new()
+	orbital_target_plate.texture = ORBIT_TARGET_PLAQUE
+	orbital_target_plate.size = Vector2(440,163)
+	orbital_target_plate.stretch_mode = TextureRect.STRETCH_SCALE
+	orbital_target_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orbital_target_plate.z_index = 1
+	orbital_target_plate.hide()
+	root.add_child(orbital_target_plate)
 	for id: String in targets:
 		var label: Label = _label(TITLES[id],13,Color("e3e9de"))
 		label.add_theme_color_override("font_outline_color",Color("191724"))
@@ -1402,7 +1419,7 @@ func _process(delta: float) -> void:
 		_refresh_ui()
 	toast_time -= delta
 	status.visible = toast_time > 0 or paused
-	if is_instance_valid(status_backing): status_backing.visible = status.visible
+	if is_instance_valid(status_plate): status_plate.visible = status.visible
 	if is_instance_valid(status_icon): status_icon.visible = toast_time > 0 and not paused
 	if paused: status.text = "Paused — Space to resume"
 	if "--field-capture" in OS.get_cmdline_user_args(): _capture(delta)
@@ -1483,11 +1500,25 @@ func _update_visuals() -> void:
 	ship_locator.position = camera.unproject_position(ship.position)+Vector2(10,10)
 	planet_locator.visible = orbital and distance > 150 and not _inspection_open() and not camera.is_position_behind(orbit.planet.position)
 	planet_locator.position = camera.unproject_position(orbit.planet.position)+Vector2(-25,-28)
-	wreck_label.visible = model.has_wreck() and orbital and not _inspection_open() and not camera.is_position_behind(OrbitalScene.WRECK_POSITION)
-	wreck_label.position = camera.unproject_position(OrbitalScene.WRECK_POSITION)+Vector2(12,-18)
-	guardian_label.visible = model.has_guardian() and orbital and (model.state.survey_ticks >= int(model.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
-	guardian_label.text = (model.enemy_profile().name.to_upper()+ (" · DISABLED" if model.state.guardian_disabled else " · WARNING" if model.state.guardian_alert > 0 else "")) if model.has_guardian() else ""
-	guardian_label.position = camera.unproject_position(model.guardian_position())+Vector2(10,-22)
+	var wreck_visible: bool = model.has_wreck() and orbital and not _inspection_open() and not camera.is_position_behind(OrbitalScene.WRECK_POSITION)
+	var guardian_visible: bool = model.has_guardian() and orbital and (model.state.survey_ticks >= int(model.definition().survey_seconds) or model.state.guardian_alert > 0) and not _inspection_open() and not camera.is_position_behind(model.guardian_position())
+	var show_wreck_cue: bool = wreck_visible and orbital_target == "wreck"
+	var show_guardian_cue: bool = guardian_visible and orbital_target == "guardian"
+	wreck_label.visible = wreck_visible
+	var wreck_distance: float = ship.position.distance_to(OrbitalScene.WRECK_POSITION)
+	var wreck_state: String = "SALVAGING" if salvage_order and not navigating else "APPROACHING" if salvage_order and navigating else "PULSE FIELD" if wreck_distance < Model.HAZARD_WARNING else "DRIFTING"
+	wreck_label.text = "WRECK  ·  %.0f m  ·  %s" % [wreck_distance,wreck_state]
+	wreck_label.position = camera.unproject_position(OrbitalScene.WRECK_POSITION)+(Vector2(38,-14) if show_wreck_cue else Vector2(12,-18))
+	var guardian_distance: float = ship.position.distance_to(model.guardian_position())
+	var guardian_state: String = "DISABLED" if model.state.guardian_disabled else "FIRING" if model.state.guardian_alert >= 3 else "LOCKING" if model.state.guardian_alert > 0 else "HOSTILE"
+	guardian_label.visible = guardian_visible
+	guardian_label.text = "%s  ·  %.0f m  ·  %s" % [model.enemy_profile().name.to_upper(),guardian_distance,guardian_state] if model.has_guardian() else ""
+	guardian_label.position = camera.unproject_position(model.guardian_position())+(Vector2(38,-14) if show_guardian_cue else Vector2(10,-22))
+	var target_cue_visible: bool = show_wreck_cue or show_guardian_cue
+	orbital_target_plate.visible = target_cue_visible
+	if target_cue_visible:
+		var target_screen: Vector2 = camera.unproject_position(OrbitalScene.WRECK_POSITION if show_wreck_cue else model.guardian_position())
+		orbital_target_plate.position = target_screen-Vector2(70,82)
 	navigation_marker.visible = navigating
 	navigation_marker.position = destination-Vector3(0,0.8,0)
 	guide_arrow.visible = not paused and not _inspection_open() and surface_weapon.is_empty() and climate_tool.is_empty()
@@ -2658,16 +2689,14 @@ func _toast(text: String, item_icon: String = "") -> void:
 		status_icon.visible = true
 		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
-		status_icon.position = Vector2(36,84)
+		status_icon.position = Vector2(74,86)
 		status_icon.size = Vector2(18,18)
 		status_icon.custom_minimum_size = Vector2.ZERO
-		status.position = Vector2(62,74)
-		status.size = Vector2(170 if item_icon == "glass" else 142,38)
+		status.position = Vector2(130,72)
+		status.size = Vector2(264,48)
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		status_backing.position = Vector2(28,74)
-		status_backing.size = Vector2(212 if item_icon == "glass" else 184,38)
-		status_backing.show()
+		status_plate.show()
 		status.show()
 	status.text = text
 	toast_time = 6
