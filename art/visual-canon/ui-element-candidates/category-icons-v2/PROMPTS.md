@@ -6,7 +6,7 @@ Tool: built-in ImageGen. Each asset is an independent generation; no icon was cr
 
 Use case: ui-mockup. Asset type: one reusable category glyph for a 2D Godot game HUD, used inside the same code-drawn clipped tab across surface, orbit, solar-system, and galaxy views.
 
-References 1–4 are the exact user-approved Frontier Worlds screen mocks. Use them only to match the small five-tab pictogram vocabulary, palette, scale, and restrained Field Instruments style. Do not reproduce any screen, shell, border, text, or background.
+References 1–3 are user-approved Morrow surface/orbit/system views; reference 4 is the user-liked galaxy-scale view. The same five-tab vocabulary also appears in the approved approach view. Use them only to match the small five-tab pictogram vocabulary, palette, scale, and restrained Field Instruments style. Do not reproduce any screen, shell, border, text, or background.
 
 Generate ONE isolated category pictogram matching the supplied mock's simple bold, clean pictogram at small HUD size. Use one centered symbol on a square 1:1 transparent RGBA canvas, subject about 58% of canvas width/height with generous transparent safe margin. Flat front-facing, crisp silhouette, balanced visual weight. It must read clearly when rendered 22–28 px tall.
 

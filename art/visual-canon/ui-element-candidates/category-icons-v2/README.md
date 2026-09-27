@@ -1,6 +1,6 @@
 # Category icons v2
 
-Fresh, standalone transparent pictograms generated 27 September 2026 with built-in ImageGen. Each was generated as its own image using the five user-approved Morrow view references. This set is a visual candidate only; it has not been promoted into runtime or user-approved. The current shared tab outline is drawn once by the HUD; no tab-shell art, cropped mock pixels, selection color, or hover glow is baked into these icons.
+Fresh, standalone transparent pictograms generated 27 September 2026 with built-in ImageGen. Each was generated as its own image using the approved surface, orbit, and system-map views plus the user-liked galaxy reference. The same glyph set applies to the approved approach view. This set is a visual candidate only; it has not been promoted into runtime or user-approved. The current shared tab outline is drawn once by the HUD; no tab-shell art, cropped mock pixels, selection color, or hover glow is baked into these icons.
 
 The symbols follow the repeated five-tab vocabulary visible across the approved surface, orbit, solar-system, and galaxy views. Filenames map directly to categories: survey, inventory, weapons, environment, communications.
 
