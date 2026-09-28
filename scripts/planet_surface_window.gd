@@ -18,8 +18,6 @@ const _FEATURE_STREAM_VERSION: int = 1
 # regions form readable, repeatable patches instead of changing role per cell.
 const _HABITAT_CLUSTER_LAT_CELLS: int = 3
 const _HABITAT_CLUSTER_LON_CELLS: int = 4
-# Current gameplay persists only the authored seam delta; generated feature IDs have no removal writer.
-# Before adding persistent feature actions, version placement in feature IDs and migrate legacy deltas.
 const MAX_WINDOW_REGIONS: int = 512
 const MAX_WINDOW_FEATURES: int = 8192
 const _TAU: float = PI * 2.0
@@ -46,6 +44,38 @@ const _HABITAT_PROFILES: Dictionary = {
 	"thicket": {"counts": [[3, 5], [1, 2], [3, 5], [1, 2]], "spread": 0.10, "rock_scale": 1.3, "flora_scale": 2.05, "fauna_scale": 1.55},
 	"clearing": {"counts": [[2, 4], [1, 2], [1, 3], [2, 3]], "spread": 0.15, "rock_scale": 1.25, "flora_scale": 1.45, "fauna_scale": 1.75}
 }
+
+## One bounded, deterministic Morrow prospect in the first seeded region east of
+## its landing basin. Its identity inherits the recipe/version from region_id.
+static func prospecting_opportunity(world: Dictionary, planet_radius_m: float = DEFAULT_PLANET_RADIUS_M) -> Dictionary:
+	var sites: Array = world.get("sites", [])
+	if sites.is_empty(): return {}
+	var landing: Dictionary = sites[0]
+	for site: Dictionary in sites:
+		if bool(site.get("landable", false)):
+			landing = site
+			break
+	var anchor: Vector3 = PlanetGenerator.direction(deg_to_rad(float(landing.get("latitude", 0.0))), deg_to_rad(float(landing.get("longitude", 0.0))))
+	var prospect_up: Vector3 = Coordinates.advance(anchor, 620.0, 160.0, planet_radius_m)
+	var grid: Dictionary = _grid(planet_radius_m, DEFAULT_REGION_SIZE_M)
+	var cell: Vector2i = _cell_for_up(prospect_up, grid)
+	var region_id: String = _region_id(world, grid, cell.x, cell.y)
+	var id: String = "%s|feature|prospecting|1" % region_id
+	var placement_rng := RandomNumberGenerator.new()
+	placement_rng.seed = _stable_seed(id)
+	var feature_up: Vector3 = prospect_up
+	for _attempt: int in range(4):
+		var candidate_up: Vector3 = Coordinates.advance(prospect_up,placement_rng.randf_range(-32.0,32.0),placement_rng.randf_range(-32.0,32.0),planet_radius_m)
+		if _cell_for_up(candidate_up,grid) == cell:
+			feature_up = candidate_up
+			break
+	return {
+		"id": id,
+		"region_id": region_id,
+		"kind": "mineral",
+		"up": feature_up,
+		"position_m": Coordinates.local_offset(anchor, feature_up, planet_radius_m)
+	}
 
 ## Returns nearest deterministic region and feature records in one tangent frame.
 ## Cells use the requested scale up to the explicit grid and query bounds.

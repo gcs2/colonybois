@@ -7,8 +7,9 @@ const Encounters = preload("res://scripts/orbital_encounters.gd")
 var installed_upgrades: Array = []
 var planetary: RefCounted
 const Geography = preload("res://scripts/planet_geography.gd")
+const SurfaceWindow = preload("res://scripts/planet_surface_window.gd")
 const Equipment = preload("res://scripts/equipment_catalog.gd")
-const TARGETS := ["pod", "grazer", "bed", "relay", "vein"]
+const TARGETS := ["pod", "grazer", "bed", "relay", "vein", "prospect"]
 const MINERAL_DEPOSIT_UNITS := 4
 const HAZARD_WARNING := 31.0
 const HAZARD_RADIUS := 19.0
@@ -442,7 +443,11 @@ func reason(action: String, target: String, distance: float) -> String:
 		if target in state.scanned: return "Already catalogued. Try another tool or another subject."
 	if Equipment.value(action,"requires_scan") and target not in state.scanned: return "Scan this subject first."
 	if target not in Equipment.value(action,"targets"): return str(Equipment.value(action,"target_error"))
-	if action == "mine" and state.ore_remaining <= 0: return "This seam is exhausted. Prospect another world."
+	if action == "mine" and target == "vein" and state.ore_remaining <= 0: return "This seam is exhausted. Prospect another world."
+	if action == "mine" and target == "prospect":
+		var opportunity: Dictionary = SurfaceWindow.prospecting_opportunity(definition())
+		if opportunity.is_empty(): return "No seeded prospect exists here."
+		if state.surface_changes.has(str(opportunity.id)): return "This prospect is depleted."
 	if action == "collect":
 		if state.native_stock <= 1: return "Keep the last native pod for the grazers. Cultivate more in the bed."
 		if state.samples >= 2: return "Sample cradle full (2). Plant one in the warmed bed."
@@ -463,7 +468,8 @@ func act(action: String, target: String, distance: float) -> String:
 	match action:
 		"scan":
 			state.scanned.append(target)
-			note("scan_"+target,"Catalogued " + {"pod":"lantern pods: seeds need warm mineral soil.","grazer":"bell grazers: they feed on native pods; preserve a wild reserve.","bed":"a cold mineral bed: suitable for optional cultivation.","relay":"an orbital navigation relay. Its signal continues above the clouds.","vein":"resonant glass: exposed crystals grew under repeated thermal stress. The seam holds four recoverable pieces."}[target])
+			var descriptions: Dictionary = {"pod":"lantern pods: seeds need warm mineral soil.","grazer":"bell grazers: they feed on native pods; preserve a wild reserve.","bed":"a cold mineral bed: suitable for optional cultivation.","relay":"an orbital navigation relay. Its signal continues above the clouds.","vein":"resonant glass: exposed crystals grew under repeated thermal stress. The seam holds four recoverable pieces.","prospect":"a resonant glass prospect in the adjacent seeded region. One crystal can be extracted."}
+			note("scan_"+target,"Catalogued " + str(descriptions[target]))
 		"collect":
 			state.samples += 1
 			state.native_stock -= 1
@@ -475,9 +481,15 @@ func act(action: String, target: String, distance: float) -> String:
 			state.seeded = true
 			note("seed_bed","Established lantern pods in the prepared bed.")
 		"mine":
-			state.ore_remaining -= 1
-			state.surface_changes["%s|site|vein" % str(state.planet_id)] = {"remaining":state.ore_remaining}
-			note("cut_glass_%d" % (MINERAL_DEPOSIT_UNITS-state.ore_remaining),"Cut a resonant crystal from the exposed seam. %d pieces remain." % state.ore_remaining)
+			if target == "prospect":
+				var opportunity: Dictionary = SurfaceWindow.prospecting_opportunity(definition())
+				if opportunity.is_empty(): return "No seeded prospect exists here."
+				state.surface_changes[str(opportunity.id)] = {"removed":true}
+				note("prospect_"+str(opportunity.id).sha256_text().substr(0,12),"Extracted the single resonant glass crystal from a stable regional prospect.")
+			else:
+				state.ore_remaining -= 1
+				state.surface_changes["%s|site|vein" % str(state.planet_id)] = {"remaining":state.ore_remaining}
+				note("cut_glass_%d" % (MINERAL_DEPOSIT_UNITS-state.ore_remaining),"Cut a resonant crystal from the exposed seam. %d pieces remain." % state.ore_remaining)
 	return ""
 
 func tick(threat_distance: float = INF) -> String:
@@ -648,6 +660,8 @@ func restore_snapshot(source: Variant) -> Error:
 			var remaining: Variant = change.get("remaining")
 			if change.size() != 1 or not (remaining is int or remaining is float) or not is_finite(float(remaining)) or float(remaining) != floorf(float(remaining)) or int(remaining) != int(value.ore_remaining): return ERR_INVALID_DATA
 			change["remaining"] = int(remaining)
+		elif surface_id == str(SurfaceWindow.prospecting_opportunity(Geography.definition(str(value.planet_id))).get("id", "")):
+			if value.planet_id != "morrow" or change != {"removed":true}: return ERR_INVALID_DATA
 		elif "|feature|" in surface_id:
 			if change != {"removed":true}: return ERR_INVALID_DATA
 		else:
@@ -696,7 +710,7 @@ func restore_snapshot(source: Variant) -> Error:
 	if value.survey_ticks < 0 or value.survey_ticks > int(Geography.definition(value.planet_id).survey_seconds): return ERR_INVALID_DATA
 	if value.survey_ticks == int(Geography.definition(value.planet_id).survey_seconds) and value.survey_active: return ERR_INVALID_DATA
 	if value.survey_ticks > 0 and value.survey_ticks < int(Geography.definition(value.planet_id).survey_seconds) and not value.survey_active: return ERR_INVALID_DATA
-	if value.position.size() != 3 or value.surface_position.size() != 3 or value.surface_direction.size() != 3 or value.scanned.size() > 4 or value.history.size() > 4096: return ERR_INVALID_DATA
+	if value.position.size() != 3 or value.surface_position.size() != 3 or value.surface_direction.size() != 3 or value.scanned.size() > TARGETS.size() or value.history.size() > 4096: return ERR_INVALID_DATA
 	var surface_limit: float = Geography.surface_travel_radius(str(value.planet_id))
 	for index: int in range(3):
 		var coordinate: Variant = value.position[index]

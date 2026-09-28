@@ -73,6 +73,7 @@ var surface_habitat_region_id: String = ""
 var regional_cover_instance: MultiMeshInstance3D
 var regional_feature_root: Node3D
 var surface_region_features: Dictionary = {}
+var prospect_feature: Dictionary = {}
 var biosphere_view: Node3D
 var fleet_visual: Node3D
 var fleet_strip: HBoxContainer
@@ -92,7 +93,7 @@ const SURFACE_VISUAL_RADIUS := 1100.0
 const LANDING_VEIL_OPACITY := 0.62
 const FIRST_LANDING_WELCOME := "Explore freely. Your surveys are secure."
 const FIRST_LANDING_WELCOME_DURATION := 5.0
-const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam"}
+const TITLES := {"pod":"Lantern pods", "grazer":"Bell grazer", "bed":"Cold mineral bed", "relay":"Silent relay", "vein":"Resonant glass seam", "prospect":"Regional glass prospect"}
 const Equipment = preload("res://scripts/equipment_catalog.gd")
 var TOOLS: Array[String] = Equipment.ids()
 var COLORS: Array[Color] = Equipment.colors()
@@ -107,6 +108,7 @@ var wild_plants: Array[Node3D] = []
 var grazers: Array[Node3D] = []
 var grazer_motion: Array[RefCounted] = []
 var mineral_crystals: Array[Node3D] = []
+var prospect_shard: MeshInstance3D
 var bed_material: StandardMaterial3D
 var relay_light: MeshInstance3D
 var relay_motes: Array[MeshInstance3D] = []
@@ -573,6 +575,32 @@ func _make_world() -> void:
 			shard.rotation = Vector3(0.04*(shard_index-1),0.6*shard_index,0.16*(shard_index-1))
 			shard.scale = Vector3(0.84 if shard_index == 0 else 0.58,1.0 if shard_index == 0 else 0.72,0.82)
 		mineral_crystals.append(lode)
+	if rendered_planet == "morrow":
+		prospect_feature = SurfaceWindow.prospecting_opportunity(world_definition)
+		if not prospect_feature.is_empty():
+			var prospect_at: Vector2 = prospect_feature.position_m
+			var prospect := Node3D.new()
+			prospect.position = Vector3(prospect_at.x,terrain_height(prospect_at.x,prospect_at.y),prospect_at.y)
+			prospect.rotation.y = 0.7
+			add_child(prospect)
+			targets.prospect = prospect
+			var matrix := SphereMesh.new()
+			matrix.radius = 0.72
+			matrix.height = 1.3
+			matrix.radial_segments = 7
+			matrix.rings = 4
+			var matrix_node: MeshInstance3D = _mesh(matrix,Vector3(0,0.42,0),_mat(Color("52686a")),prospect)
+			matrix_node.scale = Vector3(1.25,0.72,1.0)
+			var prospect_crystal := CylinderMesh.new()
+			prospect_crystal.top_radius = 0.035
+			prospect_crystal.bottom_radius = 0.20
+			prospect_crystal.height = 0.9
+			prospect_crystal.radial_segments = 6
+			var crystal_material := _mat(Color("84d5c4"),true)
+			crystal_material.roughness = 0.42
+			crystal_material.metallic = 0.08
+			crystal_material.emission_energy_multiplier = 0.48
+			prospect_shard = _mesh(prospect_crystal,Vector3(0.02,0.94,0.02),crystal_material,prospect)
 	var relay: Node3D = _asset("relay",Vector3(9,terrain_height(9,-13),-13))
 	targets.relay = relay
 	var core := SphereMesh.new()
@@ -1505,6 +1533,12 @@ func _update_visuals() -> void:
 		var facing: Vector3 = ship.position-model.guardian_position()
 		if Vector2(facing.x,facing.z).length() > 0.1: orbit.guardian.rotation.y = atan2(-facing.x,-facing.z)
 	var orbital: bool = model.state.flight_mode == "orbit"
+	if targets.has("prospect") and not prospect_feature.is_empty():
+		var current_region: String = Geography.surface_runtime(world_definition).region_id(_saved_surface_up())
+		var prospect_identified: bool = "prospect" in model.state.scanned
+		targets.prospect.visible = not orbital and (current_region == str(prospect_feature.region_id) or prospect_identified)
+		var prospect_depleted: bool = model.state.surface_changes.has(str(prospect_feature.id))
+		if is_instance_valid(prospect_shard): prospect_shard.visible = not prospect_depleted
 	orbit.guardian.position.x = model.state.guardian_x
 	orbit.guardian.position.z = model.state.guardian_z
 	var guardian_ink: StandardMaterial3D = orbit.guardian_eye.material_override
@@ -1593,11 +1627,12 @@ func _update_visuals() -> void:
 		relay_motes[i].position = relay_pos + Vector3(cos(m_ang) * m_rad, m_y, sin(m_ang) * m_rad)
 	ring.position = targets[selected].position+Vector3(0,0.08,0)
 	ring.scale = Vector3.ONE*(1.0+sin(elapsed*3)*0.035)
-	ring.visible = not kit_mode and not deploy_order and not camera.is_position_behind(_target_position())
+	ring.visible = not kit_mode and not deploy_order and targets[selected].visible and not camera.is_position_behind(_target_position())
 	for id: String in labels:
 		var at: Vector3 = _target_position(id)+Vector3(0,0.5 if id == "vein" else 3,0)
 		var label: Label = labels[id]
 		if id == "vein": label.text = "RESONANT SEAM · %d / %d" % [model.state.ore_remaining,Model.MINERAL_DEPOSIT_UNITS] if model.state.ore_remaining > 0 else "DEPLETED CRYSTAL SEAM"
+		if id == "prospect": label.text = "DEPLETED GLASS PROSPECT" if model.state.surface_changes.has(str(prospect_feature.get("id", ""))) else "RESONANT GLASS PROSPECT"
 		var screen_at: Vector2 = camera.unproject_position(at)
 		label.position = screen_at+Vector2(54,-22) if id == "vein" else screen_at-Vector2(label.size.x/2,20)
 		if id == "vein":
@@ -1608,7 +1643,7 @@ func _update_visuals() -> void:
 				var above_position: Vector2 = screen_at-Vector2(label.size.x*0.5,label.size.y+22)
 				label.position = left_position if not Rect2(left_position,label.size).intersects(ship_rect) else above_position
 			label.position.x = clampf(label.position.x,365.0,1480.0-label.size.x)
-		label.visible = id != "vein" and id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
+		label.visible = id != "vein" and id == selected and targets[id].visible and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
 		label.modulate.a = 1.0
 
 func _target_position(id: String = "") -> Vector3:
@@ -1954,12 +1989,14 @@ func _operate(delta: float) -> void:
 
 func _tool_reason(action: String, target: String, gap: float) -> String:
 	if action == "mine":
-		return campaign.mining_reason(gap) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
+		var feature_id: String = str(prospect_feature.get("id", "")) if target == "prospect" else ""
+		return campaign.mining_reason(gap,feature_id) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
 	return model.reason(action,target,gap)
 
 func _commit_tool_action(action: String, target: String, gap: float) -> String:
 	if action == "mine":
-		return campaign.extract_surface_crystal(gap) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
+		var feature_id: String = str(prospect_feature.get("id", "")) if target == "prospect" else ""
+		return campaign.extract_surface_crystal(gap,feature_id) if campaign != null else "Surface mining requires the shared expedition cargo manifest."
 	return model.act(action,target,gap)
 
 func _input(event: InputEvent) -> void:
@@ -2130,6 +2167,7 @@ func _pick(screen: Vector2) -> void:
 	var closest: float = 48
 	var picked: String = ""
 	for id: String in targets:
+		if not targets[id].visible: continue
 		var at: Vector3 = _target_position(id)
 		if camera.is_position_behind(at): continue
 		var d: float = camera.unproject_position(at).distance_to(screen)
@@ -2402,7 +2440,9 @@ func _refresh_ui() -> void:
 	hud.navigation.navigating = navigating
 	hud.navigation.destination = Vector2(destination.x,destination.z)
 	hud.navigation.locked = paused or _inspection_open()
-	for id: String in targets: hud.navigation.points[id] = Vector2(targets[id].position.x,targets[id].position.z)
+	hud.navigation.points.clear()
+	for id: String in targets:
+		if targets[id].visible: hud.navigation.points[id] = Vector2(targets[id].position.x,targets[id].position.z)
 	hud.navigation.queue_redraw()
 	departure_button.text = ("Cancel approach" if landing else "Return to Morrow") if orbital else "Leave atmosphere"
 	if orbital:
@@ -2471,6 +2511,24 @@ func _refresh_ui() -> void:
 				else:
 					hud.action_state.text = "%d LEFT" % remaining
 					explanation.text = "%s energy" % Equipment.amount(Equipment.energy(tool,model.installed_upgrades))
+		elif selected == "prospect":
+			subject.text = "REGIONAL GLASS PROSPECT"
+			var depleted: bool = model.state.surface_changes.has(str(prospect_feature.get("id", "")))
+			if depleted:
+				hud.action_state.text = "DEPLETED"
+				explanation.text = "No crystal remains."
+			elif approach_subject:
+				hud.action_state.text = "APPROACH"
+				explanation.text = "Closing on the prospect."
+			elif held and not latched:
+				hud.action_state.text = "MINING"
+				explanation.text = "1 crystal · %d%%" % int(progress*100)
+			elif not reason.is_empty():
+				hud.action_state.text = "BLOCKED"
+				explanation.text = _short_reason(reason)
+			else:
+				hud.action_state.text = "ONE CRYSTAL"
+				explanation.text = "Next: +1 Resonant glass" if tool == "mine" else "Scan to identify the prospect."
 		else:
 			subject.text = TITLES[selected]
 			if approach_subject:
@@ -2494,9 +2552,9 @@ func _refresh_ui() -> void:
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
 	if not orbital:
 		var seam_action: String = "Approach"
-		if ship.position.distance_to(_target_position("vein")) <= Equipment.reach(tool):
+		if selected in ["vein", "prospect"] and ship.position.distance_to(_target_position()) <= Equipment.reach(tool):
 			seam_action = {"scan":"Scan","collect":"Collect","warm":"Warm","seed":"Plant","mine":"Mine"}.get(tool,"Use")
-		use_button.text = "Cancel" if (held and not latched) or approach_subject else (seam_action if selected == "vein" else "Use")
+		use_button.text = "Cancel" if (held and not latched) or approach_subject else (seam_action if selected in ["vein", "prospect"] else "Use")
 		use_button.disabled = paused or _inspection_open()
 		if not approach_subject and not (held and not latched):
 			use_button.disabled = use_button.disabled or not _tool_reason(tool,selected,0).is_empty()

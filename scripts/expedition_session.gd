@@ -30,6 +30,7 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
+const SurfaceWindow = preload("res://scripts/planet_surface_window.gd")
 const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock","ore_remaining","surface_position","surface_direction","surface_changes"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
@@ -131,11 +132,11 @@ func load_from(path: String) -> Error:
 	var file := FileAccess.open(path,FileAccess.READ)
 	if file == null: return FileAccess.get_open_error()
 	if file.get_buffer(8).get_string_from_utf8() != HEADER: return ERR_FILE_UNRECOGNIZED
-	if file.get_length() < 16: return ERR_INVALID_DATA
-	var payload_size: int = file.get_32()
-	if payload_size < 4 or payload_size != file.get_length()-12: return ERR_INVALID_DATA
+	if file.get_length() < 12: return ERR_INVALID_DATA
 	file.seek(8)
-	return restore_snapshot(file.get_var(false))
+	var source: Variant = file.get_var(false)
+	if file.get_error() != OK or file.get_position() != file.get_length(): return ERR_INVALID_DATA
+	return restore_snapshot(source)
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
@@ -410,18 +411,32 @@ func fire_weapon(at: Vector3) -> String:
 		commerce.update_badges(self)
 	return error
 
-func mining_reason(distance: float) -> String:
+func mining_reason(distance: float, surface_feature_id: String = "") -> String:
 	if traveling(): return "Finish the journey before mining."
 	if field.state.flight_mode != "surface": return "Land before using the resonance cutter."
-	var blocked: String = field.reason("mine","vein",distance)
+	var target: String = "vein"
+	if not surface_feature_id.is_empty():
+		var opportunity: Dictionary = SurfaceWindow.prospecting_opportunity(field.definition())
+		if str(field.state.planet_id) != "morrow" or opportunity.is_empty() or surface_feature_id != str(opportunity.id): return "That is not an active regional prospect."
+		var saved_direction: Array = field.state.surface_direction
+		var up := Vector3(float(saved_direction[0]),float(saved_direction[1]),float(saved_direction[2])).normalized()
+		if Geography.surface_runtime(field.definition()).region_id(up) != str(opportunity.region_id): return "Enter the adjacent region to work this prospect."
+		target = "prospect"
+	var blocked: String = field.reason("mine",target,distance)
 	if not blocked.is_empty(): return blocked
 	if commerce.used_space(self) >= commerce.capacity(): return "Cargo hold full. Sell or unload freight before cutting another crystal."
 	return ""
 
-func extract_surface_crystal(distance: float) -> String:
-	var blocked: String = mining_reason(distance)
+func extract_surface_crystal(distance: float, surface_feature_id: String = "") -> String:
+	var blocked: String = mining_reason(distance,surface_feature_id)
 	if not blocked.is_empty(): return blocked
 	var planet: String = field.state.planet_id
+	if not surface_feature_id.is_empty():
+		blocked = field.act("mine","prospect",distance)
+		if not blocked.is_empty(): return blocked
+		commerce.add_cargo("glass",1,planet)
+		diplomacy.record(self,"discovery","Extracted one resonant glass crystal from the Morrow regional prospect.","",{"item":"glass","quantity":1,"remaining":0,"feature_id":surface_feature_id},0,"prospect:"+surface_feature_id)
+		return ""
 	var before: int = Field.MINERAL_DEPOSIT_UNITS-int(field.state.ore_remaining)
 	blocked = field.act("mine","vein",distance)
 	if not blocked.is_empty(): return blocked

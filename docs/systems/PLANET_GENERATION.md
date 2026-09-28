@@ -2,6 +2,12 @@
 
 > Implementation checkpoint; statements of verification apply to its recorded scope, not final player acceptance. Consult source/tests for later changes. [Documentation map](../README.md).
 
+## Morrow adjacent-region prospect loop — 28 September 2026
+
+Morrow now has one recipe-keyed Resonant glass prospect in a designated adjacent seeded region. It stays concealed until the scout enters that region, then remains identified after scanning and reuses the existing resonance cutter. The prospect has a stable region/feature ID and position, yields one unit into the real campaign cargo manifest, records a deduplicated discovery event, and persists depletion through sparse `surface_changes`. The authored Basin seam and its four-piece behavior are unchanged. Invalid, out-of-region, out-of-range, depleted, unscanned, energy-blocked, or full-cargo attempts are rejected before extraction spends energy.
+
+This is one bounded interaction within the existing 1.2 km tangent-frame envelope, not planet-wide streaming or an art-acceptance claim. The focused behavior check is `tests/test_region_resource_loop.gd` and is registered in `tools/Test.ps1`. Static review found and corrected a pre-existing campaign reader/writer mismatch and aligned the test's manual save/load slots. `git diff --check` passes. The first launch could not start because this worktree lacks the console binary; one isolated headless attempt with the matching GUI binary produced no log or imported-resource cache within 90 seconds and was interrupted. No behavior assertions or runtime result are claimed; rerun the focused check after the worktree has a usable local Godot runtime and import state.
+
 Latest travel checkpoint: [INTERSTELLAR_FLIGHT.md](INTERSTELLAR_FLIGHT.md) adds 24 orbital destinations and three connected landing regions. Earlier single-world limitations below are historical; strategic climate-project visuals and broader surface/content generation remain unfinished.
 
 ## Morrow recipe-driven surface composition pass — 26 September 2026
