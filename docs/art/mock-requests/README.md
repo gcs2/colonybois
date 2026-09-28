@@ -9,3 +9,9 @@ Every brief names its task-board owner, player activity, and link to the wider g
 Keep one shared staging home at artifacts/designer-mocks/<TASK-BOARD-ID>/ in the active integration worktree. If a worker creates files in its own worktree, it returns the images and exact prompts to Sol; Sol copies candidates into the shared staging home before critic and user review, then links the exact path. Candidate files stay ignored while review is open. Once the user approves an image, promote that exact original into tracked art/visual-canon and index it there; accepted canon must not live only in artifacts or a worker worktree.
 
 Each home contains a README.md index linking its brief, task-board items, ground-truth references and wider project context. Record every image's exact prompt, generator/tool, date, intended state and review status. Generated artifacts are ignored by Git. They are proposals, not proof of runtime behavior, playability, source fidelity or performance. User acceptance decides; critic feedback can guide revisions but cannot override it. Do not overwrite rejected images.
+
+## Current brief
+
+- [New Expedition captain identity and philosophy screen](EXPEDITION_FOUNDING_SCREEN.md) — P02; requested 27 September 2026. This view is not in the existing canon yet. Use the accepted Morrow and Field Instruments references as visual ground truth; stage candidate renders in the P02 artifact home and do not generate them into the canonical folder before user approval.
+- [Morrow flight and scale-view request](MORROW_ORBIT_APPROACH_SURFACE.md) — completed and approved; retained for source and prompt provenance. Do not regenerate those views.
+- [Morrow scale-transition storyboard](MORROW_SCALE_TRANSITION_STORYBOARD.md) — supporting evidence request; follow its current status before doing new work.

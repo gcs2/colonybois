@@ -1,5 +1,7 @@
 # Character scope and direction options
 
+27 September 2026 direction update: the user wants a New Expedition starting screen to create the captain identity and choose a philosophy such as Scientist, Zealot or Knight. Treat those names as player archetypes from [CHARACTER_ARCHETYPES.md](CHARACTER_ARCHETYPES.md), not planetary governments. Start with a captain name and authored identity choice; player species, appearance editing, new character art and the freeform creature editor remain deferred. The [P02 mock brief](mock-requests/EXPEDITION_FOUNDING_SCREEN.md) describes the requested view. Do not ship the selector until each offered option changes a real available action or obligation and the selection persists with the expedition.
+
 24 September follow-up: the user authorizes using existing generated concepts as in-game 2D portraits. Tavi's cleaned concept illustration now appears in communications and local commerce. This is a narrow presentation bridge, not resumption of new character design, 3D modeling or corpus production. See the [contact checkpoint](../systems/EXPEDITION_CONTACT.md).
 
 > Asset specification; not evidence of finished or accepted art. The task board decides whether production is active. [Documentation map](../README.md).

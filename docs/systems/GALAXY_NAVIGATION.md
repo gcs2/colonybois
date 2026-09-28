@@ -11,6 +11,7 @@
 - Detected/visited/charted knowledge persists. Visible starlight is not full planet/civilization knowledge. Visiting or acquiring a drive can reveal nearby destinations. Territorial access and energy are validated separately from reach.
 - Local travel is two simulation seconds; interstellar travel is two to four. Energy is paid; border changes can interrupt travel. Existing voyages retain their saved timing rather than receiving an invented refund. Pause stops travel and shared colony time.
 - Mouse wheel zoom, full above/below-plane right-drag orbit, Shift/right or middle-button pan, keyboard arrows/numpad, Home focus and End overview. The range boundary and stars use the same galactic-plane projection. Known-star selection followed by activation starts travel; the current star enters its system view.
+- The player's actual scout GLB appears over its current or in-transit galaxy position in a small transparent 96×72 render layer; it is not replaced with a ship-shaped map glyph. `scripts/encounter.gd` updates the route fraction from the live flight clock. The render layer suspends while the chart is hidden.
 - Authored freight links remain; generated carrier connections have their own fixed reach rather than silently inheriting personal drive upgrades.
 - Save v19 migrates earlier snapshots and preserves stable IDs and colony history. Planet scenes remain lazy; loading the galaxy does not instantiate thousands of 3D worlds.
 
@@ -21,6 +22,8 @@ Bounded preview repair, 24 September: defense-field proximity is now checked in 
 Final relevant checks passed on 24 September: galaxy 40, full-screen navigation 67, system 41. Exported playable build: `build/versions/20260924-003147/FrontierWorlds.exe`; resource-pack headless flight startup smoke passed using isolated playtest slots. Native interaction/art/audio review remains open.
 
 Final galaxy, full-screen navigation and system checks cover deterministic generation, range/cost rejection, purchased drive progression, legacy migration, saved travel, generated orbital visits, geography IDs, camera/zoom projection, navigation and modal behavior. The wider regression suite passed in staged runs before the last renderer optimization; see the pending-checkpoint record for historical evidence and the final checkpoint for the actual exported build.
+
+27 September scout integration: the targeted Galaxy-scout slice passed 9 checks in 1.8 seconds, including actual model geometry, travel position projection, heading and hidden-view update suspension. Runtime travel interpolation is assigned from the flight controller each frame. No current rendered capture, performance observation or visual acceptance exists for this scout presentation.
 
 The cached MultiMesh star rendering measured substantially lower map frame cost than individual star submissions in the capture harness. Earlier measured rotating-map median frame interval was 4.85 ms, p95 7.04 ms, draw CPU median 3.2 ms. This is not a full-game FPS guarantee. A three-starting-colony/galaxy simulation profile is not a dense-city stress test.
 

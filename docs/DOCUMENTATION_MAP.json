@@ -184,6 +184,12 @@
       "title": "Morrow scale-transition storyboard mock request"
     },
     {
+      "path": "docs/art/mock-requests/EXPEDITION_FOUNDING_SCREEN.md",
+      "category": "art",
+      "status": "proposal",
+      "title": "New Expedition captain identity and philosophy screen mock request"
+    },
+    {
       "path": "docs/art/README.md",
       "category": "art",
       "status": "generated",
