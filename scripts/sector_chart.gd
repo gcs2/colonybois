@@ -9,6 +9,9 @@ const Geography = preload("res://scripts/planet_geography.gd")
 const Session = preload("res://scripts/expedition_session.gd")
 const GALAXY_CARD := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/galaxy-selected-system-card.png"
 const GALAXY_RAIL := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/galaxy-status-equipment-rail.png"
+const MARK_ICON = preload("res://assets/ui/mark-symbol.svg")
+const MARKS_PLATE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/marks-balance-plate.png")
+
 var campaign: RefCounted
 var selected_system: String = "s0"
 var selected_planet: String = "morrow"
@@ -25,9 +28,11 @@ var inspect_system: Button
 var progress: ProgressBar
 var status_rail: GalaxyStatusRail
 var card_title: Label
+var treasury_amount: Label
 
 class GalaxyStatusRail extends Control:
 	const Interface = preload("res://scripts/flight_interface.gd")
+	const ItemArt = preload("res://scripts/communicator_style.gd")
 	var campaign: RefCounted
 	var plate: Texture2D
 	var module_buttons: Array[TextureButton] = []
@@ -87,10 +92,12 @@ class GalaxyStatusRail extends Control:
 				button.texture_normal = null; button.texture_hover = null; button.texture_focused = null
 			else:
 				var family: String = str(campaign.commerce.catalog.upgrades.get(id,{}).get("family",""))
+				var item_id: String = {"hull":"hull","energy":"energy","drive":"drive","hold":"hold"}.get(family,id if id in ["drive","hold"] else "")
 				var icon_id: String = {"hull":"defense","energy":"energy","drive":"ascend","hold":"cargo"}.get(family,"systems")
-				button.texture_normal = Interface.icon(icon_id)
-				button.texture_hover = Interface.icon(icon_id)
-				button.texture_focused = Interface.icon(icon_id)
+				var image: Texture2D = ItemArt.equipment_icon(item_id) if not item_id.is_empty() else Interface.icon(icon_id)
+				button.texture_normal = image
+				button.texture_hover = image
+				button.texture_focused = image
 			button.disabled = id.is_empty()
 		queue_redraw()
 	func _ready() -> void:
@@ -360,7 +367,9 @@ class StarGraph extends Control:
 				draw_string(font,at+Vector2(17,24),"DESTINATION · "+destination_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f0dfae"))
 				var route_quote: String = "%.1f pc · %d energy · %d s" % [offer.distance,offer.energy,offer.seconds]
 				var quote_size: Vector2 = font.get_string_size(route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14)
-				var quote_at: Vector2 = origin.lerp(at,0.68)+Vector2(0,20)
+				var quote_at: Vector2 = origin.lerp(at,0.5)+Vector2(0,-42)
+				quote_at.x = clampf(quote_at.x,12.0,size.x-quote_size.x-14.0)
+				quote_at.y = clampf(quote_at.y,20.0,size.y-24.0)
 				draw_rect(Rect2(quote_at-Vector2(7,17),quote_size+Vector2(14,9)),Color("0b1419"))
 				draw_string(font,quote_at,route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e4e5df"))
 		if campaign.traveling():
@@ -421,6 +430,44 @@ func icon_button(id: String, hint: String, action: Callable) -> Button:
 	UI.instrument(result,id,UI.NAV); result.tooltip_text = hint
 	return result
 
+func _build_treasury(stage: Control) -> void:
+	var treasury := Control.new()
+	treasury.name = "GalaxyTreasury"
+	treasury.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	treasury.z_index = 5
+	treasury.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	treasury.offset_left = -278
+	treasury.offset_right = -24
+	treasury.offset_top = 96
+	treasury.offset_bottom = 152
+	stage.add_child(treasury)
+	var plate := TextureRect.new()
+	var plate_crop := AtlasTexture.new()
+	plate_crop.atlas = MARKS_PLATE
+	plate_crop.region = Rect2(144,200,1693,373)
+	plate.texture = plate_crop
+	plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	plate.stretch_mode = TextureRect.STRETCH_SCALE
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plate.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	treasury.add_child(plate)
+	var row := HBoxContainer.new()
+	row.position = Vector2(31,14)
+	row.size = Vector2(200,30)
+	row.add_theme_constant_override("separation",8)
+	treasury.add_child(row)
+	var emblem := TextureRect.new()
+	emblem.texture = MARK_ICON
+	emblem.custom_minimum_size = Vector2(26,26)
+	emblem.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	emblem.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	emblem.modulate = Color("a98427")
+	row.add_child(emblem)
+	treasury_amount = label("0 Marks",19)
+	treasury_amount.add_theme_color_override("font_color",Color("1c2426"))
+	treasury_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(treasury_amount)
+
 func _ready() -> void:
 	var stage: Control = Stage.create(self)
 	var header: HBoxContainer = Stage.header(stage)
@@ -428,6 +475,7 @@ func _ready() -> void:
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(heading)
 	close = button("Close [G / Esc]",func() -> void: close_requested.emit())
+	_build_treasury(stage)
 	header.add_child(close)
 	graph = StarGraph.new()
 	graph.selected.connect(select_system)
@@ -630,6 +678,7 @@ func refresh() -> void:
 		var ship: Dictionary = campaign.sector.state.flagship
 		progress.value = 100*(1.0-float(ship.remaining)/maxf(1,ship.duration))
 		status.text = "IN TRANSIT · %d seconds remaining\nEscape: pause / save" % ship.remaining
+	treasury_amount.text = "%d Marks" % int(campaign.field.marks)
 	status_rail.bind(campaign)
 	get_node("NavigationStage/GalaxyHint").text = ("In transit · %d s" % campaign.sector.state.flagship.remaining) if campaign.traveling() else (offer.reason if not offer.reason.is_empty() else "Click selected star again · %d energy" % offer.energy)
 	graph.queue_redraw()

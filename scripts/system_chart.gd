@@ -31,16 +31,16 @@ class RouteOverlay extends Control:
 	func _draw() -> void:
 		if not active: return
 		var control: Vector2 = (origin+destination)*0.5+Vector2(0,-clampf(origin.distance_to(destination)*0.16,28,110))
-		var points := PackedVector2Array()
+		var route_length: float = origin.distance_to(destination); var start_fraction: float = minf(0.9,18.0/maxf(18.0,route_length)); var points := PackedVector2Array()
 		for i: int in range(49):
-			var t: float = float(i)/48.0; var inverse: float = 1.0-t
+			var raw_t: float = float(i)/48.0; var t: float = start_fraction+(1.0-start_fraction)*raw_t; var inverse: float = 1.0-t
 			points.append(inverse*inverse*origin+2.0*inverse*t*control+t*t*destination)
 		draw_polyline(points,Color(0.015,0.055,0.065,0.96),10,true)
 		for i: int in range(24):
 			if i % 3 == 2: continue
 			var first: int = i*2; var last: int = mini(first+1,points.size()-1)
 			draw_line(points[first],points[last],Color("64dbd5"),4,true)
-		draw_circle(origin,8,Color("172a2c")); draw_arc(origin,33,0,TAU,32,Color("64dbd5"),2,true)
+		draw_arc(origin,33,0,TAU,32,Color("64dbd5"),2,true)
 		draw_circle(destination,5,Color("f1cd55"))
 var campaign: RefCounted
 var system_id: String = ""
@@ -69,7 +69,7 @@ var close: Button
 var sector: Button
 var progress: ProgressBar
 var stage_root: Control
-var destination_card: PanelContainer
+var destination_card: Control
 var treasury: Control
 var treasury_amount: Label
 var inventory_pod: Control
@@ -115,29 +115,28 @@ func _ready() -> void:
 	var star := MeshInstance3D.new(); var sphere := SphereMesh.new(); sphere.radius = 3; sphere.height = 6; sphere.radial_segments = 32; sphere.rings = 16
 	var stellar := ShaderMaterial.new(); stellar.shader = preload("res://assets/shaders/system_star.gdshader")
 	star.mesh = sphere; star.material_override = stellar; star.scale = Vector3.ONE*1.7; world.add_child(star)
-	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.25; world.add_child(ship_marker)
+	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.20; world.add_child(ship_marker)
 	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
 		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)
 	route_overlay = RouteOverlay.new(); route_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; route_overlay.z_index = 2; stage.add_child(route_overlay); route_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	destination_card = PanelContainer.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
-	var card_style := StyleBoxTexture.new(); card_style.texture = DESTINATION_CARD_TEXTURE
-	card_style.set_content_margin(SIDE_LEFT,42); card_style.set_content_margin(SIDE_RIGHT,40); card_style.set_content_margin(SIDE_TOP,34); card_style.set_content_margin(SIDE_BOTTOM,26)
-	destination_card.add_theme_stylebox_override("panel",card_style)
-	var card := Control.new(); card.mouse_filter = Control.MOUSE_FILTER_PASS; destination_card.add_child(card)
-	destination_name = text_label("",18); destination_name.position = Vector2.ZERO; destination_name.size = Vector2(278,22); card.add_child(destination_name)
-	details = text_label("",13); details.position = Vector2(0,22); details.size = Vector2(278,28); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
+	destination_card = Control.new(); destination_card.custom_minimum_size = Vector2(360,210); destination_card.size = destination_card.custom_minimum_size; destination_card.mouse_filter = Control.MOUSE_FILTER_STOP; destination_card.z_index = 4; stage.add_child(destination_card)
+	var card_back := TextureRect.new(); card_back.texture = DESTINATION_CARD_TEXTURE; card_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; card_back.stretch_mode = TextureRect.STRETCH_SCALE; card_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); destination_card.add_child(card_back)
+	var card := Control.new(); card.mouse_filter = Control.MOUSE_FILTER_PASS; card.position = Vector2(54,34); card.size = Vector2(258,160); destination_card.add_child(card)
+	destination_name = text_label("",18); destination_name.position = Vector2.ZERO; destination_name.size = Vector2(258,22); card.add_child(destination_name)
+	details = text_label("",13); details.position = Vector2(0,22); details.size = Vector2(258,28); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(details)
 	travel = button("","ascend","Fly to this destination",activate_selected,card,UI.GOLD)
-	travel.position = Vector2(0,50); travel.size = Vector2(278,28); travel.custom_minimum_size = Vector2(278,28)
+	travel.position = Vector2(0,64); travel.size = Vector2(258,26); travel.custom_minimum_size = Vector2(258,26)
 	travel.add_theme_font_size_override("font_size",13)
 	travel.add_theme_constant_override("icon_max_width",18)
 	for state: String in ["normal","hover","pressed","disabled"]:
 		var compact_style: StyleBoxFlat = (travel.get_theme_stylebox(state) as StyleBoxFlat).duplicate() as StyleBoxFlat
 		compact_style.content_margin_top = 2; compact_style.content_margin_bottom = 2; travel.add_theme_stylebox_override(state,compact_style)
-	status = text_label("",12); status.position = Vector2(0,86); status.size = Vector2(278,50); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
-	progress = ProgressBar.new(); progress.position = Vector2(0,138); progress.size = Vector2(278,8); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
+	status = text_label("",12); status.position = Vector2(0,99); status.size = Vector2(258,48); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; card.add_child(status)
+	progress = ProgressBar.new(); progress.position = Vector2(0,151); progress.size = Vector2(258,8); progress.custom_minimum_size = Vector2(220,8); progress.show_percentage = false; UI.meter(progress,UI.GOLD); card.add_child(progress)
 	for i: int in range(8):
 		var mark := ColorRect.new(); mark.color = Color("f1cd55"); mark.mouse_filter = Control.MOUSE_FILTER_IGNORE; mark.z_index = 5; stage.add_child(mark); target_marks.append(mark)
 	var controls: HBoxContainer = Stage.footer(stage)

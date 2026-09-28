@@ -40,3 +40,10 @@ The surface image is the user's pinned source. The other three are v2 designer p
 - [Fresh focused UI shell candidates covering surface, orbit, approach, system and galaxy](ui-element-candidates/focused-shells-v3/README.md)
 - [Focused pictorial cutout candidates for Inventory, Marks, system Fly and galaxy equipment](ui-element-candidates/pictorial-cutouts-v4/README.md)
 - [User-approved transparent UI elements for live surface, orbit, approach, system and galaxy HUDs](ui-element-candidates/focused-elements-v5/README.md)
+
+## Runtime UI asset rule — user direction, 27 September 2026
+
+- The approved generated UI PNGs are the default source for housings, panel materials, tabs, and pictorial objects. Reuse each approved element maximally in its intended views; do not replace an available image-backed component with a hand-drawn vector or generic StyleBox version.
+- Keep changing information live in Godot: names, counts, prices, labels, maps, routes, meters, selection, hover/focus and animation remain code-driven overlays. Vector shapes are appropriate for dynamic map geometry, indicators and data visualization; they are not substitutes for approved image shells or available pictorial item art.
+- Before creating another visual asset, inspect this canon and coordinate active art-generation work so parallel efforts do not produce duplicate elements. Put any project-bound generated output, its exact prompt, source references, dimensions, alpha checks and review state together under ui-element-candidates/. Never overwrite an approved or existing candidate; version siblings and keep pending art visibly marked as pending.
+- Fit content to each image's safe area. At 1080p and 1440p, check centering, frame collisions, scaling, unused space, and whether the underlying player scene remains readable. An image existing or rendering does not itself pass the view; keep independent critic and player-acceptance gates separate.
