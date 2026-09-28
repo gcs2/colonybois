@@ -639,6 +639,8 @@ func _make_item(id: String, item: Dictionary) -> void:
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size",14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
+	count.add_theme_color_override("font_outline_color", Color("172123"))
+	count.add_theme_constant_override("outline_size", 1)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	item_buttons[id] = button
@@ -672,6 +674,8 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count.add_theme_font_size_override("font_size", 14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
+	count.add_theme_color_override("font_outline_color", Color("172123"))
+	count.add_theme_constant_override("outline_size", 1)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	campaign_item_buttons[id] = button

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="720" viewBox="0 0 1260 720">
+  <defs>
+    <linearGradient id="cell" x2="0" y2="1">
+      <stop stop-color="#273237"/>
+      <stop offset="1" stop-color="#151d20"/>
+    </linearGradient>
+    <linearGradient id="pack" x2="0" y2="1">
+      <stop stop-color="#70e4ee"/>
+      <stop offset="1" stop-color="#058bb5"/>
+    </linearGradient>
+    <linearGradient id="paper" x2="0" y2="1">
+      <stop stop-color="#f1eee4"/>
+      <stop offset="1" stop-color="#d2cfc4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1260" height="720" fill="#1c2528"/>
+  <text x="42" y="54" fill="#e8e5dc" font-family="Arial, sans-serif" font-size="28" letter-spacing="1.1">INVENTORY COUNT HIERARCHY · 27 SEPTEMBER</text>
+  <text x="42" y="87" fill="#b8c0ba" font-family="Arial, sans-serif" font-size="16">Native-vector comparison only. Counts stay live text; icons, cell size, shortcuts, tabs and panel materials stay unchanged.</text>
+  <text x="42" y="116" fill="#b8c0ba" font-family="Arial, sans-serif" font-size="14">No count plates, rounded wells, extra captions, resolution variants, or invented inventory state.</text>
+
+  <!-- CURRENT -->
+  <rect x="32" y="142" width="382" height="520" fill="#30383a" stroke="#89918a" stroke-width="1"/>
+  <text x="54" y="177" fill="#dfded4" font-family="Arial, sans-serif" font-size="17" letter-spacing="1">CURRENT · 14 PX</text>
+  <text x="54" y="202" fill="#aeb8b0" font-family="Arial, sans-serif" font-size="13">Pale count, no edge treatment.</text>
+  <g transform="translate(87 251)">
+    <path d="M0 10 18 0h208l18 10v216l-18 10H18L0 226Z" fill="url(#paper)"/>
+    <path d="M8 17 23 8h196l17 9v201l-17 9H23L8 218Z" fill="url(#cell)" stroke="#39494b" stroke-width="2"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#9cebf1"/>
+    <path d="M78 64v96c0 9 20 17 44 17s44-8 44-17V64" fill="url(#pack)" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="160" rx="44" ry="14" fill="#087899" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#c5fbfa" stroke="#477d82" stroke-width="3"/>
+    <path d="M94 77v69" stroke="#c0f5f0" stroke-width="5" opacity=".48"/>
+    <path d="M97 50h50l-5-15h-40Z" fill="#c7bba1" stroke="#766d5e" stroke-width="3"/>
+    <text x="18" y="213" fill="#77817e" font-family="Arial, sans-serif" font-size="17">4</text>
+    <text x="173" y="213" fill="#fff2ce" font-family="Arial, sans-serif" font-size="14">× 1</text>
+  </g>
+  <text x="54" y="534" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">The count can disappear against pictorial edges.</text>
+  <text x="54" y="560" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">Keyboard hint stays muted at lower left.</text>
+  <text x="54" y="615" fill="#8fc7b1" font-family="Arial, sans-serif" font-size="13">BASELINE · LIVE LABELS ARE DYNAMIC</text>
+
+  <!-- OPTION A -->
+  <rect x="438" y="142" width="382" height="520" fill="#30383a" stroke="#b5a56f" stroke-width="2"/>
+  <text x="460" y="177" fill="#e7d9a4" font-family="Arial, sans-serif" font-size="17" letter-spacing="1">OPTION A · 14 PX OUTLINE</text>
+  <text x="460" y="202" fill="#b9c0b6" font-family="Arial, sans-serif" font-size="13">Same size; add a narrow dark edge.</text>
+  <g transform="translate(493 251)">
+    <path d="M0 10 18 0h208l18 10v216l-18 10H18L0 226Z" fill="url(#paper)"/>
+    <path d="M8 17 23 8h196l17 9v201l-17 9H23L8 218Z" fill="url(#cell)" stroke="#39494b" stroke-width="2"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#9cebf1"/>
+    <path d="M78 64v96c0 9 20 17 44 17s44-8 44-17V64" fill="url(#pack)" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="160" rx="44" ry="14" fill="#087899" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#c5fbfa" stroke="#477d82" stroke-width="3"/>
+    <path d="M94 77v69" stroke="#c0f5f0" stroke-width="5" opacity=".48"/>
+    <path d="M97 50h50l-5-15h-40Z" fill="#c7bba1" stroke="#766d5e" stroke-width="3"/>
+    <text x="18" y="213" fill="#77817e" font-family="Arial, sans-serif" font-size="17">4</text>
+    <text x="173" y="213" fill="#1a2224" font-family="Arial, sans-serif" font-size="17" stroke="#1a2224" stroke-width="3.2" paint-order="stroke fill">× 1</text>
+    <text x="173" y="213" fill="#fff2ce" font-family="Arial, sans-serif" font-size="14">× 1</text>
+  </g>
+  <text x="460" y="534" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">Keep the current number size and anchor.</text>
+  <text x="460" y="560" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">A dark outline separates it from the icon.</text>
+  <text x="460" y="615" fill="#e1cc85" font-family="Arial, sans-serif" font-size="13">LOWEST-CHANGE CANDIDATE</text>
+
+  <!-- OPTION B -->
+  <rect x="844" y="142" width="382" height="520" fill="#30383a" stroke="#89918a" stroke-width="1"/>
+  <text x="866" y="177" fill="#dfded4" font-family="Arial, sans-serif" font-size="17" letter-spacing="1">OPTION B · 16 PX OUTLINE</text>
+  <text x="866" y="202" fill="#b9c0b6" font-family="Arial, sans-serif" font-size="13">Slightly larger, same anchor.</text>
+  <g transform="translate(899 251)">
+    <path d="M0 10 18 0h208l18 10v216l-18 10H18L0 226Z" fill="url(#paper)"/>
+    <path d="M8 17 23 8h196l17 9v201l-17 9H23L8 218Z" fill="url(#cell)" stroke="#39494b" stroke-width="2"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#9cebf1"/>
+    <path d="M78 64v96c0 9 20 17 44 17s44-8 44-17V64" fill="url(#pack)" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="160" rx="44" ry="14" fill="#087899" stroke="#173d47" stroke-width="3"/>
+    <ellipse cx="122" cy="64" rx="44" ry="12" fill="#c5fbfa" stroke="#477d82" stroke-width="3"/>
+    <path d="M94 77v69" stroke="#c0f5f0" stroke-width="5" opacity=".48"/>
+    <path d="M97 50h50l-5-15h-40Z" fill="#c7bba1" stroke="#766d5e" stroke-width="3"/>
+    <text x="18" y="213" fill="#77817e" font-family="Arial, sans-serif" font-size="17">4</text>
+    <text x="164" y="213" fill="#1a2224" font-family="Arial, sans-serif" font-size="20" stroke="#1a2224" stroke-width="3.6" paint-order="stroke fill">× 1</text>
+    <text x="164" y="213" fill="#fff2ce" font-family="Arial, sans-serif" font-size="16">× 1</text>
+  </g>
+  <text x="866" y="534" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">Count is more prominent than the hint.</text>
+  <text x="866" y="560" fill="#c5cbc4" font-family="Arial, sans-serif" font-size="14">Check it does not compete with the icon.</text>
+  <text x="866" y="615" fill="#b7beb7" font-family="Arial, sans-serif" font-size="13">UPPER-BOUND READABILITY TEST</text>
+
+  <path d="M42 688h1176" stroke="#4a5757" stroke-width="1"/>
+  <text x="42" y="708" fill="#b8c0ba" font-family="Arial, sans-serif" font-size="13">Count text remains state-driven. No icon, slot, shortcut, selected-cell mark, or five-card tab treatment changes.</text>
+</svg>
