@@ -2,7 +2,7 @@ extends RefCounted
 ## Supplemental flight bindings live in user settings, separately from expedition saves.
 const Controls = preload("res://scripts/flight_controls.gd")
 const SETTINGS_PATH := "user://flight_input_settings.cfg"
-const RESERVED_KEYS: Array[int] = [KEY_ESCAPE,KEY_F,KEY_G,KEY_I,KEY_J,KEY_K,KEY_M,KEY_TAB,KEY_Y,KEY_SPACE,KEY_F5,KEY_F9,
+const RESERVED_KEYS: Array[int] = [KEY_ESCAPE,KEY_F,KEY_G,KEY_I,KEY_J,KEY_K,KEY_M,KEY_TAB,KEY_BRACKETLEFT,KEY_BRACKETRIGHT,KEY_Y,KEY_SPACE,KEY_F5,KEY_F9,
 	KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9]
 var settings_path: String = SETTINGS_PATH
 var custom_keys: Dictionary = {}

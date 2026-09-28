@@ -55,8 +55,8 @@ func _draw() -> void:
 	if size.x <= 400.0:
 		# ALT is supplied by FlightHUD in the quiet header above this pod. Use
 		# the full height beside the two-row grid rather than leaving a blank foot.
-		var meter_left: float = 15.0
-		var meter_width: float = maxf(24.0, size.x - meter_left * 2.0)
+		var meter_left: float = 38.0
+		var meter_width: float = maxf(24.0, size.x - meter_left - 16.0)
 		var bar_height: float = 10.0
 		_draw_compact_meter("HULL", hull_val, max_hull_val, HULL_TINT, meter_left, 49.0, 55.0, 80.0, meter_width, bar_height)
 		_draw_compact_meter("ENERGY", energy_val, max_energy_val, ENERGY_TINT, meter_left, 99.0, 105.0, 130.0, meter_width, bar_height)

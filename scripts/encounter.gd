@@ -5,6 +5,30 @@ var suspended_session: Node = null
 const Model = preload("res://scripts/encounter_state.gd")
 const SectorChart = preload("res://scripts/sector_chart.gd")
 const SurfaceWindow = preload("res://scripts/planet_surface_window.gd")
+const CARGO_MODAL_SHELL = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v7/inventory-modal-shell-candidate.png")
+const CARGO_HOLD_ICON = preload("res://art/concepts/tripo_asset_pack_v1/batch_02_space_equipment/cargo-hold-module-v1.png")
+const CARGO_SPECIMEN_ICON = preload("res://assets/specimens/pocket_manta.png")
+const CARGO_SURFACE_ICON = preload("res://assets/specimens/moss_lantern.png")
+const ENERGY_PACK_ICON = preload("res://art/concepts/tripo_asset_pack_v1/batch_02_space_equipment/energy-pack-v1.png")
+const REPAIR_PACK_ICON = preload("res://art/concepts/tripo_asset_pack_v1/batch_02_space_equipment/repair-pack-v1.png")
+const CARGO_TAB_STATES = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v6/category-tab-states.png")
+const HUD_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v7/hud-plaque-v1.png")
+
+class CargoTabArtwork extends TextureRect:
+	var idle_texture: Texture2D
+	var selected_texture: Texture2D
+	var selected: bool = false
+	var hovered: bool = false
+	var focused: bool = false
+
+	func _init() -> void:
+		expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stretch_mode = TextureRect.STRETCH_SCALE
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func refresh_art() -> void:
+		texture = selected_texture if selected or hovered or focused else idle_texture
+		modulate = Color.WHITE if selected or hovered or focused else Color("82908d")
 var sector_map: PanelContainer
 var system_map: PanelContainer
 var recognition_notice: PanelContainer
@@ -48,8 +72,8 @@ const FlightInputSettings = preload("res://scripts/flight_input_settings.gd")
 const OrbitalScene = preload("res://scripts/orbital_scene.gd")
 const GrazerMotion = preload("res://scripts/grazer_motion.gd")
 const Instruments = preload("res://scripts/flight_interface.gd")
-const TOAST_SIGNAL_ICON = preload("res://assets/ui/flight/signal.svg")
-const NOTIFICATION_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/notification-plaque.png")
+const TOAST_SIGNAL_ICON = preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/survey.png")
+const FLEET_ICON = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v7/fleet-scout-icon-v1.png")
 const ORBIT_TARGET_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/orbit-target-plaque.png")
 const PlanetMap = preload("res://scripts/planet_map.gd")
 const Geography = preload("res://scripts/planet_geography.gd")
@@ -76,6 +100,7 @@ var surface_region_features: Dictionary = {}
 var biosphere_view: Node3D
 var fleet_visual: Node3D
 var fleet_strip: HBoxContainer
+var fleet_strip_backing: NinePatchRect
 var fleet_button: Button
 var fleet_bars: Dictionary = {}
 var surface_combat_visual: Node3D
@@ -143,13 +168,17 @@ var objective: Label
 var subject: Label
 var explanation: Label
 var status: Label
-var status_plate: TextureRect
+var status_plate: NinePatchRect
 var status_icon: TextureRect
+var status_default_icon: Texture2D
 var toast_item_icon: String = ""
 var progress_bar: ProgressBar
 var toolbar: Array[Button] = []
 var labels: Dictionary = {}
 var popup: PanelContainer
+var popup_scroll: ScrollContainer
+var cargo_popup_inset: MarginContainer
+var cargo_modal_backing: NinePatchRect
 var communicator_shell: Control
 var contact_status_pod: Control
 var popup_kind: String = ""
@@ -1033,15 +1062,14 @@ func _make_ui() -> void:
 	hud.navigation.landing_requested.connect(func() -> void:
 		if not _inspection_open() and not paused: _begin_landing())
 	status = _label("",14,Color("ffe0a8"))
-	var notification_texture := AtlasTexture.new()
-	notification_texture.atlas = NOTIFICATION_PLAQUE
-	notification_texture.region = Rect2(256,358,1161,213)
-	status_plate = TextureRect.new()
-	status_plate.texture = notification_texture
-	status_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	status_plate = NinePatchRect.new()
+	status_plate.texture = HUD_PLAQUE
+	status_plate.patch_margin_left = 14
+	status_plate.patch_margin_right = 14
+	status_plate.patch_margin_top = 5
+	status_plate.patch_margin_bottom = 5
 	status_plate.position = Vector2(12,74)
 	status_plate.size = Vector2(190,35)
-	status_plate.stretch_mode = TextureRect.STRETCH_SCALE
 	status_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_plate.z_index = 19
 	status_plate.hide()
@@ -1061,7 +1089,11 @@ func _make_ui() -> void:
 	status_icon.custom_minimum_size = Vector2.ZERO
 	status_icon.position = Vector2(28,82)
 	status_icon.size = Vector2(18,18)
-	status_icon.texture = TOAST_SIGNAL_ICON
+	var survey_icon := AtlasTexture.new()
+	survey_icon.atlas = TOAST_SIGNAL_ICON
+	survey_icon.region = Rect2(272,355,711,559)
+	status_default_icon = survey_icon
+	status_icon.texture = status_default_icon
 	status_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon.modulate = Color("e9b72f")
 	status_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1084,17 +1116,31 @@ func _make_ui() -> void:
 		climate_chart.ecosystem_requested.connect(_show_popup.bind("biosphere"))
 		# Keep allied readiness grouped with the right-side ship instruments instead
 		# of placing a persistent banner across the upper-middle view.
-		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(1135,66)
+		fleet_strip_backing = NinePatchRect.new()
+		fleet_strip_backing.texture = HUD_PLAQUE
+		fleet_strip_backing.patch_margin_left = 18
+		fleet_strip_backing.patch_margin_right = 18
+		fleet_strip_backing.patch_margin_top = 8
+		fleet_strip_backing.patch_margin_bottom = 8
+		fleet_strip_backing.position = Vector2(1123,58)
+		fleet_strip_backing.size = Vector2(174,52)
+		fleet_strip_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fleet_strip_backing.z_index = 19
+		fleet_strip_backing.hide(); root.add_child(fleet_strip_backing)
+		fleet_strip = HBoxContainer.new(); fleet_strip.position = Vector2(1135,66); fleet_strip.z_index = 20
 		fleet_strip.add_theme_constant_override("separation",10); root.add_child(fleet_strip)
+		fleet_strip.visibility_changed.connect(func() -> void: fleet_strip_backing.visible = fleet_strip.visible)
 		fleet_button = _button("",_show_popup.bind("fleet"),fleet_strip)
-		fleet_button.icon = load("res://assets/ui/flight/fleet.svg")
+		fleet_button.icon = FLEET_ICON
 		fleet_button.custom_minimum_size.x = 150
+		fleet_button.custom_minimum_size.y = 34
 		fleet_button.add_theme_font_size_override("font_size",11)
 		fleet_button.add_theme_constant_override("icon_max_width",28)
 		fleet_button.tooltip_text = "Allied escorts · inspect readiness, orders and repairs"
-		var fleet_plate := Instruments.box(Instruments.NAV)
-		fleet_plate.bg_color.a = 0.84
-		fleet_button.add_theme_stylebox_override("normal",fleet_plate)
+		for state: String in ["normal","hover","pressed","disabled","focus"]:
+			fleet_button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+		fleet_button.add_theme_color_override("font_color",Color("f5f0e4"))
+		fleet_button.add_theme_color_override("font_hover_color",Color.WHITE)
 		for id: String in campaign.fleet.catalog:
 			var bar := ProgressBar.new(); bar.custom_minimum_size = Vector2(78,10)
 			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER; bar.show_percentage = false
@@ -1140,6 +1186,16 @@ func _make_ui() -> void:
 	menu_shade.color = Color(0,0,0,0.65)
 	menu_shade.hide()
 	root.add_child(menu_shade)
+	cargo_modal_backing = NinePatchRect.new()
+	cargo_modal_backing.texture = CARGO_MODAL_SHELL
+	cargo_modal_backing.patch_margin_left = 44
+	cargo_modal_backing.patch_margin_right = 44
+	cargo_modal_backing.patch_margin_top = 38
+	cargo_modal_backing.patch_margin_bottom = 38
+	cargo_modal_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cargo_modal_backing.z_index = 29
+	cargo_modal_backing.hide()
+	root.add_child(cargo_modal_backing)
 	popup = PanelContainer.new()
 	popup.position = Vector2(1020,100)
 	popup.size = Vector2(555,595)
@@ -1155,17 +1211,31 @@ func _make_ui() -> void:
 	contact_status_pod.position = Vector2(1090, 785)
 	contact_status_pod.hide()
 	popup.resized.connect(_sync_communicator_shell)
-	var popup_scroll := ScrollContainer.new()
+	popup.resized.connect(_sync_cargo_modal_backing)
+	popup_scroll = ScrollContainer.new()
 	popup_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	popup_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	popup_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	popup_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	popup.add_child(popup_scroll)
 	popup_body = VBoxContainer.new()
 	popup_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	popup_body.add_theme_constant_override("separation",12)
 	popup_scroll.add_child(popup_body)
+	cargo_popup_inset = MarginContainer.new()
+	# The generated shell includes a broad transparent surround. Match the live
+	# content inset to the visible rim, with balanced padding on all four sides.
+	cargo_popup_inset.add_theme_constant_override("margin_left",65)
+	cargo_popup_inset.add_theme_constant_override("margin_right",65)
+	cargo_popup_inset.add_theme_constant_override("margin_top",60)
+	cargo_popup_inset.add_theme_constant_override("margin_bottom",60)
+	cargo_popup_inset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cargo_popup_inset.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	popup.visible = false
 	popup.visibility_changed.connect(func() -> void:
 		menu_shade.visible = popup.visible and (popup_kind == "menu" or menu_return)
 		_sync_communicator_shell()
+		_sync_cargo_modal_backing()
 		if not popup.visible: _reset_contact_presentation())
 	planet_map = PlanetMap.new()
 	planet_map.definition = model.definition()
@@ -2040,6 +2110,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				if not paused and not _inspection_open():
 					hud.cycle_group(-1 if event.shift_pressed else 1)
 					audio.play("ui_confirm")
+			KEY_BRACKETLEFT:
+				if not paused and not _inspection_open(): hud.page_palette(-1)
+			KEY_BRACKETRIGHT:
+				if not paused and not _inspection_open(): hud.page_palette(1)
 			KEY_SPACE: _toggle_pause()
 			KEY_ESCAPE: _escape_menu(); return
 			KEY_F5: _save()
@@ -2546,6 +2620,9 @@ func _refresh_ui() -> void:
 		system_map.locked = paused or popup.visible
 		if system_map.visible: system_map.refresh()
 	_layout_seam_context_card()
+	if popup.visible and popup_kind == "cargo" and hud != null:
+		hud.context_card.hide(); hud.subject.hide(); hud.action_state.hide()
+		hud.explanation.hide(); hud.use_button.hide(); hud.progress_bar.hide()
 	var local_view: bool = not orbital and not (system_map != null and system_map.visible) and not (sector_map != null and sector_map.visible)
 	hud.navigation.visible = local_view; hud.chart_backing.visible = local_view; hud.chart_heading.visible = local_view
 	_update_guidance()
@@ -2631,13 +2708,13 @@ func _layout_seam_context_card() -> void:
 
 func _layout_default_context_card() -> void:
 	hud.context_card.position = Vector2(450,744)
-	hud.context_card.size = Vector2(290,117)
-	hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
-	hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
-	hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
+	hud.context_card.size = Vector2(290,86)
+	hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,20); hud.subject.add_theme_font_size_override("font_size",14)
+	hud.action_state.position = Vector2(622,752); hud.action_state.size = Vector2(106,18); hud.action_state.add_theme_font_size_override("font_size",10)
+	hud.explanation.position = Vector2(462,774); hud.explanation.size = Vector2(266,32); hud.explanation.add_theme_font_size_override("font_size",11)
 	hud.explanation.add_theme_color_override("font_color", Instruments.MUTED)
-	hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
-	hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
+	hud.use_button.position = Vector2(635,796); hud.use_button.size = Vector2(95,24); hud.use_button.add_theme_font_size_override("font_size",13)
+	hud.progress_bar.position = Vector2(450,825); hud.progress_bar.size = Vector2(290,3)
 
 func _flight_inventory_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -2728,7 +2805,7 @@ func _toast(text: String, item_icon: String = "") -> void:
 	toast_item_icon = item_icon
 	if is_instance_valid(status_icon):
 		status_icon.visible = true
-		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else TOAST_SIGNAL_ICON
+		status_icon.texture = preload("res://assets/ui/resonant-glass-v1.png") if item_icon == "glass" else status_default_icon
 		status_icon.modulate = Color.WHITE if item_icon == "glass" else Color("e9b72f")
 		status_icon.position = Vector2(28,82)
 		status_icon.size = Vector2(18,18)
@@ -2837,6 +2914,7 @@ func _show_popup(kind: String) -> void:
 	if recognition_button != null: recognition_button.hide()
 	# Remove the wide case/contact content before requesting a narrower panel.
 	for child: Node in popup_body.get_children(): popup_body.remove_child(child); child.queue_free()
+	popup_body.add_theme_constant_override("separation",8 if kind == "cargo" else 12)
 	popup_body.update_minimum_size(); popup.get_child(0).update_minimum_size(); popup.update_minimum_size()
 	system_map.locked = true
 	planet_map.hide()
@@ -2845,6 +2923,9 @@ func _show_popup(kind: String) -> void:
 	menu_shade.visible = kind == "menu" or menu_return
 	popup.position = Vector2(522,165) if kind == "menu" else Vector2(1020,100)
 	popup.size = Vector2(555,660 if kind in ["service","contact","freight"] and campaign != null else 595)
+	if kind == "cargo":
+		popup.position = Vector2(960,78)
+		popup.size = Vector2(580,500)
 	if kind in ["contact","signals","conflict","territory"] and campaign != null:
 		popup.position = Vector2(690,100)
 		popup.size = Vector2(885,660)
@@ -2853,6 +2934,15 @@ func _show_popup(kind: String) -> void:
 	if kind == "service" and not shop_actor.is_empty():
 		popup.position = Vector2(690,100); popup.size = Vector2(885,660)
 	if kind == "badges": popup.position = Vector2(690,130); popup.size = Vector2(885,630)
+	if kind == "cargo":
+		if popup_scroll.get_parent() == popup: popup.remove_child(popup_scroll)
+		if cargo_popup_inset.get_parent() != popup: popup.add_child(cargo_popup_inset)
+		if popup_scroll.get_parent() != cargo_popup_inset: cargo_popup_inset.add_child(popup_scroll)
+	else:
+		if cargo_popup_inset.get_parent() == popup:
+			if popup_scroll.get_parent() == cargo_popup_inset: cargo_popup_inset.remove_child(popup_scroll)
+			popup.remove_child(cargo_popup_inset)
+		if popup_scroll.get_parent() != popup: popup.add_child(popup_scroll)
 	var instrument: bool = kind in ["contact","service"] and campaign != null
 	if instrument:
 		popup.position = Vector2(310,135); popup.size = Vector2(980,630)
@@ -2862,19 +2952,31 @@ func _show_popup(kind: String) -> void:
 		transparent.set_content_margin(SIDE_LEFT,30); transparent.set_content_margin(SIDE_RIGHT,30)
 		transparent.set_content_margin(SIDE_TOP,9); transparent.set_content_margin(SIDE_BOTTOM,32)
 		popup.add_theme_stylebox_override("panel",transparent)
+	elif kind == "cargo":
+		popup.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
 	else: popup.add_theme_stylebox_override("panel",_style(Color("242622")))
+	if cargo_modal_backing != null:
+		cargo_modal_backing.position = popup.position
+		cargo_modal_backing.size = popup.size
+		cargo_modal_backing.visible = kind == "cargo"
 	popup.z_index = 30; menu_shade.z_index = 20
 	popup.visible = true
+	if kind == "cargo":
+		if hud != null:
+			hud.context_card.hide(); hud.subject.hide(); hud.action_state.hide()
+			hud.explanation.hide(); hud.use_button.hide(); hud.progress_bar.hide()
+		if fleet_strip != null: fleet_strip.hide()
 	var header := HBoxContainer.new()
 	popup_body.add_child(header)
-	var titles := {"cargo":"EXPEDITION INVENTORY", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
+	var titles := {"cargo":"Expedition hold", "systems":"SHIP SYSTEMS", "audio":"AUDIO MIX", "controls":"FLIGHT CONTROLS", "journal":"EXPEDITION LOG", "contact":"VELL / TRADE", "service":"DOCK SERVICES", "menu":"GAME MENU"}
 	if campaign != null: titles.contact = "COMMUNICATIONS"; titles.badges = "BADGES"; titles.colonies = "COLONY ADMINISTRATION"; titles.freight = "FREIGHT CONTRACTS"
 	titles.fleet = "ALLIED FLEET"
 	titles.signals = "ORBITAL SIGNALS"
 	titles.conflict = "COLONY DEFENSE"
 	titles.territory = "COLONY TERMS"
 	titles.biosphere = "PLANET ECOSYSTEM"
-	var title: Label = _label(titles.get(kind,"EXPEDITION"),12 if instrument else 22,Color("343b31") if instrument else Instruments.PAPER)
+	var title_text: String = _cargo_window_title() if kind == "cargo" else str(titles.get(kind,"EXPEDITION"))
+	var title: Label = _label(title_text,12 if instrument else 19 if kind == "cargo" else 22,Color("343b31") if instrument else Instruments.PAPER)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	var close: Button = _button("×",_escape_menu,header,"ui_close")
@@ -2892,7 +2994,7 @@ func _show_popup(kind: String) -> void:
 			close.add_theme_stylebox_override(state,box)
 		close.add_theme_color_override("font_color",Color("dedad0"))
 		close.add_theme_color_override("font_hover_color",Color.WHITE)
-	else: popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
+	elif kind != "cargo": popup_body.add_child(_label("INSPECTION PAUSED  ·  Esc to close",12,Instruments.GOLD))
 	if kind == "menu":
 		_button("Resume game",_close_popup,popup_body)
 		_button("Save game",_save,popup_body)
@@ -3029,6 +3131,12 @@ func _sync_communicator_shell() -> void:
 		if show_shell and campaign != null:
 			contact_status_pod.update_status(campaign.field.state.hull, campaign.field.max_capacity("hull"), campaign.field.state.energy, campaign.field.max_capacity("energy"), campaign.field.marks)
 
+func _sync_cargo_modal_backing() -> void:
+	if not is_instance_valid(cargo_modal_backing) or not is_instance_valid(popup): return
+	cargo_modal_backing.visible = popup.visible and popup_kind == "cargo"
+	cargo_modal_backing.position = popup.position
+	cargo_modal_backing.size = popup.size
+
 func _inspection_open() -> bool:
 	return popup.visible or (planet_map != null and planet_map.visible) or (sector_map != null and sector_map.visible) or (system_map != null and system_map.visible)
 
@@ -3084,28 +3192,139 @@ func _cargo_tab(location: String) -> void:
 	cargo_location = location
 	_show_popup("cargo")
 
+func _cargo_window_title() -> String:
+	if cargo_location == "specimens": return "Specimen hold"
+	if cargo_location == "surface": return "Surface produce · %s" % str(model.definition().get("name","local world"))
+	return "Ship cargo"
+
+func _cargo_window_description() -> String:
+	if cargo_location == "specimens": return "Living species carried for study or release · stored separately from ship cargo."
+	if cargo_location == "surface": return "Cultivated produce stays on this world; it is not aboard your ship."
+	return "Freight, field tools and ship supplies carried by this ship."
+
+func _cargo_icon(source: Texture2D, region: Rect2) -> Texture2D:
+	var cropped := AtlasTexture.new()
+	cropped.atlas = source
+	cropped.region = region
+	return cropped
+
+func _cargo_tab_artwork(button: Button, card: Control, column: int, selected: bool) -> CargoTabArtwork:
+	var artwork := CargoTabArtwork.new()
+	var atlas_column_width: float = CARGO_TAB_STATES.get_width()/5.0
+	var atlas_x: float = atlas_column_width*float(column)
+	artwork.idle_texture = _cargo_icon(CARGO_TAB_STATES,Rect2(atlas_x,182,atlas_column_width,220))
+	artwork.selected_texture = _cargo_icon(CARGO_TAB_STATES,Rect2(atlas_x,402,atlas_column_width,270))
+	artwork.selected = selected
+	card.add_child(artwork)
+	card.move_child(artwork,0)
+	artwork.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for state: String in ["normal","hover","pressed","disabled","focus"]:
+		var hit_style := StyleBoxEmpty.new()
+		hit_style.content_margin_left = 19
+		button.add_theme_stylebox_override(state,hit_style)
+	button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	button.add_theme_constant_override("h_separation",0)
+	button.add_theme_constant_override("icon_max_width",28)
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.expand_icon = true
+	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.refresh_art())
+	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.refresh_art())
+	button.focus_entered.connect(func() -> void: artwork.focused = true; artwork.refresh_art())
+	button.focus_exited.connect(func() -> void: artwork.focused = false; artwork.refresh_art())
+	artwork.refresh_art()
+	return artwork
+
+func _cargo_tab_style(button: Button, selected: bool, tint: Color) -> void:
+	for state: String in ["normal","hover","pressed","disabled","focus"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color("182326",0.95) if selected else Color("10181a",0.62)
+		box.border_color = tint if selected else Color("627176",0.52)
+		box.set_border_width_all(1 if selected else 0)
+		box.border_width_left = 3 if selected else 0
+		box.border_width_bottom = 1 if selected else 0
+		box.set_corner_radius_all(1)
+		box.content_margin_left = 10; box.content_margin_right = 8
+		box.content_margin_top = 5; box.content_margin_bottom = 5
+		if selected:
+			box.shadow_color = Color(tint.r,tint.g,tint.b,0.14)
+			box.shadow_size = 4
+		if state == "hover" and not selected:
+			box.bg_color = Color("273438",0.91)
+			box.border_color = Color(tint.r,tint.g,tint.b,0.75)
+			box.set_border_width_all(1)
+		button.add_theme_stylebox_override(state,box)
+	button.add_theme_color_override("font_color",Color("f1eee1") if selected else Color("b7c2bd"))
+	button.add_theme_color_override("font_hover_color",Color("f5f1e5"))
+	button.add_theme_color_override("icon_normal_color",Color.WHITE)
+	button.add_theme_color_override("icon_hover_color",Color.WHITE)
+	button.add_theme_constant_override("h_separation",8)
+	button.add_theme_constant_override("icon_max_width",42)
+	button.expand_icon = true
+	button.add_theme_font_size_override("font_size",12)
+
 func _build_cargo_panel() -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation",8)
 	popup_body.add_child(tabs)
-	for location: String in (["ship","specimens","surface"] if campaign != null else ["ship","surface"]):
-		var tab: Button = _button("Onboard" if location == "ship" else "Specimens" if location == "specimens" else "Surface store",_cargo_tab.bind(location),tabs)
-		tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		Instruments.instrument(tab,"cargo",Instruments.CARGO,cargo_location == location)
+	var used_hold: int = campaign.commerce.used_space(campaign) if campaign != null else model.state.samples
+	var hold_capacity: int = campaign.commerce.capacity() if campaign != null else 2
+	var specimen_count: int = campaign.biosphere.used() if campaign != null else model.state.samples
+	var planet_stock: int = model.state.produce
+	var tab_locations: Array[String] = []
+	tab_locations.append("ship")
+	if campaign != null: tab_locations.append("specimens")
+	tab_locations.append("surface")
+	for location: String in tab_locations:
+		var tab_title: String = "Ship cargo" if location == "ship" else "Specimens" if location == "specimens" else "Surface produce"
+		var count_copy: String = "%d / %d units" % [used_hold,hold_capacity] if location == "ship" else "%d / 12 held" % specimen_count if location == "specimens" else "%d / 8 units" % planet_stock
+		var choice := Control.new()
+		choice.custom_minimum_size = Vector2(140,52)
+		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tabs.add_child(choice)
+		var tab: Button = _button("",_cargo_tab.bind(location),choice,"ui_open")
+		if location == "ship": tab.icon = CARGO_HOLD_ICON
+		elif location == "specimens": tab.icon = _cargo_icon(CARGO_SPECIMEN_ICON,Rect2(16,82,160,70))
+		else: tab.icon = _cargo_icon(CARGO_SURFACE_ICON,Rect2(36,68,120,52))
+		var atlas_column: int = 1 if location == "ship" else 3 if location == "specimens" else 0
+		var tab_art: CargoTabArtwork = _cargo_tab_artwork(tab,choice,atlas_column,cargo_location == location)
+		tab_art.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		tab_art.position = Vector2(0,7)
+		tab_art.size = Vector2(67,37)
+		tab.tooltip_text = "Ship cargo · freight, field tools and ship supplies." if location == "ship" else "Specimens · living species carried for study or release; maximum 12." if location == "specimens" else "Surface produce · cultivated resources stored on this world; maximum eight."
+		var tab_copy := VBoxContainer.new()
+		tab_copy.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		tab_copy.offset_left = 74
+		tab_copy.offset_right = 0
+		tab_copy.alignment = BoxContainer.ALIGNMENT_CENTER
+		tab_copy.add_theme_constant_override("separation",1)
+		tab_copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		choice.add_child(tab_copy)
+		var active_tab: bool = cargo_location == location
+		var tab_heading := _label(tab_title.to_upper() if active_tab else tab_title,12 if active_tab else 11,Color("fff1d1") if active_tab else Color("a9b8b5"))
+		tab_heading.clip_text = true
+		tab_copy.add_child(tab_heading)
+		var tab_count := _label(count_copy,10,Color("a9e8df") if active_tab else Color("81908f"))
+		tab_count.clip_text = true
+		tab_copy.add_child(tab_count)
+	var category_description := _label(_cargo_window_description(),12,Color("c2ceca"))
+	category_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	category_description.custom_minimum_size.x = 430
+	popup_body.add_child(category_description)
 	if cargo_location == "specimens" and biosphere_view != null:
 		biosphere_view.build_inventory(); return
 	var onboard: bool = cargo_location == "ship"
 	if onboard and campaign != null:
-		_panel_copy("TERRAFORMING LOCKER · %d / 6" % campaign.climate.units(),Instruments.GOLD)
+		_panel_copy("Field tools · %d / 6" % campaign.climate.units(),Instruments.GOLD)
 		for id: String in campaign.climate.state.charges:
 			var count: int = campaign.climate.state.charges[id]
 			if count == 0: continue
 			var item: Button = _button("%s × %d" % [Climate.data().tools[id].name,count],func() -> void: _close_popup(); _select_climate(id),popup_body)
 			item.icon = Instruments.icon(id); item.add_theme_constant_override("icon_max_width",32)
 			item.tooltip_text = "Select this owned unit, then click the planet or terrain to deploy."
-		_panel_copy("CARGO HOLD   %d / %d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()],Instruments.CARGO)
+		_panel_copy("Freight",Instruments.CARGO)
 		if campaign.colonies.reserved_space() > 0:
-			_panel_copy("COLONY KIT × 1 · occupies four cargo spaces",Instruments.GOLD)
+			_panel_copy("Colony kit × 1 · occupies four cargo spaces",Instruments.GOLD)
 			var deploy: Button = _button("Deploy colony kit",_select_colony_kit,popup_body)
 			deploy.icon = Instruments.icon("cargo")
 			deploy.tooltip_text = campaign.colonies.deployment_reason(campaign)
@@ -3113,10 +3332,9 @@ func _build_cargo_panel() -> void:
 		for lot: Dictionary in campaign.commerce.state.cargo:
 			_panel_copy("%s × %d\nOrigin: %s" % [campaign.commerce.catalog.goods[lot.item].name,lot.quantity,Geography.definition(lot.origin).name],Instruments.PAPER)
 		if campaign.commerce.used_space(campaign) == 0: _panel_copy("Empty. Load colony surplus or purchase goods at a dock.")
-		_panel_copy("Specimens and ship supplies use separate compartments.")
+		_panel_copy("Living specimens are stored separately in the Specimens hold.")
 	if onboard: _build_supply_inventory()
 	if onboard and biosphere_view != null:
-		_button("Specimens · %d / 12" % campaign.biosphere.used(),_cargo_tab.bind("specimens"),popup_body).icon = Instruments.icon("seed")
 		if model.state.samples > 0: _panel_copy("Local nursery pods: %d / 2. Stored separately from expedition specimens." % model.state.samples)
 		return
 	var amount: int = model.state.samples if onboard else model.state.produce
@@ -3159,17 +3377,27 @@ func _build_cargo_panel() -> void:
 		Instruments.instrument(_button("Open nursery agreement",_show_popup.bind("nursery"),popup_body,"ui_open"),"comms",Instruments.COMMS)
 
 func _build_supply_inventory() -> void:
-	_panel_copy("SHIP SUPPLIES · energy %d / 3 · repair %d / 3" % [model.state.energy_packs,model.repair_pack_count()],Instruments.GOLD)
+	_panel_copy("Ship supplies · energy %d / 3 · repair %d / 3" % [model.state.energy_packs,model.repair_pack_count()],Instruments.GOLD)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation",6)
+	grid.add_theme_constant_override("v_separation",6)
+	popup_body.add_child(grid)
 	for id: String in ["pack","repair_pack","mega_repair_pack"]:
 		var entry: Dictionary = hud.Palette.entry(id)
 		var count: int = model.state.energy_packs if id == "pack" else model.state.repair_packs[id]
 		var reason: String = hud.Palette.unavailable(id,model)
-		var item: Button = _button("%s × %d" % [entry.title,count],_inventory_action.bind(id,"cargo"),popup_body)
-		item.icon = Instruments.icon(entry.icon)
-		item.add_theme_constant_override("icon_max_width",38)
-		item.set_meta("supply_id",id)
+		var item_title: String = "Energy pack\n× %d" % count if id == "pack" else "Full repair\n× %d" % count if id == "mega_repair_pack" else "Repair pack\n× %d" % count
+		var item: Button = _button(item_title,_inventory_action.bind(id,"cargo"),grid)
+		item.custom_minimum_size = Vector2(140,74)
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		item.icon = ENERGY_PACK_ICON if id == "pack" else REPAIR_PACK_ICON
+		item.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		item.add_theme_constant_override("icon_max_width",42)
+		item.add_theme_font_size_override("font_size",11)
 		item.tooltip_text = Instruments.tooltip(entry.hint+("\n"+reason if not reason.is_empty() else ""))
 		item.disabled = paused or not reason.is_empty()
+		_cargo_tab_style(item,false,Instruments.CARGO)
 
 func _inspect_system(id: String) -> void:
 	inspected_system = id
@@ -3968,13 +4196,20 @@ func _refresh_fleet_ui() -> void:
 	fleet_strip.visible = not _inspection_open() and (campaign.fleet.capacity(campaign) > 0 or not ids.is_empty())
 	fleet_button.text = "ESCORTS %d/%d" % [ids.size(),campaign.fleet.capacity(campaign)]
 	fleet_button.tooltip_text = "Allied fleet · %s\nInspect hull, return escorts or arrange dock repairs." % ("assist attacks" if campaign.fleet.state.assist else "following, holding fire")
+	var visible_bars: int = 0
 	for id: String in fleet_bars:
 		var bar: ProgressBar = fleet_bars[id]
 		bar.visible = id in ids
 		if not bar.visible: continue
+		visible_bars += 1
 		bar.max_value = campaign.fleet.catalog[id].hull
 		bar.value = campaign.fleet.state.ships[id].hull
 		bar.tooltip_text = "%s · %s\nHull %d / %d" % [campaign.fleet.catalog[id].name,campaign.sector.faction_by_id(id).name,bar.value,bar.max_value]
+	var content_width: float = 150.0 + float(visible_bars)*88.0
+	fleet_strip.size = Vector2(content_width,36)
+	fleet_strip_backing.position = fleet_strip.position - Vector2(12,8)
+	fleet_strip_backing.size = Vector2(content_width+24,52)
+	fleet_strip_backing.visible = fleet_strip.visible
 
 func _select_climate(id: String) -> void:
 	if paused or _inspection_open() or campaign == null or not Climate.data().tools.has(id): return
@@ -4063,7 +4298,7 @@ func _build_fleet_panel(only: String = "") -> void:
 	var stance: Button = _button("Assist attacks" if fleet.state.assist else "Follow · hold fire",func() -> void:
 		if paused: return
 		fleet.set_assist(campaign,not fleet.state.assist); _save(false); _show_popup(popup_kind),popup_body)
-	stance.icon = load("res://assets/ui/flight/fleet.svg"); stance.add_theme_constant_override("icon_max_width",28)
+	stance.icon = FLEET_ICON; stance.add_theme_constant_override("icon_max_width",28)
 	stance.tooltip_text = "Toggle whether escorts fire on the target you engage. Following ships can still take enemy fire."
 	stance.disabled = paused
 	for id: String in fleet.catalog:

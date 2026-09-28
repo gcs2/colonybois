@@ -15,10 +15,12 @@ const ConsolePod = preload("res://scripts/flight_console_pod.gd")
 const CategoryHint = preload("res://scripts/flight_category_hint.gd")
 const MARK_ICON = preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v4/marks-emblem.png")
 const UI_ELEMENT_DIR := "res://art/visual-canon/ui-element-candidates/focused-elements-v5/"
-const CONSOLE_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/flight-inventory-console.png")
+const CONSOLE_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v6/inventory-console-shell.png")
 const CHART_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/surface-chart-housing.png")
-const TAB_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/shared-category-tab-v2.png")
-const MARKS_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v5/marks-balance-plate.png")
+const TAB_STATES_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v6/category-tab-states.png")
+const SLOT_SELECTION_TEXTURE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v6/slot-selection-overlay.png")
+const MARKS_HOUSING = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v6/marks-balance-plate.png")
+const HUD_PLAQUE = preload("res://art/visual-canon/ui-element-candidates/focused-elements-v7/hud-plaque-v1.png")
 const PALETTE_ORIGIN := Vector2(1034, 690)
 const PALETTE_COLUMNS := Palette.COLUMNS
 const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
@@ -59,73 +61,29 @@ const TAB_CARD_HEIGHT := 37.0
 const TAB_CARD_GAP := 1.0
 
 
-class TabCardArtwork extends Control:
-	var base_texture: Texture2D
-	var accent: Color = Color("8cc9d0")
+class TabCardArtwork extends TextureRect:
+	var idle_texture: Texture2D
+	var selected_texture: Texture2D
 	var selected: bool = false
 	var hovered: bool = false
-	var depressed: bool = false
 	var focused: bool = false
 	var disabled: bool = false
 
-	func _shape(inset: float = 0.0, sink: float = 0.0) -> PackedVector2Array:
-		var w: float = size.x
-		var h: float = size.y
-		var cut: float = minf(8.0, (h - inset * 2.0) * 0.24)
-		return PackedVector2Array([
-			Vector2(inset, inset + cut + sink),
-			Vector2(inset + cut, inset + sink),
-			Vector2(w - inset - cut, inset + sink),
-			Vector2(w - inset, inset + cut + sink),
-			Vector2(w - inset, h - inset - 6.0 + sink),
-			Vector2(w - inset - 6.0, h - inset + sink),
-			Vector2(inset + 6.0, h - inset + sink),
-			Vector2(inset, h - inset - 6.0 + sink)
-		])
+	func _init() -> void:
+		expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stretch_mode = TextureRect.STRETCH_SCALE
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	func _closed(points: PackedVector2Array) -> PackedVector2Array:
-		var closed := points.duplicate()
-		closed.append(points[0])
-		return closed
-
-	func _draw() -> void:
-		if size.x < 24.0 or size.y < 20.0 or base_texture == null: return
-		var sink: float = 1.0 if depressed and not disabled else 0.0
-		var face := Rect2(Vector2(0.0,sink),Vector2(size.x,size.y-sink))
-		draw_texture_rect(base_texture,face,false,Color(0.62,0.66,0.64,0.72) if disabled else Color.WHITE)
-		# The approved image supplies the idle silhouette. Only pointer hover blooms.
-		if hovered and not disabled:
-			var glow := Color(accent.r,accent.g,accent.b,0.34)
-			draw_polyline(_closed(_shape(-1.0,sink)),glow,4.0,true)
-			draw_line(Vector2(8.0,size.y-3.0),Vector2(size.x-8.0,size.y-3.0),accent,1.5,true)
-		elif selected and not disabled:
-			var inlay := accent
-			inlay.a = 0.88
-			draw_line(Vector2(9.0,size.y-3.0),Vector2(size.x-9.0,size.y-3.0),inlay,1.25,true)
-		if focused and not disabled:
-			draw_polyline(_closed(_shape(2.0,sink)),Color("fff1cc"),1.25,true)
+	func refresh_art() -> void:
+		texture = selected_texture if selected or hovered or focused else idle_texture
+		modulate = Color("b9b9b2") if disabled and not selected else Color.WHITE
 
 
-class InventorySelectionMarks extends Control:
-	const CORNER_TINT := Color("e2cc82")
-	const BASE_TINT := Color("c9a64f")
-
-	func _draw() -> void:
-		if size.x < 20.0 or size.y < 20.0: return
-		var inset: float = 4.0
-		var arm: float = minf(9.0, minf(size.x, size.y) * 0.16)
-		var corners := [
-			[Vector2(inset, inset), Vector2.RIGHT, Vector2.DOWN],
-			[Vector2(size.x-inset, inset), Vector2.LEFT, Vector2.DOWN],
-			[Vector2(inset, size.y-inset), Vector2.RIGHT, Vector2.UP],
-			[Vector2(size.x-inset, size.y-inset), Vector2.LEFT, Vector2.UP]
-		]
-		for corner: Array in corners:
-			var origin: Vector2 = corner[0]
-			draw_line(origin, origin+corner[1]*arm, CORNER_TINT, 1.5, true)
-			draw_line(origin, origin+corner[2]*arm, CORNER_TINT, 1.5, true)
-		var base_y: float = size.y-2.0
-		draw_line(Vector2(inset+4.0,base_y), Vector2(size.x-inset-4.0,base_y), BASE_TINT, 1.8, true)
+class InventorySelectionMarks extends TextureRect:
+	func _init() -> void:
+		expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		stretch_mode = TextureRect.STRETCH_SCALE
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 var nav_pod: Control
 var console_pod: Control
@@ -199,7 +157,7 @@ var equipment_button: Button
 var rise_button: Button
 var lower_button: Button
 var brake_button: Button
-var context_card: ColorRect
+var context_card: NinePatchRect
 var scout_label: Label
 
 func _ready() -> void:
@@ -223,12 +181,12 @@ func _style_inventory_slot(button: Button, selected: bool = false) -> void:
 	if selected and selection_marks == null:
 		selection_marks = InventorySelectionMarks.new()
 		selection_marks.name = "InventorySelectionMarks"
+		selection_marks.texture = _tab_icon(SLOT_SELECTION_TEXTURE, Rect2(300,300,680,680))
 		selection_marks.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		selection_marks.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		button.add_child(selection_marks)
 	if selection_marks != null:
 		selection_marks.visible = selected
-		if selected: selection_marks.queue_redraw()
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0,0,0,0)
 	normal.border_color = Color(0,0,0,0)
@@ -289,11 +247,11 @@ func symbol_at(icon: String, rect: Rect2, action: String, title: String, tint: C
 
 func _show_category_hint(button: Button, group: String) -> void:
 	var action: String = {
-		"Main tools": "Browse tools [Tab]",
-		"Inventory": "Carried items [Tab]",
-		"Weapons": "Browse tools [Tab]",
-		"Environment": "Climate tools [Tab]",
-		"Communications": "Contact and trade [Y]"
+		"Main tools": "Scan, collect, mine [Tab]",
+		"Inventory": "Supplies and carried items [Tab]",
+		"Weapons": "Ship and surface weapons [Tab]",
+		"Environment": "Planet climate tools [Tab]",
+		"Communications": "Contact, trade, ship services [Y]"
 	}.get(group, "Browse [Tab]")
 	category_hint.present(button, group + " · " + action, button.position.y + 20.0)
 
@@ -320,11 +278,11 @@ func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
 	texture.region = safe_region
 	return texture
 
-func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
+func _attach_tab_card(button: Button, column: int) -> TabCardArtwork:
 	var artwork := TabCardArtwork.new()
-	artwork.base_texture = _tab_icon(TAB_HOUSING, Rect2(631,347,464,214))
-	artwork.accent = tint
-	artwork.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var atlas_column_width: float = TAB_STATES_TEXTURE.get_width()/5.0
+	artwork.idle_texture = _tab_icon(TAB_STATES_TEXTURE, Rect2(atlas_column_width*column,182,atlas_column_width,220))
+	artwork.selected_texture = _tab_icon(TAB_STATES_TEXTURE, Rect2(atlas_column_width*column,402,atlas_column_width,270))
 	var parent: Control = button.get_parent() as Control
 	artwork.position = button.position
 	artwork.size = button.size
@@ -335,12 +293,10 @@ func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.add_theme_constant_override("icon_max_width",36)
-	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.queue_redraw())
-	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.queue_redraw())
-	button.button_down.connect(func() -> void: artwork.depressed = true; artwork.queue_redraw())
-	button.button_up.connect(func() -> void: artwork.depressed = false; artwork.queue_redraw())
-	button.focus_entered.connect(func() -> void: artwork.focused = true; artwork.queue_redraw())
-	button.focus_exited.connect(func() -> void: artwork.focused = false; artwork.queue_redraw())
+	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.refresh_art())
+	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.refresh_art())
+	button.focus_entered.connect(func() -> void: artwork.focused = true; artwork.refresh_art())
+	button.focus_exited.connect(func() -> void: artwork.focused = false; artwork.refresh_art())
 	return artwork
 
 func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, selected: bool) -> void:
@@ -351,10 +307,9 @@ func _set_tab_appearance(button: Button, artwork: TabCardArtwork, tint: Color, s
 	button.add_theme_color_override("icon_hover_color",icon_tint)
 	button.add_theme_color_override("icon_pressed_color",icon_tint)
 	button.add_theme_color_override("icon_disabled_color",Color("687370"))
-	artwork.accent = tint
 	artwork.selected = selected
 	artwork.disabled = palette_locked
-	artwork.queue_redraw()
+	artwork.refresh_art()
 func _build() -> void:
 	nav_pod = NavPod.new()
 	nav_pod.position = Vector2(26, 680)
@@ -372,7 +327,7 @@ func _build() -> void:
 	add_child(chart_backing)
 
 	palette_backing = TextureRect.new()
-	palette_backing.texture = _tab_icon(CONSOLE_HOUSING, Rect2(100,106,1972,508))
+	palette_backing.texture = _tab_icon(CONSOLE_HOUSING, Rect2(30,70,1960,510))
 	palette_backing.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	palette_backing.stretch_mode = TextureRect.STRETCH_SCALE
 	palette_backing.position = PALETTE_ORIGIN - Vector2(8, 8)
@@ -427,7 +382,7 @@ func _build() -> void:
 
 	# The only Marks balance stays in a high-contrast upper-right Field Instruments plate.
 	treasury_backing = TextureRect.new()
-	(treasury_backing as TextureRect).texture = _tab_icon(MARKS_HOUSING, Rect2(144,202,1695,371))
+	(treasury_backing as TextureRect).texture = _tab_icon(MARKS_HOUSING, Rect2(136,200,1712,376))
 	(treasury_backing as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	(treasury_backing as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
 	# The recognition control occupies the extreme upper-right corner; keep this
@@ -502,7 +457,7 @@ func _build() -> void:
 		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		category_buttons[group] = button
-		category_tab_cards[group] = _attach_tab_card(button,tint)
+		category_tab_cards[group] = _attach_tab_card(button,group_index)
 		button.tooltip_text = ""
 		button.mouse_entered.connect(_show_category_hint.bind(button, group))
 		button.mouse_exited.connect(_hide_category_hint)
@@ -510,7 +465,7 @@ func _build() -> void:
 	communications_button = symbol_at("communicator",Rect2(772+group_index*(TAB_CARD_WIDTH+TAB_CARD_GAP),686,TAB_CARD_WIDTH,TAB_CARD_HEIGHT),"contact","Communications · known civilizations, local trade and ship services [Y]",Art.COMMS)
 	communications_button.icon = _tab_icon(COMMUNICATIONS_ICON_TEXTURE, COMMUNICATIONS_ICON_REGION)
 	communications_button.set_meta("category_icon_cutout",true)
-	communications_card = _attach_tab_card(communications_button,Art.COMMS)
+	communications_card = _attach_tab_card(communications_button,group_index)
 	communications_button.tooltip_text = ""
 	communications_button.mouse_entered.connect(_show_category_hint.bind(communications_button, "Communications"))
 	communications_button.mouse_exited.connect(_hide_category_hint)
@@ -518,8 +473,8 @@ func _build() -> void:
 	add_child(category_hint)
 	collapse_button = symbol_at("palette_close",Rect2(1252,692,42,42),"palette_toggle","Collapse tools",Art.NAV)
 	collapse_button.tooltip_text = "Collapse item palette; keep selected tool and ship status"
-	page_previous = symbol_at("page_previous",Rect2(1114,692,38,42),"page_previous","Previous item page",Art.NAV)
-	page_next = symbol_at("page_next",Rect2(1206,692,38,42),"page_next","Next item page",Art.NAV)
+	page_previous = symbol_at("page_previous",Rect2(1114,692,38,42),"page_previous","Previous 12-slot page [",Art.NAV)
+	page_next = symbol_at("page_next",Rect2(1206,692,38,42),"page_next","Next 12-slot page ]",Art.NAV)
 	page_label = label_at("",Rect2(1153,701,52,24),14)
 	page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	for group: String in GROUPS:
@@ -585,10 +540,15 @@ func _build() -> void:
 	guardian_warning = label_at("",Rect2(940,552,590,27),16,Art.CARGO)
 	guardian_warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	# Context feedback placard placed neatly between nav and palette
-	context_card = ColorRect.new()
+	context_card = NinePatchRect.new()
+	context_card.texture = HUD_PLAQUE
+	context_card.patch_margin_left = 22
+	context_card.patch_margin_right = 22
+	context_card.patch_margin_top = 12
+	context_card.patch_margin_bottom = 12
 	context_card.position = Vector2(450,744)
-	context_card.size = Vector2(290,117)
-	context_card.color = Color(0.06,0.09,0.11,0.88)
+	context_card.size = Vector2(290,86)
+
 	context_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	context_card.visible = false
 	add_child(context_card)
@@ -599,11 +559,11 @@ func _build() -> void:
 	explanation = label_at("",Rect2(462,778,266,36),12,Art.MUTED)
 	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	explanation.visible = false
-	use_button = button_at("Use",Rect2(635,818,95,28),"use",Equipment.tint(IDS[0]))
+	use_button = button_at("Use",Rect2(635,796,95,24),"use",Equipment.tint(IDS[0]))
 	use_button.visible = false
 	progress_bar = ProgressBar.new()
-	progress_bar.position = Vector2(450,857)
-	progress_bar.size = Vector2(290,4)
+	progress_bar.position = Vector2(450,825)
+	progress_bar.size = Vector2(290,3)
 	progress_bar.max_value = 1
 	progress_bar.show_percentage = false
 	Art.meter(progress_bar,Equipment.tint(IDS[0]))
@@ -687,11 +647,7 @@ func _group_entries(group: String) -> Array[String]:
 		return entries
 	for id: String in GROUPS[group]:
 		entries.append(id)
-	if group == "Main tools":
-		# Keep the real field tools beside usable supplies, as in the approved
-		# surface instrument. Counts and availability still come from campaign state.
-		entries.append_array(GROUPS["Inventory"])
-	if group in ["Main tools", "Inventory"]:
+	if group == "Inventory":
 		entries.append_array(campaign_inventory_ids)
 	return entries
 
@@ -732,9 +688,18 @@ func _internal_action(action: String) -> void:
 		palette_expanded = not palette_expanded
 		show_group(active_group)
 	elif action in ["page_previous","page_next"]:
-		palette_page = clampi(palette_page+(-1 if action == "page_previous" else 1),0,maxi(0,(_group_entries(active_group).size()-1)/PALETTE_PAGE_CAPACITY))
-		show_group(active_group)
+		page_palette(-1 if action == "page_previous" else 1)
 	# Item commands are handled by the scene with a fresh model validation.
+
+func page_palette(direction: int) -> void:
+	if palette_locked or not palette_expanded or direction == 0: return
+	var item_count: int = _group_entries(active_group).size()
+	var page_count: int = maxi(1,int(ceil(item_count/float(PALETTE_PAGE_CAPACITY))))
+	var step: int = 1 if direction > 0 else -1
+	var next_page: int = clampi(palette_page+step,0,page_count-1)
+	if next_page == palette_page: return
+	palette_page = next_page
+	show_group(active_group)
 
 func _toggle_navigation_menu() -> void:
 	if orbital_mode: return
@@ -780,8 +745,8 @@ func show_group(group: String) -> void:
 		console_pod.size = Vector2(CONSOLE_NATIVE_WIDTH,panel_height)
 		console_pod.scale = Vector2.ONE
 	altitude_backing.position = Vector2(console_left+106,panel_top-6)
-	flight_readout.position = Vector2(console_left+8,panel_top+21)
-	flight_readout.size = Vector2(CONSOLE_NATIVE_WIDTH-16,20)
+	flight_readout.position = Vector2(console_left+38,panel_top+21)
+	flight_readout.size = Vector2(CONSOLE_NATIVE_WIDTH-46,20)
 	flight_readout.add_theme_font_size_override("font_size",14)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
