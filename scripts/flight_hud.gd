@@ -56,9 +56,9 @@ const TAB_GROUP_ICON_REGIONS := {
 const COMMUNICATIONS_ICON_TEXTURE := preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/communications.png")
 const COMMUNICATIONS_ICON_REGION := Rect2(250, 282, 755, 733)
 const TAB_GROUP_COLORS := {"Main tools":Color("f3c567"), "Inventory":Color("8bd3c6"), "Weapons":Color("df6553"), "Environment":Color("98c981")}
-const TAB_CARD_WIDTH := 67.0
+const TAB_CARD_WIDTH := 64.0
 const TAB_CARD_HEIGHT := 37.0
-const TAB_CARD_GAP := 1.0
+const TAB_CARD_GAP := 4.0
 
 
 class TabCardArtwork extends TextureRect:
