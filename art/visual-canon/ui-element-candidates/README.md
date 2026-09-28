@@ -19,7 +19,7 @@ The earlier v1/v3 shell experiments remain candidates. The user approved the sep
 
 The [focused shell v3 set](focused-shells-v3/README.md) covers surface, orbit, approach, system and galaxy, but none of those shell images is wired into the game. The earlier v1 category-icon trial remains local and is superseded by the tracked v2 set. See [PROMPTS.md](PROMPTS.md) for initial prompt provenance and [v2 prompts](category-icons-v2/PROMPTS.md) for the current marks. Generated import sidecars and capture output remain local and must not be committed.
 
-The [v4 pictorial cutout candidates](pictorial-cutouts-v4/README.md) add isolated Inventory, Marks, system-action and galaxy-equipment artwork. The Energy Pack portrait and Marks emblem are now used in the live flight HUD; other v4 cutouts remain candidates.
+The [v4 pictorial cutout candidates](pictorial-cutouts-v4/README.md) add isolated Inventory, Marks, system-action and galaxy-equipment artwork. The Energy Pack portrait and Marks emblem are now used in the live flight HUD; other v4 cutouts remain candidates. The [v5 surface exploration cutouts](pictorial-cutouts-v5/README.md) supply separate scanner, collector and mining-tool pictures for the live surface tool grid; rendering at game size remains pending a safe Godot review.
 
 ## Status readability study — 27 September 2026
 

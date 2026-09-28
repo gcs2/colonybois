@@ -32,6 +32,12 @@ const TOOL_ATLAS_IDS: Dictionary = {
 	"shield":"shield",
 	"rally_call":"rally_call",
 }
+## Exact visual matches for the three surface exploration actions.
+const ACTION_TEXTURES: Dictionary = {
+	"scan": preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v5/field-survey-scanner-v1.png"),
+	"collect": preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v5/field-sampling-cradle-v1.png"),
+	"mine": preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v5/ore-seam-cutter-v1.png"),
+}
 ## Tight visible-alpha bounds measured inside equipment-objects-v1.png cells.
 ## The atlas contains soft transparent edge pixels outside these bounds; using
 ## the opaque artwork bounds lets the existing slot aperture show more of each
@@ -56,6 +62,9 @@ const EQUIPMENT_VISIBLE_BOUNDS: Dictionary = {
 }
 
 static func tool_texture_for(tool_id: String) -> Texture2D:
+	var action_texture := ACTION_TEXTURES.get(tool_id) as Texture2D
+	if action_texture != null:
+		return action_texture
 	if tool_id == "pack":
 		# Use the visible canister rather than scaling its large transparent canvas.
 		# Ownership and stack count still come from EncounterState.
@@ -64,8 +73,7 @@ static func tool_texture_for(tool_id: String) -> Texture2D:
 		picture.region = Rect2(423, 130, 540, 895)
 		return picture
 	# Use only exact semantic matches from the documented painted equipment atlas.
-	# Unmatched actions keep their own original SVG symbols rather than borrowing
-	# a visually similar but misleading object.
+	# Actions without a suitable authored picture retain their own current fallback.
 	if not TOOL_ATLAS_IDS.has(tool_id):
 		return null
 	var atlas_id := str(TOOL_ATLAS_IDS[tool_id])
