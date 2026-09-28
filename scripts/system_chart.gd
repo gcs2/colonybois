@@ -117,7 +117,7 @@ func _ready() -> void:
 	star.mesh = sphere; star.material_override = stellar; star.scale = Vector3.ONE*1.7; world.add_child(star)
 	ship_marker = SCOUT_SCENE.instantiate() as Node3D; ship_marker.scale = Vector3.ONE*0.25; world.add_child(ship_marker)
 	for visual: Node in ship_marker.find_children("*","VisualInstance3D",true,false):
-		ship_visuals.append(visual as VisualInstance3D)
+		var ship_visual: VisualInstance3D = visual as VisualInstance3D; ship_visual.visible = false; ship_visuals.append(ship_visual)
 	selection = MeshInstance3D.new(); var torus := TorusMesh.new(); torus.inner_radius = 5.7; torus.outer_radius = 5.9; torus.rings = 48; torus.ring_segments = 6
 	selection.mesh = torus; selection.material_override = ink(Color("a7dacc")); world.add_child(selection)
 	camera = Camera3D.new(); camera.fov = 48; camera.far = 400; world.add_child(camera)

@@ -58,6 +58,10 @@ func run() -> void:
 	check(not chart.present(game,"s8") and chart.system_id == "s2","Unknown system preview is rejected without replacing the visible system")
 	game.sector.system_by_id("s8").charted = true
 	check(chart.present(game,"s8") and chart.bodies.size() == 3 and not game.sector.system_by_id("s8").visited,"Diplomatic charts permit inspection without inventing a visit")
+	visible_scout_parts = 0
+	for visual: VisualInstance3D in chart.ship_visuals:
+		if visual.visible: visible_scout_parts += 1
+	check(not chart.ship_marker_visible and visible_scout_parts == 0,"A charted remote system keeps the player scout hidden")
 	chart.present(game,"s2"); chart.select_planet("s2p1")
 	chart.locked = true; chart.refresh(); click(chart,"s2p1")
 	check(departures.is_empty() and chart.travel.disabled,"Paused controls cannot issue departure commands")
