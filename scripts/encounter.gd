@@ -1678,7 +1678,8 @@ func _update_visuals() -> void:
 				var above_position: Vector2 = screen_at-Vector2(label.size.x*0.5,label.size.y+22)
 				label.position = left_position if not Rect2(left_position,label.size).intersects(ship_rect) else above_position
 			label.position.x = clampf(label.position.x,365.0,1480.0-label.size.x)
-		label.visible = id != "vein" and id == selected and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
+		var target_name_in_card: bool = id == selected and model.state.flight_mode != "orbit" and hud.context_card.visible and seam_tether.visible
+		label.visible = id != "vein" and id == selected and not target_name_in_card and not camera.is_position_behind(at) and not _inspection_open() and label.position.y > 145 and label.position.y < 650 and label.position.x > 350
 		label.modulate.a = 1.0
 
 func _target_position(id: String = "") -> Vector3:
@@ -2519,6 +2520,7 @@ func _refresh_ui() -> void:
 			use_button.tooltip_text = "Approach the wreck; recovering its pulse ward takes 3 seconds and 20 energy." if not use_button.disabled else "Chart Morrow first to locate orbital salvage."
 	else:
 		var gap: float = ship.position.distance_to(_target_position())
+		var effective_reach: float = Equipment.reach(tool)*0.85
 		var reason: String = _tool_reason(tool,selected,0)
 		if selected == "vein":
 			var remaining: int = int(model.state.ore_remaining)
@@ -2535,7 +2537,7 @@ func _refresh_ui() -> void:
 			elif not reason.is_empty():
 				hud.action_state.text = "BLOCKED"
 				explanation.text = "%d crystals · unavailable" % remaining
-			elif gap > Equipment.reach(tool):
+			elif gap > effective_reach:
 				hud.action_state.text = "OUT OF RANGE"
 				explanation.text = "%.0f m · approach" % gap
 			else:
@@ -2560,15 +2562,15 @@ func _refresh_ui() -> void:
 				hud.action_state.text = "UNAVAILABLE"
 				explanation.text = _short_reason(reason)
 			else:
-				hud.action_state.text = "READY" if gap <= Equipment.reach(tool) else "OUT OF RANGE"
-				var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= Equipment.reach(tool) else ("Click target to operate." if gap <= Equipment.reach(tool) else "Click target to approach.")
+				hud.action_state.text = "READY" if gap <= effective_reach else "OUT OF RANGE"
+				var action_copy: String = ("%.0f m · %s energy · 1 cargo" % [gap,Equipment.amount(Equipment.energy(tool,model.installed_upgrades))]) if tool == "mine" and gap <= effective_reach else ("Click target to operate." if gap <= effective_reach else "Click target to approach.")
 				explanation.text = action_copy
 		use_button.tooltip_text = reason if not reason.is_empty() else "Approach and operate the selected tool."
 	progress_bar.value = salvage_progress if orbital and orbital_target == "wreck" else progress
 	if operation_feedback in ["COMPLETE","SECURED"] and elapsed < operation_feedback_until: progress_bar.value = 1
 	if not orbital:
 		var seam_action: String = "Approach"
-		if ship.position.distance_to(_target_position("vein")) <= Equipment.reach(tool):
+		if ship.position.distance_to(_target_position("vein")) <= Equipment.reach(tool)*0.85:
 			seam_action = {"scan":"Scan","collect":"Collect","warm":"Warm","seed":"Plant","mine":"Mine"}.get(tool,"Use")
 		use_button.text = "Cancel" if (held and not latched) or approach_subject else (seam_action if selected == "vein" else "Use")
 		use_button.disabled = paused or _inspection_open()
