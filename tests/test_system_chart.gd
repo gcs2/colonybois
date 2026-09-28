@@ -40,6 +40,20 @@ func run() -> void:
 		if visual.visible: remote_scout_parts += 1
 	check(not remote_chart.ship_marker_visible and remote_scout_parts == 0,"A fresh remote-system chart hides the scout when the flagship is elsewhere")
 	remote_chart.free()
+	var cross_system_destination: String = ""
+	for star: Dictionary in home.sector.state.systems:
+		if star.id == home.sector.state.flagship.system: continue
+		var candidate: String = Session.local_id(star.planets[0])
+		if home.quote(candidate).reason.is_empty(): cross_system_destination = candidate; break
+	check(not cross_system_destination.is_empty() and home.begin_travel(cross_system_destination).is_empty(),"A reachable interstellar voyage starts from the local system")
+	if home.traveling():
+		home_chart.refresh()
+		var cross_system_scout_parts: int = 0
+		for visual: VisualInstance3D in home_chart.ship_visuals:
+			if visual.visible: cross_system_scout_parts += 1
+		check(not home_chart.ship_marker_visible and cross_system_scout_parts == 0,"The local system chart hides the scout during cross-system travel instead of drawing a false local trajectory")
+	else:
+		check(false,"The local system chart can only test cross-system travel after a real reachable departure")
 	home_chart.free()
 	var game: RefCounted = pilot(); var chart := Chart.new(); root.add_child(chart); await process_frame
 	chart.travel_requested.connect(func(id: String) -> void: departures.append(id))

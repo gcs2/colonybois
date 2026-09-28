@@ -388,13 +388,14 @@ func refresh() -> void:
 	details.add_theme_color_override("font_color",UI.PAPER)
 func update_ship() -> void:
 	var record: Dictionary = campaign.sector.state.flagship
-	var show_scout: bool = bodies.has(record.planet) or (campaign.traveling() and bodies.has(record.target_planet))
+	var in_local_transit: bool = campaign.traveling() and bodies.has(record.planet) and bodies.has(record.target_planet)
+	var show_scout: bool = bodies.has(record.planet) and (not campaign.traveling() or in_local_transit)
 	if ship_marker_visible != show_scout:
 		ship_marker_visible = show_scout
 		for visual: VisualInstance3D in ship_visuals: visual.visible = show_scout
 	if not ship_marker_visible: return
 	var from: Vector3 = bodies[record.planet].position+Vector3(0,bodies[record.planet].radius+6.0,0) if bodies.has(record.planet) else Vector3(-40,6,-40)
-	var to: Vector3 = bodies[record.target_planet].position+Vector3(0,bodies[record.target_planet].radius+6.0,0) if campaign.traveling() and bodies.has(record.target_planet) else Vector3(40,6,40)
+	var to: Vector3 = bodies[record.target_planet].position+Vector3(0,bodies[record.target_planet].radius+6.0,0) if in_local_transit else from
 	var fraction: float = 1.0-float(record.remaining)/maxf(1,record.duration)
 	ship_marker.position = (from.lerp(to,fraction) if campaign.traveling() else from)+Vector3(0,sin(fraction*PI)*4.0 if campaign.traveling() else 0,0)
 	var forward: Vector3 = to-from if campaign.traveling() else bodies[selected_planet].position-from if selected_planet != record.planet and bodies.has(selected_planet) else Vector3(-from.z,0,from.x)
