@@ -177,6 +177,8 @@ class StarGraph extends Control:
 		visibility_changed.connect(func() -> void:
 			scout_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
 		)
+		# The graph may already be visible by the time this signal is connected.
+		scout_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
 	func scout_yaw_for_screen_heading(direction: Vector2) -> float:
 		# The scout's nose points along local -Z; the overhead render maps that to screen-up.
 		return atan2(-direction.x,-direction.y) if direction.length_squared() > 0.0001 else 0.0
