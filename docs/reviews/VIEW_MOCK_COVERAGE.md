@@ -492,6 +492,23 @@ This matrix closes the evidence audit for the named materials with an insufficie
 
 For the exact portable source timestamps and method caveats, see the [extended-video evidence register](../research/SPORE_EXTENDED_VIDEO_EVIDENCE.md), its linked [workflow evidence report](../parity/EXPERIENCE_REPORT.md), and the [R01 feature inventory](../parity/COVERAGE.md). The current runtime captures inspected for this audit are `artifacts/visual-critic-surface-pass/integrated-after-world-hud-20260926/surface-mining-after-1080.png`, `artifacts/hud-tab-grid-stage1-1080/surface-mining-after-1080p.png`, and `artifacts/hud-tab-grid-stage1-1440/surface-mining-after-1440p.png` in the R01 worktree. Approved stills remain unchanged in [art/visual-canon](../../art/visual-canon/README.md). No screenshot, test, or independent critic finding establishes full HUD, scene, fun, input playability, camera, or world-art acceptance.
 
+## V01 independent HUD critic score gate — 28 September 2026
+
+Score HUD fidelity from 0–100 using matched actual-renderer views against the approved mock:
+
+| Criterion | Points |
+|---|---:|
+| Canon geometry, proportions, spacing, and screen anchors | 25 |
+| Pictorial item recognition and approved material/asset fit | 25 |
+| Information hierarchy and legibility at 1080p and 1440p | 20 |
+| Truthful state, quantities, status, and target feedback | 20 |
+| World visibility, occlusion, and HUD-to-world balance | 10 |
+| **Total** | **100** |
+
+A pass requires **90/100 overall**, at least 80% of available points in every criterion, and no critical overlap or misleading state cue. Reviewers must identify evidence for deductions, list the three largest remaining gaps, and distinguish confirmed observation from inference. Score only matched, production-renderer captures with state/resolution/camera recorded; disclose fixtures and keep them visually distinct from earned campaign state.
+
+This is a HUD component score. It does not score planet-art quality, performance, controls in motion, fun, or user acceptance; report those gates separately. Tests and synthetic stills cannot substitute for actual runtime evidence, and user judgment remains a separate gate.
+
 The approved stills remain unchanged. The [Morrow scale-transition storyboard brief](../art/mock-requests/MORROW_SCALE_TRANSITION_STORYBOARD.md) is a design aid with locked anchors; approval of a storyboard cannot close source or runtime motion gates. Earlier integrated-system filenames are not accepted evidence unless restored and rechecked.
 
 ## Morrow surface field and HUD — 25 September 2026
