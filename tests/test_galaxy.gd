@@ -12,7 +12,39 @@ func finish(game: RefCounted) -> void:
 	for i: int in range(60):
 		if not game.traveling(): break
 		game.tick()
+func run_scout_slice() -> void:
+	var game := Session.new()
+	game.field.change_flight_mode("orbit")
+	var chart := Chart.new(); root.add_child(chart)
+	chart.present(game)
+	check(chart.visible,"A new campaign opens the real galaxy navigation view")
+	await process_frame
+	var graph: Control = chart.graph
+	check(graph.scout_model is Node3D and graph.scout_model.find_children("*","MeshInstance3D",true,false).size() > 0,"Galaxy ship presentation instantiates the actual scout GLB geometry")
+	check(graph.scout_viewport.transparent_bg and graph.scout_viewport.size == Vector2i(96,72),"Actual scout is isolated in a compact transparent render layer")
+	check(graph.scout_viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS,"Visible galaxy chart refreshes the scout render")
+	check(is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(0,-1)),0.0) and is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(1,0)),-PI/2),"Actual scout nose follows the projected route heading")
+	var current: Dictionary = game.sector.system_by_id(game.sector.state.flagship.system)
+	check(graph.displayed_ship_position_pc().is_equal_approx(Galaxy.position(current)),"Player ship uses the flagship's real current star position")
+	var destination_id: String = ""
+	for system: Dictionary in game.sector.state.systems:
+		if system.id == current.id: continue
+		var candidate: String = Session.local_id(system.planets[0])
+		if game.quote(candidate).reason.is_empty(): destination_id = candidate; break
+	check(not destination_id.is_empty() and game.begin_travel(destination_id).is_empty(),"A reachable voyage starts while the galaxy chart is open")
+	if game.traveling():
+		graph.travel_fraction = 0.5
+		var from_pc: Vector2 = Galaxy.position(game.sector.system_by_id(game.sector.state.flagship.system))
+		var to_pc: Vector2 = Galaxy.position(game.sector.system_by_id(game.sector.state.flagship.destination))
+		check(graph.displayed_ship_position_pc().is_equal_approx(from_pc.lerp(to_pc,0.5)),"The same scout advances along the active interstellar voyage")
+	chart.hide(); await process_frame
+	check(graph.scout_viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED,"Hidden galaxy chart suspends its small scout render target")
+	chart.free()
+	print("Galaxy scout checks: %d; failures: %d" % [checks,failures])
+	quit(1 if failures else 0)
 func run() -> void:
+	if "--scout-only" in OS.get_cmdline_user_args():
+		await run_scout_slice(); return
 	var started: int = Time.get_ticks_msec()
 	var game := Session.new()
 	check(game.sector.state.systems.size() == 2048,"Galaxy contains real persistent star records beyond the twelve authored systems")
@@ -71,6 +103,9 @@ func run() -> void:
 	check(loaded.field.state.energy == old.field.state.energy and loaded.field.marks == old.field.marks and loaded.sector.state.colonies == old.sector.state.colonies,"Migration gifts no resources and preserves colonies")
 	var chart := Chart.new(); root.add_child(chart); chart.present(game); await process_frame
 	var graph: Control = chart.graph
+	check(graph.scout_model is Node3D and graph.scout_model.find_children("*","MeshInstance3D",true,false).size() > 0,"Galaxy ship presentation instantiates the actual scout GLB geometry")
+	check(graph.scout_viewport.transparent_bg and graph.scout_viewport.size == Vector2i(96,72),"Actual scout is isolated in a compact transparent render layer")
+	check(is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(0,-1)),0.0) and is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(1,0)),-PI/2),"Actual scout nose follows the projected route heading")
 	var current_id: String = game.sector.state.flagship.system
 	var pc: Vector2 = Galaxy.position(game.sector.system_by_id(current_id))
 	var at: Vector2 = graph.project(pc+Vector2(3,0))

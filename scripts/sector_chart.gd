@@ -102,7 +102,7 @@ class GalaxyStatusRail extends Control:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 class StarGraph extends Control:
-	const SCOUT_CHART = preload("res://assets/ui/chart_scout.png")
+	const SCOUT_SCENE = preload("res://assets/encounter/scout.glb")
 	signal selected(id: String)
 	signal activated(id: String)
 	const Galaxy = preload("res://scripts/galaxy_catalog.gd")
@@ -127,11 +127,63 @@ class StarGraph extends Control:
 	var star_known := PackedByteArray()
 	var star_batch: MultiMesh
 	var star_sprite: Texture2D
+	var scout_viewport: SubViewport
+	var scout_model: Node3D
+	var scout_camera: Camera3D
 	func view_center() -> Vector2: return size*0.5
 	func reset_view() -> void:
 		magnification = 1; pan = Vector2.ZERO
 		focus_pc = Galaxy.position(campaign.sector.system_by_id(campaign.sector.state.flagship.system))
 		queue_redraw()
+	func _ready() -> void:
+		# Render the real low-poly scout into a tiny transparent layer. The chart
+		# remains a 2D projection, so its selection and input geometry do not change.
+		scout_viewport = SubViewport.new()
+		scout_viewport.name = "ScoutRender"
+		scout_viewport.size = Vector2i(96,72)
+		scout_viewport.own_world_3d = true
+		scout_viewport.transparent_bg = true
+		scout_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		add_child(scout_viewport)
+		var stage := Node3D.new()
+		scout_viewport.add_child(stage)
+		var environment := WorldEnvironment.new()
+		var light_environment := Environment.new()
+		light_environment.background_mode = Environment.BG_COLOR
+		light_environment.background_color = Color(0,0,0,0)
+		light_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		light_environment.ambient_light_color = Color("a1b5ca")
+		light_environment.ambient_light_energy = 0.65
+		environment.environment = light_environment
+		stage.add_child(environment)
+		var light := DirectionalLight3D.new()
+		light.rotation_degrees = Vector3(-42,-32,0)
+		light.light_color = Color("fff1d7")
+		light.light_energy = 1.4
+		stage.add_child(light)
+		scout_model = SCOUT_SCENE.instantiate() as Node3D
+		stage.add_child(scout_model)
+		scout_camera = Camera3D.new()
+		scout_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+		scout_camera.size = 4.7
+		scout_camera.position = Vector3(0,14,0.01)
+		stage.add_child(scout_camera)
+		scout_camera.look_at(Vector3.ZERO,Vector3(0,0,-1))
+		scout_camera.current = true
+		visibility_changed.connect(func() -> void:
+			scout_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
+		)
+		scout_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
+	func scout_yaw_for_screen_heading(direction: Vector2) -> float:
+		# The scout's nose points along local -Z; the overhead render maps that to screen-up.
+		return atan2(-direction.x,-direction.y) if direction.length_squared() > 0.0001 else 0.0
+	func displayed_ship_position_pc() -> Vector2:
+		var flagship: Dictionary = campaign.sector.state.flagship
+		var current: Dictionary = campaign.sector.system_by_id(flagship.system)
+		var from: Vector2 = Galaxy.position(current)
+		if not campaign.traveling(): return from
+		var destination: Dictionary = campaign.sector.system_by_id(flagship.destination)
+		return from.lerp(Galaxy.position(destination),travel_fraction) if not destination.is_empty() else from
 	func overview() -> void:
 		magnification = minf(size.x/10000.0,size.y/6800.0)
 		pan = Vector2.ZERO; focus_pc = Vector2.ZERO
@@ -269,11 +321,22 @@ class StarGraph extends Control:
 
 		draw_arc(origin,12,0,TAU,36,Color("f9e5a2"),1.5,true)
 		draw_colored_polygon(PackedVector2Array([origin+Vector2(0,-9),origin+Vector2(-5,7),origin+Vector2(0,4),origin+Vector2(5,7)]),Color("f9e5a2"))
-		if in_front(Galaxy.position(current)):
+		var flagship: Dictionary = campaign.sector.state.flagship
+		var ship_pc: Vector2 = displayed_ship_position_pc()
+		var destination_pc: Vector2 = Galaxy.position(current)
+		if campaign.traveling():
+			var destination: Dictionary = campaign.sector.system_by_id(flagship.destination)
+			if not destination.is_empty(): destination_pc = Galaxy.position(destination)
+		if in_front(ship_pc):
 			var origin_name: String = str(current.name) if current.visited or current.get("charted",false) else "Current system"
-			# Model-derived cutout keeps the flagship recognizable at galaxy scale.
-			draw_texture_rect_region(SCOUT_CHART,Rect2(origin+Vector2(-32,-52),Vector2(60,38)),Rect2(96,151,326,202))
-			draw_string(font,origin+Vector2(36,-28),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("f9e5a2"))
+			var ship_screen: Vector2 = project(ship_pc)
+			var screen_heading: Vector2 = project(destination_pc)-project(Galaxy.position(current))
+			scout_model.rotation.y = scout_yaw_for_screen_heading(screen_heading)
+			# Keep the actual hull subordinate to the 24 px current-system marker.
+			# The 30x22 transparent render includes margin; the ship silhouette is ~20x12.
+			draw_texture_rect(scout_viewport.get_texture(),Rect2(ship_screen-Vector2(15,11),Vector2(30,22)),false)
+			if magnification > 0.34:
+				draw_string(font,ship_screen+Vector2(20,-13),"SHIP · "+origin_name,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("f9e5a2"))
 		var target: Dictionary = campaign.sector.system_by_id(selected_id)
 		if not target.is_empty() and in_front(Galaxy.position(target)) and campaign.sector.is_revealed(selected_id):
 			var at: Vector2 = point(target)
@@ -292,10 +355,8 @@ class StarGraph extends Control:
 				draw_rect(Rect2(quote_at-Vector2(7,17),quote_size+Vector2(14,9)),Color("0b1419"))
 				draw_string(font,quote_at,route_quote,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("e4e5df"))
 		if campaign.traveling():
-			var ship: Dictionary = campaign.sector.state.flagship
-			var fraction: float = travel_fraction
-			var at: Vector2 = origin.lerp(point(campaign.sector.system_by_id(ship.destination)),fraction)
-			draw_line(origin,at,Color("ecca77"),2,true); draw_circle(at,5,Color("fff0c2"))
+			var at: Vector2 = project(ship_pc)
+			draw_line(origin,at,Color("ecca77"),2,true)
 		draw_ms = (Time.get_ticks_usec()-draw_start)/1000.0
 	func nearest(at: Vector2) -> String:
 		var result: String = ""; var best: float = 18
