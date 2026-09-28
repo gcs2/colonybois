@@ -25,7 +25,7 @@ const PALETTE_PAGE_CAPACITY := Palette.PAGE_SIZE
 const PALETTE_ROWS := 2
 const PALETTE_SLOT_WIDTH := 59.0
 const PALETTE_SLOT_HEIGHT := 64.0
-const PALETTE_ICON_SIZE := 48.0
+const PALETTE_ICON_SIZE := 52.0
 const PALETTE_COLUMN_GAP := 2.0
 const PALETTE_COLUMN_STRIDE := PALETTE_SLOT_WIDTH + PALETTE_COLUMN_GAP
 const PALETTE_ROW_GAP := 4.0
@@ -277,7 +277,7 @@ func _apply_item_pictogram(button: Button, id: String, item: Dictionary, selecte
 	button.add_theme_color_override("icon_normal_color",Color.WHITE)
 	button.add_theme_color_override("icon_hover_color",Color.WHITE)
 	button.add_theme_color_override("icon_pressed_color",Color.WHITE)
-	button.add_theme_constant_override("icon_max_width",52)
+	button.add_theme_constant_override("icon_max_width",PALETTE_ICON_SIZE)
 
 func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
 	# The generated marks have generous transparent canvases. AtlasTexture

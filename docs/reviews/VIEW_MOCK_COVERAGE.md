@@ -684,3 +684,22 @@ The isolated branch's current system/galaxy source was captured at 1920×1080 an
 The route-origin fill that hid the system scout is removed while its ring remains, and the route line starts beyond the ship silhouette. The image-backed system card now has a stable explicit text-safe area. Galaxy now shows the image-backed Marks plate with the live treasury balance; its route quote sits above the route marker and within the chart. The galaxy equipment buttons are wired to pictorial upgrade images, but these captures used an empty equipment/cargo fixture, so their populated presentation is not visually verified. Keep the system model at its current scale; the critic advises against further reduction. Prior scoped 92/100 scout/ring/route and whole-view 62/65, 48/51, 44/47 readings describe narrower or older evidence and are not current whole-view scores.
 
 All four latest HUD/scene scores are below the 90/100 review threshold; interaction/motion portions remain provisional from stills. Four/five-plus system destinations, keyboard operation, performance, export behavior, native playability and user acceptance remain open. The next production task stays the surface inventory pass in [TASK_BOARD.md](../TASK_BOARD.md): show truthful items with sufficiently legible pictorial scale and use of the available grid, then keep moving through the queued surface composition gaps. Do not generate replacement art when the other chat's candidate generation may overlap; current image-backed elements and project canon take priority.
+
+## Surface inventory pictogram-size follow-up — 27 September 2026
+
+The existing palette item pictograms were increased from 48 to 52 logical pixels. No new art, cells, count labels, tabs, or spacing changed. `tests/review_populated_hud.gd` rendered the actual surface HUD at 1920×1080 and 2560×1440 into ignored `artifacts/hud-inventory-size-20260927/`; the matched 48 px baseline is in `artifacts/hud-tabs-panel-v1/`. This isolated campaign earned its 7 Marks, Energy Pack, Repair Pack and freight item through the commerce/travel APIs. The run took about 18.7 seconds and its campaign-path assertions passed. A pre-existing Godot `SpatialMaterial` specular-remap warning appeared during world generation; no script errors occurred. This is a focused actual-render capture, not a native-input sequence, packaged build or performance profile.
+
+An independent read-only critic reviewed the before/after pairs at both sizes under the [100-point rubric](../delivery/SYNTHETIC_SQUAD.md#independent-critic-score):
+
+| View / size | 48 px baseline | 52 px candidate | Change |
+| --- | ---: | ---: | ---: |
+| HUD, 1920×1080 | 69 | 70 | +1 Field Instruments art point |
+| HUD, 2560×1440 | 70 | 71 | +1 Field Instruments art point |
+| World scene, 1920×1080 | 49 | 49 | None |
+| World scene, 2560×1440 | 50 | 50 | None |
+
+The critic found supply/tool images easier to distinguish, especially at 2560, with margin remaining inside cells and no count-label collisions. Dark repair-pack art remains low contrast. No composition, scene or functional change is attributed to this delta. Interaction and motion points remain provisional from stills.
+
+Score calibration needs attention: a previous independent review of the same 48 px baseline pair reported HUD 75/76 and scene 50/52, materially above this review's re-rating at 69/70 and 49/50. Preserve both readings as different review sessions; use only this reviewer’s matched +1 as a local comparison and do not describe it as a calibrated longitudinal improvement. All full-view scores remain far below 90/100 and user acceptance is open.
+
+Next highest-value surface correction is the relationship between the local chart and target/relay card; improve their hierarchy and keep the target action connected to the world without covering the player scene. Then improve small quantities and low-contrast supply art. The whole Morrow environment remains the larger scene-quality blocker. The candidate can stay provisionally in the working line, but this is not whole-screen approval.
