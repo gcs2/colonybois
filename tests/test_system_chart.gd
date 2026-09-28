@@ -39,6 +39,10 @@ func run() -> void:
 	chart.orbit_requested.connect(func() -> void: returns += 1)
 	var before: Dictionary = game.snapshot()
 	check(chart.present(game) and chart.visible and chart.bodies.size() == 3,"Known system displays all three actual orbital bodies")
+	var visible_scout_parts: int = 0
+	for visual: VisualInstance3D in chart.ship_visuals:
+		if visual.visible: visible_scout_parts += 1
+	check(chart.ship_marker_visible and visible_scout_parts > 0 and chart.ship_marker.scale.is_equal_approx(Vector3.ONE*0.25),"The player scout uses its actual visible GLB at the reduced system-map scale")
 	check(game.snapshot() == before,"Opening and inspecting a system cannot reveal, spend or duplicate simulation state")
 	check(chart.bodies.s2p0.planet_definition.id == "s2p0" and chart.bodies.s2p1.planet_definition.id == "s2p1","Each system body uses its own shared seeded geography")
 	check(not chart.bodies.s2p0.site_marker.visible and not chart.details.text.contains("ecosystem"),"Unsurveyed worlds do not expose landing markers or ecological readings")
@@ -46,6 +50,8 @@ func run() -> void:
 	check(chart.bodies.s2p0.site_marker.visible and chart.details.text.contains("ecosystem"),"Real completed survey reveals the known landing marker and conditions")
 	chart.select_planet("s2p1")
 	check(not chart.travel.disabled and "3 energy" in chart.travel.text and "2 seconds" in chart.travel.text,"In-system destination quote uses actual shared drive cost and time")
+	var projected_scout: Vector2 = chart.camera.unproject_position(chart.ship_marker.global_position)*chart.preview.size/Vector2(chart.viewport.size)
+	check(chart.route_overlay.active and chart.route_overlay.origin.is_equal_approx(projected_scout),"The route begins at the projected 3D scout pivot instead of a detached crop")
 	check(chart.details.text.contains("Orbital destination") and not chart.bodies.s2p1.site_marker.visible,"Nonlandable planets remain real orbital destinations without fabricated surface sites")
 	before = game.snapshot(); chart.select_planet("s2p2"); chart.refresh()
 	check(game.snapshot() == before and not game.worlds.has("s2p2"),"Selection and repeated presentation cannot fabricate visits")
