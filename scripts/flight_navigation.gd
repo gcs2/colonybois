@@ -98,6 +98,10 @@ func _rebuild_terrain() -> void:
 			if h >= -0.6 and h < -0.15: color = color.lerp(Color("647e76"),0.20)
 			if h >= -0.6 and fposmod(relief*8.0,1.0) < 0.055: color = color.darkened(0.14)
 			img.set_pixel(x,y,color)
+	# Lift relief and shoreline separation at the chart's actual HUD footprint.
+	# This remains a treatment of the sampled local terrain image; contacts,
+	# heading, grid, scale, and click targets are drawn live above it.
+	img.adjust_bcs(1.0,1.20,1.06)
 	terrain = ImageTexture.create_from_image(img)
 	queue_redraw()
 

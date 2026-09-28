@@ -104,6 +104,29 @@ class TabCardArtwork extends Control:
 			draw_line(Vector2(9.0,size.y-3.0),Vector2(size.x-9.0,size.y-3.0),inlay,1.25,true)
 		if focused and not disabled:
 			draw_polyline(_closed(_shape(2.0,sink)),Color("fff1cc"),1.25,true)
+
+
+class InventorySelectionMarks extends Control:
+	const CORNER_TINT := Color("e2cc82")
+	const BASE_TINT := Color("c9a64f")
+
+	func _draw() -> void:
+		if size.x < 20.0 or size.y < 20.0: return
+		var inset: float = 4.0
+		var arm: float = minf(9.0, minf(size.x, size.y) * 0.16)
+		var corners := [
+			[Vector2(inset, inset), Vector2.RIGHT, Vector2.DOWN],
+			[Vector2(size.x-inset, inset), Vector2.LEFT, Vector2.DOWN],
+			[Vector2(inset, size.y-inset), Vector2.RIGHT, Vector2.UP],
+			[Vector2(size.x-inset, size.y-inset), Vector2.LEFT, Vector2.UP]
+		]
+		for corner: Array in corners:
+			var origin: Vector2 = corner[0]
+			draw_line(origin, origin+corner[1]*arm, CORNER_TINT, 1.5, true)
+			draw_line(origin, origin+corner[2]*arm, CORNER_TINT, 1.5, true)
+		var base_y: float = size.y-2.0
+		draw_line(Vector2(inset+4.0,base_y), Vector2(size.x-inset-4.0,base_y), BASE_TINT, 1.8, true)
+
 var nav_pod: Control
 var console_pod: Control
 var IDS: Array[String] = Equipment.ids()
@@ -196,6 +219,16 @@ func label_at(text: String, rect: Rect2, font_size: int = 16, tint: Color = Art.
 	return label
 
 func _style_inventory_slot(button: Button, selected: bool = false) -> void:
+	var selection_marks := button.get_node_or_null("InventorySelectionMarks") as Control
+	if selected and selection_marks == null:
+		selection_marks = InventorySelectionMarks.new()
+		selection_marks.name = "InventorySelectionMarks"
+		selection_marks.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		selection_marks.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		button.add_child(selection_marks)
+	if selection_marks != null:
+		selection_marks.visible = selected
+		if selected: selection_marks.queue_redraw()
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0,0,0,0)
 	normal.border_color = Color(0,0,0,0)
@@ -213,8 +246,8 @@ func _style_inventory_slot(button: Button, selected: bool = false) -> void:
 	var disabled := normal.duplicate() as StyleBoxFlat
 	if selected:
 		normal.bg_color = Color("d5dfdf",0.07)
-		normal.border_color = Color("d5dfdf")
-		normal.border_width_bottom = 2
+		normal.border_color = Color("d5dfdf",0.28)
+		normal.border_width_bottom = 1
 		hover.bg_color = Color("d5dfdf",0.13)
 		hover.border_color = Color("e5ecea")
 		hover.border_width_bottom = 2
