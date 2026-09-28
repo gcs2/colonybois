@@ -54,9 +54,9 @@ const TAB_GROUP_ICON_REGIONS := {
 const COMMUNICATIONS_ICON_TEXTURE := preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/communications.png")
 const COMMUNICATIONS_ICON_REGION := Rect2(250, 282, 755, 733)
 const TAB_GROUP_COLORS := {"Main tools":Color("f3c567"), "Inventory":Color("8bd3c6"), "Weapons":Color("df6553"), "Environment":Color("98c981")}
-const TAB_CARD_WIDTH := 67.0
+const TAB_CARD_WIDTH := 64.0
 const TAB_CARD_HEIGHT := 37.0
-const TAB_CARD_GAP := 1.0
+const TAB_CARD_GAP := 4.0
 
 
 class TabCardArtwork extends Control:
@@ -761,7 +761,7 @@ func show_group(group: String) -> void:
 		if button.visible:
 			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
 			button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
-	# Five category cards retain their approved scale in every pagination state.
+	# Five cards keep even gaps and centered padding within the fixed console footprint.
 	# Page controls use the unused second line of the compact console header.
 	var tab_width: float = TAB_CARD_WIDTH
 	var tab_height: float = TAB_CARD_HEIGHT
@@ -775,7 +775,6 @@ func show_group(group: String) -> void:
 		var tint: Color = TAB_GROUP_COLORS[key]
 		button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20.0)
 		button.size = Vector2(tab_width,tab_height)
-		button.add_theme_constant_override("icon_max_width",28)
 		button.visible = true
 		var artwork: TabCardArtwork = category_tab_cards[key] as TabCardArtwork
 		artwork.position = button.position
@@ -785,7 +784,6 @@ func show_group(group: String) -> void:
 		tab_index += 1
 	communications_button.position = Vector2(tab_start_x+tab_index*(tab_width+tab_gap),panel_top-20.0)
 	communications_button.size = Vector2(tab_width,tab_height)
-	communications_button.add_theme_constant_override("icon_max_width",28)
 	communications_button.visible = true
 	communications_card.position = communications_button.position
 	communications_card.size = communications_button.size
