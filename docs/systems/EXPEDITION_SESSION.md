@@ -11,11 +11,21 @@ Active flight advances a fixed one-second clock. Every 30 seconds the sector adv
 ## Persistence and migration
 
 - Manual and autosave campaign files are `field_encounter_campaign.fw` and `field_encounter_campaign_auto.fw` in the game's user data directory. Review runs use a separate prefix.
-- Each versioned binary snapshot contains the sector, ship/encounter state and partial-day clock. Temporary-file replacement avoids writing a partially serialized snapshot over the previous save.
+- Each versioned binary snapshot contains the sector, ship/encounter state and partial-day clock. Version 25 also saves captain identity and first-commitment completion. Temporary-file replacement avoids writing a partially serialized snapshot over the previous save.
 - On entry, the newer existing campaign slot is selected. If neither exists, the newer legacy field JSON is imported. Original JSON files remain untouched.
 - Migration preserves existing Marks, hull, energy, packs, specimens, surveys, cooldowns, local orders and history. It does not add the unrelated strategic demo's 650-Mark starting balance or retroactively simulate colony income.
 - Invalid startup restoration pauses the scene and disables saving, so an empty fallback cannot overwrite the affected campaign. A successful manual restore clears this protection.
 - The old urban, expedition and sandbox demos retain their separate saves and suspended-session behavior. They are not silently merged into the new flight campaign.
+
+## P02 captain foundation — 28 September 2026
+
+The flight menu now separates **New scout expedition** from **Continue scout expedition**. New opens a captain-name and philosophy screen over the existing Morrow flight scene, then starts that same `ExpeditionSession`; it is not a separate creator mode. A first-time Continue with no save also opens the screen. A failed initial autosave rolls back the unstarted identity instead of entering play unsaved.
+
+Scientist commits to survey Morrow from orbit; Zealot commits to establish a scanned native species on another world; Knight commits to neutralize Morrow's existing custodian. These are obligations fulfilled through existing survey, specimen release and personal-combat actions, not hidden stat bonuses. The founding choice and completion are chronicle events; completion is linked to the action that fulfilled it. The Chronicle shows the active or fulfilled commitment.
+
+Version 1–24 saves load with an explicit `unrecorded` captain and no fabricated founding history. Player identity remains separate from faction government. Species choice, new character art and source-game powers are not part of this flow.
+
+The focused `test_captain_founding.gd` passed 20 checks in 5.77 seconds, including the real Morrow survey, screen signal, completion history and version-24 migration. `test_planet_biosphere.gd` ran 74 checks and reported four failures in its scene approach/scan/collection/inventory path; the later ecology-release checks had no additional reported failures. No baseline comparison was made, so those failures are unresolved rather than attributed to this change. No graphical runtime review, independent visual score or user presentation approval exists; the designer mock remains pending, and the screen's current vector emblems are provisional.
 
 Escape → Chronicle currently shows colony day, shared treasury and the latest tax/upkeep/export amounts. This is temporary observability for the integration; it does not replace the planned full economic interface or unified timeline.
 

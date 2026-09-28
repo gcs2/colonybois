@@ -3,7 +3,7 @@ extends RefCounted
 ## The flagship owns travel; inactive planet state contains no copied ship or money.
 const Sector = preload("res://scripts/simulation.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const VERSION := 24
+const VERSION := 25
 const Galaxy = preload("res://scripts/galaxy_catalog.gd")
 const Territories = preload("res://scripts/territories.gd")
 var territory := Territories.new()
@@ -30,6 +30,16 @@ var diplomacy := Diplomacy.new()
 const Commerce = preload("res://scripts/space_commerce.gd")
 var commerce := Commerce.new()
 const Geography = preload("res://scripts/planet_geography.gd")
+const CAPTAIN_COMMITMENTS := {
+	"scientist":"survey_morrow",
+	"zealot":"move_life_between_worlds",
+	"knight":"neutralize_morrow_custodian"
+}
+const CAPTAIN_COMMITMENT_COPY := {
+	"scientist":"Survey Morrow from orbit and record its living geography.",
+	"zealot":"Establish a scanned native species on a different world.",
+	"knight":"Neutralize Morrow's hostile custodian."
+}
 const LOCAL_KEYS := ["scanned","native_stock","warm","seeded","growth","produce","buyer_remaining","route","route_clock","harvest_clock","survey_ticks","survey_active","threat_clock","guardian_x","guardian_z","guardian_hull","guardian_alert","guardian_ready_at","guardian_disabled","guardian_shots","service_stock","guardian_aim","guardian_fire_at","guardian_salvaged","repair_stock","ore_remaining","surface_position","surface_direction","surface_changes"]
 const SECONDS_PER_DAY := 30
 const HEADER := "FWEXP001"
@@ -37,6 +47,7 @@ var sector := Sector.new()
 var field := Field.new()
 var sector_clock: int = 0
 var worlds: Dictionary = {}
+var captain: Dictionary = {"name":"","philosophy":"unrecorded","commitment_complete":false,"founding_event":0}
 
 func _init() -> void:
 	sector.new_game()
@@ -55,7 +66,8 @@ func tick(threat_distance: float = INF) -> String:
 	climate.tick(self)
 	biosphere.tick(self)
 	if was_surveying and not field.state.survey_active:
-		diplomacy.record(self,"exploration","Completed orbital survey of "+str(field.definition().name)+".","",{"survey_ticks":field.state.survey_ticks},0,"survey:"+str(field.state.planet_id))
+		var survey_event: int = diplomacy.record(self,"exploration","Completed orbital survey of "+str(field.definition().name)+".","",{"survey_ticks":field.state.survey_ticks},0,"survey:"+str(field.state.planet_id))
+		report_captain_action("orbital_survey",{"planet":field.state.planet_id},survey_event)
 	advance_worlds()
 	if traveling(): advance_travel()
 	signals.tick(self)
@@ -114,7 +126,58 @@ static func newest_save(manual: String, automatic: String) -> String:
 
 func snapshot() -> Dictionary:
 	return {"version":VERSION,"territory":territory.state.duplicate(true),"conflict":conflict.state.duplicate(true),"signals":signals.state.duplicate(true),"recognition":recognition.state.duplicate(true),"biosphere":biosphere.state.duplicate(true),"climate":climate.state.duplicate(true),"fleet":fleet.state.duplicate(true),"combat":combat.state.duplicate(true),"freight":freight.state.duplicate(true),"colonies":colonies.state.duplicate(true),"diplomacy":diplomacy.state.duplicate(true),"commerce":commerce.state.duplicate(true),"sector_clock":sector_clock,"worlds":worlds.duplicate(true),
-		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true)}
+		"sector":sector.state.duplicate(true),"field":field.state.duplicate(true),"captain":captain.duplicate(true)}
+
+static func valid_captain_name(value: String) -> bool:
+	var clean: String = value.strip_edges()
+	if clean.is_empty() or clean.length() > 24: return false
+	for index: int in range(clean.length()):
+		var codepoint: int = clean.unicode_at(index)
+		if codepoint < 32 or codepoint == 127: return false
+	return true
+
+static func captain_commitment(philosophy: String) -> String:
+	return str(CAPTAIN_COMMITMENT_COPY.get(philosophy,""))
+
+static func valid_captain_snapshot(value: Variant, diplomacy_state: Dictionary) -> bool:
+	if not value is Dictionary or not value.has_all(["name","philosophy","commitment_complete","founding_event"]): return false
+	if not value.name is String or not value.philosophy is String or not value.commitment_complete is bool or not value.founding_event is int: return false
+	if value.philosophy == "unrecorded": return value.name.is_empty() and not value.commitment_complete and value.founding_event == 0
+	if not CAPTAIN_COMMITMENTS.has(value.philosophy) or not valid_captain_name(value.name) or value.name != value.name.strip_edges(): return false
+	var events: Array = diplomacy_state.get("events",[])
+	var keys: Dictionary = diplomacy_state.get("keys",{})
+	var founding_id: int = value.founding_event
+	if founding_id <= 0 or founding_id > events.size() or keys.get("captain:founding",0) != founding_id: return false
+	var founding: Dictionary = events[founding_id-1]
+	if founding.get("kind","") != "captain" or founding.get("outcome",{}).get("captain","") != value.name or founding.get("outcome",{}).get("philosophy","") != value.philosophy: return false
+	var completion_id: int = int(keys.get("captain:commitment",0))
+	if value.commitment_complete:
+		if completion_id <= founding_id or completion_id > events.size(): return false
+		var completion: Dictionary = events[completion_id-1]
+		if completion.get("kind","") != "captain" or completion.get("outcome",{}).get("philosophy","") != value.philosophy: return false
+	elif completion_id != 0:
+		return false
+	return true
+
+func found_captain(captain_name: String, philosophy: String) -> String:
+	if captain.philosophy != "unrecorded": return "This expedition already has a captain."
+	var clean: String = captain_name.strip_edges()
+	if not valid_captain_name(clean): return "Use a captain name from 1 to 24 characters without control characters."
+	if not CAPTAIN_COMMITMENTS.has(philosophy): return "Choose Scientist, Zealot, or Knight."
+	captain = {"name":clean,"philosophy":philosophy,"commitment_complete":false,"founding_event":0}
+	var summary: String = "%s founded a %s expedition. First commitment: %s" % [clean,philosophy.capitalize(),captain_commitment(philosophy)]
+	captain.founding_event = diplomacy.record(self,"captain",summary,"",{"captain":clean,"philosophy":philosophy,"commitment":CAPTAIN_COMMITMENTS[philosophy]},0,"captain:founding")
+	return ""
+
+func rollback_captain_foundation() -> void:
+	var event_id: int = int(captain.get("founding_event",0))
+	if event_id <= 0 or diplomacy.state.events.is_empty(): return
+	var last: Dictionary = diplomacy.state.events.back()
+	if int(last.get("id",0)) != event_id or last.get("kind","") != "captain": return
+	diplomacy.state.events.pop_back()
+	diplomacy.state.keys.erase("captain:founding")
+	diplomacy.state.next_id = event_id
+	captain = {"name":"","philosophy":"unrecorded","commitment_complete":false,"founding_event":0}
 
 func save_to(path: String) -> Error:
 	var file := FileAccess.open(path+".tmp",FileAccess.WRITE)
@@ -139,7 +202,7 @@ func load_from(path: String) -> Error:
 
 func restore_snapshot(source: Variant) -> Error:
 	if not source is Dictionary or not source.has_all(["version","sector_clock","sector","field"]): return ERR_INVALID_DATA
-	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
+	if source.version not in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,VERSION] or not source.sector_clock is int or source.sector_clock < 0 or source.sector_clock >= SECONDS_PER_DAY: return ERR_INVALID_DATA
 	if not source.sector is Dictionary or not source.field is Dictionary: return ERR_INVALID_DATA
 	var bank: Variant = source.sector.get("credits")
 	if not (bank is float or bank is int) or not is_finite(float(bank)) or bank < 0: return ERR_INVALID_DATA
@@ -213,6 +276,10 @@ func restore_snapshot(source: Variant) -> Error:
 	var candidate_freight := Freight.new()
 	if source.version >= 6 and candidate_freight.restore(source.get("freight"),candidate_sector,candidate_colonies) != OK: return ERR_INVALID_DATA
 	if source.version >= 4 and candidate_diplomacy.restore(source.get("diplomacy")) != OK: return ERR_INVALID_DATA
+	var candidate_captain: Dictionary = {"name":"","philosophy":"unrecorded","commitment_complete":false,"founding_event":0}
+	if source.version >= 25:
+		if not valid_captain_snapshot(source.get("captain"),candidate_diplomacy.state): return ERR_INVALID_DATA
+		candidate_captain = source.captain.duplicate(true)
 	if source.version >= 15 and candidate_signals.restore(source.get("signals"),int(candidate_field.state.time),candidate_diplomacy) != OK: return ERR_INVALID_DATA
 	if source.version >= 16 and candidate_conflict.restore(source.get("conflict"),int(candidate_field.state.time),candidate_sector,candidate_diplomacy) != OK: return ERR_INVALID_DATA
 	if source.version >= 17 and candidate_territory.restore(source.get("territory"),int(candidate_field.state.time),candidate_sector,candidate_combat,candidate_colonies,candidate_diplomacy) != OK: return ERR_INVALID_DATA
@@ -242,6 +309,7 @@ func restore_snapshot(source: Variant) -> Error:
 	colonies = candidate_colonies
 	freight = candidate_freight
 	diplomacy = candidate_diplomacy
+	captain = candidate_captain
 	signals = candidate_signals
 	conflict = candidate_conflict
 	territory = candidate_territory
@@ -406,9 +474,32 @@ func advance_worlds() -> void:
 func fire_weapon(at: Vector3) -> String:
 	var error: String = field.fire_lance(at)
 	if error.is_empty() and field.state.guardian_disabled:
-		diplomacy.record(self,"combat",field.enemy_profile().name+" neutralized at "+field.definition().name+".","",{"planet":field.state.planet_id,"enemy":field.enemy_profile().name,"nonlethal":field.has_wreck()},0,"defeat:"+field.state.planet_id)
+		var combat_event: int = diplomacy.record(self,"combat",field.enemy_profile().name+" neutralized at "+field.definition().name+".","",{"planet":field.state.planet_id,"enemy":field.enemy_profile().name,"nonlethal":field.has_wreck()},0,"defeat:"+field.state.planet_id)
+		report_captain_action("custodian_neutralized",{"planet":field.state.planet_id,"enemy":field.enemy_profile().name},combat_event)
 		commerce.update_badges(self)
 	return error
+
+func report_captain_action(action: String, details: Dictionary, cause: int = 0) -> bool:
+	if captain.philosophy == "unrecorded" or captain.commitment_complete: return false
+	var fulfilled: bool = false
+	match captain.philosophy:
+		"scientist":
+			fulfilled = action == "orbital_survey" and str(details.get("planet","")) == "morrow"
+		"zealot":
+			var species_id: String = str(details.get("species",""))
+			var destination: String = local_id(str(details.get("planet","")))
+			if action == "species_release" and Biosphere.data().has(species_id):
+				var origin: String = local_id(str(Biosphere.data()[species_id].home))
+				fulfilled = origin != destination
+		"knight":
+			fulfilled = action == "custodian_neutralized" and str(details.get("planet","")) == "morrow"
+	if not fulfilled: return false
+	captain.commitment_complete = true
+	var summary: String = "%s fulfilled the %s commitment: %s" % [captain.name,str(captain.philosophy).capitalize(),captain_commitment(captain.philosophy)]
+	var parent_event: int = cause if cause > 0 else int(captain.founding_event)
+	diplomacy.record(self,"captain",summary,"",{"captain":captain.name,"philosophy":captain.philosophy,"action":action,"details":details.duplicate(true)},parent_event,"captain:commitment")
+	field.note("captain_commitment","Captain's commitment fulfilled · "+summary)
+	return true
 
 func mining_reason(distance: float) -> String:
 	if traveling(): return "Finish the journey before mining."

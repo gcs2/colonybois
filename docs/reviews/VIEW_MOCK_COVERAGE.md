@@ -156,6 +156,17 @@ Reproduce locally: `.tools/godot/Godot_v4.7.2-stable_win64_console.exe --path . 
 
 ## Coverage ledger
 
+### F01 — New Expedition captain founding (28 September 2026)
+
+The P02 implementation candidate now presents the captain name, Scientist/Zealot/Knight selection, the selected first commitment, Back and Begin actions over the existing Morrow flight scene. A screen mock is still requested; none is generated or accepted. No actual graphical runtime capture, critic score or user visual verdict exists. The current SVG emblems are provisional placeholders, not canon UI artwork.
+
+| State | Required evidence | Current status |
+|---|---|---|
+| New captain, each philosophy selected | 1080p and 1440p runtime composition, selected-state readability, precise commitment copy, keyboard focus | Source candidate only; unscored |
+| Empty/invalid name and save failure | Legible inline refusal; no campaign starts or identity is lost | Source behavior test only; no visual review |
+| Back, successful begin and return to campaign | Existing Morrow/ship remains the context; same flight campaign opens with the saved captain | Source wiring checked; no native-input or runtime-transition evidence |
+| Existing or legacy campaign Continue | Restored history/identity; v1–24 saves remain explicitly unrecorded | Session migration checks pass; no runtime view |
+
 | ID | Family | Required visual coverage | Planned base / supplement |
 |---|---|---|---|
 | N01 | Surface navigation | Normal flight, altitude/ascent cue, local map, hover and target selection | 01 + surface state sheet |
@@ -169,6 +180,7 @@ Reproduce locally: `.tools/godot/Godot_v4.7.2-stable_win64_console.exe --path . 
 | C01 | Communications | Incoming transmission, first/repeat contact, empty/multiple roster, remote/docked access, war/embargo refusals, proposed/active/withdrawn agreements, one-time chart exchange, fleet, conflict | 10 + communication state sheet |
 | P01 | Possessions | Onboard cargo, surface store, specimens, energy/repair supplies, item use, full/empty storage | 08 + inventory state sheet |
 | P02 | Ship systems | Installed modules, sockets, selected component, comparison, locked/absent equipment | 09 |
+| F01 | Expedition founding | New/continue entry, captain name, three selected choices and commitments, validation, cancel, begin, legacy continuation | P02 mock request + state sheet; no accepted base mock |
 | D01 | Dock market | Buy/sell, quantity, total, stock/demand, affordability, capacity, transaction result | 11 + transaction state sheet |
 | D02 | Dock upgrades | Equipment, hull, reactor, support; badge eligibility, purchase price, already owned | 12 + upgrade state sheet |
 | D03 | Dock supplies | Energy/repair consumables, paid service, free home recharge, insufficient Marks | Dock service state sheet |

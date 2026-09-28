@@ -18,6 +18,7 @@ $registeredTests = @(
     'tests/test_ui.gd',
     'tests/test_encounter.gd',
     'tests/test_expedition_session.gd',
+    'tests/test_captain_founding.gd',
     'tests/test_interstellar_travel.gd',
     'tests/test_galaxy.gd',
     'tests/test_system_chart.gd',

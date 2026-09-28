@@ -530,15 +530,18 @@ func _show_mode_menu() -> void:
 	menu_scroll.add_child(content)
 	_text(content,"F R O N T I E R   W O R L D S",30,WHITE)
 	_text(content,"A settlement. A signal. A sky you haven't mapped.",19,MINT)
-	_button("Morrow expedition — surface to orbit",_open_field,content)
+	_text(content,"SCOUT FLIGHT · PERSONAL EXPEDITION",12,GOLD)
+	_button("New scout expedition",_open_field.bind(true),content)
+	_button("Continue scout expedition",_open_field.bind(false),content)
+	_text(content,"A new flight begins with your captain and one real first commitment. It uses the same ship, worlds, diplomacy and chronicle as the continuing expedition.",14)
 	_text(content,"URBAN TUTORIAL · FIRST CAMPAIGN SLICE",12,MINT)
 	_text(content,"An existing city, a broken crossing, two repair agreements. Govern one district; keep the consequences as you explore.",16)
 	_button("New urban tutorial",_start_mode.bind("urban",false),content)
 	_button("Continue urban tutorial",_start_mode.bind("urban",true),content)
-	_text(content,"EXPEDITION",12,MINT)
+	_text(content,"COLONY SIMULATION",12,MINT)
 	_text(content,"Discover the galaxy through frontier fog. Grow colonies, trade surpluses and earn influence. All construction tools are available from the start.",17)
-	_button("New expedition",_start_mode.bind("expedition",false),content)
-	_button("Continue expedition",_start_mode.bind("expedition",true),content)
+	_button("New colony simulation",_start_mode.bind("expedition",false),content)
+	_button("Continue colony simulation",_start_mode.bind("expedition",true),content)
 	_text(content,"SANDBOX",12,GOLD)
 	_text(content,"The same simulation with optional god tools: free construction, reveal the map, instant travel, Marks and supply grants, diplomacy and climate recovery. Separate saves protect your expedition.",17)
 	_button("New sandbox",_start_mode.bind("sandbox",false),content)
@@ -553,12 +556,13 @@ func _close_mode_menu() -> void:
 	mode_menu = null
 	_set_speed(menu_speed)
 
-func _open_field() -> void:
+func _open_field(start_new_expedition: bool = false) -> void:
 	# Detach, rather than free, the current session. Returning restores its exact state.
 	var root: Window = get_tree().root
 	var field: Node3D = load("res://scenes/encounter.tscn").instantiate()
 	field.name = "ExpeditionFlight"
 	field.suspended_session = self
+	field.set("founding_mode",start_new_expedition)
 	field.leave.connect(func() -> void:
 		var active: Node = root.get_node("ExpeditionFlight")
 		active.suspended_session = null

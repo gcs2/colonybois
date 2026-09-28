@@ -2,6 +2,8 @@ extends Node3D
 ## Bounded field encounter. Detailed presentation is independent of the saved model.
 signal leave
 var suspended_session: Node = null
+var founding_mode: bool = false
+var founding_screen: CanvasLayer
 const Model = preload("res://scripts/encounter_state.gd")
 const SectorChart = preload("res://scripts/sector_chart.gd")
 const SurfaceWindow = preload("res://scripts/planet_surface_window.gd")
@@ -18,6 +20,7 @@ var rendered_planet: String = "morrow"
 var world_definition: Dictionary = Geography.definition()
 var changing_planet: bool = false
 const Campaign = preload("res://scripts/expedition_session.gd")
+const FoundingScreen = preload("res://scripts/expedition_founding_screen.gd")
 var campaign: RefCounted = null
 var dock_page: String = "market"
 var commodity_preview: String = "alloy"
@@ -222,17 +225,19 @@ func _ready() -> void:
 	var testing: bool = "--script" in OS.get_cmdline_args()
 	if testing: save_path = "res://artifacts/field_test_session.json"
 	var startup_error: Error = OK
+	var show_founder: bool = founding_mode
 	if campaign != null:
 		model = campaign.field
 	elif not testing:
 		campaign = Campaign.new()
 		model = campaign.field
-		if "--field-capture" not in OS.get_cmdline_user_args() and "--flight-capture" not in OS.get_cmdline_user_args():
+		if not founding_mode and "--field-capture" not in OS.get_cmdline_user_args() and "--flight-capture" not in OS.get_cmdline_user_args():
 			var resume_path: String = Campaign.newest_save(_campaign_path(false),_campaign_path(true))
 			if not resume_path.is_empty(): startup_error = campaign.load_from(resume_path)
 			else:
 				var legacy_path: String = Campaign.newest_save(save_path,save_path.replace(".json","_auto.json"))
 				if not legacy_path.is_empty(): startup_error = campaign.import_legacy(legacy_path)
+				else: show_founder = true
 			model = campaign.field
 	persistence_blocked = startup_error != OK
 	rendered_planet = model.state.planet_id
@@ -307,6 +312,40 @@ func _ready() -> void:
 	if persistence_blocked:
 		paused = true
 		_toast("Save could not be restored. Saving disabled to protect your progress: "+error_string(startup_error))
+	elif show_founder:
+		_show_founding_screen()
+
+func _show_founding_screen() -> void:
+	paused = true
+	hud.visible = false
+	founding_screen = FoundingScreen.new()
+	add_child(founding_screen)
+	founding_screen.connect("begin_requested",Callable(self,"_begin_founded_expedition"))
+	founding_screen.connect("cancel_requested",Callable(self,"_cancel_founding"))
+
+func _begin_founded_expedition(captain_name: String, philosophy: String) -> void:
+	var error: String = campaign.found_captain(captain_name,philosophy)
+	if not error.is_empty():
+		founding_screen.call("show_error",error)
+		return
+	var save_error: Error = campaign.save_to(_campaign_path(true))
+	if save_error != OK:
+		campaign.rollback_captain_foundation()
+		founding_screen.call("show_error","The new campaign could not be saved: "+error_string(save_error))
+		return
+	founding_mode = false
+	paused = false
+	hud.visible = true
+	founding_screen.queue_free()
+	founding_screen = null
+	_refresh_ui()
+	_toast("Captain %s · %s · commitment added to the chronicle." % [campaign.captain.name,campaign.captain.philosophy.capitalize()])
+
+func _cancel_founding() -> void:
+	if is_instance_valid(founding_screen):
+		founding_screen.queue_free()
+		founding_screen = null
+	leave.emit()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -315,7 +354,7 @@ func _notification(what: int) -> void:
 		audio.suspend_voice(true)
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		audio.save_settings()
-		_save(false)
+		if not founding_mode: _save(false)
 		get_tree().quit()
 
 func terrain_height(x: float, z: float) -> float:
@@ -1984,6 +2023,10 @@ func _dismiss_first_landing_welcome() -> void:
 	_refresh_ui()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(founding_screen):
+		if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_ESCAPE: _cancel_founding()
+		get_viewport().set_input_as_handled()
+		return
 	if not flight_rebind_action.is_empty():
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.physical_keycode == KEY_ESCAPE:
@@ -4089,6 +4132,10 @@ func _build_fleet_panel(only: String = "") -> void:
 func _build_chronicle_panel() -> void:
 	var ledger: Dictionary = campaign.sector.state.get("ledger",{})
 	_panel_copy("Colony day %d · treasury %d Marks\nLast day: tax %.1f · upkeep %.1f · exports %.1f" % [campaign.sector.state.tick,model.marks,ledger.get("tax",0),ledger.get("upkeep",0),ledger.get("exports",0)],Instruments.GOLD)
+	if campaign.captain.philosophy != "unrecorded":
+		_panel_copy("CAPTAIN · %s · %s" % [campaign.captain.name,campaign.captain.philosophy.capitalize()],Instruments.GOLD)
+		_panel_copy("COMMITMENT · %s" % ("FULFILLED" if campaign.captain.commitment_complete else "OPEN"),Instruments.NAV)
+		_panel_copy(Campaign.captain_commitment(campaign.captain.philosophy),Instruments.PAPER)
 	var filters := HBoxContainer.new()
 	popup_body.add_child(filters)
 	for filter: String in ["all","diplomacy","trade","exploration","encounter","war","local"]:

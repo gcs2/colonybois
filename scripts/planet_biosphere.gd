@@ -124,7 +124,9 @@ func act(game: RefCounted, id: String, action: String, at: Vector3, point: Vecto
 			local.layers[slot[0]][slot[1]] = id; local.stock[id] = 1
 			local.sites[id] = [point.x,point.y,point.z]
 		state.worlds[planet] = local
-	game.diplomacy.record(game,"ecology",("Catalogued " if action == "scan" else "Collected " if action == "collect" else "Introduced ")+str(data()[id].name)+" at "+str(game.field.definition().name)+".","",{"planet":planet,"species":id,"action":action})
+	var ecology_event: int = game.diplomacy.record(game,"ecology",("Catalogued " if action == "scan" else "Collected " if action == "collect" else "Introduced ")+str(data()[id].name)+" at "+str(game.field.definition().name)+".","",{"planet":planet,"species":id,"action":action})
+	if action == "release" and game.has_method("report_captain_action"):
+		game.report_captain_action("species_release",{"planet":planet,"species":id},ecology_event)
 	if action == "release":
 		var completed: int = complete_tier(planet)
 		var key: String = planet+":"+str(completed)

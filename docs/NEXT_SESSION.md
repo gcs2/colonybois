@@ -1,6 +1,6 @@
 # Resume here
 
-Updated 27 September 2026. [TASK_BOARD.md](TASK_BOARD.md) is the only production queue; [PRODUCTION_GOAL.md](PRODUCTION_GOAL.md) owns the objective.
+Updated 28 September 2026. [TASK_BOARD.md](TASK_BOARD.md) is the only production queue; [PRODUCTION_GOAL.md](PRODUCTION_GOAL.md) owns the objective.
 
 ## Current checkpoint
 
@@ -16,7 +16,7 @@ The HUD still has no fresh runtime score. The desktop previously showed Godot `0
 
 1. Keep the scout-map integration backed up at the current branch tip; if it is ahead of origin, push it and verify the exact remote hash before unrelated work. Keep generated import sidecars and captures out of Git.
 2. When graphics are stable, capture matched populated surface, orbit, system and galaxy views at 1080p and 1440p. Score each integrated view independently out of 100; no visual acceptance is claimed before fresh captures and user review. Check existing results from the active image-sourcing task before generating duplicate pictograms.
-3. Keep the new captain identity/philosophy screen under P02. Its external-designer prompt is in [EXPEDITION_FOUNDING_SCREEN.md](art/mock-requests/EXPEDITION_FOUNDING_SCREEN.md); species and creature editing remain deferred. Make each offered philosophy change a real available action before shipping the selector.
+3. P02 has a functional source candidate on `codex/p02-expedition-founding`: a saved captain/philosophy choice with a real first commitment and Chronicle link. The focused 20-check test passes; the existing biosphere scene suite still has four unresolved scan/collection/inventory failures with no baseline comparison. Keep the screen visually provisional until the [designer mock request](art/mock-requests/EXPEDITION_FOUNDING_SCREEN.md), runtime capture and critic/user reviews are complete. Species and creature editing remain deferred.
 4. After the HUD is materially closer and reviewed, run the bounded player-follow camera A/B on one ordinary uncut scene. Continue the shared, seeded Morrow geography/habitat work and connected-voyage systems in the task-board order.
 
 Do not stage, reset or overwrite unrelated main-checkout changes. Keep captures and import sidecars out of Git. Push meaningful checkpoints and verify their exact remote hashes.

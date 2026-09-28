@@ -6,7 +6,7 @@
 
 ## Player activity and game connection
 
-Before a new campaign begins, the player names their captain and chooses a philosophy/archetype. This choice should set expectations for how they will investigate worlds, meet alien powers and handle danger. In the shipped game it must eventually change an available action or obligation and persist with expedition history; a decorative label or hidden numerical bonus is not enough.
+Before a new flight campaign begins, the player names their captain and chooses a philosophy/archetype. This choice sets expectations for how they investigate worlds, meet alien powers and handle danger. Each choice now opens a real first commitment in the same campaign: Scientist surveys Morrow from orbit; Zealot establishes a scanned native species on another world; Knight neutralizes Morrow's hostile custodian. Completion uses the existing survey, specimen-transfer and custodian-combat systems, and is recorded in campaign history. Do not imply numeric bonuses or source-game powers.
 
 The screen starts the same connected campaign: pilot the scout, explore Morrow and other seeded worlds, collect useful resources, meet alien societies, trade, equip the ship and build a chronicle. It does not start a separate character-creator game mode or replace the campaign's world, diplomacy or simulation systems.
 
@@ -20,7 +20,7 @@ The screen starts the same connected campaign: pilot the scout, explore Morrow a
 
 ## Current decisions and exclusions
 
-- Treat Scientist, Zealot and Knight as player-facing philosophy/archetype choices, not as planetary governments. The names and exact roster remain subject to the P02 gameplay work.
+- Treat Scientist, Zealot and Knight as player-facing philosophy/archetype choices, not as planetary governments. They are personal commitments; faction governments and public philosophies remain separate.
 - Include a captain name field and a clear selected/unselected state. Use short readable descriptions; do not invent numeric stats or claim that an unimplemented power already works.
 - Do not decide the player's species. No freeform creature editor, new 3D character model, species-selection flow or new cast art is authorized by this brief. If a captain silhouette is shown, keep it species-neutral and subordinate to the choice UI.
 - Preserve the original Field Instruments aesthetic: ivory and charcoal with restrained gold/teal accents, purposeful image-backed controls, disciplined typography and useful empty space. Avoid flat Windows-blue panels, shiny copper trim, decorative icon wells, tiny text and oversized ship art.
@@ -33,7 +33,7 @@ Design one 16:9 New Expedition view. Keep the starship and world context present
 1. A clear “NEW EXPEDITION” heading and a concise prompt to create the captain.
 2. A name/callsign field with an example value that is easy to replace.
 3. Three distinct, recognizable philosophy choices: Scientist, Zealot and Knight. Give each a compact emblem and a short plain-language description. Make selection unmistakable without a persistent caption floating over the scene.
-4. One selected-choice detail area that can later explain the real action/obligation attached to that philosophy. Mark any ability line in this mock as a design placeholder, not shipped gameplay.
+4. One selected-choice detail area that states the real first commitment attached to that philosophy. Keep it concise and distinguish an obligation from an ability or numeric bonus.
 5. Back and Begin Expedition actions with a clear focus/selected state.
 
 Keep the screen easy to scan at ordinary 1080p. Do not make the ship the foreground subject; if visible, use the approved scout proportions and preserve room for the captain and philosophy decision.
@@ -48,7 +48,7 @@ The independent critic scores the **screen mock** out of 100 for hierarchy, cano
 
 > Create an original 16:9 video-game UI concept for a polished, playful space-exploration game called **Frontier Worlds**. This is the **New Expedition** screen where the player creates an expedition captain by entering a name and choosing a philosophy. Match the attached approved Frontier Worlds references for miniature-world color, restrained ship scale, warm ivory Field Instruments materials, dark charcoal framing, fine gold and teal accents, and clear pictorial controls. Preserve an original design; do not copy Spore, another game's interface, or any reference image's exact layout.
 >
-> Show a compact captain-name field, then three distinct selectable choices labelled **Scientist**, **Zealot**, and **Knight**, with clearly different simple emblems and concise readable descriptions. Make the selected choice obvious. Include one calm detail area for a future playstyle/action explanation, but do not invent statistics or imply that named powers already work. Include clear Back and Begin Expedition buttons. Keep the ship and starfield in the background at modest scale so the identity choice remains the focus. Use clean alignment, generous practical text space, consistent panel heights, believable 1080p typography, and no overlapping borders.
+> Show a compact captain-name field, then three distinct selectable choices labelled **Scientist**, **Zealot**, and **Knight**, with clearly different simple emblems and concise readable descriptions. Make the selected choice obvious. Show the selected captain's actual first commitment: Scientist surveys Morrow from orbit; Zealot establishes a scanned native species on another world; Knight neutralizes Morrow's hostile custodian. Treat these as distinct playable obligations, not powers or numeric bonuses. Include clear Back and Begin Expedition buttons. Keep the ship and starfield in the background at modest scale so the identity choice remains the focus. Use clean alignment, generous practical text space, consistent panel heights, believable 1080p typography, and no overlapping borders.
 >
 > This captain's species is deliberately undecided. Use no detailed face, creature anatomy, new character portrait, or species editor. Avoid blue Windows-style panels, glossy copper trim, oversized rounded wells, dense tiny labels, a huge foreground ship, and decorative clutter. The result should feel like it belongs beside the approved Morrow surface, orbit and Field Instruments views while still reading as a distinct start-of-expedition screen.
 
@@ -57,6 +57,7 @@ The independent critic scores the **screen mock** out of 100 for hierarchy, cano
 - Can a player immediately identify this as the start of a new expedition and understand how to begin?
 - Are captain naming and philosophy selection visually distinct and usable?
 - Do the three archetypes read as deliberate choices without unsupported stat claims?
+- Is the selected commitment legible as a real action or obligation rather than a decorative class perk?
 - Does the screen share the approved materials and typography while leaving the species open?
 - Is the ship secondary, and is there enough practical space for eventual real choice consequences?
 - Has the exact candidate, prompt, provenance, critic score and user verdict been recorded before promotion?
