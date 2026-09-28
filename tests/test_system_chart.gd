@@ -32,6 +32,14 @@ func run() -> void:
 	check(home.field.state.planet_id == "s0p1" and home.worlds.has("morrow"),"In-system arrival preserves Morrow as a separate revisitable world")
 	var resumed := Session.new()
 	check(resumed.restore_snapshot(home.snapshot()) == OK and resumed.field.state.planet_id == "s0p1" and resumed.worlds.has("morrow"),"New local destination and return world survive campaign save restoration")
+	home.sector.system_by_id("s8").charted = true
+	var remote_chart := Chart.new(); root.add_child(remote_chart); await process_frame
+	check(remote_chart.present(home,"s8"),"A previously charted remote system can be opened without a visit")
+	var remote_scout_parts: int = 0
+	for visual: VisualInstance3D in remote_chart.ship_visuals:
+		if visual.visible: remote_scout_parts += 1
+	check(not remote_chart.ship_marker_visible and remote_scout_parts == 0,"A fresh remote-system chart hides the scout when the flagship is elsewhere")
+	remote_chart.free()
 	home_chart.free()
 	var game: RefCounted = pilot(); var chart := Chart.new(); root.add_child(chart); await process_frame
 	chart.travel_requested.connect(func(id: String) -> void: departures.append(id))
@@ -39,14 +47,22 @@ func run() -> void:
 	chart.orbit_requested.connect(func() -> void: returns += 1)
 	var before: Dictionary = game.snapshot()
 	check(chart.present(game) and chart.visible and chart.bodies.size() == 3,"Known system displays all three actual orbital bodies")
+	var visible_scout_parts: int = 0
+	for visual: VisualInstance3D in chart.ship_visuals:
+		if visual.visible: visible_scout_parts += 1
+	check(chart.ship_marker_visible and visible_scout_parts > 0 and chart.ship_marker.scale.is_equal_approx(Vector3.ONE*0.25),"The player scout uses its actual visible GLB at the reduced system-map scale")
 	check(game.snapshot() == before,"Opening and inspecting a system cannot reveal, spend or duplicate simulation state")
 	check(chart.bodies.s2p0.planet_definition.id == "s2p0" and chart.bodies.s2p1.planet_definition.id == "s2p1","Each system body uses its own shared seeded geography")
-	check(not chart.bodies.s2p0.site_marker.visible and not chart.details.text.contains("ecosystem"),"Unsurveyed worlds do not expose landing markers or ecological readings")
+	check(not chart.bodies.s2p0.site_marker.visible and not chart.status.text.contains("ecosystem"),"Unsurveyed worlds do not expose landing markers or ecological readings")
 	game.field.state.survey_ticks = game.field.definition().survey_seconds; chart.refresh()
-	check(chart.bodies.s2p0.site_marker.visible and chart.details.text.contains("ecosystem"),"Real completed survey reveals the known landing marker and conditions")
+	check(chart.bodies.s2p0.site_marker.visible and chart.status.text.contains("ecosystem"),"Real completed survey reveals the known landing marker and conditions")
 	chart.select_planet("s2p1")
 	check(not chart.travel.disabled and "3 energy" in chart.travel.text and "2 seconds" in chart.travel.text,"In-system destination quote uses actual shared drive cost and time")
-	check(chart.details.text.contains("Orbital destination") and not chart.bodies.s2p1.site_marker.visible,"Nonlandable planets remain real orbital destinations without fabricated surface sites")
+	var projected_scout: Vector2 = chart.camera.unproject_position(chart.ship_marker.global_position)*chart.preview.size/Vector2(chart.viewport.size)
+	var projected_destination: Vector2 = chart.camera.unproject_position(chart.bodies.s2p1.position)*chart.preview.size/Vector2(chart.viewport.size)
+	var route_expected: bool = not chart.camera.is_position_behind(chart.bodies.s2p1.position) and projected_scout.distance_to(projected_destination) > 18.0
+	check(chart.route_overlay.origin.is_equal_approx(projected_scout) and chart.route_overlay.active == route_expected,"The route follows the projected 3D scout and only appears for visible, separated targets")
+	check(chart.status.text.contains("orbital only") and not chart.bodies.s2p1.site_marker.visible,"Nonlandable planets remain real orbital destinations without fabricated surface sites")
 	before = game.snapshot(); chart.select_planet("s2p2"); chart.refresh()
 	check(game.snapshot() == before and not game.worlds.has("s2p2"),"Selection and repeated presentation cannot fabricate visits")
 	check(not chart.present(game,"s8") and chart.system_id == "s2","Unknown system preview is rejected without replacing the visible system")
@@ -59,6 +75,8 @@ func run() -> void:
 	check(departures == ["s2p1"],"One actual 3D body click requests exactly one destination")
 	game.field.state.energy = 2; chart.refresh(); chart.activate_selected()
 	check(departures.size() == 1 and chart.travel.disabled and "Need 3 energy" in chart.status.text,"Insufficient fuel is shown and blocks departure without a request")
+	if "--chart-only" in OS.get_cmdline_user_args():
+		print("System chart assertions: %d; failures: %d" % [checks,failures]); quit(1 if failures else 0); return
 	game.field.state.energy = 100; chart.select_planet("s2p0"); click(chart,"s2p0")
 	check(returns == 1 and departures.size() == 1,"Clicking the current planet returns to the ship without charging a voyage")
 	chart.key(KEY_KP_6); check(chart.selected_planet == "s2p1","Left-handed numpad selection reaches the next planet")
