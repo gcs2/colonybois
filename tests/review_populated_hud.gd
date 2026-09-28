@@ -106,6 +106,10 @@ func run() -> void:
 		scene._update_camera(1.0)
 		scene._dismiss_first_landing_welcome()
 		scene._refresh_ui()
+		require(scene.hud.item_buttons["pack"].visible, "An owned energy pack occupies its quick-inventory slot")
+		require(scene.hud.item_buttons["repair_pack"].visible, "An owned repair pack occupies its quick-inventory slot")
+		require(not scene.hud.item_buttons["mega_repair_pack"].visible, "An unowned full-repair pack leaves its quick-inventory slot empty")
+		require(scene.hud.count_labels["pack"].text == "×1" and scene.hud.count_labels["repair_pack"].text == "×1", "Populated quick-inventory shows readable, exact one-unit stacks")
 		# Keep the production notification plaque visible for a mock comparison.
 		# This seeds display state only; it does not claim to exercise a discovery trigger.
 		scene._toast("Relay discovered")

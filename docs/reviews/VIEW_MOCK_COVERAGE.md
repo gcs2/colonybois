@@ -719,4 +719,21 @@ An independent critic reviewed both final captures with the [100-point rubric](.
 
 The reviewer confirms the brighter tether connects the card to the selected relay, the card clears its silhouette, and the revised prompt fits on one line at both sizes. Keep this compact placement direction provisionally. It has no matched before/after capture, so no visual-score gain is claimed. The title still duplicates the floating “Silent relay” world label, the “OUT OF RANGE” status remains dim, the dark rectangle has no dedicated surface-callout artwork, the chart and console still compete with the scene, and Morrow is far below the approved lush world. These readings are not comparable to the populated-campaign 69/70→70/71 HUD and 49/50 scene pair. There was no native input, motion, performance profile, user verdict, or fun acceptance.
 
-Continue V01 with the existing image-backed inventory assets: review actual campaign-earned item quantities and supply contrast, then notification copy and bounded ordinary-input evidence. Do not create duplicate artwork while the active art-generation chat is unresolved; compare its outputs against the [single visual-canon home](../../art/visual-canon/README.md) before wiring them.
+Continue V02 with the opened Expedition Inventory panel's hierarchy and pictorial layout, then finish V01 notification copy and bounded ordinary-input evidence. Do not create duplicate artwork while the active art-generation chat is unresolved; compare its outputs against the [single visual-canon home](../../art/visual-canon/README.md) before wiring them.
+
+## Populated flight inventory occupancy and count pass — 27 September 2026
+
+The live 6×2 rail now omits repair supplies with zero owned units, leaving the authored charcoal slot visibly empty. The dock service still offers the normal Full Repair Pack purchase route, and the separate Inventory details still state `Full repair pack × 0`; this is a hotbar empty-state correction, not removal of the item or its purchase path. Stack counts are 14 px, compact (`×1`), ivory with a dark outline; supply cooldown seconds remain in the hover tooltip rather than competing with the quantity. The shortcut labels were narrowed to fit beside counts, but their visibility was not verified in these stills. No new art was generated or imported.
+
+`tests/review_populated_hud.gd` rendered actual encounter views at 1920×1080 and 2560×1440 with a new campaign: eight Morrow Alloy exported, sold at S2 for 192 Marks, Energy and Repair Packs and one Alloy purchased through services/trade, and return travel to Morrow; final state is 7 Marks, one Energy Pack, one Repair Pack, and one Alloy. Flight and onboard Inventory captures live in ignored `artifacts/hud-inventory-readability-20260927/`. The Compatibility renderer completed on the RTX 5070 Ti in 24.58 s and passed the campaign route, owned-count, and zero-owned-slot assertions. The pre-existing `SpatialMaterial` specular-remap warning appeared twice; an ObjectDB leak warning appeared at harness exit. This is renderer evidence, not native input, a performance profile, packaged-export verification, or player acceptance. The focused `tools/Test.ps1 -Tests test_repair_supplies -Profile inventory-count` run passed 46 assertions in 20.53 s. The larger `test_flight_hud` suite and full suite were not rerun; stale HUD-test baseline failures remain recorded above.
+
+The independent critic compared the exact retained pre-correction and candidate campaign captures:
+
+| View | Resolution | Baseline | Candidate | Change |
+| --- | ---: | ---: | ---: | ---: |
+| HUD | 1920×1080 | 70 | 72 | +2 |
+| HUD | 2560×1440 | 71 | 73 | +2 |
+| World scene | 1920×1080 | 49 | 49 | None |
+| World scene | 2560×1440 | 50 | 50 | None |
+
+The same-critic HUD change comes from clearer counts and correct empty-slot occupancy only. At 1080p the counts are easier to locate but remain too small for quick reading; no count collision or clipping is visible. The critic cannot verify the resized shortcuts or tooltip cooldown in these captures. The opened inventory remains a text-and-line-icon list instead of a pictorial equipment grid and overlaps the relay card/right status area. The world remains sparse, pale, angular, and far below canon. Every score is below 90/100, and stills do not establish input or motion. Treat this as a narrow improvement, not acceptance.

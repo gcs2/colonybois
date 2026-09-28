@@ -143,6 +143,7 @@ var campaign_inventory_ids: Array[String] = []
 var campaign_item_buttons: Dictionary = {}
 var campaign_count_labels: Dictionary = {}
 var campaign_owned_counts: Dictionary = {}
+var owned_supply_counts: Dictionary = {}
 var orbital_mode: bool = false
 var inventory_grid_origin: Vector2 = PALETTE_ORIGIN
 var selected_tool: String = "scan"
@@ -594,18 +595,20 @@ func _make_item(id: String, item: Dictionary) -> void:
 	_style_inventory_slot(button)
 	button.tooltip_text = Art.tooltip(item.title+"\n"+item.hint)
 	var shortcut := Label.new()
-	shortcut.position = Vector2(3,PALETTE_SLOT_HEIGHT-16.0)
-	shortcut.size = Vector2(54,14)
-	shortcut.add_theme_font_size_override("font_size",11)
+	shortcut.position = Vector2(2,PALETTE_SLOT_HEIGHT-16.0)
+	shortcut.size = Vector2(26,14)
+	shortcut.add_theme_font_size_override("font_size",9)
 	shortcut.modulate = Art.MUTED
 	shortcut.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(shortcut)
 	var count := Label.new()
-	count.position = Vector2(33,PALETTE_SLOT_HEIGHT-16.0)
-	count.size = Vector2(24,15)
+	count.position = Vector2(28,PALETTE_SLOT_HEIGHT-17.0)
+	count.size = Vector2(28,17)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size",12)
+	count.add_theme_font_size_override("font_size",14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
+	count.add_theme_color_override("font_outline_color", Color("202729"))
+	count.add_theme_constant_override("outline_size",2)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	item_buttons[id] = button
@@ -634,11 +637,13 @@ func _make_campaign_item(entry: Dictionary) -> void:
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	_style_inventory_slot(button)
 	var count := Label.new()
-	count.position = Vector2(2, PALETTE_SLOT_HEIGHT-16.0)
-	count.size = Vector2(56, 15)
+	count.position = Vector2(2, PALETTE_SLOT_HEIGHT-18.0)
+	count.size = Vector2(56, 18)
 	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	count.add_theme_font_size_override("font_size", 12)
+	count.add_theme_font_size_override("font_size", 14)
 	count.add_theme_color_override("font_color", Color("fff2ce"))
+	count.add_theme_color_override("font_outline_color", Color("202729"))
+	count.add_theme_constant_override("outline_size",2)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(count)
 	campaign_item_buttons[id] = button
@@ -657,6 +662,11 @@ func _group_entries(group: String) -> Array[String]:
 	if group in ["Main tools", "Inventory"]:
 		entries.append_array(campaign_inventory_ids)
 	return entries
+
+func _supply_owned(id: String) -> bool:
+	if id == "pack" or Palette.Model.repair_items().has(id):
+		return int(owned_supply_counts.get(id, 0)) > 0
+	return true
 
 func _refresh_campaign_items(entries: Array[Dictionary], locked: bool) -> void:
 	campaign_inventory_ids.clear()
@@ -681,7 +691,7 @@ func _refresh_campaign_items(entries: Array[Dictionary], locked: bool) -> void:
 		var button: Button = campaign_item_buttons[id]
 		button.tooltip_text = Art.tooltip("%s × %d\nCarried cargo · click to inspect the existing inventory." % [str(entry.title), count])
 		button.disabled = locked
-		campaign_count_labels[id].text = "× %d" % count
+		campaign_count_labels[id].text = "×%d" % count
 	palette_page = clampi(palette_page, 0, maxi(0, (_group_entries(active_group).size()-1)/PALETTE_PAGE_CAPACITY))
 	show_group(active_group)
 
@@ -749,7 +759,7 @@ func show_group(group: String) -> void:
 	flight_readout.add_theme_font_size_override("font_size",12)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
-		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY
+		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY and _supply_owned(id)
 		if item_buttons[id].visible:
 			item_buttons[id].position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
 			item_buttons[id].size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
@@ -861,6 +871,9 @@ func select_tool(id: String) -> void:
 
 func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dictionary] = []) -> void:
 	palette_locked = locked
+	owned_supply_counts = {"pack": int(model.state.energy_packs)}
+	for id: String in Palette.Model.repair_items():
+		owned_supply_counts[id] = int(model.state.repair_packs.get(id, 0))
 	_refresh_campaign_items(inventory_entries, locked)
 	for key: String in category_buttons:
 		var button: Button = category_buttons[key]
@@ -895,15 +908,16 @@ func refresh_items(model: RefCounted, locked: bool, inventory_entries: Array[Dic
 		elif id == "lance" and model.state.energy < Palette.Model.LANCE_ENERGY: hint += "\nNeed 10 energy to fire; you can still select this weapon."
 		item_buttons[id].tooltip_text = hint
 		count_labels[id].text = Palette.count(id,model.state)
-		if id == "seed" and model.planetary != null and model.planetary.ecosystem != null: count_labels[id].text = "× %d" % model.planetary.ecosystem.used()
+		if id == "seed" and model.planetary != null and model.planetary.ecosystem != null: count_labels[id].text = "×%d" % model.planetary.ecosystem.used()
 		var ready_at: float = float(model.state.pack_ready_at) if id == "pack" else (float(model.state.weapon_ready_at) if id == "lance" else 0.0)
 		if Palette.Model.repair_items().has(id): ready_at = float(model.state.last_repair_at)+Palette.Model.REPAIR_COOLDOWN
 		if ready_at > model.state.time:
-			count_labels[id].text += " · %ds" % int(ceil(ready_at-model.state.time))
+			if id != "pack" and not Palette.Model.repair_items().has(id):
+				count_labels[id].text += " · %ds" % int(ceil(ready_at-model.state.time))
 			item_buttons[id].tooltip_text += "\nReady in %d s." % int(ceil(ready_at-model.state.time))
 		item_buttons[id].tooltip_text = Art.tooltip(item_buttons[id].tooltip_text)
 	for id: String in campaign_owned_counts:
-		count_labels[id].text = "× %d" % int(campaign_owned_counts[id])
+		count_labels[id].text = "×%d" % int(campaign_owned_counts[id])
 	if model != null and model.state != null:
 		var s: Dictionary = model.state
 		treasury_readout = "%s Marks" % _format_marks(model.marks)

@@ -106,7 +106,7 @@ func run() -> void:
 			button.pressed.emit(); clicked = true; break
 	check(clicked and game.field.state.hull == 195 and game.field.repair_pack_count() == 2,"Clicking the actual inventory item consumes it and repairs the ship")
 	scene._close_popup(); scene._hud_action("category:Inventory"); scene._refresh_ui()
-	check(scene.hud.item_buttons.repair_pack.disabled and scene.hud.count_labels.repair_pack.text.contains("20s"),"Hotbar shows shared cooldown and disables repeated consumption")
+	check(scene.hud.item_buttons.repair_pack.disabled and scene.hud.count_labels.repair_pack.text == "×2" and scene.hud.item_buttons.repair_pack.tooltip_text.contains("Ready in 20 s."),"Hotbar preserves the owned stack count while tooltip reports shared cooldown")
 	for i: int in range(20): game.tick()
 	scene._refresh_ui(); scene.hud.item_buttons.repair_pack.pressed.emit()
 	check(game.field.state.hull == 225 and game.field.repair_pack_count() == 1,"Inventory hotbar icon dispatches the same consumable command")

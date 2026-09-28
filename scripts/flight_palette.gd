@@ -63,7 +63,7 @@ static func count(id: String, state: Dictionary) -> String:
 	if Model.Support.catalog.has(id):
 		var entry: Dictionary = state.support[id]
 		return "%ds" % (entry.until-state.time) if entry.until > state.time else "%ds" % (entry.ready-state.time) if entry.ready > state.time else ""
-	if id == "pack": return "× %d" % state.energy_packs
-	if Model.repair_items().has(id): return "× %d" % state.repair_packs[id]
-	if id == "seed": return "× %d" % state.samples
+	if id == "pack": return "×%d" % state.energy_packs
+	if Model.repair_items().has(id): return "×%d" % state.repair_packs[id]
+	if id == "seed": return "×%d" % state.samples
 	return ""

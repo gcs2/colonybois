@@ -269,14 +269,14 @@ func run() -> void:
 	scene.model.state.pack_ready_at = scene.model.state.time
 	hud.category_buttons.Inventory.pressed.emit()
 	scene._refresh_ui()
-	check(hud.count_labels.pack.text == "× 2" and not hud.item_buttons.pack.disabled,"Quick inventory shows the actual owned stack")
+	check(hud.count_labels.pack.text == "×2" and not hud.item_buttons.pack.disabled,"Quick inventory shows the actual owned stack")
 	var selected_item: String = hud.selected_tool
 	press(scene,KEY_1)
 	hud.item_buttons.pack.pressed.emit()
 	check(scene.model.state.energy == 60 and scene.model.state.energy_packs == 1,"Keyboard then repeated click consumes only one pack during cooldown")
 	check(hud.selected_tool == selected_item and not scene.attack_order,"Self-use preserves the equipped weapon and never creates a target order")
 	scene._refresh_ui()
-	check(hud.item_buttons.pack.disabled and "8s" in hud.count_labels.pack.text and "Ready in 8 s" in hud.item_buttons.pack.tooltip_text,"Remaining count and cooldown belong to the inventory item")
+	check(hud.item_buttons.pack.disabled and hud.count_labels.pack.text == "×1" and "Ready in 8 s" in hud.item_buttons.pack.tooltip_text,"Stack count stays readable while cooldown remains in the inventory tooltip")
 	scene._toggle_pause()
 	var before_pause: Dictionary = scene.model.state.duplicate(true)
 	hud.category_buttons.Weapons.pressed.emit()
