@@ -1941,7 +1941,7 @@ func _operate(delta: float) -> void:
 	if progress >= 1:
 		var operation_distance: float = ship.position.distance_to(end)
 		error = _commit_tool_action(tool,selected,operation_distance)
-		var completed: String = "Glass +1 · cargo %d/%d" % [campaign.commerce.used_space(campaign),campaign.commerce.capacity()] if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
+		var completed: String = "Glass +1" if tool == "mine" and campaign != null else ("Survey complete" if tool == "scan" else "Operation complete")
 		_toast(error if not error.is_empty() else completed,"glass" if error.is_empty() and tool == "mine" else "")
 		audio.play("error" if not error.is_empty() else ("scan_complete" if tool == "scan" else "cargo"))
 		latched = true
@@ -2565,7 +2565,7 @@ func _layout_seam_context_card() -> void:
 	if not seam_card and not target_card:
 		_layout_default_context_card()
 		return
-	var card_size := Vector2(200,62) if seam_card else Vector2(228,76)
+	var card_size := Vector2(184,62) if seam_card else Vector2(210,72)
 	var context_target: String = "vein" if seam_card else selected
 	var target_at: Vector3 = _target_position(context_target)
 	if camera.is_position_behind(target_at):
@@ -2601,19 +2601,19 @@ func _layout_seam_context_card() -> void:
 	hud.context_card.position = card_at
 	hud.context_card.size = card_size
 	if seam_card:
-		hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(126,17); hud.subject.add_theme_font_size_override("font_size",10)
-		hud.action_state.position = card_at+Vector2(138,7); hud.action_state.size = Vector2(54,15); hud.action_state.add_theme_font_size_override("font_size",8)
-		hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(146,20); hud.explanation.add_theme_font_size_override("font_size",10)
+		hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(112,17); hud.subject.add_theme_font_size_override("font_size",10)
+		hud.action_state.position = card_at+Vector2(120,7); hud.action_state.size = Vector2(56,15); hud.action_state.add_theme_font_size_override("font_size",8)
+		hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(110,20); hud.explanation.add_theme_font_size_override("font_size",9)
 		hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
-		hud.use_button.position = card_at+Vector2(158,31); hud.use_button.size = Vector2(34,22); hud.use_button.add_theme_font_size_override("font_size",10)
-		hud.progress_bar.position = card_at+Vector2(0,58); hud.progress_bar.size = Vector2(200,4)
+		hud.use_button.position = card_at+Vector2(124,31); hud.use_button.size = Vector2(52,22); hud.use_button.add_theme_font_size_override("font_size",9)
+		hud.progress_bar.position = card_at+Vector2(0,58); hud.progress_bar.size = Vector2(184,4)
 	else:
-		hud.subject.position = card_at+Vector2(9,7); hud.subject.size = Vector2(148,20); hud.subject.add_theme_font_size_override("font_size",12)
-		hud.action_state.position = card_at+Vector2(160,8); hud.action_state.size = Vector2(60,16); hud.action_state.add_theme_font_size_override("font_size",9)
-		hud.explanation.position = card_at+Vector2(9,31); hud.explanation.size = Vector2(150,32); hud.explanation.add_theme_font_size_override("font_size",11)
+		hud.subject.position = card_at+Vector2(8,6); hud.subject.size = Vector2(134,19); hud.subject.add_theme_font_size_override("font_size",11)
+		hud.action_state.position = card_at+Vector2(148,7); hud.action_state.size = Vector2(54,16); hud.action_state.add_theme_font_size_override("font_size",8)
+		hud.explanation.position = card_at+Vector2(8,29); hud.explanation.size = Vector2(138,33); hud.explanation.add_theme_font_size_override("font_size",10)
 		hud.explanation.add_theme_color_override("font_color", Color("ddd8c9"))
-		hud.use_button.position = card_at+Vector2(164,39); hud.use_button.size = Vector2(55,25); hud.use_button.add_theme_font_size_override("font_size",11)
-		hud.progress_bar.position = card_at+Vector2(0,72); hud.progress_bar.size = Vector2(228,4)
+		hud.use_button.position = card_at+Vector2(151,38); hud.use_button.size = Vector2(51,24); hud.use_button.add_theme_font_size_override("font_size",9)
+		hud.progress_bar.position = card_at+Vector2(0,68); hud.progress_bar.size = Vector2(210,4)
 	var card_rect := Rect2(card_at,card_size)
 	var edge: Vector2
 	if anchor.x < card_rect.position.x:
@@ -2631,13 +2631,13 @@ func _layout_seam_context_card() -> void:
 
 func _layout_default_context_card() -> void:
 	hud.context_card.position = Vector2(450,744)
-	hud.context_card.size = Vector2(290,117)
-	hud.subject.position = Vector2(462,752); hud.subject.size = Vector2(164,22); hud.subject.add_theme_font_size_override("font_size",15)
-	hud.action_state.position = Vector2(635,752); hud.action_state.size = Vector2(95,20); hud.action_state.add_theme_font_size_override("font_size",11)
-	hud.explanation.position = Vector2(462,778); hud.explanation.size = Vector2(266,36); hud.explanation.add_theme_font_size_override("font_size",12)
+	hud.context_card.size = Vector2(220,78)
+	hud.subject.position = Vector2(459,750); hud.subject.size = Vector2(132,20); hud.subject.add_theme_font_size_override("font_size",12)
+	hud.action_state.position = Vector2(596,751); hud.action_state.size = Vector2(63,17); hud.action_state.add_theme_font_size_override("font_size",9)
+	hud.explanation.position = Vector2(459,774); hud.explanation.size = Vector2(144,30); hud.explanation.add_theme_font_size_override("font_size",10)
 	hud.explanation.add_theme_color_override("font_color", Instruments.MUTED)
-	hud.use_button.position = Vector2(635,818); hud.use_button.size = Vector2(95,28); hud.use_button.add_theme_font_size_override("font_size",16)
-	hud.progress_bar.position = Vector2(450,857); hud.progress_bar.size = Vector2(290,4)
+	hud.use_button.position = Vector2(608,797); hud.use_button.size = Vector2(51,21); hud.use_button.add_theme_font_size_override("font_size",10)
+	hud.progress_bar.position = Vector2(450,818); hud.progress_bar.size = Vector2(220,4)
 
 func _flight_inventory_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []

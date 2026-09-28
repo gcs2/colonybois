@@ -729,7 +729,8 @@ func show_group(group: String) -> void:
 	# The six-column tray meets the widened status bay inside one continuous
 	# shell. The status edge stays aligned to the original right edge.
 	var console_left: float = CONSOLE_RIGHT_EDGE-CONSOLE_NATIVE_WIDTH
-	inventory_grid_origin = Vector2(console_left-grid_width-15.0,panel_top+17.0)
+	# The padded tray meets the status bay exactly inside the shared outer shell.
+	inventory_grid_origin = Vector2(console_left-grid_width-4.0,panel_top+17.0)
 	grid_backing.position = inventory_grid_origin - Vector2(4, 4)
 	grid_backing.size = Vector2(grid_width+8, PALETTE_GRID_HEIGHT)
 	grid_backing.visible = false
@@ -1016,9 +1017,10 @@ func set_orbital_mode(enabled: bool) -> void:
 		nav_pod.position = Vector2(16, 647)
 		nav_pod.size = Vector2(220, 190)
 		# Use the same-width chart frame as the corner pod, with its title on the
-		# reserved footer line below the map field.
-		chart_backing.position = Vector2(16, 637)
-		chart_backing.size = Vector2(250, 215)
+		# reserved footer line below the map field. Match the source crop's 1.31
+		# aspect ratio; the map and its footer fit inside its single inner aperture.
+		chart_backing.position = Vector2(16, 662)
+		chart_backing.size = Vector2(250, 190)
 		navigation.position = Vector2(35, 670)
 		navigation.size = Vector2(207, 150)
 		# Give the sampled chart the full instrument aperture. The two secondary

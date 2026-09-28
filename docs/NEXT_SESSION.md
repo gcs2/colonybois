@@ -14,15 +14,17 @@ The [latest independent review](reviews/VIEW_MOCK_COVERAGE.md#surface-hud-readab
 
 The earlier integrated surface review's 66/66 HUD scores are superseded by the later 68/69 follow-up; the 66-point entry remains historical evidence for its earlier capture. The checkpointed chart pass scales only the player arrow and selected relay marker/focus ring by 1.28, leaving other contact dots and the 50 m map scale unchanged. `Godot --check-only` passes for `scripts/flight_navigation.gd`. The focused Compatibility capture could not be verified in this environment: the headless run used Godot's dummy renderer and produced no usable image; non-headless attempts stalled before the review harness's first progress message and were stopped. Do not claim a visual improvement or accept this delta until a working renderer captures both sizes. Commit 3b9f20736e957b061b754cf94ea23b4ea37a78a2 was pushed and its remote hash verified.
 
-The focused `test_flight_hud.gd` attempt ran for about 31 s, reported mismatches in the already-dirty test source (it expects a 220×190 chart and 188×146 map while runtime source is 250×215 and 207×150, and it accesses nonexistent `scene.status_backing` while current source uses `status_plate`), then was stopped. Leave that pre-existing test diff untouched until its intended baseline is reconciled. No full suite was run.
+The HUD source follow-up corrects the surface housing to its authored 250×190 crop ratio, strengthens sampled-chart contact markers, closes the 11 px tray/status gap, reduces target-card sizes, and shortens the mining notice to “Glass +1.” The dirty HUD-test draft was reconciled to the current TextureRect housing, 207×150 navigation aperture, 156 px status pod, and custom named category hints. `test_flight_hud.gd` passed 81 assertions with zero failures in 20.03 s. A unique temporary APPDATA directory and worktree `override.cfg` isolated the test profile; the temporary override was removed.
+
+The updated populated-campaign renderer harness did **not** reach its first progress message after roughly 50 s, wrote no captures, and was stopped. This repeats the known non-headless startup stall; no fresh rendered review, independent score, performance profile or visual-acceptance claim is available. Silent power mode remains active. The harness now accepts an output path under `res://artifacts/` to preserve earlier evidence. Do not award a visual score change until a working renderer captures the edited branch at both sizes.
 
 ## Next work
 
-1. Continue surface HUD correction on real pointer tooltips/readouts, chart marker hierarchy and true inventory state. Preserve honest counts and empty slots; reconcile the dirty test baseline before relying on its assertions.
-2. Confirm dynamic four/five-plus system destinations and keyboard access, then get a separate user verdict on views that have materially improved.
-3. Once HUD work is materially closer and reviewed, compare slightly higher player-follow camera views in one ordinary uncut scene; record the chosen perspective and parameters.
-4. Build shared seeded Morrow terrain, habitat and landmark composition across traversable regions, preserving planet-fixed geography and saved changes.
-5. Resume connected-voyage work after HUD, camera and world presentation move materially toward the approved canon.
+1. Re-render the latest HUD source at 1920×1080 and 2560×1440 in a working Compatibility-renderer environment, then obtain an independent review against the approved mock. Keep the prior 68/69 HUD and 52/53 world scores until matched new frames exist.
+2. Fix the user's actual-ship mismatch in system and galaxy navigation; the source audit found these views currently use a flat cropped icon, not the visible 3D scout. Preserve route/selection/click behavior and verify planet-count scaling from current code and live frames.
+3. Check native pointer/focus/tooltips and truthful inventory state when a playable renderer is available. Do not treat source assertions as art/playability acceptance.
+4. After the HUD is materially closer and reviewed, compare slightly higher player-follow camera views in one ordinary uncut scene; record the chosen perspective and parameters.
+5. Build shared seeded Morrow terrain, habitat and landmark composition across traversable regions, preserving planet-fixed geography and saved changes. Resume connected-voyage work as the next player-facing gap.
 
 Do not stage, reset or overwrite unrelated main-checkout changes. At the next verified milestone, update owning records, make a small commit, push, and verify the full remote hash.
 

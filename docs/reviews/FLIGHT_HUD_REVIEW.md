@@ -82,3 +82,14 @@ Independent review passes console footprint, dark surface chart readability, and
 Other V01 deltas remain: tool images 4–6 are dim outline glyphs rather than object-like pictorial art; the synthetic capture has mostly empty cells and cannot establish realistic inventory density; condition bars are segmented and display percentages rather than continuous fills with current/max values; the cargo toast and separate reassurance line do not match the compact discovery pill; the Marks plate sits left of the canon's far-right anchor. ALT remains a compact altitude readout, distinct from Terraform T-score. The seam tether is only one target state; relay/fauna/scan and unavailable/out-of-range feedback need matched states before claiming contextual HUD coverage.
 
 The terrain remains a broad flat tan/brown field with sparse vegetation and oversized/cropped props, far below the approved lush Morrow target. These captures and assertions do not establish user acceptance, native-input playability, performance, export quality, or fun. Godot emitted the existing `SpatialMaterial` `specular` remap warning.
+
+## Surface HUD source follow-up — 27 September 2026
+
+Source-only integration after the last scored frame:
+
+- The surface housing now renders at 250×190, matching the approved PNG crop's approximately 1.31 aspect ratio; the sampled map keeps its existing 207×150 aperture and side-tab navigation.
+- The padded inventory tray now meets the 156 px status bay. Known/unknown contacts use clearer marks, while the ship, relay, port and 50 m ruler remain tied to real coordinates.
+- Tethered seam/target cards shrink from 200×62 / 228×76 to 184×62 / 210×72 logical px. The fallback card shrinks from 290×117 to 220×78. The mining notice now reads “Glass +1” beside its actual cargo icon.
+- `tests/review_populated_hud.gd` accepts a unique `--output=res://artifacts/...` destination to avoid replacing earlier captures.
+
+`tests/test_flight_hud.gd` passes 81 assertions, zero failures, in 20.03 s on Godot 4.7.2. The dirty test draft was reconciled with current node types, sizes and custom category hints; no full suite was run. The non-headless populated-campaign renderer stalled before its first progress message for roughly 50 s, consumed under 0.5 CPU seconds and wrote no images; it was stopped. These deltas have **no new rendered review or score**. The last matched HUD/world scores (68/69 and 52/53) remain unchanged. Silent power mode was observed; no performance measurement was attempted. The existing `SpatialMaterial` remap warning remains.

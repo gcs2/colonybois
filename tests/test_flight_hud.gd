@@ -65,9 +65,9 @@ func run() -> void:
 	scene.set_physics_process(false)
 	scene.audio.muted = true
 	var hud: Control = scene.hud
-	check(hud.navigation.size.x >= 200 and hud.navigation.size.y >= 160 and hud.navigation.tooltip_text.contains("50 m"),"Surface chart expands its terrain aperture while keeping the 50 m scale")
+	check(hud.navigation.size.x >= 180 and hud.navigation.size.y >= 140 and hud.navigation.tooltip_text.contains("50 m"),"Surface chart keeps a legible terrain aperture and the 50 m scale")
 	check(hud.chart_heading.visible and hud.chart_heading.position.y >= hud.navigation.position.y + hud.navigation.size.y - 6,"Surface chart keeps its name below the map field")
-	check(hud.chart_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and hud.chart_backing.size.x == 250 and not hud.nav_pod.visible,"Surface chart uses one fitted Field Instruments frame without a blank altitude bay")
+	check(hud.chart_backing is TextureRect and hud.chart_backing.texture is AtlasTexture and hud.chart_backing.size == Vector2(250,190) and not hud.nav_pod.visible,"Surface chart uses the approved proportioned housing without a blank altitude bay")
 	check(hud.navigation_backing.get_script() == load("res://scripts/flight_instrument_frame.gd") and not hud.navigation_backing.visible,"Surface navigation leaves the chart aperture free of a side rail")
 	check(hud.navigation_menu_button.visible and hud.departure_button.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible) and not hud.sector_button.visible and not hud.system_button.visible,"Surface keeps two navigation controls visible and tucks secondary actions away")
 	check(hud.departure_button.get_theme_font_size("font_size") == 1 and not hud.departure_button.tooltip_text.is_empty(),"The ascent tab stays icon-only and keeps its named hover tooltip")
@@ -77,36 +77,54 @@ func run() -> void:
 	check(not hud.navigation_popup_backing.visible and hud.navigation_actions.all(func(button: Button) -> bool: return not button.visible),"Navigation menu closes back to the two-control strip")
 	check(hud.empty_slot_backings.size() == 12 and hud.empty_slot_backings[0].position.y < hud.empty_slot_backings[6].position.y,"Inventory grid retains all six columns and both carried-item rows")
 	check(hud.item_buttons.values().all(func(button: Button) -> bool: return button.get_theme_constant("icon_max_width") >= 48),"Equipment pictograms use most of each square inventory slot")
-	check(hud.navigation.size.x >= 238 and hud.navigation.size.y == 170 and not hud.navigation_backing.visible and hud.navigation_menu_button.position.y >= hud.navigation.position.y + hud.navigation.size.y,"Surface chart uses the full corner aperture with controls in its footer")
-	check(scene.status_backing.position.y + scene.status_backing.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
-	check(hud.treasury_backing.position.x > 1370 and hud.stats.text.ends_with("Marks"),"Marks remain legible in the upper-right instrument")
-	check(not hud.altitude_backing.visible and hud.flight_readout.size.x == 128 and hud.flight_readout.position.x == hud.console_pod.position.x+8 and hud.flight_readout.position.y >= hud.console_pod.position.y,"ALT sits in the right console header instead of a detached inset")
+	var painted_tool_ids: Array[String] = ["heat_ray","cool_ray","cloud_accumulator","cloud_vacuum","lance","seeker","ground_bomb","shield","rally_call"]
+	check(painted_tool_ids.all(func(id: String) -> bool: return hud.item_buttons[id].icon is AtlasTexture) and hud.item_buttons.scan.icon is Texture2D and not hud.item_buttons.scan.icon is AtlasTexture,"Only exact painted-atlas tool matches use object art; unmatched scanner keeps its own pictogram")
+	check(hud.navigation.size == Vector2(207,150) and not hud.navigation_backing.visible and hud.navigation_menu_button.position.x >= hud.navigation.position.x + hud.navigation.size.x - 6,"Surface chart keeps its scale while navigation tabs sit on the housing's side protrusions")
+	check(scene.status_plate.position.y + scene.status_plate.size.y < hud.objective.position.y,"Upper-left discovery notice clears the objective text")
+	check(hud.treasury_backing.position.x > 1420 and hud.treasury_backing.position.x + hud.treasury_backing.size.x > 1550 and hud.stats.text.ends_with("Marks"),"Marks remain legible at the upper-right edge")
+	check(scene.recognition_button.position.x + scene.recognition_button.size.x < hud.treasury_backing.position.x,"Recognition remains accessible beside, rather than over, the upper-right Marks plate")
+	var saved_landings: int = scene.model.state.landings
+	scene.model.state.landings = maxi(1,saved_landings)
+	scene._refresh_ui()
+	check(not hud.objective.visible and hud.objective.text.is_empty(),"Idle surface exploration leaves the notification corner clear")
+	scene.model.state.landings = saved_landings
+	scene._refresh_ui()
+	check(not hud.altitude_backing.visible and hud.flight_readout.size.x <= hud.CONSOLE_NATIVE_WIDTH-16 and hud.flight_readout.position.x == hud.console_pod.position.x+8 and hud.flight_readout.position.y >= hud.console_pod.position.y,"ALT sits in the right console header instead of a detached inset")
 	check(hud.toolbar.all(func(button: Button) -> bool: return button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("focus") is StyleBoxFlat),"Flight HUD tool actions can receive keyboard focus with a visible Field Instruments focus edge")
 	var encounter_action: Button = scene._button("Focus check",scene._close_popup,scene.popup_body)
 	check(encounter_action.focus_mode == Control.FOCUS_ALL and encounter_action.get_theme_stylebox("focus") is StyleBoxFlat,"Flight encounter actions can receive the same visible keyboard focus")
 	check(not hud.tool_title.visible and not hud.tool_spec.visible,"Persistent text above tool icons is removed; identity and costs belong in hover help")
-	check(hud.item_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.category_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.navigation_actions.all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()),"Every tool, category and navigation icon has named hover help")
-	var category_tabs_fit: bool = hud.category_buttons.size() == 4 and hud.category_tab_cards.size() == 4 and hud.communications_button != null and not hud.communications_button.tooltip_text.is_empty()
-	var tab_order: Array[String] = ["Main tools","Environment","Weapons","Inventory"]
+	var named_hover_help: bool = hud.item_buttons.values().all(func(button: Button) -> bool: return not button.tooltip_text.is_empty()) and hud.navigation_actions.all(func(button: Button) -> bool: return not button.tooltip_text.is_empty())
+	hud._show_category_hint(hud.category_buttons["Main tools"],"Main tools")
+	named_hover_help = named_hover_help and hud.category_hint.visible and hud.category_hint.hint_text == "Main tools · Browse tools [Tab]"
+	hud._show_category_hint(hud.communications_button,"Communications")
+	named_hover_help = named_hover_help and hud.category_hint.visible and hud.category_hint.hint_text == "Communications · Contact and trade [Y]"
+	hud._hide_category_hint()
+	check(named_hover_help,"Tools and navigation use named tooltips; category tabs show their named contextual hover hint")
+	var category_tabs_fit: bool = hud.category_buttons.size() == 4 and hud.category_tab_cards.size() == 4 and hud.communications_button != null and hud.category_hint != null
+	var tab_order: Array[String] = ["Main tools","Inventory","Weapons","Environment"]
 	for index: int in range(tab_order.size()):
 		var key: String = tab_order[index]
 		var button: Button = hud.category_buttons[key]
 		var card: Control = hud.category_tab_cards[key]
-		category_tabs_fit = category_tabs_fit and card.get_parent() == hud and card.position == button.position and card.size == Vector2(56,42) and button.size == Vector2(56,42) and button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("normal") is StyleBoxEmpty
+		category_tabs_fit = category_tabs_fit and card.get_parent() == hud and card.position == button.position and card.size == Vector2(hud.TAB_CARD_WIDTH,hud.TAB_CARD_HEIGHT) and button.size == Vector2(hud.TAB_CARD_WIDTH,hud.TAB_CARD_HEIGHT) and button.focus_mode == Control.FOCUS_ALL and button.get_theme_stylebox("normal") is StyleBoxEmpty
 		if index > 0:
 			var prior: Button = hud.category_buttons[tab_order[index-1]]
-			category_tabs_fit = category_tabs_fit and is_equal_approx(button.position.x-prior.position.x,prior.size.x+7.0)
-	var last_category: Button = hud.category_buttons["Inventory"]
-	category_tabs_fit = category_tabs_fit and is_equal_approx(hud.communications_button.position.x-last_category.position.x,last_category.size.x+7.0) and hud.communications_button.size == last_category.size
+			category_tabs_fit = category_tabs_fit and is_equal_approx(button.position.x-prior.position.x,prior.size.x+hud.TAB_CARD_GAP)
+	var last_category: Button = hud.category_buttons["Environment"]
+	category_tabs_fit = category_tabs_fit and is_equal_approx(hud.communications_button.position.x-last_category.position.x,last_category.size.x+hud.TAB_CARD_GAP) and hud.communications_button.size == last_category.size
 	category_tabs_fit = category_tabs_fit and hud.GROUPS.size() == 4 and hud.category_buttons["Main tools"].button_pressed and not hud.communications_button.toggle_mode
-	check(category_tabs_fit,"Four category cards and direct Communications card have aligned hit areas, even gaps, focus, named help and separate selection")
-	var inventory_housing_fits: bool = hud.grid_backing.position.x+hud.grid_backing.size.x == hud.console_pod.position.x and is_equal_approx(hud.console_pod.position.x+hud.console_pod.size.x*hud.console_pod.scale.x,hud.palette_backing.position.x+hud.palette_backing.size.x)
-	inventory_housing_fits = inventory_housing_fits and hud.console_pod.scale.x < 0.8 and hud.grid_backing.size.x == hud.PALETTE_GRID_WIDTH+8 and hud.item_buttons.values().all(func(button: Button) -> bool: return button.size.x == 60)
+	category_tabs_fit = category_tabs_fit and hud.TAB_GROUP_ORDER == tab_order
+	check(category_tabs_fit,"Five raised category cards use the approved display order, centered hit areas, even gaps, focus and named help")
+	var inventory_housing_fits: bool = is_equal_approx(hud.grid_backing.position.x+hud.grid_backing.size.x,hud.console_pod.position.x) and is_equal_approx(hud.console_pod.position.x+hud.console_pod.size.x,hud.palette_backing.position.x+hud.palette_backing.size.x)
+	inventory_housing_fits = inventory_housing_fits and hud.console_pod.scale == Vector2.ONE and hud.console_pod.size.x == hud.CONSOLE_NATIVE_WIDTH and hud.grid_backing.size.x == hud.PALETTE_GRID_WIDTH+8 and hud.item_buttons.values().all(func(button: Button) -> bool: return is_equal_approx(button.size.x,hud.PALETTE_SLOT_WIDTH))
+	inventory_housing_fits = inventory_housing_fits and hud.grid_backing.size.y == hud.PALETTE_GRID_HEIGHT and hud.item_buttons.values().all(func(button: Button) -> bool: return button.size.y == hud.PALETTE_SLOT_HEIGHT)
 	check(inventory_housing_fits,"Wider real item cells and the narrowed status segment meet flush inside a shared right-aligned housing")
-	var tabs_attached: bool = is_equal_approx(hud.category_buttons["Main tools"].position.x,hud.inventory_grid_origin.x+(hud.PALETTE_GRID_WIDTH-(5.0*56.0+4.0*7.0))*0.5)
-	tabs_attached = tabs_attached and hud.category_buttons["Main tools"].position.y+42+2 == hud.grid_backing.position.y and hud.palette_backing.position.y <= 652 and hud.category_tab_cards["Main tools"].accent == hud.Art.GOLD
-	check(tabs_attached,"Tabs attach to the inventory inset with a gold selected edge and the assembly sits higher")
-	var console_controls_fit: bool = hud.collapse_button.position.y == hud.console_pod.position.y+20 and hud.page_previous.position.y == hud.collapse_button.position.y and hud.page_label.position.y == hud.collapse_button.position.y and hud.page_next.position.y == hud.collapse_button.position.y
+	var expected_tabs_x: float = hud.inventory_grid_origin.x+(hud.PALETTE_GRID_WIDTH-(5.0*hud.TAB_CARD_WIDTH+4.0*hud.TAB_CARD_GAP))*0.5
+	var tabs_attached: bool = is_equal_approx(hud.category_buttons["Main tools"].position.x,expected_tabs_x)
+	tabs_attached = tabs_attached and hud.category_buttons["Main tools"].position.y+20 == hud.palette_backing.position.y and hud.grid_backing.position.y == hud.inventory_grid_origin.y-4.0 and hud.palette_backing.size.y == hud.PALETTE_PANEL_HEIGHT and hud.category_tab_cards["Main tools"].accent == hud.Art.GOLD
+	check(tabs_attached,"Wider notched tabs rise across the console edge, with the larger two-row grid below")
+	var console_controls_fit: bool = hud.collapse_button.position.y == hud.console_pod.position.y+32 and hud.page_previous.position.y == hud.collapse_button.position.y and hud.page_label.position.y == hud.collapse_button.position.y and hud.page_next.position.y == hud.collapse_button.position.y
 	console_controls_fit = console_controls_fit and hud.page_next.position.x+hud.page_next.size.x <= hud.console_pod.position.x+hud.console_pod.size.x*hud.console_pod.scale.x and hud.collapse_button.position.x+hud.collapse_button.size.x < hud.page_previous.position.x and hud.page_previous.position.x+hud.page_previous.size.x < hud.page_label.position.x and hud.page_label.position.x+hud.page_label.size.x < hud.page_next.position.x
 	check(console_controls_fit,"Collapse and page controls fit the console header row without reducing the five category cards")
 	var icon_style: StyleBox = hud.toolbar[0].get_theme_stylebox("normal")
@@ -115,7 +133,7 @@ func run() -> void:
 	var state: Dictionary = scene.model.state.duplicate(true)
 	var subject: String = scene.selected
 	press(scene,KEY_TAB)
-	check(hud.active_group == "Environment" and scene.selected == subject and scene.approach_subject,"Tab browses palettes without cycling targets or cancelling the active order")
+	check(hud.active_group == "Inventory" and scene.selected == subject and scene.approach_subject,"Tab browses palettes in visual order without cycling targets or cancelling the active order")
 	press(scene,KEY_TAB,true)
 	check(hud.active_group == "Main tools" and scene.tool == "scan" and scene.model.state == state,"Shift-Tab reverses browsing without spending or selecting")
 	var bar_position: Vector2 = hud.energy_bar.position
@@ -186,7 +204,7 @@ func run() -> void:
 	check("Cargo: 2 / 2" in hud.quick_cargo.tooltip_text,"Quick cargo reflects actual onboard capacity")
 	scene._change_flight_mode("orbit")
 	scene._refresh_ui()
-	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= 128 and hud.flight_readout.size.y <= 16 and not hud.altitude_backing.visible and hud.flight_readout.position.x == hud.console_pod.position.x+8
+	var orbital_readout_is_compact: bool = hud.flight_readout.visible and hud.flight_readout.size.x <= hud.CONSOLE_NATIVE_WIDTH-16 and hud.flight_readout.size.y <= 20 and not hud.altitude_backing.visible and hud.flight_readout.position.x == hud.console_pod.position.x+8
 	check(orbital_readout_is_compact,"Orbital ALT remains compact in the right console header")
 	check(scene.use_button.disabled and scene.toolbar.all(func(b: Button) -> bool: return b.disabled),"Surface equipment is unavailable in orbit")
 	hud.category_buttons.Environment.pressed.emit()

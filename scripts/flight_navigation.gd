@@ -235,9 +235,10 @@ func _draw() -> void:
 				draw_line(p+Vector2(0,-5*relay_scale),p+Vector2(0,5*relay_scale),Color("c3efcf"),1.2*relay_scale)
 				draw_line(p+Vector2(-4*relay_scale,0),p+Vector2(4*relay_scale,0),Color("c3efcf"),1.2*relay_scale)
 			else:
-				draw_circle(p,3.2,color)
-				if not known: draw_circle(p,1.5,Color("27313b"))
-			if id == selected: draw_arc(p,9*1.28,0,TAU,24,Color("f8cf77"),1.5*1.28,true)
+				draw_circle(p,6.0,Color("0d202b",0.88))
+				draw_circle(p,4.4 if known else 3.8,color)
+				draw_circle(p,1.5,Color("fff0cb",0.9) if known else Color("27313b"))
+			if id == selected: draw_arc(p,10.0*1.15,0,TAU,24,Color("f8cf77"),1.7,true)
 	var port: Vector2 = project(service_at)
 	if rect.grow(-7).has_point(port):
 		draw_polyline(PackedVector2Array([port+Vector2(0,-6),port+Vector2(6,0),port+Vector2(0,6),port+Vector2(-6,0),port+Vector2(0,-6)]),Color("91d7b2"),1.5,true)

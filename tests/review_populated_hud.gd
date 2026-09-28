@@ -3,9 +3,17 @@ extends SceneTree
 ## Isolated review state only; never loads or writes a player save.
 const Session = preload("res://scripts/expedition_session.gd")
 const Field = preload("res://scripts/encounter_state.gd")
-const OUTPUT := "res://artifacts/populated-hud-review"
+var output_directory := "res://artifacts/populated-hud-review"
 
 func _initialize() -> void:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--output="):
+			var requested_output: String = argument.trim_prefix("--output=").replace("\\", "/").simplify_path()
+			if not requested_output.begins_with("res://artifacts/"):
+				push_error("HUD review output must stay under res://artifacts/.")
+				quit(2)
+				return
+			output_directory = requested_output
 	call_deferred("run")
 
 func require(ok: bool, explanation: String) -> void:
@@ -68,7 +76,7 @@ func earn_and_populate(game: RefCounted) -> Dictionary:
 	}
 
 func run() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output_directory))
 	print("Populated HUD: creating fresh campaign")
 	var game := Session.new()
 	var evidence: Dictionary = earn_and_populate(game)
@@ -102,7 +110,7 @@ func run() -> void:
 		# This seeds display state only; it does not claim to exercise a discovery trigger.
 		scene._toast("Relay discovered")
 		for frame: int in range(3): await process_frame
-		var flight_image: String = "%s/populated-flight-%d.png" % [OUTPUT,resolution.x]
+		var flight_image: String = "%s/populated-flight-%d.png" % [output_directory,resolution.x]
 		print("Populated HUD: capturing flight view %s" % flight_image)
 		view.get_texture().get_image().save_png(flight_image)
 		# Route the real Inventory / I shortcut through the encounter's production
@@ -114,7 +122,7 @@ func run() -> void:
 		scene._unhandled_input(inventory_key)
 		for frame: int in range(3): await process_frame
 		require(scene.popup.visible and scene.popup_kind == "cargo" and scene.cargo_location == "ship", "HUD Inventory action opens the onboard cargo drawer")
-		var inventory_image: String = "%s/populated-inventory-%d.png" % [OUTPUT,resolution.x]
+		var inventory_image: String = "%s/populated-inventory-%d.png" % [output_directory,resolution.x]
 		print("Populated HUD: capturing onboard Inventory %s" % inventory_image)
 		view.get_texture().get_image().save_png(inventory_image)
 		var record: Dictionary = evidence.duplicate(true)
@@ -130,7 +138,7 @@ func run() -> void:
 		records.append(record)
 		scene.free()
 		view.free()
-	var manifest := FileAccess.open(OUTPUT+"/evidence.json",FileAccess.WRITE)
+	var manifest := FileAccess.open(output_directory+"/evidence.json",FileAccess.WRITE)
 	manifest.store_string(JSON.stringify({
 		"kind": "isolated campaign-earned actual encounter HUD render; notification plaque populated with a display-only fixture; not player save, native input, or visual acceptance",
 		"records": records
