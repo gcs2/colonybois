@@ -54,9 +54,9 @@ const TAB_GROUP_ICON_REGIONS := {
 const COMMUNICATIONS_ICON_TEXTURE := preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/communications.png")
 const COMMUNICATIONS_ICON_REGION := Rect2(250, 282, 755, 733)
 const TAB_GROUP_COLORS := {"Main tools":Color("f3c567"), "Inventory":Color("8bd3c6"), "Weapons":Color("df6553"), "Environment":Color("98c981")}
-const TAB_CARD_WIDTH := 67.0
-const TAB_CARD_HEIGHT := 37.0
-const TAB_CARD_GAP := 1.0
+const TAB_CARD_WIDTH := 68.0
+const TAB_CARD_HEIGHT := 31.36
+const TAB_CARD_GAP := 4.0
 
 
 class TabCardArtwork extends Control:
@@ -272,12 +272,19 @@ func _apply_item_pictogram(button: Button, id: String, item: Dictionary, selecte
 	var painted: Texture2D = CargoIcon.tool_texture_for(id)
 	if painted == null:
 		Art.symbol(button,str(item.get("icon",id)),item.get("tint",Art.NAV),selected)
-		return
-	button.icon = painted
-	button.add_theme_color_override("icon_normal_color",Color.WHITE)
-	button.add_theme_color_override("icon_hover_color",Color.WHITE)
-	button.add_theme_color_override("icon_pressed_color",Color.WHITE)
-	button.add_theme_constant_override("icon_max_width",52)
+	else:
+		button.icon = painted
+		button.add_theme_color_override("icon_normal_color",Color.WHITE)
+		button.add_theme_color_override("icon_hover_color",Color.WHITE)
+		button.add_theme_color_override("icon_pressed_color",Color.WHITE)
+	var icon_max_width: float = PALETTE_ICON_SIZE
+	if painted != null:
+		var painted_size: Vector2 = painted.get_size()
+		if painted_size.y > 0.0:
+			icon_max_width = minf(icon_max_width,(PALETTE_SLOT_HEIGHT-18.0)*painted_size.x/painted_size.y)
+	button.add_theme_constant_override("icon_max_width",icon_max_width)
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 
 func _tab_icon(source: Texture2D, safe_region: Rect2) -> Texture2D:
 	# The generated marks have generous transparent canvases. AtlasTexture
@@ -855,7 +862,6 @@ func select_tool(id: String) -> void:
 	for key: String in item_buttons:
 		var item: Dictionary = Palette.entry(key)
 		_apply_item_pictogram(item_buttons[key],key,item,key == id)
-		item_buttons[key].add_theme_constant_override("icon_max_width",PALETTE_ICON_SIZE)
 		_style_inventory_slot(item_buttons[key], key == id)
 	tool_title.text = selected.title
 	tool_spec.text = selected.summary

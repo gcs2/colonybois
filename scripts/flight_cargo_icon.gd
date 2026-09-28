@@ -34,6 +34,12 @@ const TOOL_ATLAS_IDS: Dictionary = {
 }
 
 static func tool_texture_for(tool_id: String) -> Texture2D:
+	if tool_id == "scan":
+		# Provisional exact scanner candidate; live art review and user acceptance remain open.
+		var scanner := AtlasTexture.new()
+		scanner.atlas = preload("res://art/visual-canon/ui-element-candidates/pictorial-cutouts-v4/galaxy-scanner-module-v2.png")
+		scanner.region = Rect2(270, 150, 870, 900)
+		return scanner
 	if tool_id == "pack":
 		# Use the visible canister rather than scaling its large transparent canvas.
 		# Ownership and stack count still come from EncounterState.
