@@ -71,6 +71,9 @@ func run() -> void:
 	check(loaded.field.state.energy == old.field.state.energy and loaded.field.marks == old.field.marks and loaded.sector.state.colonies == old.sector.state.colonies,"Migration gifts no resources and preserves colonies")
 	var chart := Chart.new(); root.add_child(chart); chart.present(game); await process_frame
 	var graph: Control = chart.graph
+	check(graph.scout_model is Node3D and graph.scout_model.find_children("*","MeshInstance3D",true,false).size() > 0,"Galaxy ship presentation instantiates the actual scout GLB geometry")
+	check(graph.scout_viewport.transparent_bg and graph.scout_viewport.size == Vector2i(96,72),"Actual scout is isolated in a compact transparent render layer")
+	check(is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(0,-1)),0.0) and is_equal_approx(graph.scout_yaw_for_screen_heading(Vector2(1,0)),-PI/2),"Actual scout nose follows the projected route heading")
 	var current_id: String = game.sector.state.flagship.system
 	var pc: Vector2 = Galaxy.position(game.sector.system_by_id(current_id))
 	var at: Vector2 = graph.project(pc+Vector2(3,0))
