@@ -81,7 +81,7 @@ func run() -> void:
 	check(graph.project(pc+Vector2(3,0)).distance_to(at) > 20,"Camera orbits around and below the galaxy")
 	check(graph.point(game.sector.system_by_id(current_id)).is_equal_approx(graph.project(pc)),"Stars and range geometry share the same plane projection")
 	graph.overview(); check(graph.project(Vector2.ZERO).distance_to(graph.view_center()) < 0.01,"Galaxy overview centres the real core after orbiting")
-	graph.reset_view(); check(graph.point(game.sector.system_by_id(current_id)).distance_to(graph.view_center()) < 0.01,"Ship focus returns from overview")
+	graph.reset_view(); check(graph.point(game.sector.system_by_id(current_id)).distance_to(graph.view_center()+graph.pan) < 0.01,"Ship focus returns to its intentional chart offset after overview")
 	var old_yaw: float = graph.yaw; chart.key(KEY_KP_6)
 	check(graph.yaw != old_yaw,"Numpad controls galaxy orbit for left-handed mouse users")
 	var cursor: Vector2 = graph.project(pc+Vector2(2,-1))
