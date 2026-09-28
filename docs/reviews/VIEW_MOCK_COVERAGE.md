@@ -637,7 +637,7 @@ The actual-renderer review remains **unverified**. Headless mode selected the du
 
 ## Surface HUD and actual ship representation follow-up — 27 September 2026
 
-The source-only surface HUD pass preserves the chart housing's authored aspect ratio at 250×190, increases contrast/hierarchy for sampled local contacts, removes the inventory/status seam, reduces world-tethered card footprints to 184×62 (seam) and 210×72 (other targets), reduces the fallback card to 220×78, and shortens the mining notice to “Glass +1.” The populated review harness now accepts a unique `res://artifacts/...` destination. The reconciled focused HUD check passed 81 assertions in 20.03 seconds.
+The source-only surface HUD pass preserves the chart housing's authored aspect ratio at 250×190, increases contrast/hierarchy for sampled local contacts, removes the inventory/status seam, reduces world-tethered card footprints to 184×62 (seam) and 210×72 (other targets), reduces the fallback card to 220×78, and shortens the mining notice to “Glass +1.” The populated review harness now accepts a unique `res://artifacts/...` destination. The reconciled focused HUD check passed 81 assertions in 20.03 seconds. Source checkpoint c62ba17c989084725a1f8720499005a3a9e603a8 is pushed and its full remote hash was verified. No new images were produced because the renderer stalled; the previous visual scores remain in force.
 
 The fresh actual-renderer run stalled before its first progress message for roughly 50 seconds, consumed under 0.5 CPU seconds and produced no image. No new score is assigned; the prior matched 68/69 HUD and 52/53 world readings remain the latest measures. This code/test checkpoint does not prove appearance, input feel, performance or player acceptance.
 
