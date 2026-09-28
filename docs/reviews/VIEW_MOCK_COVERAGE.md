@@ -703,3 +703,20 @@ The critic found supply/tool images easier to distinguish, especially at 2560, w
 Score calibration needs attention: a previous independent review of the same 48 px baseline pair reported HUD 75/76 and scene 50/52, materially above this review's re-rating at 69/70 and 49/50. Preserve both readings as different review sessions; use only this reviewer’s matched +1 as a local comparison and do not describe it as a calibrated longitudinal improvement. All full-view scores remain far below 90/100 and user acceptance is open.
 
 Next highest-value surface correction is the relationship between the local chart and target/relay card; improve their hierarchy and keep the target action connected to the world without covering the player scene. Then improve small quantities and low-contrast supply art. The whole Morrow environment remains the larger scene-quality blocker. The candidate can stay provisionally in the working line, but this is not whole-screen approval.
+
+## Surface selected-target callout follow-up — 27 September 2026
+
+The target-context card in `scripts/encounter.gd` is reduced from 210×72 to 184×62 logical pixels and moved to a 40 px preferred offset from the projected target. Its world clearance is 72×60 px. The shared dynamic tether is now 3 px gold. The target copy uses 10 px body text with higher ivory contrast, 9 px action-state text, and the compact prompt “Click to approach.” The layout preserves the existing card shell, projection, placement fallbacks, ship exclusion and surface chart. No replacement asset was generated while the other chat has active art generation; the current dark `ColorRect` remains provisional pending a non-duplicative surface-specific shell decision.
+
+`tests/review_target_context_card.gd` rendered the actual encounter with the ordinary player-follow camera at 1920×1080 and 2560×1440 into ignored `artifacts/target-card-layout-20260927/selected-relay-1920.png` and `selected-relay-2560.png`. It uses a fresh model, not a player save or campaign: the visible treasury is 0 Marks and the cargo row is empty. The 1440p capture preserves the same logical layout. The final two-size Compatibility-render run took about 19 seconds; the known legacy `SpatialMaterial` specular-remap warning appeared during habitat setup, with no script errors. No domain test suite was run because this was a presentation-only layout change.
+
+An independent critic reviewed both final captures with the [100-point rubric](../delivery/SYNTHETIC_SQUAD.md#independent-critic-score):
+
+| View | 1920×1080 | 2560×1440 | Review limits |
+| --- | ---: | ---: | --- |
+| HUD | 67 | 68 | Fresh-model empty-cargo fixture; still-only interaction/motion points provisional. |
+| World scene | 48 | 49 | The renderer/world source is unchanged by this callout pass. |
+
+The reviewer confirms the brighter tether connects the card to the selected relay, the card clears its silhouette, and the revised prompt fits on one line at both sizes. Keep this compact placement direction provisionally. It has no matched before/after capture, so no visual-score gain is claimed. The title still duplicates the floating “Silent relay” world label, the “OUT OF RANGE” status remains dim, the dark rectangle has no dedicated surface-callout artwork, the chart and console still compete with the scene, and Morrow is far below the approved lush world. These readings are not comparable to the populated-campaign 69/70→70/71 HUD and 49/50 scene pair. There was no native input, motion, performance profile, user verdict, or fun acceptance.
+
+Continue V01 with the existing image-backed inventory assets: review actual campaign-earned item quantities and supply contrast, then notification copy and bounded ordinary-input evidence. Do not create duplicate artwork while the active art-generation chat is unresolved; compare its outputs against the [single visual-canon home](../../art/visual-canon/README.md) before wiring them.
