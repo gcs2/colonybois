@@ -171,9 +171,9 @@ class StarGraph extends Control:
 		scout_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 		scout_camera.size = 4.7
 		scout_camera.position = Vector3(0,14,0.01)
+		stage.add_child(scout_camera)
 		scout_camera.look_at(Vector3.ZERO,Vector3(0,0,-1))
 		scout_camera.current = true
-		stage.add_child(scout_camera)
 		visibility_changed.connect(func() -> void:
 			scout_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
 		)
