@@ -425,8 +425,9 @@ func update_target_overlay() -> void:
 	for i: int in range(target_marks.size()):
 		target_marks[i].visible = active
 		if active: target_marks[i].position = rects[i].position; target_marks[i].size = rects[i].size
-	var ship_visible: bool = is_instance_valid(ship_marker) and ship_marker_visible and not camera.is_position_behind(ship_marker.global_position)
-	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_visible else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
+	ship_marker.force_update_transform(); camera.force_update_transform()
+	var ship_in_system: bool = is_instance_valid(ship_marker) and ship_marker_visible
+	var origin: Vector2 = camera.unproject_position(ship_marker.global_position)*screen_scale if ship_in_system else camera.unproject_position(bodies[campaign.field.state.planet_id].position+Vector3(0,5,0))*screen_scale if bodies.has(campaign.field.state.planet_id) else center
 	var enabled: bool = visible and active and selected_planet != campaign.field.state.planet_id and origin.distance_to(center) > 18
 	route_overlay.set_route(origin,center,enabled)
 func select_planet(id: String) -> void:
