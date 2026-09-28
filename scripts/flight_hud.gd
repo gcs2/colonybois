@@ -745,7 +745,7 @@ func show_group(group: String) -> void:
 	altitude_backing.position = Vector2(console_left+106,panel_top-6)
 	flight_readout.position = Vector2(console_left+8,panel_top+21)
 	flight_readout.size = Vector2(CONSOLE_NATIVE_WIDTH-16,20)
-	flight_readout.add_theme_font_size_override("font_size",12)
+	flight_readout.add_theme_font_size_override("font_size",14)
 	for id: String in item_buttons:
 		var slot: int = entries.find(id)-page_start
 		item_buttons[id].visible = palette_expanded and slot >= 0 and slot < PALETTE_PAGE_CAPACITY

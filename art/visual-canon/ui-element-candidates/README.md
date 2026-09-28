@@ -20,3 +20,7 @@ The earlier v1/v3 shell experiments remain candidates. The user approved the sep
 The [focused shell v3 set](focused-shells-v3/README.md) covers surface, orbit, approach, system and galaxy, but none of those shell images is wired into the game. The earlier v1 category-icon trial remains local and is superseded by the tracked v2 set. See [PROMPTS.md](PROMPTS.md) for initial prompt provenance and [v2 prompts](category-icons-v2/PROMPTS.md) for the current marks. Generated import sidecars and capture output remain local and must not be committed.
 
 The [v4 pictorial cutout candidates](pictorial-cutouts-v4/README.md) add isolated Inventory, Marks, system-action and galaxy-equipment artwork. The Energy Pack portrait and Marks emblem are now used in the live flight HUD; other v4 cutouts remain candidates.
+
+## Status readability study — 27 September 2026
+
+`status-pod-readability-v1.svg` is a native-vector type-size comparison against the approved whole-screen surface reference and the current status-bay capture. Its proposed HULL/ENERGY labels and values use 12 px text; ALT uses 14 px. An independent critic approved the proposal for implementation and then reviewed the integrated 1920×1080 and 2560×1440 runtime captures, finding the readouts clearer while the bay, signal lane, inventory spacing, and five glowing tab cards retain their geometry and materials. This is a scoped readability pass, not a new screen canon or acceptance of the whole HUD/world. The saved preview is ignored runtime-review output; keep only the vector source in Git.

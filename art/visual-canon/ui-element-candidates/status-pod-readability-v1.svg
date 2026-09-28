@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="570" viewBox="0 0 1440 570">
+  <defs>
+    <style>
+      .title { font: 700 21px 'Barlow', sans-serif; letter-spacing: 1.2px; fill: #dedad0; }
+      .caption { font: 400 15px 'Barlow', sans-serif; fill: #c1c5be; }
+      .small { font: 400 13px 'Barlow', sans-serif; fill: #a9b0aa; }
+      .panel-title { font: 600 16px 'Barlow', sans-serif; letter-spacing: 1px; fill: #dedad0; }
+      .charcoal { fill: #1c2426; font-family: 'Barlow', sans-serif; }
+      .panel { fill: #dedad0; stroke: #6e6c60; stroke-width: 2; }
+      .bar-bg { fill: #0e1518; }
+      .bar-inset { fill: #182022; }
+      .hull { fill: #dd8565; }
+      .energy { fill: #dca842; }
+    </style>
+  </defs>
+  <rect width="1440" height="570" fill="#20282a"/>
+  <text x="28" y="36" class="title">FIELD INSTRUMENTS · STATUS READABILITY STUDY</text>
+  <text x="28" y="59" class="caption">The approved screen sets the visual language; both readout studies use the current capture data and unchanged panel geometry.</text>
+
+  <text x="28" y="94" class="panel-title">APPROVED WHOLE-SCREEN REFERENCE</text>
+  <image href="../morrow-surface-ground-truth.png" x="28" y="108" width="666" height="375" preserveAspectRatio="xMidYMid meet"/>
+  <text x="28" y="508" class="small">The existing HUD already sets the Field Instruments material, spacing and color language.</text>
+  <text x="28" y="528" class="small">This study does not change the glowing tab cards or the inventory console.</text>
+
+  <text x="744" y="78" class="panel-title">CURRENT SIZES · 1080p</text>
+  <text x="1072" y="78" class="panel-title">PROPOSED READABILITY</text>
+
+  <!-- Current status bay at 2× its 156×183 logical size. -->
+  <g transform="translate(744 108)">
+    <rect width="312" height="366" fill="#dedad0"/>
+    <path d="M12 16 V350" stroke="#b4b0a4" stroke-width="2"/>
+    <text x="28" y="44" class="charcoal" font-size="24">ALT 3 m · 0 m/s</text>
+    <text x="30" y="98" class="charcoal" font-size="20">HULL</text>
+    <rect x="30" y="110" width="252" height="20" class="bar-bg"/>
+    <rect x="32" y="112" width="248" height="16" class="hull"/>
+    <text x="30" y="160" class="charcoal" font-size="20">100/100</text>
+    <text x="30" y="198" class="charcoal" font-size="20">ENERGY</text>
+    <rect x="30" y="210" width="252" height="20" class="bar-bg"/>
+    <rect x="32" y="212" width="208" height="16" class="energy"/>
+    <text x="30" y="260" class="charcoal" font-size="20">84/100</text>
+    <line x1="20" y1="286" x2="292" y2="286" stroke="#b4b0a4" stroke-width="2"/>
+    <g transform="translate(138 304)" fill="none" stroke="#259c70" stroke-width="4" stroke-linecap="square">
+      <path d="M0 28 L10 5 L20 28 M4 18 H16 M30 28 V15 M25 15 H35"/>
+      <circle cx="49" cy="20" r="5" fill="#5ce09e" stroke="none"/>
+    </g>
+  </g>
+
+  <!-- Proposed hierarchy: the source layout and all meters remain unchanged. -->
+  <g transform="translate(1072 108)">
+    <rect width="312" height="366" fill="#dedad0"/>
+    <path d="M12 16 V350" stroke="#b4b0a4" stroke-width="2"/>
+    <text x="28" y="45" class="charcoal" font-size="28">ALT 3 m · 0 m/s</text>
+    <text x="30" y="98" class="charcoal" font-size="24">HULL</text>
+    <rect x="30" y="110" width="252" height="20" class="bar-bg"/>
+    <rect x="32" y="112" width="248" height="16" class="hull"/>
+    <text x="30" y="160" class="charcoal" font-size="24">100/100</text>
+    <text x="30" y="198" class="charcoal" font-size="24">ENERGY</text>
+    <rect x="30" y="210" width="252" height="20" class="bar-bg"/>
+    <rect x="32" y="212" width="208" height="16" class="energy"/>
+    <text x="30" y="260" class="charcoal" font-size="24">84/100</text>
+    <line x1="20" y1="286" x2="292" y2="286" stroke="#b4b0a4" stroke-width="2"/>
+    <g transform="translate(138 304)" fill="none" stroke="#259c70" stroke-width="4" stroke-linecap="square">
+      <path d="M0 28 L10 5 L20 28 M4 18 H16 M30 28 V15 M25 15 H35"/>
+      <circle cx="49" cy="20" r="5" fill="#5ce09e" stroke="none"/>
+    </g>
+  </g>
+
+  <text x="744" y="502" class="small">Proposal keeps the 156 by 183 logical bay, label/bar/value order, meter size and signal lane.</text>
+  <text x="744" y="522" class="small">Changes: labels and values 10 to 12 px; ALT 12 to 14 px.</text>
+  <text x="744" y="542" class="small">Check at 1080p and 1440p. Native-vector study, not a new in-game texture.</text>
+</svg>
