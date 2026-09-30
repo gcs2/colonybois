@@ -54,9 +54,9 @@ const TAB_GROUP_ICON_REGIONS := {
 const COMMUNICATIONS_ICON_TEXTURE := preload("res://art/visual-canon/ui-element-candidates/category-icons-v2/communications.png")
 const COMMUNICATIONS_ICON_REGION := Rect2(250, 282, 755, 733)
 const TAB_GROUP_COLORS := {"Main tools":Color("f3c567"), "Inventory":Color("8bd3c6"), "Weapons":Color("df6553"), "Environment":Color("98c981")}
-const TAB_CARD_WIDTH := 64.0
-const TAB_CARD_HEIGHT := 37.0
-const TAB_CARD_GAP := 4.0
+const TAB_CARD_WIDTH := 72.0
+const TAB_CARD_HEIGHT := 33.0
+const TAB_CARD_GAP := 2.0
 
 
 class TabCardArtwork extends Control:
@@ -302,7 +302,7 @@ func _attach_tab_card(button: Button, tint: Color) -> TabCardArtwork:
 		button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	button.add_theme_constant_override("icon_max_width",36)
+	button.add_theme_constant_override("icon_max_width",32)
 	button.mouse_entered.connect(func() -> void: artwork.hovered = true; artwork.queue_redraw())
 	button.mouse_exited.connect(func() -> void: artwork.hovered = false; artwork.queue_redraw())
 	button.button_down.connect(func() -> void: artwork.depressed = true; artwork.queue_redraw())
@@ -771,7 +771,7 @@ func show_group(group: String) -> void:
 		if button.visible:
 			button.position = inventory_grid_origin + Vector2((slot % PALETTE_COLUMNS) * PALETTE_COLUMN_STRIDE, (slot / PALETTE_COLUMNS) * PALETTE_ROW_STRIDE)
 			button.size = Vector2(PALETTE_SLOT_WIDTH,PALETTE_SLOT_HEIGHT)
-	# Five cards keep even gaps and centered padding within the fixed console footprint.
+	# Five cards preserve the approved 2.17:1 tab silhouette and centered spacing.
 	# Page controls use the unused second line of the compact console header.
 	var tab_width: float = TAB_CARD_WIDTH
 	var tab_height: float = TAB_CARD_HEIGHT
