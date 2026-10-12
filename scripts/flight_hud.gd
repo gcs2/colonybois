@@ -1028,15 +1028,15 @@ func set_orbital_mode(enabled: bool) -> void:
 		# available from its footer and expandable tab.
 		nav_pod.position = Vector2(16, 647)
 		nav_pod.size = Vector2(220, 190)
-		# Use the same-width chart frame as the corner pod, with its title on the
-		# reserved footer line below the map field. Match the source crop's 1.31
-		# aspect ratio; the map and its footer fit inside its single inner aperture.
+		# Keep the approved chart housing footprint. The surface sample represents
+		# a square ground area, so keep its drawn aperture square and leave the
+		# right rail and lower bezel clear for controls and the chart title.
 		chart_backing.position = Vector2(16, 662)
 		chart_backing.size = Vector2(250, 190)
-		navigation.position = Vector2(35, 670)
-		navigation.size = Vector2(207, 150)
-		# Give the sampled chart the full instrument aperture. The two secondary
-		# actions share its quiet footer instead of consuming a narrow side rail.
+		navigation.position = Vector2(33, 668)
+		navigation.size = Vector2(158, 158)
+		# Reserve the housing's lower bezel for its title and keep the two actions
+		# on the existing right-side tabs, outside the terrain plot.
 		navigation_backing.visible = false
 		navigation_backing.position = Vector2(240, 727)
 		navigation_backing.size = Vector2(26, 82)
@@ -1052,7 +1052,7 @@ func set_orbital_mode(enabled: bool) -> void:
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
 			departure_button.add_theme_color_override(state,Color(0,0,0,0))
 		chart_heading.position = Vector2(35, 826)
-		chart_heading.size = Vector2(155, 18)
+		chart_heading.size = Vector2(190, 18)
 		chart_heading.add_theme_font_size_override("font_size", 10)
 		navigation_menu_button.visible = true
 		altitude_backing.position = Vector2(1508, 666)
