@@ -16,17 +16,18 @@ System navigation renders the actual scout GLB at scale 0.20; the route-origin f
 
 The 30 September tab comparison is a narrow geometry improvement, not a broad score gain or acceptance. Keep all campaign data and image provenance intact. Use the approved cutouts and real item art in the next pass; do not fill empty slots with invented inventory.
 
+The 11 October follow-up integrates a live target range/action card and a square surface-chart aperture. A populated campaign rendered at 1920×1080 and 2560×1440; the independent still critic scored HUD 58/100, with interaction and motion rows provisional. This is a different reviewer than the 30 September 64/100 score, so do not call it a regression or improvement. The world was not rescored. The target title duplication is fixed; the chart footer remains cramped, floating status cues remain detached, and inventory pictorial art remains inconsistent. Captures and exact state are in ignored artifacts/hud-step2-20261011/; the relay notification is display-only.
+
 
 
 
 ## Next work
 
-1. Continue the approved V01 sequence with item-art scale, truthful 6×2 inventory occupancy, and image-backed slot material; preserve actual quantities and empty capacity. Keep the quick rail within its existing outer footprint.
-2. Integrate the live condition pod, dark surface chart, compact real notice, and world-tethered target states. Remove duplicate target titles and keep callouts clear of their subjects. Review ordinary pointer use, named tooltips, keyboard focus, shortcuts, and world visibility at 1080p and 1440p.
-3. Have an independent critic score HUD and world separately with the six-row 100-point rubric. Continue until the affected HUD view reaches 90/100, every dimension clears its minimum, and there is no blocking defect; then seek the user’s visual verdict. Still captures do not prove motion or playability.
-4. After the HUD gate, compare the current player-follow camera with one or two slightly higher/pitched views in an uncut ordinary-play sequence; retain the perspective default unless the evidence supports a change.
+1. Continue V01 with a compact image-backed Field Instruments grouping for the currently detached escort/status, bookmark and shield cues. Preserve meaningful state and avoid decorative duplicates.
+2. Tune the real inventory item art and scale against approved pictorial references; use only semantically correct assets and retain true quantities and empty slots. Improve chart/footer and status readability as part of the same cohesive HUD pass.
+3. Render the integrated HUD at 1920×1080 and 2560×1440, then get a fresh independent 100-point HUD score. Run only a focused domain check if the changed behavior warrants it. The 90/100 threshold and positive user visual verdict remain open; still images cannot prove focus, motion, fun or performance.
+4. After the HUD gate, compare the current player-follow camera with one or two slightly higher/pitched views in an uncut ordinary-play sequence; retain the perspective default unless evidence supports a change.
 5. Then resume the open V02 inventory-modal task and shared seeded Morrow whole-planet pipeline, following [TASK_BOARD.md](TASK_BOARD.md). Preserve planet-fixed geography and saved changes; Morrow remains far below canon.
-
 Do not stage, reset or overwrite unrelated main-checkout changes. At the next verified milestone, update owning records, make a small commit, push, and verify the full remote hash.
 
 ## Spore binary-reference note
